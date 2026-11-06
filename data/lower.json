@@ -1,0 +1,437 @@
+{
+  "schemaVersion": 1,
+  "floor": "lower",
+  "unit": "m",
+  "note": "GitHub表示用データ。世界設定の正本はNotion。再配置の検討内容は未反映。",
+  "facilities": [
+    {
+      "id": "lower_terminal",
+      "name": "下層ターミナル",
+      "short": "中央ターミナル",
+      "x": 0,
+      "y": 0,
+      "w": 500,
+      "h": 500,
+      "type": "terminal",
+      "detail": "上層・中層から一般リフトで接続する下層の交通拠点。"
+    },
+    {
+      "id": "last_hub",
+      "name": "ラストハブ",
+      "short": "ラストハブ",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 1300,
+      "type": "living",
+      "detail": "中央ターミナル周辺半径330～650mの円環生活区。居住・休止・中古部品の市場・小工房。",
+      "ringDistrict": true
+    },
+    {
+      "id": "reclaim_belt",
+      "name": "リクレイムベルト",
+      "short": "再処理区",
+      "x": -950,
+      "y": 0,
+      "w": 1000,
+      "h": 700,
+      "type": "recycling",
+      "detail": "廃機体・金属・回収物を解体・選別・再利用する再処理区。"
+    },
+    {
+      "id": "acid_s9",
+      "name": "アシッドゾーンS9",
+      "short": "S9腐食帯",
+      "x": -1250,
+      "y": -600,
+      "w": 900,
+      "h": 500,
+      "type": "hazard",
+      "detail": "腐食性廃液を扱う危険作業区。"
+    },
+    {
+      "id": "bioreactor",
+      "name": "バイオリアクター",
+      "short": "バイオ再生",
+      "x": -950,
+      "y": 800,
+      "w": 700,
+      "h": 500,
+      "type": "nature",
+      "detail": "有機廃棄物を燃料・肥料・熱エネルギーなどに再生する施設。"
+    },
+    {
+      "id": "material_hollow",
+      "name": "マテリアル・ホロー",
+      "short": "資源搬入",
+      "x": 1050,
+      "y": -650,
+      "w": 700,
+      "h": 500,
+      "type": "industrial",
+      "detail": "地上・外部から鉱石や土砂などを搬入する船底資源設備。"
+    },
+    {
+      "id": "junk_tank",
+      "name": "ジャンク・リビルド槽",
+      "short": "廃整備槽",
+      "x": 250,
+      "y": -650,
+      "w": 350,
+      "h": 250,
+      "type": "recycling",
+      "detail": "公式地図での接続案内は非公開。"
+    },
+    {
+      "id": "general_processing",
+      "name": "一般処理区",
+      "short": "一般処理",
+      "x": -450,
+      "y": -450,
+      "w": 350,
+      "h": 250,
+      "type": "recycling",
+      "detail": "低危険度の廃棄物や金属屑などを処理。"
+    },
+    {
+      "id": "managed_processing",
+      "name": "管理処理区",
+      "short": "管理処理",
+      "x": -800,
+      "y": -500,
+      "w": 350,
+      "h": 250,
+      "type": "hazard",
+      "detail": "使用済み燃料・バッテリー・冷却液などの管理処理。"
+    },
+    {
+      "id": "hazard_processing",
+      "name": "危険処理区",
+      "short": "危険処理",
+      "x": -1200,
+      "y": -550,
+      "w": 400,
+      "h": 300,
+      "type": "hazard",
+      "detail": "爆発性試作品や危険廃機体などの処理。"
+    },
+    {
+      "id": "special_isolation",
+      "name": "特別隔離区",
+      "short": "特別隔離",
+      "x": -1600,
+      "y": -500,
+      "w": 350,
+      "h": 300,
+      "type": "hazard",
+      "detail": "グロウメタ汚染物・自己増殖素材などを隔離。"
+    },
+    {
+      "id": "discard_registration",
+      "name": "廃棄物搬入登録区",
+      "short": "搬入登録",
+      "x": -500,
+      "y": 0,
+      "w": 250,
+      "h": 180,
+      "type": "recycling",
+      "detail": "搬入される廃棄物の登録。"
+    },
+    {
+      "id": "metal_refining",
+      "name": "金属再精錬区",
+      "short": "金属再精錬",
+      "x": -1350,
+      "y": 100,
+      "w": 450,
+      "h": 300,
+      "type": "recycling",
+      "detail": "金属資源を再生する再精錬施設。"
+    },
+    {
+      "id": "recycled_storage",
+      "name": "再生資源倉庫",
+      "short": "再生資源庫",
+      "x": -1450,
+      "y": 450,
+      "w": 400,
+      "h": 250,
+      "type": "industrial",
+      "detail": "再生資源の集積・搬出。"
+    },
+    {
+      "id": "biological_tanks",
+      "name": "バイオ処理槽",
+      "short": "バイオ処理槽",
+      "x": -850,
+      "y": 800,
+      "w": 350,
+      "h": 250,
+      "type": "nature",
+      "detail": "有機処理系の一施設。"
+    },
+    {
+      "id": "resource_storage",
+      "name": "大型資源仮置場",
+      "short": "資源仮置場",
+      "x": 850,
+      "y": -550,
+      "w": 350,
+      "h": 250,
+      "type": "industrial",
+      "detail": "外部からの大量資源を一時集積。"
+    },
+    {
+      "id": "heavy_maintenance",
+      "name": "重機整備区",
+      "short": "重機整備",
+      "x": -450,
+      "y": 350,
+      "w": 350,
+      "h": 250,
+      "type": "industrial",
+      "detail": "重量機・設備の整備区。"
+    }
+  ],
+  "roads": [
+    {
+      "id": "lower_concourse",
+      "name": "下層ターミナルコンコース",
+      "kind": "ring",
+      "r": 290,
+      "width": 80,
+      "color": "#bac6c9"
+    },
+    {
+      "id": "last_hub_ring",
+      "name": "ラストハブ環状路",
+      "kind": "ring",
+      "r": 600,
+      "width": 30,
+      "color": "#a8b5bd"
+    },
+    {
+      "id": "reclaim_spine",
+      "name": "再生工業幹線",
+      "kind": "line",
+      "points": [
+        [
+          -600,
+          0
+        ],
+        [
+          -1550,
+          100
+        ]
+      ],
+      "width": 48,
+      "color": "#f0b36e",
+      "layer": "freight"
+    },
+    {
+      "id": "hazard_corridor",
+      "name": "S9危険物隔離通路",
+      "kind": "line",
+      "points": [
+        [
+          -650,
+          -300
+        ],
+        [
+          -900,
+          -450
+        ],
+        [
+          -1250,
+          -600
+        ],
+        [
+          -1600,
+          -500
+        ]
+      ],
+      "width": 24,
+      "color": "#bd7f7d",
+      "layer": "freight"
+    },
+    {
+      "id": "organic_corridor",
+      "name": "有機処理密閉路",
+      "kind": "line",
+      "points": [
+        [
+          -500,
+          350
+        ],
+        [
+          -500,
+          650
+        ],
+        [
+          -850,
+          800
+        ],
+        [
+          -1200,
+          850
+        ],
+        [
+          -1450,
+          700
+        ]
+      ],
+      "width": 24,
+      "color": "#d5ab70",
+      "layer": "freight"
+    },
+    {
+      "id": "material_road",
+      "name": "重資源搬送路",
+      "kind": "line",
+      "points": [
+        [
+          500,
+          -300
+        ],
+        [
+          850,
+          -550
+        ],
+        [
+          1450,
+          -650
+        ]
+      ],
+      "width": 48,
+      "color": "#f0b36e",
+      "layer": "freight"
+    },
+    {
+      "id": "recycled_tunnel",
+      "name": "再生資源上送トンネル",
+      "kind": "line",
+      "points": [
+        [
+          -1450,
+          450
+        ],
+        [
+          -800,
+          300
+        ],
+        [
+          -300,
+          150
+        ]
+      ],
+      "width": 32,
+      "color": "#db8d5a",
+      "layer": "freight",
+      "dash": [
+        11,
+        7
+      ]
+    },
+    {
+      "id": "bio_tunnel",
+      "name": "バイオ資源還流トンネル",
+      "kind": "line",
+      "points": [
+        [
+          -650,
+          1050
+        ],
+        [
+          -250,
+          700
+        ],
+        [
+          -250,
+          250
+        ]
+      ],
+      "width": 32,
+      "color": "#db8d5a",
+      "layer": "freight",
+      "dash": [
+        11,
+        7
+      ]
+    },
+    {
+      "id": "lower_emergency",
+      "name": "下層非常迂回環状路",
+      "kind": "ring",
+      "r": 850,
+      "width": 12,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        6,
+        8
+      ]
+    },
+    {
+      "id": "junk_path",
+      "name": "廃整備用旧通路",
+      "kind": "line",
+      "points": [
+        [
+          350,
+          -450
+        ],
+        [
+          250,
+          -650
+        ]
+      ],
+      "width": 8,
+      "color": "#69b9e5",
+      "layer": "freight",
+      "dash": [
+        5,
+        6
+      ]
+    },
+    {
+      "id": "propulsion_road",
+      "name": "船尾機関整備道路",
+      "kind": "line",
+      "points": [
+        [
+          -1200,
+          300
+        ],
+        [
+          -1750,
+          300
+        ]
+      ],
+      "width": 48,
+      "color": "#f0b36e",
+      "layer": "freight"
+    },
+    {
+      "id": "security_seal",
+      "name": "危険区封鎖操作路",
+      "kind": "line",
+      "points": [
+        [
+          -900,
+          -200
+        ],
+        [
+          -1350,
+          -200
+        ]
+      ],
+      "width": 8,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        4,
+        6
+      ]
+    }
+  ]
+}
