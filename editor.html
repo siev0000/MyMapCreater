@@ -45,7 +45,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 @media(max-width:520px){nav button{font-size:12px;padding:10px 3px}.toolbar button{padding:8px}.sidebar{display:flex}}
 </style></head><body>
 <div class="app">
-<header><div><h1>AA マップ配置エディター <span class="tag">下書き専用</span></h1><p class="note">中層・下層には船尾中央栽培の配置案を読み込みます。Notion現行は保持され、編集内容もサーバーへ自動保存されません。</p></div>
+<header><div><h1>AA マップ配置エディター <span class="tag">下書き専用</span></h1><p class="note">中層・下層には再配置案を読み込みます。下層の船首左右は上層専用出撃区（境界は仮）で、下層施設は配置不可です。Notion現行設定は維持されます。</p></div>
 <a href="./index.html">← 閲覧マップへ戻る</a></header>
 <div id="loading">施設・道路JSONを読み込み中…</div>
 <div id="workspace" hidden>
@@ -178,8 +178,40 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(roadPath(r)){ctx.strokeStyle=r.color||"#a5b8c8";ctx.lineWidth=Math.max(2,r.width*SC);ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(r.dash||[]);ctx.stroke()}
     ctx.restore();
   }
+  function intersectsRestrictedFacility(f){
+    if(active!=="lower"||f.ringDistrict)return false;
+    return (current().restrictedZones||[]).some(z=>{
+      const b=z.bounds;
+      return f.x+f.w/2>b.xMin&&f.x-f.w/2<b.xMax&&f.y+f.h/2>b.yMin&&f.y-f.h/2<b.yMax;
+    });
+  }
+  function pointInRestricted(x,y){
+    return active==="lower"&&(current().restrictedZones||[]).some(z=>x>=z.bounds.xMin&&x<=z.bounds.xMax&&y>=z.bounds.yMin&&y<=z.bounds.yMax);
+  }
+  function drawSortieRestrictions(){
+    if(active!=="lower")return;
+    const zones=current().restrictedZones||[];
+    ctx.save();
+    for(const z of zones){
+      const b=z.bounds,p1=worldToPixel(b.xMax,b.yMin),p2=worldToPixel(b.xMin,b.yMax);
+      const x=Math.min(p1.px,p2.px),y=Math.min(p1.py,p2.py),w=Math.abs(p2.px-p1.px),h=Math.abs(p2.py-p1.py);
+      ctx.fillStyle="rgba(102,58,121,.72)";ctx.fillRect(x,y,w,h);
+      ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.strokeStyle="rgba(226,165,240,.24)";ctx.lineWidth=2;
+      for(let k=-h;k<w+h;k+=24){ctx.beginPath();ctx.moveTo(x+k,y);ctx.lineTo(x+k+h,y+h);ctx.stroke()}
+      ctx.restore();
+      ctx.strokeStyle="#e4b6ec";ctx.lineWidth=3;ctx.setLineDash([9,7]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);
+      ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="bold 21px system-ui";ctx.fillStyle="#f8eaff";ctx.strokeStyle="#2d173c";ctx.lineWidth=4;
+      const side=z.id.endsWith("port")?"左舷":"右舷";
+      ctx.strokeText("上層専用・"+side+"出撃区",x+w/2,y+h/2-10,w-22);
+      ctx.fillText("上層専用・"+side+"出撃区",x+w/2,y+h/2-10,w-22);
+      ctx.font="15px system-ui";ctx.strokeText("下層配置不可｜船外接続",x+w/2,y+h/2+24,w-22);
+      ctx.fillText("下層配置不可｜船外接続",x+w/2,y+h/2+24,w-22);
+    }
+    ctx.restore();
+  }
   function draw(){
     ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
+    drawSortieRestrictions();
     if(state.grid){const cols=2500/gridMeters,rows=4000/gridMeters;ctx.save();ctx.strokeStyle="#6b91a533";ctx.lineWidth=1;for(let col=0;col<=cols;col++){ctx.beginPath();ctx.moveTo(col*W/cols,0);ctx.lineTo(col*W/cols,H);ctx.stroke()}for(let row=0;row<=rows;row++){ctx.beginPath();ctx.moveTo(0,row*H/rows);ctx.lineTo(W,row*H/rows);ctx.stroke()}ctx.restore()}
     if(state.overlay&&active!=="upper"){
       const other=floors[active==="middle"?"lower":"middle"];
@@ -235,6 +267,11 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const facilities=d.facilities.filter(f=>!f.ringDistrict);
     for(const f of facilities){
       if(f.x-f.w/2< -2000||f.x+f.w/2>2000||f.y-f.h/2< -1250||f.y+f.h/2>1250)warn.push("範囲外: "+f.name);
+      if(intersectsRestrictedFacility(f))warn.push("上層専用出撃区に侵入: "+f.name);
+    }
+    if(active==="lower"&&(d.restrictedZones||[]).length)for(const r of d.roads){
+      if(r.kind==="line"&&r.points.some(([x,y])=>pointInRestricted(x,y)))warn.push("上層専用出撃区を通る道路: "+r.name);
+      if(r.kind==="ring"&&r.r>d.restrictedZones[0].bounds.xMin)warn.push("上層専用出撃区に達する環状路: "+r.name);
     }
     for(let i=0;i<facilities.length;i++)for(let j=i+1;j<facilities.length;j++){
       const a=facilities[i],b=facilities[j];
@@ -345,7 +382,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(e.button!==0||!current())return;
     const p=localPos(e),w=pixelToWorld(p.px,p.py);cursorWorld=w;
     const hit=kind==="facility"?pickFacility(p):pickRoad(p);
-    if(!hit){selection=null;render();return}
+    if(!hit){selection=null;render();if(pointInRestricted(w.x,w.y))showStatus("ここは上層専用の出撃区です。下層の通常施設・道路を配置できません。",true);return}
     selection={id:hit.item.id,kind};
     drag={pointerId:e.pointerId,start:p,world:w,mode:hit.mode,index:hit.index,itemId:hit.item.id,initial:clone(hit.item),saved:false};
     canvas.setPointerCapture(e.pointerId);
@@ -359,6 +396,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<3&&!drag.saved)return;
     if(!drag.saved){saveSnapshot();drag.saved=true}
     const obj=items().find(x=>x.id===drag.itemId);if(!obj)return;
+    const previous=kind==="facility"?{x:obj.x,y:obj.y,w:obj.w,h:obj.h}:null;
     if(kind==="facility"){
       if(drag.mode==="move"){
         obj.x=snap(drag.initial.x+w.x-drag.world.x);
@@ -368,10 +406,19 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         obj.w=Math.max(25,snap(Math.max(25,(p.py-c.py)*5)));
         obj.h=Math.max(25,snap(Math.max(25,(p.px-c.px)*5)));
       }
+      if(intersectsRestrictedFacility(obj)){
+        Object.assign(obj,previous);
+        showStatus("下層の船首出撃区は上層専用です。施設をその中へ配置できません。",true);
+        draw();renderDetail();return;
+      }
     }else if(drag.mode==="vertex"){
-      obj.points[drag.index]=[snap(drag.initial.points[drag.index][0]+w.x-drag.world.x),snap(drag.initial.points[drag.index][1]+w.y-drag.world.y)];
+      const nx=snap(drag.initial.points[drag.index][0]+w.x-drag.world.x),ny=snap(drag.initial.points[drag.index][1]+w.y-drag.world.y);
+      if(pointInRestricted(nx,ny)){showStatus("下層の道路を上層専用出撃区へ引くことはできません。",true);return}
+      obj.points[drag.index]=[nx,ny];
     }else if(drag.mode==="radius"){
-      obj.r=Math.max(25,snap(Math.hypot(p.px-W/2,p.py-H/2)/SC));
+      const radius=Math.max(25,snap(Math.hypot(p.px-W/2,p.py-H/2)/SC));
+      if(active==="lower"&&(current().restrictedZones||[]).length&&radius>current().restrictedZones[0].bounds.xMin){showStatus("環状路が出撃区に入るため拡大できません。",true);return}
+      obj.r=radius;
     }
     draw();renderDetail();$("floorText").textContent=floorName()+" — 編集中";
     $("undo").disabled=false;
@@ -388,10 +435,14 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(target.type==="number"&&!Number.isFinite(value)){renderDetail();return}
       if(["w","h","width","r"].includes(key)&&value<=0){renderDetail();return}
       if(item[key]===value)return;
+      if(kind==="facility"&&intersectsRestrictedFacility({...item,[key]:value})){showStatus("下層の施設は上層専用出撃区へ配置できません。",true);renderDetail();return}
+      if(kind==="road"&&key==="r"&&active==="lower"&&(current().restrictedZones||[]).length&&value>current().restrictedZones[0].bounds.xMin){showStatus("環状路を出撃区へ通せません。",true);renderDetail();return}
       saveSnapshot();item[key]=value;render();
     }else if(target.dataset.vertex!==undefined){
       const idx=Number(target.dataset.vertex),axis=Number(target.dataset.axis),v=Number(target.value);
       if(!Number.isFinite(v))return;
+      const point=[...item.points[idx]];point[axis]=v;
+      if(pointInRestricted(point[0],point[1])){showStatus("出撃区へ道路の頂点を移せません。",true);renderDetail();return}
       saveSnapshot();item.points[idx][axis]=v;render();
     }
   }
@@ -399,7 +450,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const d=current();if(!d)return;
     saveSnapshot();
     let n=1,id;do{id="draft_facility_"+n++}while(d.facilities.some(f=>f.id===id));
-    const x=snap(cursorWorld.x),y=snap(cursorWorld.y);
+    const x=active==="lower"&&d.restrictedZones?.length?Math.min(600,snap(cursorWorld.x)):snap(cursorWorld.x),y=snap(cursorWorld.y);
     d.facilities.push({id,name:"新規施設（仮）",x,y,w:200,h:200,type:"industrial",detail:"位置・用途を検討中。Notionへは未反映。",reviewStatus:"draft"});
     kind="facility";selection={id,kind};render();
   }
@@ -407,7 +458,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const d=current();if(!d)return;
     saveSnapshot();
     let n=1,id;do{id="draft_road_"+n++}while(d.roads.some(r=>r.id===id));
-    const x=snap(cursorWorld.x),y=snap(cursorWorld.y);
+    const x=active==="lower"&&d.restrictedZones?.length?Math.min(500,snap(cursorWorld.x)):snap(cursorWorld.x),y=snap(cursorWorld.y);
     d.roads.push({id,name:"新規道路（仮）",kind:"line",roadType:"一般道路",points:[[x,y],[x+150,y]],width:24,color:"#a8b5bd",reviewStatus:"draft"});
     kind="road";selection={id,kind};render();
   }
