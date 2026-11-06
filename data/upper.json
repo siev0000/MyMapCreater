@@ -2,230 +2,441 @@
   "schemaVersion": 1,
   "floor": "upper",
   "unit": "m",
-  "note": "GitHub表示用データ。世界設定の正本はNotion。上層は現行HTMLから移行し内容は変更していません。",
+  "source": {
+    "system": "Notion",
+    "url": "https://www.notion.so/1ddfa1b30dc9805f8b20e211faf37709",
+    "section": "5.3-5.6",
+    "status": "現行の初期配置（未承認の再設計案は含まない）"
+  },
+  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。",
   "facilities": [
     {
       "id": "upper_terminal",
       "name": "上層ターミナル",
-      "short": "中央ターミナル",
       "x": 0,
       "y": 0,
       "w": 500,
       "h": 500,
       "type": "terminal",
-      "detail": "一般リフト群と外征用直通リフトの出発点。"
+      "detail": "一般リフト群と外征用直通リフトの出発点。",
+      "short": "中央ターミナル",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "upper_control",
+      "id": "upper_main_control",
       "name": "上層共同メインコントロール",
-      "short": "共同管制",
       "x": 450,
       "y": 0,
       "w": 300,
       "h": 180,
       "type": "shared",
-      "detail": "上層の共同管理施設。本編開始時は共同管理機構が利用。"
+      "detail": "上層の共同管理施設。本編開始時は共同管理機構が利用。",
+      "short": "共同管制",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "orbital",
+      "id": "orbital_sphere",
       "name": "オービタルスフィア",
-      "short": "オービタル",
       "x": 1000,
       "y": 0,
       "w": 420,
       "h": 260,
       "type": "shared",
-      "detail": "AA内部と周辺空域を観測する共有施設。"
+      "detail": "AA内部と周辺空域を観測する共有施設。",
+      "short": "オービタル",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "archive",
+      "id": "information_archive",
       "name": "上層共通情報保存区",
-      "short": "情報保存区",
       "x": -420,
       "y": 0,
       "w": 300,
       "h": 180,
       "type": "shared",
-      "detail": "共有情報の保管。"
+      "detail": "共有情報の保管。",
+      "short": "情報保存区",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "myosphere",
+      "id": "myosphere_field",
       "name": "マイオスフィールド",
-      "short": "マイオス",
       "x": -850,
       "y": 0,
       "w": 380,
       "h": 240,
       "type": "shared",
-      "detail": "精神緩和、娯楽、交流のための施設。"
+      "detail": "精神緩和、娯楽、交流のための施設。",
+      "short": "マイオス",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "mag_gate",
+      "id": "upper_shared_logistics",
+      "name": "上層共通物流区",
+      "x": -1250,
+      "y": -120,
+      "w": 350,
+      "h": 200,
+      "type": "shared",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "upper_shared_high_grade_fuel",
+      "name": "上層高級燃料供給区",
+      "x": -1250,
+      "y": 120,
+      "w": 350,
+      "h": 200,
+      "type": "shared",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "upper_shared_security_magitech",
       "name": "マギテック側認証門",
-      "short": "M認証門",
       "x": 0,
       "y": -320,
       "w": 250,
       "h": 80,
       "type": "security",
-      "detail": "マギテック側への区画認証門。"
+      "detail": "マギテック側への区画認証門。",
+      "short": "M認証門",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "eid_gate",
+      "id": "upper_shared_security_eidolon",
       "name": "エイドロン側認証門",
-      "short": "E認証門",
       "x": 0,
       "y": 320,
       "w": 250,
       "h": 80,
       "type": "security",
-      "detail": "エイドロン側への区画認証門。"
+      "detail": "エイドロン側への区画認証門。",
+      "short": "E認証門",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "mag_living",
+      "id": "magitech_residential_area",
       "name": "マギテック側居住・待機区",
-      "short": "M居住区",
       "x": -150,
       "y": -600,
       "w": 700,
       "h": 350,
       "type": "magitech",
-      "detail": "マギテック側の居住・待機区。"
+      "detail": "マギテック側の居住・待機区。",
+      "short": "M居住区",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "mag_update",
+      "id": "magitech_update_facility",
       "name": "マギテック・アップデート施設",
-      "short": "M更新",
       "x": -650,
       "y": -550,
       "w": 300,
       "h": 250,
       "type": "magitech",
-      "detail": "マギテックの機体更新を扱う施設。"
+      "detail": "マギテックの機体更新を扱う施設。",
+      "short": "M更新",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "mag_creation",
+      "id": "magitech_creation_area",
       "name": "マギテック創造領域",
-      "short": "M創造",
       "x": 450,
       "y": -650,
       "w": 500,
       "h": 350,
       "type": "magitech",
-      "detail": "マギテックの新機体開発・創造領域。"
+      "detail": "マギテックの新機体開発・創造領域。",
+      "short": "M創造",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "mag_weapons",
+      "id": "magitech_weapon_development",
       "name": "マギテック武器開発施設",
-      "short": "M兵装",
       "x": 900,
       "y": -650,
       "w": 350,
       "h": 300,
       "type": "magitech",
-      "detail": "マギテックの武器開発施設。"
+      "detail": "マギテックの武器開発施設。",
+      "short": "M兵装",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "mag_research",
+      "id": "magitech_research_facility",
       "name": "魔力系研究施設",
-      "short": "魔力研究",
       "x": 450,
       "y": -1000,
       "w": 500,
       "h": 250,
       "type": "magitech",
-      "detail": "魔力系の研究施設。"
+      "detail": "魔力系の研究施設。",
+      "short": "魔力研究",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "mag_test",
+      "id": "magitech_force_field_lab",
+      "name": "力場シールド研究区",
+      "x": -150,
+      "y": -1000,
+      "w": 350,
+      "h": 250,
+      "type": "magitech",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "magitech_attribute_test_area",
+      "name": "属性実験区画",
+      "x": 1000,
+      "y": -1000,
+      "w": 450,
+      "h": 250,
+      "type": "magitech",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "magitech_combat_test_range",
       "name": "マギテック戦闘試験場",
-      "short": "M試験場",
       "x": 1450,
       "y": -550,
       "w": 450,
       "h": 350,
       "type": "magitech",
-      "detail": "マギテック側の戦闘試験場。"
+      "detail": "マギテック側の戦闘試験場。",
+      "short": "M試験場",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "eid_living",
+      "id": "magitech_prototype_test_facility",
+      "name": "マギテック試作試験施設",
+      "x": 1100,
+      "y": -350,
+      "w": 300,
+      "h": 200,
+      "type": "magitech",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "magitech_high_grade_fuel_lab",
+      "name": "マギテック高級燃料研究施設",
+      "x": -700,
+      "y": -1000,
+      "w": 300,
+      "h": 250,
+      "type": "magitech",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "magitech_secure_storage",
+      "name": "マギテック高機密保管区",
+      "x": -1100,
+      "y": -800,
+      "w": 320,
+      "h": 250,
+      "type": "magitech",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "magitech_military_research_area",
+      "name": "マギテック軍事研究区",
+      "x": -1450,
+      "y": -500,
+      "w": 350,
+      "h": 300,
+      "type": "magitech",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_residential_area",
       "name": "エイドロン側居住・待機区",
-      "short": "E居住区",
       "x": -150,
       "y": 600,
       "w": 700,
       "h": 350,
       "type": "eidolon",
-      "detail": "エイドロン側の居住・待機区。"
+      "detail": "エイドロン側の居住・待機区。",
+      "short": "E居住区",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "eid_update",
+      "id": "eidolon_update_facility",
       "name": "エイドロン・アップデート施設",
-      "short": "E更新",
       "x": -650,
       "y": 550,
       "w": 300,
       "h": 250,
       "type": "eidolon",
-      "detail": "エイドロンの機体更新を扱う施設。"
+      "detail": "エイドロンの機体更新を扱う施設。",
+      "short": "E更新",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "eid_creation",
+      "id": "eidolon_creation_area",
       "name": "エイドロン創造領域",
-      "short": "E創造",
       "x": 450,
       "y": 650,
       "w": 500,
       "h": 350,
       "type": "eidolon",
-      "detail": "エイドロンの新機体開発・創造領域。"
+      "detail": "エイドロンの新機体開発・創造領域。",
+      "short": "E創造",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "eid_equipment",
+      "id": "eidolon_support_equipment_development",
       "name": "エイドロン装備開発施設",
-      "short": "E装備",
       "x": 900,
       "y": 650,
       "w": 350,
       "h": 300,
       "type": "eidolon",
-      "detail": "エイドロン側の装備開発施設。"
+      "detail": "エイドロン側の装備開発施設。",
+      "short": "E装備",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "eid_research",
+      "id": "eidolon_faith_research_facility",
       "name": "信仰系研究施設",
-      "short": "信仰研究",
       "x": 450,
       "y": 1000,
       "w": 500,
       "h": 250,
       "type": "eidolon",
-      "detail": "信仰系の研究施設。"
+      "detail": "信仰系の研究施設。",
+      "short": "信仰研究",
+      "sourceSection": "5.3-5.5"
     },
     {
-      "id": "eid_test",
+      "id": "eidolon_barrier_lab",
+      "name": "聖結界研究区",
+      "x": -150,
+      "y": 1000,
+      "w": 350,
+      "h": 250,
+      "type": "eidolon",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_radiant_test_area",
+      "name": "光輝魔法実験区画",
+      "x": 1000,
+      "y": 1000,
+      "w": 450,
+      "h": 250,
+      "type": "eidolon",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_life_structure_lab",
+      "name": "生命構造研究区",
+      "x": -700,
+      "y": 1000,
+      "w": 300,
+      "h": 250,
+      "type": "eidolon",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_combat_test_range",
       "name": "エイドロン戦闘試験場",
-      "short": "E試験場",
       "x": 1450,
       "y": 550,
       "w": 450,
       "h": 350,
       "type": "eidolon",
-      "detail": "エイドロン側の戦闘試験場。"
+      "detail": "エイドロン側の戦闘試験場。",
+      "short": "E試験場",
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_prototype_test_facility",
+      "name": "エイドロン試作試験施設",
+      "x": 1100,
+      "y": 350,
+      "w": 300,
+      "h": 200,
+      "type": "eidolon",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_sample_storage",
+      "name": "信仰系試料保管区",
+      "x": -1100,
+      "y": 800,
+      "w": 320,
+      "h": 250,
+      "type": "eidolon",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_secure_storage",
+      "name": "エイドロン高機密保管区",
+      "x": -1350,
+      "y": 500,
+      "w": 300,
+      "h": 250,
+      "type": "eidolon",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
+    },
+    {
+      "id": "eidolon_military_research_area",
+      "name": "エイドロン軍事研究区",
+      "x": -1550,
+      "y": 650,
+      "w": 350,
+      "h": 300,
+      "type": "eidolon",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "5.3-5.5"
     }
   ],
   "roads": [
     {
-      "id": "upper_concourse",
+      "id": "upper_terminal_concourse",
       "name": "上層ターミナルコンコース",
+      "roadType": "コンコース",
+      "width": 80,
+      "color": "#a8b5bd",
       "kind": "ring",
       "r": 290,
-      "width": 80,
-      "color": "#bac6c9"
+      "connection": "上層ターミナル、中央幹線、両認証門",
+      "notionshape": "半径250～330m"
     },
     {
       "id": "upper_shared_spine",
       "name": "上層中央幹線",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
       "kind": "line",
       "points": [
         [
@@ -237,20 +448,26 @@
           0
         ]
       ],
-      "width": 36,
-      "color": "#a8b5bd"
+      "connection": "共有施設すべて",
+      "notionshape": "[-1,500,0]→[1,500,0]"
     },
     {
       "id": "upper_shared_ring",
       "name": "上層中央環状路",
+      "roadType": "地区環状道路",
+      "width": 30,
+      "color": "#a8b5bd",
       "kind": "ring",
       "r": 420,
-      "width": 30,
-      "color": "#a8b5bd"
+      "connection": "コンコース、中央幹線、両認証門",
+      "notionshape": "中心半径420m"
     },
     {
-      "id": "upper_mag_gate",
+      "id": "upper_magitech_gate_corridor",
       "name": "マギテック認証通路",
+      "roadType": "隔壁付き通路",
+      "width": 24,
+      "color": "#87a7ca",
       "kind": "line",
       "points": [
         [
@@ -262,12 +479,15 @@
           -430
         ]
       ],
-      "width": 24,
-      "color": "#87a7ca"
+      "connection": "中央環状路、マギテック幹線",
+      "notionshape": "[0,-330]→[0,-430]"
     },
     {
-      "id": "upper_mag_trunk",
+      "id": "upper_magitech_trunk",
       "name": "マギテック中央幹線",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
       "kind": "line",
       "points": [
         [
@@ -279,12 +499,15 @@
           -850
         ]
       ],
-      "width": 36,
-      "color": "#a8b5bd"
+      "connection": "居住区、マギテック環状路",
+      "notionshape": "[0,-430]→[0,-850]"
     },
     {
-      "id": "upper_mag_loop",
+      "id": "upper_magitech_loop",
       "name": "マギテック環状路",
+      "roadType": "地区環状道路",
+      "width": 30,
+      "color": "#a8b5bd",
       "kind": "line",
       "points": [
         [
@@ -320,12 +543,15 @@
           -500
         ]
       ],
-      "width": 30,
-      "color": "#8faac9"
+      "connection": "マギテック側全主要施設",
+      "notionshape": "[-1,400,-500]→[-1,000,-850]→[0,-1,050]→[1,000,-950]→[1,450,-550]→[1,100,-350]→[-1,100,-350]→閉路"
     },
     {
-      "id": "upper_eid_gate",
+      "id": "upper_eidolon_gate_corridor",
       "name": "エイドロン認証通路",
+      "roadType": "隔壁付き通路",
+      "width": 24,
+      "color": "#b2a3d6",
       "kind": "line",
       "points": [
         [
@@ -337,12 +563,15 @@
           430
         ]
       ],
-      "width": 24,
-      "color": "#b2a3d6"
+      "connection": "中央環状路、エイドロン幹線",
+      "notionshape": "[0,330]→[0,430]"
     },
     {
-      "id": "upper_eid_trunk",
+      "id": "upper_eidolon_trunk",
       "name": "エイドロン中央幹線",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
       "kind": "line",
       "points": [
         [
@@ -354,12 +583,15 @@
           850
         ]
       ],
-      "width": 36,
-      "color": "#a8b5bd"
+      "connection": "居住区、エイドロン環状路",
+      "notionshape": "[0,430]→[0,850]"
     },
     {
-      "id": "upper_eid_loop",
+      "id": "upper_eidolon_loop",
       "name": "エイドロン環状路",
+      "roadType": "地区環状道路",
+      "width": 30,
+      "color": "#a8b5bd",
       "kind": "line",
       "points": [
         [
@@ -395,12 +627,20 @@
           500
         ]
       ],
-      "width": 30,
-      "color": "#b9a8d6"
+      "connection": "エイドロン側全主要施設",
+      "notionshape": "[-1,400,500]→[-1,000,850]→[0,1,050]→[1,000,950]→[1,450,550]→[1,100,350]→[-1,100,350]→閉路"
     },
     {
-      "id": "upper_mag_cargo",
+      "id": "upper_magitech_freight_tunnel",
       "name": "マギテック貨物トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
       "kind": "line",
       "points": [
         [
@@ -420,17 +660,20 @@
           -650
         ]
       ],
-      "width": 32,
-      "color": "#f0b36e",
-      "layer": "freight",
-      "dash": [
-        12,
-        8
-      ]
+      "connection": "物流区、燃料研究、創造、兵装、試験場",
+      "notionshape": "[-1,250,-180]→[-850,-700]→[450,-800]→[1,200,-650]"
     },
     {
-      "id": "upper_eid_cargo",
+      "id": "upper_eidolon_freight_tunnel",
       "name": "エイドロン貨物トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
       "kind": "line",
       "points": [
         [
@@ -450,17 +693,20 @@
           650
         ]
       ],
-      "width": 32,
-      "color": "#f0b36e",
-      "layer": "freight",
-      "dash": [
-        12,
-        8
-      ]
+      "connection": "物流区、生命研究、創造、装備、試験場",
+      "notionshape": "[-1,250,180]→[-850,700]→[450,800]→[1,200,650]"
     },
     {
-      "id": "upper_emergency",
-      "name": "上層緊急横断路（通常閉鎖）",
+      "id": "upper_cross_emergency_corridor",
+      "name": "上層緊急横断路",
+      "roadType": "非常用迂回路",
+      "width": 12,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        6,
+        8
+      ],
       "kind": "line",
       "points": [
         [
@@ -472,13 +718,8 @@
           300
         ]
       ],
-      "width": 12,
-      "color": "#bd7f7d",
-      "layer": "freight",
-      "dash": [
-        6,
-        8
-      ]
+      "connection": "両区画。通常時閉鎖",
+      "notionshape": "[-900,-300]→[-900,300]"
     }
   ]
 }
