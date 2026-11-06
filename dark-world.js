@@ -50,6 +50,34 @@ function create(options){
    if(!raw)return null;
    const saved=validate(JSON.parse(raw));
    if(saved.grid.cols!==base.grid.cols||saved.grid.rows!==base.grid.rows)return null;
+   // Apply the updated provisional territory layout without losing previous browser edits.
+   if(saved.metadata?.ownerLayoutRevision!==base.metadata?.ownerLayoutRevision){
+    const oldOwners=base.metadata?.previousPrototypeOwnerBaseline;
+    if(Array.isArray(oldOwners)&&oldOwners.length===base.tiles.length){
+     for(let i=0;i<saved.tiles.length;i++){
+      // Keep tiles explicitly painted by the user; update only unchanged old-default territory cells.
+      if(saved.tiles[i].owner===oldOwners[i])saved.tiles[i].owner=base.tiles[i].owner;
+     }
+     const prevSites=base.metadata?.previousPrototypeSitePositions||{};
+     const latestSites=Object.fromEntries((base.settlements||[]).map(x=>[x.id,x]));
+     for(const site of saved.settlements||[]){
+      const old=prevSites[site.id],latest=latestSites[site.id];
+      if(old&&latest&&site.col===old.col&&site.row===old.row){
+       site.col=latest.col;site.row=latest.row;
+      }
+      site.owner=saved.tiles[site.row*base.grid.cols+site.col]?.owner||site.owner;
+     }
+     const oldRoutes=base.metadata?.previousPrototypeRoutePoints||{};
+     const newRoutes=Object.fromEntries((base.routes||[]).map(x=>[x.id,x]));
+     for(const route of saved.routes||[]){
+      if(oldRoutes[route.id]&&newRoutes[route.id]&&JSON.stringify(route.points)===JSON.stringify(oldRoutes[route.id]))
+       route.points=clone(newRoutes[route.id].points);
+     }
+     saved.metadata={...base.metadata,editedAs:"browser-prototype",note:"参考図による領地の仮配置更新を適用。手動で変更したマス・地形は維持。"};
+     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(saved))}
+     catch(error){console.warn("領地変更後の保存に失敗",error)}
+    }
+   }
    return saved;
   }catch(e){console.warn("ダークワールドの作業データを復元できません",e);return null}
  }
