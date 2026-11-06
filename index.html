@@ -12,7 +12,7 @@
 <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="upper">上層<small>セントラルコア</small></button>
 <button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層<small>アームドヴェイン</small></button>
 <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層<small>ジェネレートシェル</small></button>
-</nav><div style="display:flex;justify-content:flex-end;margin:-4px 0 12px"><a href="./editor.html" style="display:inline-flex;align-items:center;gap:8px;padding:10px 15px;background:#24536c;border:1px solid #78bdda;border-radius:9px;color:#e9f8ff;text-decoration:none;font-weight:700">✎ マップの配置を編集する（下書き）</a></div><div class="shell"><section class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="中層地図"></canvas><div class="controls"><button class="on" data-layer="labels">施設名</button><button class="on" data-layer="grid">グリッド</button><button id="gridSize">100m四方（50mに切替）</button><button class="on" data-layer="districts">確定地区</button><button data-layer="drafts">未確定の配置案</button><button class="on" data-layer="roads">道路</button><button class="on" data-layer="pods">輸送ポッド</button><button class="on" data-layer="freight">貨物・整備路</button><button id="reset">選択解除</button></div><p class="notice" id="mapNotice">船体の X=±2,000m、Y=±1,250m を横25×縦40マス（100m四方）で表示。詳細時は50m四方に切り替えできます。マス・施設をクリック／タップすると詳細が表示されます。道が重なる箇所は色の濃い線を優先描画。大きな施設は占有範囲の概形を示しています。施設への取付道路は個別位置が未定のため推測で追加していません。</p></section><aside><div class="panel"><h2>選択情報</h2><p class="small">船首＝上（+X）／右舷＝右（+Y）<br>表示範囲：X −2000〜+2000m ／ Y −1250〜+1250m<br>画面比率：横5：縦8</p><div id="info"><span class="muted">マスまたは施設を選択してください。</span></div></div><div class="panel"><h2>施設・区画</h2><div id="places"></div></div><div class="panel"><h2>地図の状態</h2><div class="legend"><i class="swatch" style="background:#3d6662"></i>現行Notionの確定地区<i class="swatch" style="background:#344047;border:1px solid #c3a66e"></i>未確定の配置案（表示切替）<i class="swatch" style="background:#172c30;border:1px solid #647987"></i>未割当・未描画の区画</div><p class="small">無地の区画は「空き地」「自由に歩ける場所」ではありません。配置案はNotion未反映で、正式な地理設定ではありません。</p></div><div class="panel"><h2>道路・移動経路</h2><div class="legend"><i class="swatch" style="background:#a8b5bd"></i>主要幹線・一般道路<i class="swatch" style="background:#69b9e5"></i>歩行・生活通路<i class="swatch" style="background:#f0b36e"></i>貨物道路・トンネル<i class="swatch" style="background:#b7a1fc"></i>輸送ポッド環状線<i class="swatch" style="background:#bd7f7d"></i>非常用迂回路</div><p class="small">移動可能な経路はNotion記載の道路・通路・リフト等に限定。施設同士の隣接は通行可能を意味しません。</p></div></aside></div></div><script>
+</nav><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px"><button id="layoutToggle" style="background:#6d5134;border-color:#bd9560;font-weight:700">配置案表示中／Notion現行に切替</button><span id="layoutNotice" style="color:#ead19e;font-size:12px">中層・下層の新配置は未確定です</span></div><div style="display:flex;justify-content:flex-end;margin:-4px 0 12px"><a href="./editor.html" style="display:inline-flex;align-items:center;gap:8px;padding:10px 15px;background:#24536c;border:1px solid #78bdda;border-radius:9px;color:#e9f8ff;text-decoration:none;font-weight:700">✎ マップの配置を編集する（下書き）</a></div><div class="shell"><section class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="中層地図"></canvas><div class="controls"><button class="on" data-layer="labels">施設名</button><button class="on" data-layer="grid">グリッド</button><button id="gridSize">100m四方（50mに切替）</button><button class="on" data-layer="districts">地区境界</button><button data-layer="drafts">未確定の配置案</button><button class="on" data-layer="roads">道路</button><button class="on" data-layer="pods">輸送ポッド</button><button class="on" data-layer="freight">貨物・整備路</button><button id="reset">選択解除</button></div><p class="notice" id="mapNotice">船体の X=±2,000m、Y=±1,250m を横25×縦40マス（100m四方）で表示。詳細時は50m四方に切り替えできます。マス・施設をクリック／タップすると詳細が表示されます。道が重なる箇所は色の濃い線を優先描画。大きな施設は占有範囲の概形を示しています。施設への取付道路は個別位置が未定のため推測で追加していません。</p></section><aside><div class="panel"><h2>選択情報</h2><p class="small">船首＝上（+X）／右舷＝右（+Y）<br>表示範囲：X −2000〜+2000m ／ Y −1250〜+1250m<br>画面比率：横5：縦8</p><div id="info"><span class="muted">マスまたは施設を選択してください。</span></div></div><div class="panel"><h2>施設・区画</h2><div id="places"></div></div><div class="panel"><h2>地図の状態</h2><div class="legend"><i class="swatch" style="background:#3d6662"></i>現行Notionの確定地区<i class="swatch" style="background:#344047;border:1px solid #c3a66e"></i>未確定の配置案（表示切替）<i class="swatch" style="background:#172c30;border:1px solid #647987"></i>未割当・未描画の区画</div><p class="small">無地の区画は「空き地」「自由に歩ける場所」ではありません。配置案はNotion未反映で、正式な地理設定ではありません。</p></div><div class="panel"><h2>道路・移動経路</h2><div class="legend"><i class="swatch" style="background:#a8b5bd"></i>主要幹線・一般道路<i class="swatch" style="background:#69b9e5"></i>歩行・生活通路<i class="swatch" style="background:#f0b36e"></i>貨物道路・トンネル<i class="swatch" style="background:#b7a1fc"></i>輸送ポッド環状線<i class="swatch" style="background:#bd7f7d"></i>非常用迂回路</div><p class="small">移動可能な経路はNotion記載の道路・通路・リフト等に限定。施設同士の隣接は通行可能を意味しません。</p></div></aside></div></div><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;function gridSpec(){const cols=2500/gridMeters,rows=4000/gridMeters;return {cols,rows,cw:W/cols,ch:H/rows}}
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
@@ -64,6 +64,7 @@ upper:{name:'上層《セントラルコア階層》',status:'仮表示',facilit
 middle:{name:'中層《アームドヴェイン階層》',status:'Notion初期配置',facilities:middleFacilities,roads:middleRoads,description:'Notionの初期座標に基づく施設・道路・円環地区を表示。背景は未割当・未描画の区画で、空き地ではありません。『未確定の配置案』は参考案としてのみ表示します。施設への取付道路の個別位置は未定です。'},
 lower:{name:'下層《ジェネレートシェル階層》',status:'Notion初期配置',facilities:lowerFacilities,roads:lowerRoads,description:'Notionの初期配置に登録された下層の施設・道路を表示しています。ラストハブは中心がターミナルと重なる円環生活区です。'}
 };
+const layoutDrafts={};let showProposal=true;
 let facilities=middleFacilities,roads=middleRoads,currentMap='middle';
 function renderPlaces(){document.getElementById('places').innerHTML=facilities.map(f=>`<button type="button" style="margin:3px;font-size:11px;padding:5px 8px" data-place="${f.id}">${f.name}</button>`).join('')}
 function validateFloorJSON(id,data){
@@ -86,7 +87,7 @@ async function loadMapDataFromJSON(){
  document.getElementById('mapNotice').textContent='地図のJSONデータを読み込み中です…';
  try{
   // GitHub Pagesと同一オリジンの静的JSONを読み込む（API・ライブラリ不要）。
-  const files=['upper','middle','lower','middle-proposals'];
+  const files=['upper','middle','lower','middle-proposals','middle-draft','lower-draft'];
   const results=await Promise.all(files.map(async id=>{
    const res=await fetch('./data/'+id+'.json',{cache:'no-cache'});
    if(!res.ok)throw Error(id+'.json : HTTP '+res.status);
@@ -100,6 +101,11 @@ async function loadMapDataFromJSON(){
   const proposal=results[3];
   if(!proposal||proposal.status!=='proposal'||proposal.floor!=='middle'||!Array.isArray(proposal.zones)||!proposal.zones.every(z=>z&&typeof z.name==='string'&&[z.x,z.y,z.w,z.h].every(Number.isFinite)))throw Error('未確定区画JSONの形式が不正です');
   middleDraftZones.push(...proposal.zones);
+  for(const [idx,id] of [[4,'middle'],[5,'lower']]){
+    const draft=validateFloorJSON(id,results[idx]);
+    if(draft.editorMeta?.status!=='draft')throw Error(id+' の配置案が未確定として登録されていません');
+    layoutDrafts[id]=draft;
+  }
   document.querySelectorAll('[data-map]').forEach(b=>b.disabled=false);
   switchMap('middle');
  }catch(err){
@@ -110,17 +116,24 @@ async function loadMapDataFromJSON(){
 }
 function switchMap(id){
  const map=mapSets[id];if(!map)return;
- currentMap=id;facilities=map.facilities;roads=map.roads;chosen=null;
+ const preview=showProposal&&layoutDrafts[id];
+ currentMap=id;facilities=preview?preview.facilities:map.facilities;roads=preview?preview.roads:map.roads;chosen=null;
+ const toggle=document.getElementById('layoutToggle');
+ toggle.hidden=!layoutDrafts[id];
+ toggle.textContent=preview?'配置案を表示中｜Notion現行を表示':'Notion現行を表示中｜配置案を表示';
+ document.getElementById('layoutNotice').textContent=preview?'配置検討中・Notion未反映':'Notionの登録座標を表示中';
+
  document.getElementById('mapTitle').textContent=map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+' MAP';
- document.getElementById('mapSubtitle').textContent='アポクリファ＝アーカイブ ／ Notion座標ベース ／ 1マス：'+gridMeters+'m × '+gridMeters+'m（正方形） ／ 船首＝上 ／ '+map.status;
- document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+gridMeters+'m四方）で表示。'+map.description+' ※隣接する施設でも登録経路がなければ移動できません。';
+ document.getElementById('mapSubtitle').textContent='アポクリファ＝アーカイブ ／ Notion座標ベース ／ 1マス：'+gridMeters+'m × '+gridMeters+'m（正方形） ／ 船首＝上 ／ '+(preview?'配置案・Notion未反映':map.status);
+ document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+gridMeters+'m四方）で表示。'+(preview?'【未確定の配置案】船尾中央の栽培区と真下のバイオリアクターを試作表示しています。道路も再配置検討中です。':'【Notion現行】'+map.description)+' ※隣接する施設でも登録経路がなければ移動できません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
- document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=id!=='middle';
+ document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=id!=='middle'||!!preview;
  renderPlaces();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>switchMap(b.dataset.map)));
+document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;switchMap(currentMap)};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
