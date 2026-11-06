@@ -56,7 +56,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <button id="grid" class="active">グリッド</button><button id="gridSize">100m四方（50mへ切替）</button>
 <button id="labels" class="active">施設名</button>
 <button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
-<button id="export">JSONを書き出す</button><button id="resetFloor">Notion現行配置を読み込む</button><button id="import">JSONを読み込む</button>
+<button id="saveLocal" style="background:#28664b;border-color:#83c5a1;font-weight:700">この端末に保存</button><button id="export">JSONを書き出す</button><button id="clearLocal">端末の保存を破棄</button><button id="resetFloor">Notion現行配置を読み込む</button><button id="import">JSONを読み込む</button>
 <input id="importFile" type="file" accept=".json,application/json" hidden>
 </div>
 <div class="layout">
@@ -72,8 +72,8 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <div class="panel"><h2>選択項目の編集</h2><div id="detail"><p class="hint">施設・道路を選択してください。</p></div></div>
 <div class="panel"><h2>チェック結果</h2><div id="warnings">確認中…</div><p class="hint">重なりが意図された親地区と内部施設は警告から除きます。道路の接続・隔壁・上下の移送可否は、現行Notionを確認して別途確定してください。</p></div>
 </aside></div></div>
-<div id="message" role="status">準備中…</div>
-<footer>データの正本はNotionです。本画面はGitHub Pages上で読み込むだけの下書き編集用ツールで、直接GitHub・Notionを書き換えません。確定前にJSONを確認し、Notion反映後に確定JSONを更新してください。</footer>
+<div id="saveState" role="status" style="color:#b9e1ce;padding:6px 4px;font-size:12px">保存状態：読み込み中</div><div id="message" role="status">準備中…</div>
+<footer>編集内容はこのブラウザに自動保存され、同じ端末・ブラウザから再開できます。別の端末への共有・GitHubやNotionへの保存は行われません。別端末へ移す・GitHubへ反映する場合はJSONを書き出してください。ブラウザのデータ削除・プライベートモードでは保存が失われる場合があります。世界設定の正本はNotionです。</footer>
 </div>
 <script>(function editorApp(){
   "use strict";
@@ -86,7 +86,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
   const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
   const snap=n=>state.snap?Math.round(n/25)*25:Math.round(n);
-  let floors={},sourceFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
+  let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
   const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
   const state={snap:true,grid:true,overlay:true,labels:true};let gridMeters=100;
   function current(){return floors[active]}
@@ -111,6 +111,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(h.length>80)h.shift();
     future[active]=[];
     dirty.add(active);
+    unsavedLocal.add(active);
   }
   function restore(which){
     const src=which==="undo"?history[active]:future[active],target=which==="undo"?future[active]:history[active];
@@ -118,12 +119,56 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     target.push(JSON.stringify(current()));
     floors[active]=JSON.parse(src.pop());
     dirty.add(active);
+    unsavedLocal.add(active);
     if(selection&&!items().some(x=>x.id===selection.id))selection=null;
     render();
   }
   function items(){const d=current();return !d?[]:kind==="facility"?d.facilities:d.roads}
   function selectedItem(){return selection?items().find(x=>x.id===selection.id)||null:null}
   function showStatus(msg,warning=false){$("message").textContent=msg;$("message").classList.toggle("warn",warning)}
+  const LOCAL_PREFIX="aa-my-map-creater-editor-v1-";
+  function readLocalDraft(f){
+    try{
+      const raw=localStorage.getItem(LOCAL_PREFIX+f);
+      if(!raw)return null;
+      const payload=JSON.parse(raw);
+      if(payload.version!==1||payload.floor!==f)throw Error("保存形式の不一致");
+      const data=valid(payload.data,f);
+      // アプリ更新で出撃禁止区が追加された場合は、現行の制限を優先する。
+      if(f==="lower"&&initialFloors.lower?.restrictedZones?.length){
+        data.restrictedZones=clone(initialFloors.lower.restrictedZones);
+      }
+      savedLocal.add(f);
+      return data;
+    }catch(error){
+      console.warn("端末内の作業保存を復元できません",f,error);
+      return null;
+    }
+  }
+  function saveLocal(f=active){
+    if(!floors[f])return false;
+    try{
+      const payload={version:1,floor:f,updatedAt:new Date().toISOString(),data:floors[f]};
+      localStorage.setItem(LOCAL_PREFIX+f,JSON.stringify(payload));
+      savedLocal.add(f);unsavedLocal.delete(f);
+      if(f===active)$("saveState").textContent="保存状態：この端末に保存済み（GitHub・Notionは未反映）";
+      return true;
+    }catch(error){
+      console.warn("端末への保存に失敗",f,error);
+      if(f===active)$("saveState").textContent="保存状態：端末へ保存できません。JSONを書き出してください。";
+      return false;
+    }
+  }
+  function clearLocal(){
+    if(!initialFloors[active])return;
+    if(!confirm(floorName()+"のこの端末の作業データを削除して、GitHubの初期配置案へ戻しますか？\n必要なら先にJSONを書き出してください。"))return;
+    try{localStorage.removeItem(LOCAL_PREFIX+active)}
+    catch(error){showStatus("保存データを削除できません: "+error.message,true);return}
+    floors[active]=clone(initialFloors[active]);
+    savedLocal.delete(active);unsavedLocal.delete(active);dirty.delete(active);
+    history[active]=[];future[active]=[];selection=null;drag=null;
+    render();showStatus("この端末の作業保存を消去し、GitHubに登録された初期配置案へ戻しました。");
+  }
   async function load(){
     try{
       const values=await Promise.all(F.map(async f=>{
@@ -139,11 +184,18 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         if(d.editorMeta?.status!=="draft")throw Error(f+" の下書き状態が不正です");
         return d;
       }));
-      F.forEach((f,i)=>{sourceFloors[f]=clone(values[i]);floors[f]=drafts[i]||values[i];if(drafts[i])draftFloors.add(f)});
+      F.forEach((f,i)=>{
+        sourceFloors[f]=clone(values[i]);
+        initialFloors[f]=clone(drafts[i]||values[i]);
+        const stored=readLocalDraft(f);
+        floors[f]=stored||clone(initialFloors[f]);
+        if(drafts[i])draftFloors.add(f);
+        if(stored)dirty.add(f);
+      });
       for(const f of F){const previous=active;active=f;baselineWarnings[f]=diagnostics();active=previous;}
       $("loading").hidden=true;
       $("workspace").hidden=false;
-      showStatus("中層・下層は船尾中央栽培の下書きを表示しています。NotionとGitHubの現行JSONには未反映です。");
+      showStatus(savedLocal.size?"前回の作業データをこの端末から復元しました。GitHub・Notionには未反映です。":"中層・下層はGitHub上の配置案を読み込みました。編集するとこの端末に自動保存します。");
       render();
     }catch(e){$("loading").textContent="地図データの読み込みに失敗しました: "+e.message+"。GitHub Pagesで開いてください。";showStatus(e.message,true)}
   }
@@ -330,6 +382,8 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     $("overlay").disabled=active==="upper";
     for(const [id,enabled] of [["overlay",state.overlay],["snap",state.snap],["grid",state.grid],["labels",state.labels]])$(id).classList.toggle("active",enabled);
     $("undo").disabled=history[active].length===0;$("redo").disabled=future[active].length===0;
+    if(unsavedLocal.has(active))saveLocal(active);
+    else $("saveState").textContent=savedLocal.has(active)?"保存状態：この端末に保存済み（GitHub・Notionは未反映）":"保存状態：GitHubの初期配置案を表示中（編集すると端末に自動保存）";
     const warnings=diagnostics(),base=baselineWarnings[active]||[],fresh=warnings.filter(x=>!base.includes(x));
     $("warnings").innerHTML=(fresh.length
       ? `<strong>新たな位置の要確認: ${fresh.length} 件</strong><ul>${fresh.slice(0,8).map(w=>`<li>${esc(w)}</li>`).join("")}</ul>`
@@ -515,6 +569,8 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   $("labels").onclick=()=>{state.labels=!state.labels;render()};
   $("undo").onclick=()=>restore("undo");$("redo").onclick=()=>restore("redo");
   $("addFacility").onclick=newFacility;$("addRoad").onclick=newRoad;
+  $("saveLocal").onclick=()=>{if(saveLocal())showStatus(floorName()+"の配置をこのブラウザに保存しました。別端末・GitHubには同期されません。");else showStatus("端末内保存に失敗しました。JSONを書き出してください。",true)};
+  $("clearLocal").onclick=clearLocal;
   $("export").onclick=exportJSON;$("resetFloor").onclick=resetToNotion;$("import").onclick=()=>$("importFile").click();
   $("importFile").addEventListener("change",async e=>{await importJSON(e.target.files?.[0]);e.target.value=""});
   $("search").addEventListener("input",renderList);
@@ -528,7 +584,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   window.addEventListener("keydown",e=>{
     if((e.ctrlKey||e.metaKey)&&["z","Z"].includes(e.key)&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){e.preventDefault();restore(e.shiftKey?"redo":"undo")}
   });
-  window.addEventListener("beforeunload",e=>{if(dirty.size){e.preventDefault();e.returnValue=""}});
+  window.addEventListener("beforeunload",e=>{for(const f of [...unsavedLocal])saveLocal(f);if(unsavedLocal.size){e.preventDefault();e.returnValue=""}});
   load();
 })();</script>
 </body></html>
