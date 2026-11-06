@@ -9,7 +9,8 @@
     "note": "5領地、ヘル、中間マスの表示と地形編集UIを検証するための仮配置。距離・方角・勢力境界・地形分布は未確定。Notion設定には未反映。地底界《アンダーワールド》との同一性も断定しない。",
     "scale": "undefined",
     "orientation": "placeholder",
-    "revision": "prototype-v1"
+    "revision": "prototype-v2-optional-routes-sites",
+    "extra": "領地境界はタイルから自動生成。都市・拠点は仮位置。ルート3本は実在確定ではない試作用表示。領地所属や経路接続は未決定。"
   },
   "grid": {
     "cols": 12,
@@ -1074,6 +1075,141 @@
     {
       "owner": "hell",
       "terrain": "cavern"
+    }
+  ],
+  "settlements": [
+    {
+      "id": "vampire-city",
+      "name": "吸血鬼の都市（位置仮）",
+      "owner": "vampire",
+      "kind": "city",
+      "col": 2,
+      "row": 3,
+      "status": "prototype",
+      "note": "Notionに都市名の記載あり／位置・所属は未確定"
+    },
+    {
+      "id": "insect-post",
+      "name": "虫人領の仮拠点",
+      "owner": "insect",
+      "kind": "outpost",
+      "col": 9,
+      "row": 3,
+      "status": "prototype",
+      "note": "作業用の仮拠点。Notion確定施設ではない"
+    },
+    {
+      "id": "dragon-post",
+      "name": "竜王領の仮拠点",
+      "owner": "dragon_king",
+      "kind": "outpost",
+      "col": 6,
+      "row": 7,
+      "status": "prototype",
+      "note": "作業用の仮拠点。Notion確定施設ではない"
+    },
+    {
+      "id": "demon-city",
+      "name": "悪魔の都市（位置仮）",
+      "owner": "demon",
+      "kind": "city",
+      "col": 2,
+      "row": 12,
+      "status": "prototype",
+      "note": "Notionに都市名の記載あり／位置・所属は未確定"
+    },
+    {
+      "id": "undead-city",
+      "name": "死者の都市（位置仮）",
+      "owner": "undead",
+      "kind": "city",
+      "col": 9,
+      "row": 12,
+      "status": "prototype",
+      "note": "Notionに都市名の記載あり／位置・所属は未確定"
+    },
+    {
+      "id": "hell-post",
+      "name": "ヘル側の仮拠点",
+      "owner": "hell",
+      "kind": "outpost",
+      "col": 6,
+      "row": 18,
+      "status": "prototype",
+      "note": "作業用の仮拠点。Notion確定施設ではない"
+    }
+  ],
+  "routes": [
+    {
+      "id": "demo-route-a",
+      "name": "仮経路 A",
+      "kind": "draft_route",
+      "status": "prototype",
+      "points": [
+        [
+          2,
+          3
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "note": "接続・通行可否・距離は未確定"
+    },
+    {
+      "id": "demo-route-b",
+      "name": "仮経路 B",
+      "kind": "draft_route",
+      "status": "prototype",
+      "points": [
+        [
+          2,
+          12
+        ],
+        [
+          4,
+          14
+        ],
+        [
+          5,
+          16
+        ],
+        [
+          6,
+          18
+        ]
+      ],
+      "note": "接続・通行可否・距離は未確定"
+    },
+    {
+      "id": "demo-route-c",
+      "name": "仮経路 C",
+      "kind": "draft_route",
+      "status": "prototype",
+      "points": [
+        [
+          9,
+          12
+        ],
+        [
+          8,
+          14
+        ],
+        [
+          7,
+          16
+        ],
+        [
+          6,
+          18
+        ]
+      ],
+      "note": "接続・通行可否・距離は未確定"
     }
   ]
 }
