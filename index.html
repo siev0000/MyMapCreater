@@ -24,17 +24,17 @@ const middleRoads=[];
 /* 階層切り替え。中層の既存データはそのまま保持して、上層・下層は仮配置を追加。 */
 const middleDraftZones=[];
 function drawMiddleDistrictAndDrafts(){
- if(currentMap!=='middle')return;
- const [centerX,centerY]=xy(0,0);
- // Current Notion: core-shell-refine is an annular district, not a stand-alone building.
  if(state.districts){
-   ctx.save();ctx.fillStyle='rgba(75,115,119,.38)';
-   ctx.beginPath();ctx.arc(centerX,centerY,720*.4,0,Math.PI*2);ctx.arc(centerX,centerY,330*.4,0,Math.PI*2,true);ctx.fill('evenodd');
+  for(const f of facilities.filter(f=>f.ringDistrict)){
+   const [cx,cy]=xy(f.x,f.y),outer=f.outerRadius*.4,inner=f.innerRadius*.4;
+   ctx.save();ctx.fillStyle='rgba(75,115,119,.38)';ctx.beginPath();
+   ctx.arc(cx,cy,outer,0,Math.PI*2);ctx.arc(cx,cy,inner,0,Math.PI*2,true);ctx.fill('evenodd');
    ctx.strokeStyle='rgba(133,201,202,.62)';ctx.lineWidth=2;ctx.setLineDash([10,7]);
-   for(const radius of [330,720]){ctx.beginPath();ctx.arc(centerX,centerY,radius*.4,0,Math.PI*2);ctx.stroke()}
+   for(const radius of [inner,outer]){ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.stroke()}
    ctx.restore();
+  }
  }
- if(state.drafts){
+ if(currentMap==='middle'&&state.drafts){
    ctx.save();
    for(const zone of middleDraftZones){
       const [cx,cy]=xy(zone.x,zone.y),pw=zone.h*.4,ph=zone.w*.4;
@@ -60,9 +60,9 @@ recycling:{fill:'#6e674d',line:'#e2c18d'},
 hazard:{fill:'#6b3b39',line:'#ffaaa2'}
 });
 const mapSets={
-upper:{name:'上層《セントラルコア階層》',status:'仮表示',facilities:upperFacilities,roads:upperRoads,description:'Notionに登録された上層の主要施設と道路を仮配置。マギテック側＝左舷、エイドロン側＝右舷は初期案です。施設の一部は表示を省略しています。'},
-middle:{name:'中層《アームドヴェイン階層》',status:'表示中',facilities:middleFacilities,roads:middleRoads,description:'現行Notionの確定地区（コアシェル円環・アルボラ）を表示。背景は未割当・未描画の区画で、空き地ではありません。『未確定の配置案』は参考案としてのみ表示します。施設への取付道路の個別位置は未定です。'},
-lower:{name:'下層《ジェネレートシェル階層》',status:'仮表示',facilities:lowerFacilities,roads:lowerRoads,description:'Notionに登録された下層の主要施設と道路を仮配置。一部施設は表示を省略しています。ラストハブは中心がターミナルと重なる円環生活区です。'}
+upper:{name:'上層《セントラルコア階層》',status:'仮表示',facilities:upperFacilities,roads:upperRoads,description:'Notionの初期配置に登録された上層の施設・道路を表示。マギテック側＝左舷、エイドロン側＝右舷は初期案です。'},
+middle:{name:'中層《アームドヴェイン階層》',status:'Notion初期配置',facilities:middleFacilities,roads:middleRoads,description:'Notionの初期座標に基づく施設・道路・円環地区を表示。背景は未割当・未描画の区画で、空き地ではありません。『未確定の配置案』は参考案としてのみ表示します。施設への取付道路の個別位置は未定です。'},
+lower:{name:'下層《ジェネレートシェル階層》',status:'Notion初期配置',facilities:lowerFacilities,roads:lowerRoads,description:'Notionの初期配置に登録された下層の施設・道路を表示しています。ラストハブは中心がターミナルと重なる円環生活区です。'}
 };
 let facilities=middleFacilities,roads=middleRoads,currentMap='middle';
 function renderPlaces(){document.getElementById('places').innerHTML=facilities.map(f=>`<button type="button" style="margin:3px;font-size:11px;padding:5px 8px" data-place="${f.id}">${f.name}</button>`).join('')}
@@ -75,7 +75,7 @@ function validateFloorJSON(id,data){
   seen.add(f.id);
  }
  for(const road of data.roads){
-  if(!road||typeof road.id!=='string'||!['ring','line'].includes(road.kind)||!Number.isFinite(road.width)||road.width<=0)throw Error(id+' の道路データが不正です');
+  if(!road||typeof road.id!=='string'||!['ring','line','internal'].includes(road.kind)||!Number.isFinite(road.width)||road.width<=0)throw Error(id+' の道路データが不正です');
   if(road.kind==='ring'&&!Number.isFinite(road.r))throw Error(id+' の環状路半径が不正です');
   if(road.kind==='line'&&(!Array.isArray(road.points)||road.points.length<2||!road.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite))))throw Error(id+' の道路座標が不正です');
  }
@@ -117,12 +117,12 @@ function switchMap(id){
  document.title='AA '+map.name+'｜20×20マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
- for(const key of ['districts','drafts'])document.querySelector('[data-layer="'+key+'"]').hidden=id!=='middle';
+ document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=id!=='middle';
  renderPlaces();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>switchMap(b.dataset.map)));
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
-function drawRoad(road){if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
@@ -137,8 +137,8 @@ for(let f of facilities){if(f.type==='terminal'||f.ringDistrict)continue;const [
 for(let r of roads)drawRoad(r);
 // Terminal tower after roads, explicit center footprint
 const term=facilities[0];ctx.fillStyle=groups.terminal.fill;circle(0,0,250);ctx.fill();ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
-for(const f of facilities){let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
-if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!['arbora','greenhouse'].includes(f.id)).concat(facilities.filter(f=>['arbora','greenhouse'].includes(f.id)));for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+for(const f of facilities){if(f.ringDistrict)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
+if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*CW+1,chosen.row*CH+1,CW-2,CH-2)}
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();}
 function renderInfo(){const el=document.getElementById('info');if(!chosen){el.innerHTML='<span class="muted">マスまたは施設を選択してください。</span>';return}if(chosen.kind==='cell'){let x0=2000-(chosen.row+1)*200,x1=2000-chosen.row*200,y0=-1250+chosen.col*125,y1=y0+125;el.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><span class="pill">座標範囲 X ${x0} ～ ${x1}m</span><span class="pill">Y ${y0} ～ ${y1}m</span><div class="small">マス内を移動できるかどうかは経路設定によります。</div>`;return}let f=chosen,g=groups[f.type];el.innerHTML=`<h3>${f.name}</h3><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span><p>${f.detail}</p><div class="small">表示色：<span style="color:${g.line}">●</span> ${f.type}</div>`}
