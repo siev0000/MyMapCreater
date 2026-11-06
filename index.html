@@ -125,7 +125,7 @@ function switchMap(id){
 
  document.getElementById('mapTitle').textContent=map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+' MAP';
  document.getElementById('mapSubtitle').textContent='アポクリファ＝アーカイブ ／ Notion座標ベース ／ 1マス：'+gridMeters+'m × '+gridMeters+'m（正方形） ／ 船首＝上 ／ '+(preview?'配置案・Notion未反映':map.status);
- document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+gridMeters+'m四方）で表示。'+(preview?'【未確定の配置案】船尾中央の栽培区と真下のバイオリアクターを試作表示しています。道路も再配置検討中です。':'【Notion現行】'+map.description)+' ※隣接する施設でも登録経路がなければ移動できません。';
+ document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+gridMeters+'m四方）で表示。'+(preview?'【未確定の配置案】船尾中央の栽培区と真下のバイオリアクターを試作表示。下層船首側約1/3は上層専用の左右出撃区として確保（境界は仮値）。一般ターミナルとは別系統です。道路も再配置検討中です。':'【Notion現行】'+map.description)+' ※隣接する施設でも登録経路がなければ移動できません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
@@ -136,6 +136,29 @@ document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()
 document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;switchMap(currentMap)};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function drawExclusiveSortieZones(){
+ const zones=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones:[];
+ if(!zones?.length)return;
+ ctx.save();
+ for(const z of zones){
+  const b=z.bounds,p1=xy(b.xMax,b.yMin),p2=xy(b.xMin,b.yMax);
+  const left=Math.min(p1[0],p2[0]),top=Math.min(p1[1],p2[1]),width=Math.abs(p2[0]-p1[0]),height=Math.abs(p2[1]-p1[1]);
+  ctx.fillStyle='rgba(89,56,119,.67)';ctx.fillRect(left,top,width,height);
+  ctx.save();ctx.beginPath();ctx.rect(left,top,width,height);ctx.clip();
+  ctx.strokeStyle='rgba(207,166,234,.20)';ctx.lineWidth=2;
+  for(let k=-height;k<width+height;k+=24){ctx.beginPath();ctx.moveTo(left+k,top);ctx.lineTo(left+k+height,top+height);ctx.stroke()}
+  ctx.restore();
+  ctx.strokeStyle='#ddafea';ctx.lineWidth=3;ctx.setLineDash([12,7]);ctx.strokeRect(left,top,width,height);ctx.setLineDash([]);
+  const centerX=left+width/2,centerY=top+height/2;
+  ctx.fillStyle='#f5e4ff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 21px system-ui';
+  ctx.strokeStyle='#2b153c';ctx.lineWidth=4;const bay=z.id.endsWith('port')?'左舷':'右舷';
+  ctx.strokeText('上層専用・'+bay+'出撃区',centerX,centerY-15,width-20);
+  ctx.fillText('上層専用・'+bay+'出撃区',centerX,centerY-15,width-20);
+  ctx.font='15px system-ui';ctx.strokeText('船外へ接続／下層立入不可',centerX,centerY+19,width-20);
+  ctx.fillText('船外へ接続／下層立入不可',centerX,centerY+19,width-20);
+ }
+ ctx.restore();
+}
 function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
@@ -143,6 +166,7 @@ if(currentMap==='middle'){/* Decorative terrain ellipses removed: not a Notion-d
 else if(currentMap==='upper'){ctx.fillStyle='#1b3857';ctx.fillRect(0,0,W*.43,H);ctx.fillStyle='#39304c';ctx.fillRect(W*.57,0,W*.43,H);ctx.fillStyle='#253d50';ctx.fillRect(W*.43,0,W*.14,H);}
 else if(currentMap==='lower'){ctx.fillStyle='#46372d';ctx.fillRect(0,H*.68,W,H*.32);ctx.fillStyle='#354247';ctx.fillRect(0,0,W,H*.34);}
 ctx.restore();
+drawExclusiveSortieZones();
 drawMiddleDistrictAndDrafts();
 if(state.grid){const q=gridSpec();ctx.save();ctx.strokeStyle='rgba(173,210,218,.16)';ctx.lineWidth=1;for(let c=0;c<=q.cols;c++){let gx=c*q.cw;ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke()}for(let r=0;r<=q.rows;r++){let gy=r*q.ch;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke()}ctx.restore()}
 // Real facilities and district region footprint, mark area before roads
@@ -154,9 +178,9 @@ for(const f of facilities){if(f.ringDistrict)continue;let [cx,cy]=xy(f.x,f.y);co
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*CW+1,chosen.row*CH+1,CW-2,CH-2)}
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();}
-function renderInfo(){const el=document.getElementById('info');if(!chosen){el.innerHTML='<span class="muted">マスまたは施設を選択してください。</span>';return}if(chosen.kind==='cell'){let x0=2000-(chosen.row+1)*gridMeters,x1=2000-chosen.row*gridMeters,y0=-1250+chosen.col*gridMeters,y1=y0+gridMeters;el.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><span class="pill">座標範囲 X ${x0} ～ ${x1}m</span><span class="pill">Y ${y0} ～ ${y1}m</span><div class="small">マス内を移動できるかどうかは経路設定によります。</div>`;return}let f=chosen,g=groups[f.type];el.innerHTML=`<h3>${f.name}</h3><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span><p>${f.detail}</p><div class="small">表示色：<span style="color:${g.line}">●</span> ${f.type}</div>`}
+function renderInfo(){const el=document.getElementById('info');if(!chosen){el.innerHTML='<span class="muted">マスまたは施設を選択してください。</span>';return}if(chosen.kind==='reserved'){el.innerHTML='<h3>'+chosen.name+'</h3><p>上層専用の船外出撃区です。下層の一般施設を置かず、中央ターミナルと別の専用接続を利用します。区画の境界は検討用です。</p>';return}if(chosen.kind==='cell'){let x0=2000-(chosen.row+1)*gridMeters,x1=2000-chosen.row*gridMeters,y0=-1250+chosen.col*gridMeters,y1=y0+gridMeters;el.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><span class="pill">座標範囲 X ${x0} ～ ${x1}m</span><span class="pill">Y ${y0} ～ ${y1}m</span><div class="small">マス内を移動できるかどうかは経路設定によります。</div>`;return}let f=chosen,g=groups[f.type];el.innerHTML=`<h3>${f.name}</h3><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span><p>${f.detail}</p><div class="small">表示色：<span style="color:${g.line}">●</span> ${f.type}</div>`}
 function selectPlace(id){chosen=facilities.find(x=>x.id===id);renderInfo();draw()}
-canvas.addEventListener('click',e=>{const box=canvas.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*W,y=(e.clientY-box.top)/box.height*H;let near=null,dist=35;for(const f of facilities){const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);if(d<dist){near=f;dist=d}}chosen=near||{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))};renderInfo();draw()});
+canvas.addEventListener('click',e=>{const box=canvas.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*W,y=(e.clientY-box.top)/box.height*H;let near=null,dist=35;for(const f of facilities){const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);if(d<dist){near=f;dist=d}}const point=xy(0,0),wx=(H/2-y)/.4,wy=(x-W/2)/.4;const restricted=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones?.find(z=>wx>=z.bounds.xMin&&wx<=z.bounds.xMax&&wy>=z.bounds.yMin&&wy<=z.bounds.yMax):null;chosen=near||(restricted?{kind:'reserved',...restricted}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});renderInfo();draw()});
 document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=()=>{chosen=null;renderInfo();draw()};document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';switchMap(currentMap)};
 renderPlaces();document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});loadMapDataFromJSON();
 </script></body></html>
