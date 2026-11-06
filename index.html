@@ -12,11 +12,11 @@
 <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="upper">上層<small>セントラルコア</small></button>
 <button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層<small>アームドヴェイン</small></button>
 <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層<small>ジェネレートシェル</small></button>
-</nav><div class="shell"><section class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="中層地図"></canvas><div class="controls"><button class="on" data-layer="labels">施設名</button><button class="on" data-layer="grid">20×20マス</button><button class="on" data-layer="roads">道路</button><button class="on" data-layer="pods">輸送ポッド</button><button class="on" data-layer="freight">貨物・整備路</button><button id="reset">選択解除</button></div><p class="notice" id="mapNotice">船体の X=±2,000m、Y=±1,250m を20×20で表示。マスは見た目も物理寸法も長方形（縦200m×横125m）です。マス・施設をクリック／タップすると詳細が表示されます。道が重なる箇所は色の濃い線を優先描画。大きな施設は占有範囲の概形を示しています。施設への取付道路は個別位置が未定のため推測で追加していません。</p></section><aside><div class="panel"><h2>選択情報</h2><p class="small">船首＝上（+X）／右舷＝右（+Y）<br>表示範囲：X −2000〜+2000m ／ Y −1250〜+1250m<br>画面比率：横5：縦8</p><div id="info"><span class="muted">マスまたは施設を選択してください。</span></div></div><div class="panel"><h2>施設・区画</h2><div id="places"></div></div><div class="panel"><h2>道路・移動経路</h2><div class="legend"><i class="swatch" style="background:#a8b5bd"></i>主要幹線・一般道路<i class="swatch" style="background:#69b9e5"></i>歩行・生活通路<i class="swatch" style="background:#f0b36e"></i>貨物道路・トンネル<i class="swatch" style="background:#b7a1fc"></i>輸送ポッド環状線<i class="swatch" style="background:#bd7f7d"></i>非常用迂回路</div><p class="small">移動可能な経路はNotion記載の道路・通路・リフト等に限定。施設同士の隣接は通行可能を意味しません。</p></div></aside></div></div><script>
+</nav><div class="shell"><section class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="中層地図"></canvas><div class="controls"><button class="on" data-layer="labels">施設名</button><button class="on" data-layer="grid">20×20マス</button><button class="on" data-layer="districts">確定地区</button><button data-layer="drafts">未確定の配置案</button><button class="on" data-layer="roads">道路</button><button class="on" data-layer="pods">輸送ポッド</button><button class="on" data-layer="freight">貨物・整備路</button><button id="reset">選択解除</button></div><p class="notice" id="mapNotice">船体の X=±2,000m、Y=±1,250m を20×20で表示。マスは見た目も物理寸法も長方形（縦200m×横125m）です。マス・施設をクリック／タップすると詳細が表示されます。道が重なる箇所は色の濃い線を優先描画。大きな施設は占有範囲の概形を示しています。施設への取付道路は個別位置が未定のため推測で追加していません。</p></section><aside><div class="panel"><h2>選択情報</h2><p class="small">船首＝上（+X）／右舷＝右（+Y）<br>表示範囲：X −2000〜+2000m ／ Y −1250〜+1250m<br>画面比率：横5：縦8</p><div id="info"><span class="muted">マスまたは施設を選択してください。</span></div></div><div class="panel"><h2>施設・区画</h2><div id="places"></div></div><div class="panel"><h2>地図の状態</h2><div class="legend"><i class="swatch" style="background:#3d6662"></i>現行Notionの確定地区<i class="swatch" style="background:#344047;border:1px solid #c3a66e"></i>未確定の配置案（表示切替）<i class="swatch" style="background:#172c30;border:1px solid #647987"></i>未割当・未描画の区画</div><p class="small">無地の区画は「空き地」「自由に歩ける場所」ではありません。配置案はNotion未反映で、正式な地理設定ではありません。</p></div><div class="panel"><h2>道路・移動経路</h2><div class="legend"><i class="swatch" style="background:#a8b5bd"></i>主要幹線・一般道路<i class="swatch" style="background:#69b9e5"></i>歩行・生活通路<i class="swatch" style="background:#f0b36e"></i>貨物道路・トンネル<i class="swatch" style="background:#b7a1fc"></i>輸送ポッド環状線<i class="swatch" style="background:#bd7f7d"></i>非常用迂回路</div><p class="small">移動可能な経路はNotion記載の道路・通路・リフト等に限定。施設同士の隣接は通行可能を意味しません。</p></div></aside></div></div><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const N=20,W=1000,H=1600,CW=W/N,CH=H/N;
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
-const state={labels:true,grid:true,roads:true,pods:true,freight:true};let chosen=null;
+const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false};let chosen=null;
 const middleFacilities=[
 {id:'terminal',name:'リンクターミナル',x:0,y:0,w:500,h:500,type:'terminal',detail:'上層・下層を結ぶ中央交通拠点。一般リフトと大型機用リフトを運用。'},
 {id:'town',name:'コアシェルタウン',x:0,y:450,w:700,h:300,type:'town',detail:'居住・市場・充電・燃料補給・交流施設。'},
@@ -51,6 +51,37 @@ const middleRoads=[
 ];
 
 /* 階層切り替え。中層の既存データはそのまま保持して、上層・下層は仮配置を追加。 */
+const middleDraftZones=[
+{name:'船首側の予備・防災（案）',x:1700,y:0,w:400,h:2000},
+{name:'任務支援・待機（案）',x:1050,y:-775,w:800,h:650},
+{name:'自然管理の緩衝（案）',x:1050,y:775,w:800,h:650},
+{name:'整備・部品保管（案）',x:-1175,y:-725,w:750,h:750},
+{name:'騒音・排熱緩衝（案）',x:-100,y:-925,w:1300,h:450},
+{name:'船尾側物流・備蓄（案）',x:-1525,y:15,w:650,h:330}
+];
+function drawMiddleDistrictAndDrafts(){
+ if(currentMap!=='middle')return;
+ const [centerX,centerY]=xy(0,0);
+ // Current Notion: core-shell-refine is an annular district, not a stand-alone building.
+ if(state.districts){
+   ctx.save();ctx.fillStyle='rgba(75,115,119,.38)';
+   ctx.beginPath();ctx.arc(centerX,centerY,720*.4,0,Math.PI*2);ctx.arc(centerX,centerY,330*.4,0,Math.PI*2,true);ctx.fill('evenodd');
+   ctx.strokeStyle='rgba(133,201,202,.62)';ctx.lineWidth=2;ctx.setLineDash([10,7]);
+   for(const radius of [330,720]){ctx.beginPath();ctx.arc(centerX,centerY,radius*.4,0,Math.PI*2);ctx.stroke()}
+   ctx.restore();
+ }
+ if(state.drafts){
+   ctx.save();
+   for(const zone of middleDraftZones){
+      const [cx,cy]=xy(zone.x,zone.y),pw=zone.h*.4,ph=zone.w*.4;
+      ctx.fillStyle='rgba(185,152,85,.13)';ctx.fillRect(cx-pw/2,cy-ph/2,pw,ph);
+      ctx.strokeStyle='rgba(255,211,122,.72)';ctx.lineWidth=2;ctx.setLineDash([9,6]);ctx.strokeRect(cx-pw/2,cy-ph/2,pw,ph);
+      ctx.fillStyle='#f7ddb0';ctx.font='12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.lineWidth=3;ctx.strokeStyle='#12212d';ctx.strokeText(zone.name,cx,cy);ctx.fillText(zone.name,cx,cy);
+   }
+   ctx.restore();
+ }
+}
 const upperFacilities=[
 {id:'upper_terminal',name:'上層ターミナル',short:'中央ターミナル',x:0,y:0,w:500,h:500,type:'terminal',detail:'一般リフト群と外征用直通リフトの出発点。'},
 {id:'upper_control',name:'上層共同メインコントロール',short:'共同管制',x:450,y:0,w:300,h:180,type:'shared',detail:'上層の共同管理施設。本編開始時は共同管理機構が利用。'},
@@ -130,7 +161,7 @@ hazard:{fill:'#6b3b39',line:'#ffaaa2'}
 });
 const mapSets={
 upper:{name:'上層《セントラルコア階層》',status:'仮表示',facilities:upperFacilities,roads:upperRoads,description:'Notionに登録された上層の主要施設と道路を仮配置。マギテック側＝左舷、エイドロン側＝右舷は初期案です。施設の一部は表示を省略しています。'},
-middle:{name:'中層《アームドヴェイン階層》',status:'表示中',facilities:middleFacilities,roads:middleRoads,description:'Notion座標ベースの中層マップ。施設への取付道路は個別位置が未定のため推測で追加していません。'},
+middle:{name:'中層《アームドヴェイン階層》',status:'表示中',facilities:middleFacilities,roads:middleRoads,description:'現行Notionの確定地区（コアシェル円環・アルボラ）を表示。背景は未割当・未描画の区画で、空き地ではありません。『未確定の配置案』は参考案としてのみ表示します。施設への取付道路の個別位置は未定です。'},
 lower:{name:'下層《ジェネレートシェル階層》',status:'仮表示',facilities:lowerFacilities,roads:lowerRoads,description:'Notionに登録された下層の主要施設と道路を仮配置。一部施設は表示を省略しています。ラストハブは中心がターミナルと重なる円環生活区です。'}
 };
 let facilities=middleFacilities,roads=middleRoads,currentMap='middle';
@@ -144,6 +175,7 @@ function switchMap(id){
  document.title='AA '+map.name+'｜20×20マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
+ for(const key of ['districts','drafts'])document.querySelector('[data-layer="'+key+'"]').hidden=id!=='middle';
  renderPlaces();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>switchMap(b.dataset.map)));
@@ -152,10 +184,11 @@ function drawRoad(road){if(road.layer&&!state[road.layer]||!road.layer&&!state.r
 function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
-if(currentMap==='middle'){ctx.fillStyle='#24453d';ctx.beginPath();ctx.ellipse(...xy(-100,880),260,250,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#303c43';ctx.beginPath();ctx.ellipse(...xy(-50,0),280,310,0,0,Math.PI*2);ctx.fill();}
+if(currentMap==='middle'){/* Decorative terrain ellipses removed: not a Notion-defined landform. */}
 else if(currentMap==='upper'){ctx.fillStyle='#1b3857';ctx.fillRect(0,0,W*.43,H);ctx.fillStyle='#39304c';ctx.fillRect(W*.57,0,W*.43,H);ctx.fillStyle='#253d50';ctx.fillRect(W*.43,0,W*.14,H);}
 else if(currentMap==='lower'){ctx.fillStyle='#46372d';ctx.fillRect(0,H*.68,W,H*.32);ctx.fillStyle='#354247';ctx.fillRect(0,0,W,H*.34);}
 ctx.restore();
+drawMiddleDistrictAndDrafts();
 if(state.grid){ctx.strokeStyle='rgba(173,210,218,.16)';ctx.lineWidth=1;for(let k=0;k<=N;k++){let gx=k*CW,gy=k*CH;ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke()}}
 // Real facilities and district region footprint, mark area before roads
 for(let f of facilities){if(f.type==='terminal'||f.ringDistrict)continue;const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4;const g=groups[f.type];ctx.fillStyle=g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);ctx.strokeStyle=g.line+'aa';ctx.lineWidth=1.6;ctx.strokeRect(cx-w/2,cy-h/2,w,h)}
