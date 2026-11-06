@@ -7,7 +7,7 @@ const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 function create(options){
  const {canvas,ctx,getView,redraw,isDrawerOpen}=options;
  let base=null,model=null,selection=null,mode="inspect",selectedTerrain="plain",selectedOwner="vampire",routeStart=null;
- const display={borders:true,routes:true,sites:true};
+ const display={borders:true,routes:true,sites:true,reference:true,tiles:false};
  function saveDisplay(){
   try{localStorage.setItem(DISPLAY_KEY,JSON.stringify(display))}
   catch(err){console.warn("表示設定を保存できませんでした",err)}
@@ -17,13 +17,13 @@ function create(options){
    const raw=localStorage.getItem(DISPLAY_KEY);
    if(raw){
     const stored=JSON.parse(raw);
-    for(const key of ["borders","routes","sites"])if(typeof stored?.[key]==="boolean")display[key]=stored[key];
+    for(const key of ["borders","routes","sites","reference","tiles"])if(typeof stored?.[key]==="boolean")display[key]=stored[key];
    }
   }catch(err){console.warn("表示設定を復元できませんでした",err)}
   updateDisplayButtons();
  }
  function updateDisplayButtons(){
-  for(const [id,key,label] of [["darkBorders","borders","境界"],["darkRoutes","routes","経路"],["darkSites","sites","拠点"]]){
+  for(const [id,key,label] of [["darkBorders","borders","境界"],["darkRoutes","routes","経路"],["darkSites","sites","拠点"],["darkReference","reference","参考地形"],["darkTiles","tiles","地形マス"]]){
    const el=$(id);if(!el)continue;
    el.textContent=label+"："+(display[key]?"ON":"OFF");
    el.classList.toggle("on",display[key]);el.setAttribute("aria-pressed",String(display[key]));
@@ -52,13 +52,14 @@ function create(options){
    if(saved.grid.cols!==base.grid.cols||saved.grid.rows!==base.grid.rows)return null;
    // Apply the updated provisional territory layout without losing previous browser edits.
    if(saved.metadata?.ownerLayoutRevision!==base.metadata?.ownerLayoutRevision){
-    const oldOwners=base.metadata?.previousPrototypeOwnerBaseline;
+    const revision=String(saved.metadata?.ownerLayoutRevision??2);
+    const oldOwners=base.metadata?.ownerMigrationBaselines?.[revision]||base.metadata?.previousPrototypeOwnerBaseline;
     if(Array.isArray(oldOwners)&&oldOwners.length===base.tiles.length){
      for(let i=0;i<saved.tiles.length;i++){
       // Keep tiles explicitly painted by the user; update only unchanged old-default territory cells.
       if(saved.tiles[i].owner===oldOwners[i])saved.tiles[i].owner=base.tiles[i].owner;
      }
-     const prevSites=base.metadata?.previousPrototypeSitePositions||{};
+     const prevSites=base.metadata?.siteMigrationPositions?.[revision]||base.metadata?.previousPrototypeSitePositions||{};
      const latestSites=Object.fromEntries((base.settlements||[]).map(x=>[x.id,x]));
      for(const site of saved.settlements||[]){
       const old=prevSites[site.id],latest=latestSites[site.id];
@@ -67,13 +68,13 @@ function create(options){
       }
       site.owner=saved.tiles[site.row*base.grid.cols+site.col]?.owner||site.owner;
      }
-     const oldRoutes=base.metadata?.previousPrototypeRoutePoints||{};
+     const oldRoutes=base.metadata?.routeMigrationPositions?.[revision]||base.metadata?.previousPrototypeRoutePoints||{};
      const newRoutes=Object.fromEntries((base.routes||[]).map(x=>[x.id,x]));
      for(const route of saved.routes||[]){
       if(oldRoutes[route.id]&&newRoutes[route.id]&&JSON.stringify(route.points)===JSON.stringify(oldRoutes[route.id]))
        route.points=clone(newRoutes[route.id].points);
      }
-     saved.metadata={...base.metadata,editedAs:"browser-prototype",note:"参考図による領地の仮配置更新を適用。手動で変更したマス・地形は維持。"};
+     saved.metadata={...base.metadata,editedAs:"browser-prototype",note:"参考画像に基づく仮領地配置を更新。既存の手動マス編集・地形は維持。"};
      try{localStorage.setItem(STORAGE_KEY,JSON.stringify(saved))}
      catch(error){console.warn("領地変更後の保存に失敗",error)}
     }
@@ -109,7 +110,7 @@ function create(options){
   ctx.strokeStyle=options.gridOnTop()?"rgba(236,248,255,.65)":"rgba(181,211,225,.35)";
   ctx.lineWidth=options.gridOnTop()?1.75:1;
   for(let c=0;c<=model.grid.cols;c++){
-   const x=c*tileW;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,1600);ctx.stroke();
+   const x=c*tileW;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,1000);ctx.stroke();
   }
   for(let r=0;r<=model.grid.rows;r++){
    const y=r*tileH;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(1000,y);ctx.stroke();
@@ -118,54 +119,69 @@ function create(options){
  }
  function draw(){
   ctx.setTransform(1,0,0,1,0,0);
-  ctx.clearRect(0,0,1000,1600);
-  ctx.fillStyle="#0a1119";ctx.fillRect(0,0,1000,1600);
+  ctx.clearRect(0,0,1000,1000);
+  ctx.fillStyle="#070d12";ctx.fillRect(0,0,1000,1000);
   if(!model)return;
-  const v=getView(),w=1000/model.grid.cols,h=1600/model.grid.rows;
+  const v=getView(),w=1000/model.grid.cols,h=1000/model.grid.rows;
   const {terrains,owners}=colors();
   ctx.save();
-  ctx.translate(500+v.offsetX,800+v.offsetY);ctx.scale(v.zoom,v.zoom);ctx.translate(-500,-800);
+  ctx.translate(500+v.offsetX,500+v.offsetY);ctx.scale(v.zoom,v.zoom);ctx.translate(-500,-500);
+  if(display.reference && window.DarkWorldTrace){
+   window.DarkWorldTrace.draw(ctx,1000,1000);
+  }
   for(let r=0;r<model.grid.rows;r++)for(let c=0;c<model.grid.cols;c++){
-   const tile=model.tiles[r*model.grid.cols+c];
+   const idx=r*model.grid.cols+c,tile=model.tiles[idx];
    const terrain=terrains[tile.terrain],owner=owners[tile.owner],x=c*w,y=r*h;
-   ctx.fillStyle=terrain?.color||"#172734";ctx.fillRect(x,y,w+0.6,h+0.6);
-   ctx.save();ctx.globalAlpha=.17;ctx.fillStyle=owner?.color||"#76898a";ctx.fillRect(x,y,w,h);ctx.restore();
-   ctx.fillStyle=owner?.color||"#617078";ctx.fillRect(x+2,y+2,11,11);
-   if(terrain?.symbol){ctx.fillStyle="rgba(245,241,218,.50)";ctx.font="bold 20px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(terrain.symbol,x+w/2,y+h/2);}
-   const right=model.tiles[r*model.grid.cols+c+1];
-   const down=model.tiles[(r+1)*model.grid.cols+c];
-   ctx.strokeStyle=owner?.color||"#617078";ctx.lineWidth=3;
+   const changed=tile.terrain!==base.tiles[idx]?.terrain;
+   if(display.tiles || (display.reference && changed)){
+    ctx.save();
+    ctx.globalAlpha=display.reference?(display.tiles?.49:.72):1;
+    ctx.fillStyle=terrain?.color||"#172734";ctx.fillRect(x,y,w+.3,h+.3);
+    ctx.restore();
+    if(display.tiles && terrain?.symbol){
+     ctx.fillStyle="rgba(245,241,218,.7)";ctx.font="bold 16px system-ui";
+     ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(terrain.symbol,x+w/2,y+h/2);
+    }
+   }
    if(display.borders){
-    if(c===model.grid.cols-1||right?.owner!==tile.owner){ctx.beginPath();ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.stroke()}
-    if(r===model.grid.rows-1||down?.owner!==tile.owner){ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h);ctx.stroke()}
+    const right=c+1<model.grid.cols?model.tiles[idx+1]:null;
+    const down=r+1<model.grid.rows?model.tiles[idx+model.grid.cols]:null;
+    ctx.strokeStyle=owner?.color||"#617078";
+    ctx.lineWidth=display.reference?2.5:3;
+    if(c===model.grid.cols-1||right?.owner!==tile.owner){
+      ctx.beginPath();ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.stroke();
+    }
+    if(r===model.grid.rows-1||down?.owner!==tile.owner){
+      ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h);ctx.stroke();
+    }
    }
   }
   if(!options.gridOnTop())drawGrid(w,h);
-  const group={};
+  const groups={};
   model.tiles.forEach((t,i)=>{
    if(t.owner==="unclaimed"||t.owner==="intermediate")return;
    const c=i%model.grid.cols,r=Math.floor(i/model.grid.cols);
-   const g=group[t.owner]||(group[t.owner]={x:0,y:0,n:0});
-   g.x+=c+.5;g.y+=r+.5;g.n++;
+   const item=groups[t.owner]||(groups[t.owner]={x:0,y:0,n:0});
+   item.x+=c+.5;item.y+=r+.5;item.n++;
   });
-  for(const [id,g] of Object.entries(group)){
+  for(const [id,g] of Object.entries(groups)){
    const owner=owners[id];if(!owner)continue;
    const x=g.x/g.n*w,y=g.y/g.n*h;
-   ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="bold 22px system-ui";
-   ctx.strokeStyle="#071018";ctx.lineWidth=5;ctx.strokeText(owner.name,x,y,190);
+   ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="bold 21px system-ui";
+   ctx.strokeStyle="#081017";ctx.lineWidth=5;ctx.strokeText(owner.name,x,y,190);
    ctx.fillStyle="#ffffff";ctx.fillText(owner.name,x,y,190);
   }
   drawRoutesAndSites(w,h);
   if(selection!==null){
    const c=selection%model.grid.cols,r=Math.floor(selection/model.grid.cols);
-   ctx.strokeStyle="#ffed9e";ctx.lineWidth=5;ctx.strokeRect(c*w+2,r*h+2,w-4,h-4);
+   ctx.strokeStyle="#fff1a1";ctx.lineWidth=3;ctx.strokeRect(c*w+2,r*h+2,w-4,h-4);
   }
   if(options.gridOnTop())drawGrid(w,h);
   ctx.restore();
   ctx.save();ctx.fillStyle="#e8eff6";ctx.strokeStyle="#111b26";ctx.lineWidth=4;
-  ctx.font="bold 20px system-ui";ctx.textAlign="center";
-  ctx.strokeText("領地・地形の仮配置／距離・方位は未設定",500,30);
-  ctx.fillText("領地・地形の仮配置／距離・方位は未設定",500,30);
+  ctx.font="bold 16px system-ui";ctx.textAlign="center";
+  ctx.strokeText("参考画像ベース・領地と地形は仮配置",500,24);
+  ctx.fillText("参考画像ベース・領地と地形は仮配置",500,24);
   ctx.restore();
  }
  function drawRoutesAndSites(w,h){
@@ -231,8 +247,8 @@ function create(options){
   $("darkTileInfo").innerHTML=selection===null?'<span class="muted">地図上のマスを選んでください。</span>':tileInfoHtml(selection);
  }
  function selectAt(x,y){
-  if(!model||x<0||x>=1000||y<0||y>=1600)return false;
-  const c=Math.floor(x/(1000/model.grid.cols)),r=Math.floor(y/(1600/model.grid.rows));
+  if(!model||x<0||x>=1000||y<0||y>=1000)return false;
+  const c=Math.floor(x/(1000/model.grid.cols)),r=Math.floor(y/(1000/model.grid.rows));
   selection=r*model.grid.cols+c;
   const tile=model.tiles[selection];
   if(mode==="terrain"&&tile.terrain!==selectedTerrain){tile.terrain=selectedTerrain;save()}
@@ -280,7 +296,7 @@ function create(options){
   document.querySelectorAll("[data-dark-mode]").forEach(b=>b.addEventListener("click",()=>{
    mode=b.dataset.darkMode;routeStart=null;renderLists();updateToolButtons();redraw();
   }));
-  for(const [id,key] of [["darkBorders","borders"],["darkRoutes","routes"],["darkSites","sites"]]){
+  for(const [id,key] of [["darkBorders","borders"],["darkRoutes","routes"],["darkSites","sites"],["darkReference","reference"],["darkTiles","tiles"]]){
    $(id).addEventListener("click",()=>{display[key]=!display[key];updateDisplayButtons();saveDisplay();redraw()});
   }
   $("darkSiteList").addEventListener("change",e=>{
