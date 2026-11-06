@@ -4,7 +4,20 @@
 button{font:inherit;cursor:pointer;color:inherit;border:1px solid #45667a;background:#1b3445;border-radius:9px;padding:9px 12px}
 button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color:#98cdea}button.on{background:#245e78;border-color:#89d3f2}
 .app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
-.topbar{position:relative;z-index:5;display:flex;align-items:center;gap:10px;min-height:61px;padding:8px 12px;border-bottom:1px solid var(--line);background:#0d1c28;padding-top:max(8px,env(safe-area-inset-top))}
+.topbar{position:relative;z-index:5;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"title menu" "world floors";align-items:center;gap:6px 9px;min-height:94px;padding:8px 12px;border-bottom:1px solid var(--line);background:#0d1c28;padding-top:max(8px,env(safe-area-inset-top))}
+.topbar .brand{grid-area:title}
+.topbar #menuBtn{grid-area:menu;justify-self:end}
+.worldNav{grid-area:world;display:flex;align-items:center;min-width:0;gap:6px}
+.worldNav label{font-size:10px;color:#abc6d6;flex:none}
+.worldSelect{width:100%;min-width:0;max-width:330px;border:1px solid #53788e;border-radius:9px;background:#173548;color:#f1f9ff;font-size:12px;font-family:inherit;min-height:36px;padding:6px 7px}
+.worldSelect:focus-visible{outline:2px solid #97d6ef;outline-offset:1px}
+.floor-tabs{grid-area:floors}
+.worldEmpty{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;padding:20px;text-align:center;background:#0b1822}
+.worldEmpty[hidden]{display:none}
+.worldEmptyInner{max-width:410px;border:1px solid #3b596c;border-radius:15px;padding:24px 20px;background:#122733}
+.worldEmptyInner h2{font-size:20px;margin:0 0 12px}
+.worldEmptyInner p{font-size:13px;color:#b6cddd;line-height:1.7;margin:0}
+.app[data-world="dark_world"] .floor-tabs,.app[data-world="dark_world"] #menuBtn,.app[data-world="dark_world"] .mapbox,.app[data-world="dark_world"] .mapchips,.app[data-world="dark_world"] .mapfooter,.app[data-world="dark_world"] .zoomControls,.app[data-world="dark_world"] .drawerShade,.app[data-world="dark_world"] .drawer{display:none}
 .iconbtn{width:40px;height:40px;padding:0;flex:none;font-size:21px;display:grid;place-items:center}
 .brand{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;overflow:hidden}
 .brand h1{margin:0;font-size:14px;font-weight:750;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
@@ -66,9 +79,9 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .pill{font-size:11px;border:1px solid #628092;padding:3px 8px;border-radius:99px;color:#d6edf8}
 .popHint{font-size:11px;color:#95b3c2;margin-top:12px}
 @media(min-width:760px){.topbar{min-height:72px;padding:10px 20px}.brand h1{font-size:17px}.brand p{font-size:12px}.floor-tab{font-size:14px;min-width:76px;padding:11px 15px}.mapchips{left:18px;top:15px}}
-@media(max-width:375px){.topbar{gap:6px;padding-inline:7px}.iconbtn{width:36px;height:38px}.floor-tab{min-width:42px;padding:7px 6px}.brand h1{font-size:12px}.brand p{font-size:9px}}
+@media(max-width:375px){.topbar{gap:5px;padding-inline:7px}.iconbtn{width:36px;height:38px}.floor-tab{min-width:42px;padding:7px 6px}.brand h1{font-size:12px}.brand p{font-size:9px}.worldNav label{display:none}.worldSelect{font-size:11px;padding-inline:5px}}
 </style></head>
-<body><div class="app">
+<body><div class="app" id="appRoot" data-world="apocrypha_archive">
 <header class="topbar">
  <div class="brand"><h1 id="mapTitle">中層《アームドヴェイン階層》</h1><p id="mapSubtitle">100m四方 ・ 配置案を読み込み中</p></div>
  <nav class="floor-tabs" role="tablist" aria-label="階層マップ">
@@ -76,10 +89,12 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層</button>
   <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層</button>
  </nav>
+ <div class="worldNav"><label for="worldSelect">マップ</label><select id="worldSelect" class="worldSelect" aria-label="表示するマップを選択"></select></div>
  <button id="menuBtn" class="iconbtn" type="button" aria-label="表示メニューを開く" aria-controls="drawer" aria-expanded="false">☰</button>
 </header>
 <main class="mapstage">
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
+ <section id="worldEmpty" class="worldEmpty" hidden aria-live="polite"><div class="worldEmptyInner"><h2 id="emptyWorldTitle">ダークワールド</h2><p>このマップのデータはまだ登録されていません。追加後にここから切り替えられます。</p></div></section>
  <div class="mapchips"><span class="chip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
  <div class="zoomControls" aria-label="地図の拡大縮小">
@@ -148,13 +163,47 @@ const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
 const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false,gridOnTop:false};let chosen=null;
+/* Add new maps to this catalog. Planned maps show an honest empty state until their data is available. */
+const WORLD_CATALOG={
+ apocrypha_archive:{title:'アポクリファ＝アーカイブ',status:'ready',floors:['upper','middle','lower']},
+ dark_world:{title:'ダークワールド',status:'planned',floors:[]}
+};
+let activeWorldId='apocrypha_archive',preferredFloor='middle';
+function initWorldSelector(){
+ const sel=document.getElementById('worldSelect');
+ sel.innerHTML=Object.entries(WORLD_CATALOG).map(([id,w])=>'<option value="'+id+'">'+w.title+(w.status==='planned'?'（準備中）':'')+'</option>').join('');
+ sel.value=activeWorldId;
+}
+function switchWorld(id,persist=true){
+ const world=WORLD_CATALOG[id];
+ if(!world)return;
+ activeWorldId=id;
+ document.getElementById('worldSelect').value=id;
+ document.getElementById('appRoot').dataset.world=id;
+ const empty=document.getElementById('worldEmpty');
+ if(world.status==='ready'&&id==='apocrypha_archive'){
+  empty.hidden=true;
+  switchMap(preferredFloor);
+ }else{
+  closeDrawer();
+  closePopup();
+  chosen=null;
+  document.getElementById('selectedPanel').hidden=true;
+  document.getElementById('emptyWorldTitle').textContent=world.title;
+  document.getElementById('mapTitle').textContent=world.title;
+  document.getElementById('mapSubtitle').textContent='マップデータ未登録・準備中';
+  document.title=world.title+'｜マップ準備中';
+  empty.hidden=false;
+ }
+ if(persist)saveDisplaySettings();
+}
 const DISPLAY_SETTINGS_KEY='aa-map-viewer-display-v1';
 const DISPLAY_LAYER_KEYS=['labels','grid','roads','pods','freight','districts','drafts'];
 function saveDisplaySettings(){
  try{
   const layers={};
   for(const key of DISPLAY_LAYER_KEYS)layers[key]=state[key];
-  localStorage.setItem(DISPLAY_SETTINGS_KEY,JSON.stringify({version:1,layers,gridMeters,gridOnTop:state.gridOnTop,showProposal}));
+  localStorage.setItem(DISPLAY_SETTINGS_KEY,JSON.stringify({version:1,layers,gridMeters,gridOnTop:state.gridOnTop,showProposal,worldId:activeWorldId,aaFloor:preferredFloor}));
  }catch(error){console.warn('表示設定を保存できませんでした',error)}
 }
 function updateDisplaySettingsButtons(){
@@ -179,6 +228,8 @@ function restoreDisplaySettings(){
     if(saved.gridMeters===50||saved.gridMeters===100)gridMeters=saved.gridMeters;
     if(typeof saved.gridOnTop==='boolean')state.gridOnTop=saved.gridOnTop;
     if(typeof saved.showProposal==='boolean')showProposal=saved.showProposal;
+    if(typeof saved.worldId==='string'&&WORLD_CATALOG[saved.worldId])activeWorldId=saved.worldId;
+    if(['upper','middle','lower'].includes(saved.aaFloor))preferredFloor=saved.aaFloor;
    }
   }
  }catch(error){console.warn('表示設定を復元できませんでした',error)}
@@ -316,7 +367,7 @@ async function loadMapDataFromJSON(){
     layoutDrafts[id]=draft;
   }
   document.querySelectorAll('[data-map]').forEach(b=>b.disabled=false);
-  switchMap('middle');
+  switchWorld(activeWorldId,false);
  }catch(err){
   console.error('Map JSON loading failed',err);
   document.getElementById('mapNotice').textContent='地図データを表示できません：'+err.message+'。GitHub Pagesの公開更新を確認し、ページを再読み込みしてください。';
@@ -326,7 +377,7 @@ async function loadMapDataFromJSON(){
 function switchMap(id){
  const map=mapSets[id];if(!map)return;
  const preview=showProposal&&layoutDrafts[id];
- currentMap=id;facilities=preview?preview.facilities:map.facilities;roads=preview?preview.roads:map.roads;chosen=null;resetView();document.getElementById('selectedPanel').hidden=true;
+ currentMap=id;preferredFloor=id;facilities=preview?preview.facilities:map.facilities;roads=preview?preview.roads:map.roads;chosen=null;resetView();document.getElementById('selectedPanel').hidden=true;
  const toggle=document.getElementById('layoutToggle');
  toggle.hidden=!layoutDrafts[id];
  toggle.textContent=preview?'配置案を表示中｜Notion現行を表示':'Notion現行を表示中｜配置案を表示';
@@ -342,7 +393,12 @@ function switchMap(id){
  document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=true; // 古い6区画の暫定用途案は混乱を防ぐため非表示
  renderPlaces();renderInfo();draw();
 }
-document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>switchMap(b.dataset.map)));
+document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>{
+ if(activeWorldId!=='apocrypha_archive')return;
+ switchMap(b.dataset.map);
+ saveDisplaySettings();
+}));
+document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(e.target.value));
 document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;saveDisplaySettings();switchMap(currentMap)};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
@@ -574,5 +630,6 @@ document.getElementById('drawerShade').addEventListener('click',closeDrawer);
 document.getElementById('popupMask').addEventListener('click',clearSelected);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){clearSelected();closeDrawer()}});
 restoreDisplaySettings();
+initWorldSelector();
 loadMapDataFromJSON();
 </script></body></html>
