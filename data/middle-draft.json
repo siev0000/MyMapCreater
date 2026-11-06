@@ -188,8 +188,8 @@
     {
       "id": "bio_material_greenhouse",
       "name": "バイオ素材研究温室",
-      "x": -950,
-      "y": -425,
+      "x": -900,
+      "y": -500,
       "w": 300,
       "h": 250,
       "type": "nature",
