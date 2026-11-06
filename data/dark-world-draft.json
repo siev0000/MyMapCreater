@@ -1,0 +1,1079 @@
+{
+  "schemaVersion": 1,
+  "kind": "terrain-territory-map",
+  "id": "dark_world",
+  "status": "prototype",
+  "title": "ダークワールド｜仮の領地と地形マップ",
+  "metadata": {
+    "source": "User-provided territory names; tile positions and terrain assignments are noncanonical demonstration only.",
+    "note": "5領地、ヘル、中間マスの表示と地形編集UIを検証するための仮配置。距離・方角・勢力境界・地形分布は未確定。Notion設定には未反映。地底界《アンダーワールド》との同一性も断定しない。",
+    "scale": "undefined",
+    "orientation": "placeholder",
+    "revision": "prototype-v1"
+  },
+  "grid": {
+    "cols": 12,
+    "rows": 20,
+    "metricScale": null
+  },
+  "territories": [
+    {
+      "id": "unclaimed",
+      "name": "未設定",
+      "color": "#617078"
+    },
+    {
+      "id": "vampire",
+      "name": "吸血鬼領",
+      "color": "#a66ac7"
+    },
+    {
+      "id": "insect",
+      "name": "虫人領",
+      "color": "#90bd62"
+    },
+    {
+      "id": "demon",
+      "name": "悪魔領",
+      "color": "#d26b5d"
+    },
+    {
+      "id": "undead",
+      "name": "アンデット領",
+      "color": "#92a4b5"
+    },
+    {
+      "id": "dragon_king",
+      "name": "竜王領",
+      "color": "#d7ad60"
+    },
+    {
+      "id": "hell",
+      "name": "ヘル",
+      "color": "#ba4f43"
+    },
+    {
+      "id": "intermediate",
+      "name": "中間マス",
+      "color": "#759ca8"
+    }
+  ],
+  "terrains": [
+    {
+      "id": "unset",
+      "name": "未設定",
+      "color": "#172734",
+      "symbol": "·"
+    },
+    {
+      "id": "plain",
+      "name": "平地",
+      "color": "#607657",
+      "symbol": ""
+    },
+    {
+      "id": "forest",
+      "name": "森林",
+      "color": "#315b46",
+      "symbol": "♣"
+    },
+    {
+      "id": "mountain",
+      "name": "山地",
+      "color": "#747672",
+      "symbol": "▲"
+    },
+    {
+      "id": "wasteland",
+      "name": "荒地",
+      "color": "#876f5e",
+      "symbol": ""
+    },
+    {
+      "id": "swamp",
+      "name": "沼地",
+      "color": "#435f63",
+      "symbol": "≈"
+    },
+    {
+      "id": "water",
+      "name": "水域",
+      "color": "#346c88",
+      "symbol": "≈"
+    },
+    {
+      "id": "lava",
+      "name": "溶岩",
+      "color": "#b75a30",
+      "symbol": "◆"
+    },
+    {
+      "id": "cavern",
+      "name": "洞窟",
+      "color": "#4d4e65",
+      "symbol": "●"
+    }
+  ],
+  "tiles": [
+    {
+      "owner": "vampire",
+      "terrain": "plain"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "plain"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "plain"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "insect",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "plain"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "plain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "insect",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "plain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "plain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "insect",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "forest"
+    },
+    {
+      "owner": "vampire",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "plain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "plain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "plain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "forest"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "plain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "plain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "forest"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "lava"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "lava"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "forest"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "plain"
+    },
+    {
+      "owner": "dragon_king",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "undead",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "undead",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "demon",
+      "terrain": "lava"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "undead",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "undead",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "lava"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "demon",
+      "terrain": "lava"
+    },
+    {
+      "owner": "demon",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "undead",
+      "terrain": "swamp"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "undead",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "plain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "forest"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "plain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "forest"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "plain"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "forest"
+    },
+    {
+      "owner": "intermediate",
+      "terrain": "mountain"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "wasteland"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    },
+    {
+      "owner": "hell",
+      "terrain": "lava"
+    },
+    {
+      "owner": "hell",
+      "terrain": "cavern"
+    }
+  ]
+}
