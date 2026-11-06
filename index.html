@@ -17,48 +17,12 @@ const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const N=
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
 const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false};let chosen=null;
-const middleFacilities=[
-{id:'terminal',name:'リンクターミナル',x:0,y:0,w:500,h:500,type:'terminal',detail:'上層・下層を結ぶ中央交通拠点。一般リフトと大型機用リフトを運用。'},
-{id:'town',name:'コアシェルタウン',x:0,y:450,w:700,h:300,type:'town',detail:'居住・市場・充電・燃料補給・交流施設。'},
-{id:'valley',name:'リファインバレー',x:0,y:-450,w:800,h:300,type:'workshop',detail:'武器修理・機体整備・カスタム改造・個人工房。'},
-{id:'lab',name:'アルキメリア装備開発ラボ',x:-450,y:-500,w:300,h:220,type:'workshop',detail:'中層の装備開発ラボ。'},
-{id:'dome',name:'レジストリンク・ドーム',x:1050,y:0,w:650,h:600,type:'guild',detail:'ギルド複合区。任務・報酬・作戦室・倉庫はドーム内部通路で接続。'},
-{id:'arbora',name:'アルボラセクター',x:-150,y:900,w:1500,h:500,type:'nature',detail:'人工自然・植物育成・生態系管理の地区。'},
-{id:'fuel',name:'標準燃料生産施設',x:-1400,y:450,w:500,h:400,type:'industrial',detail:'一般燃料を大量生産する施設。'},
-{id:'oil',name:'植物油加工区',x:-850,y:700,w:400,h:300,type:'industrial',detail:'植物性油の加工。'},
-{id:'fiber',name:'繊維・樹脂加工区',x:-1150,y:750,w:400,h:300,type:'industrial',detail:'植物繊維・樹脂の加工。'},
-{id:'resource',name:'植物資源加工施設',x:-1100,y:1000,w:450,h:300,type:'industrial',detail:'栽培植物資源の加工。'},
-{id:'greenhouse',name:'生態系再現温室群',x:-200,y:900,w:800,h:420,type:'nature',detail:'人工生態系を再現する温室群。'},
-{id:'water',name:'水・土壌循環施設',x:-650,y:900,w:250,h:250,type:'nature',detail:'水・土壌循環機能。'},
-{id:'bio',name:'生物・植物管理施設',x:200,y:1050,w:250,h:180,type:'nature',detail:'生物と植物の管理。'},
-{id:'research',name:'バイオ素材研究温室',x:450,y:900,w:300,h:250,type:'nature',detail:'バイオ素材の研究温室。'},
-{id:'cargo',name:'中層貨物検査区',x:-450,y:0,w:280,h:200,type:'industrial',detail:'貨物検査と貨物リフト接続。'}
-];
+const middleFacilities=[];
 const groups={terminal:{fill:'#346e87',line:'#98e5fc'},town:{fill:'#587789',line:'#a6dcf2'},workshop:{fill:'#776879',line:'#d5b4eb'},guild:{fill:'#817253',line:'#ead59a'},nature:{fill:'#356956',line:'#9dd7ad'},industrial:{fill:'#70634c',line:'#e8bc7e'}};
-const middleRoads=[
-{id:'concourse',name:'ターミナルコンコース',kind:'ring',r:290,width:80,color:'#bac6c9'},
-{id:'ring',name:'中層中央環状路',kind:'ring',r:650,width:36,color:'#a8b5bd'},
-{id:'walk',name:'コアシェル生活遊歩路',kind:'ring',r:495,width:8,color:'#69b9e5'},
-{id:'refine',name:'リファイン工房道路',kind:'line',points:[[-500,-400],[0,-650],[500,-400]],width:24,color:'#a8b5bd'},
-{id:'mission',name:'任務大通り',kind:'line',points:[[650,0],[1050,0]],width:36,color:'#c6d1d4'},
-{id:'arboraRoad',name:'アルボラ大通り',kind:'line',points:[[0,650],[0,900]],width:36,color:'#c6d1d4'},
-{id:'arboraLoop',name:'アルボラ管理環状路',kind:'line',points:[[-850,700],[-700,1100],[500,1100],[650,750],[-850,700]],width:30,color:'#a8b5bd'},
-{id:'industrialRoad',name:'中層工業貨物幹線',kind:'line',points:[[-650,250],[-1050,400],[-1400,450],[-1150,750],[-1100,1000]],width:48,color:'#f0b36e',layer:'freight'},
-{id:'cargoTunnel',name:'中層貨物トンネル',kind:'line',points:[[-450,0],[-800,250],[-1200,500]],width:32,color:'#db8d5a',layer:'freight',dash:[12,8]},
-{id:'botanical',name:'植物管理トンネル',kind:'line',points:[[-650,900],[-200,900],[450,900]],width:8,color:'#e8cd7f',layer:'freight',dash:[7,6]},
-{id:'pod',name:'中層輸送ポッド環状線',kind:'ring',r:680,width:16,color:'#b7a1fc',layer:'pods',dash:[9,7]},
-{id:'emergency',name:'中層非常迂回環状路',kind:'ring',r:800,width:12,color:'#bd7f7d',layer:'freight',dash:[6,9]}
-];
+const middleRoads=[];
 
 /* 階層切り替え。中層の既存データはそのまま保持して、上層・下層は仮配置を追加。 */
-const middleDraftZones=[
-{name:'船首側の予備・防災（案）',x:1700,y:0,w:400,h:2000},
-{name:'任務支援・待機（案）',x:1050,y:-775,w:800,h:650},
-{name:'自然管理の緩衝（案）',x:1050,y:775,w:800,h:650},
-{name:'整備・部品保管（案）',x:-1175,y:-725,w:750,h:750},
-{name:'騒音・排熱緩衝（案）',x:-100,y:-925,w:1300,h:450},
-{name:'船尾側物流・備蓄（案）',x:-1525,y:15,w:650,h:330}
-];
+const middleDraftZones=[];
 function drawMiddleDistrictAndDrafts(){
  if(currentMap!=='middle')return;
  const [centerX,centerY]=xy(0,0);
@@ -82,74 +46,10 @@ function drawMiddleDistrictAndDrafts(){
    ctx.restore();
  }
 }
-const upperFacilities=[
-{id:'upper_terminal',name:'上層ターミナル',short:'中央ターミナル',x:0,y:0,w:500,h:500,type:'terminal',detail:'一般リフト群と外征用直通リフトの出発点。'},
-{id:'upper_control',name:'上層共同メインコントロール',short:'共同管制',x:450,y:0,w:300,h:180,type:'shared',detail:'上層の共同管理施設。本編開始時は共同管理機構が利用。'},
-{id:'orbital',name:'オービタルスフィア',short:'オービタル',x:1000,y:0,w:420,h:260,type:'shared',detail:'AA内部と周辺空域を観測する共有施設。'},
-{id:'archive',name:'上層共通情報保存区',short:'情報保存区',x:-420,y:0,w:300,h:180,type:'shared',detail:'共有情報の保管。'},
-{id:'myosphere',name:'マイオスフィールド',short:'マイオス',x:-850,y:0,w:380,h:240,type:'shared',detail:'精神緩和、娯楽、交流のための施設。'},
-{id:'mag_gate',name:'マギテック側認証門',short:'M認証門',x:0,y:-320,w:250,h:80,type:'security',detail:'マギテック側への区画認証門。'},
-{id:'eid_gate',name:'エイドロン側認証門',short:'E認証門',x:0,y:320,w:250,h:80,type:'security',detail:'エイドロン側への区画認証門。'},
-{id:'mag_living',name:'マギテック側居住・待機区',short:'M居住区',x:-150,y:-600,w:700,h:350,type:'magitech',detail:'マギテック側の居住・待機区。'},
-{id:'mag_update',name:'マギテック・アップデート施設',short:'M更新',x:-650,y:-550,w:300,h:250,type:'magitech',detail:'マギテックの機体更新を扱う施設。'},
-{id:'mag_creation',name:'マギテック創造領域',short:'M創造',x:450,y:-650,w:500,h:350,type:'magitech',detail:'マギテックの新機体開発・創造領域。'},
-{id:'mag_weapons',name:'マギテック武器開発施設',short:'M兵装',x:900,y:-650,w:350,h:300,type:'magitech',detail:'マギテックの武器開発施設。'},
-{id:'mag_research',name:'魔力系研究施設',short:'魔力研究',x:450,y:-1000,w:500,h:250,type:'magitech',detail:'魔力系の研究施設。'},
-{id:'mag_test',name:'マギテック戦闘試験場',short:'M試験場',x:1450,y:-550,w:450,h:350,type:'magitech',detail:'マギテック側の戦闘試験場。'},
-{id:'eid_living',name:'エイドロン側居住・待機区',short:'E居住区',x:-150,y:600,w:700,h:350,type:'eidolon',detail:'エイドロン側の居住・待機区。'},
-{id:'eid_update',name:'エイドロン・アップデート施設',short:'E更新',x:-650,y:550,w:300,h:250,type:'eidolon',detail:'エイドロンの機体更新を扱う施設。'},
-{id:'eid_creation',name:'エイドロン創造領域',short:'E創造',x:450,y:650,w:500,h:350,type:'eidolon',detail:'エイドロンの新機体開発・創造領域。'},
-{id:'eid_equipment',name:'エイドロン装備開発施設',short:'E装備',x:900,y:650,w:350,h:300,type:'eidolon',detail:'エイドロン側の装備開発施設。'},
-{id:'eid_research',name:'信仰系研究施設',short:'信仰研究',x:450,y:1000,w:500,h:250,type:'eidolon',detail:'信仰系の研究施設。'},
-{id:'eid_test',name:'エイドロン戦闘試験場',short:'E試験場',x:1450,y:550,w:450,h:350,type:'eidolon',detail:'エイドロン側の戦闘試験場。'}
-];
-const upperRoads=[
-{id:'upper_concourse',name:'上層ターミナルコンコース',kind:'ring',r:290,width:80,color:'#bac6c9'},
-{id:'upper_shared_spine',name:'上層中央幹線',kind:'line',points:[[-1500,0],[1500,0]],width:36,color:'#a8b5bd'},
-{id:'upper_shared_ring',name:'上層中央環状路',kind:'ring',r:420,width:30,color:'#a8b5bd'},
-{id:'upper_mag_gate',name:'マギテック認証通路',kind:'line',points:[[0,-330],[0,-430]],width:24,color:'#87a7ca'},
-{id:'upper_mag_trunk',name:'マギテック中央幹線',kind:'line',points:[[0,-430],[0,-850]],width:36,color:'#a8b5bd'},
-{id:'upper_mag_loop',name:'マギテック環状路',kind:'line',points:[[-1400,-500],[-1000,-850],[0,-1050],[1000,-950],[1450,-550],[1100,-350],[-1100,-350],[-1400,-500]],width:30,color:'#8faac9'},
-{id:'upper_eid_gate',name:'エイドロン認証通路',kind:'line',points:[[0,330],[0,430]],width:24,color:'#b2a3d6'},
-{id:'upper_eid_trunk',name:'エイドロン中央幹線',kind:'line',points:[[0,430],[0,850]],width:36,color:'#a8b5bd'},
-{id:'upper_eid_loop',name:'エイドロン環状路',kind:'line',points:[[-1400,500],[-1000,850],[0,1050],[1000,950],[1450,550],[1100,350],[-1100,350],[-1400,500]],width:30,color:'#b9a8d6'},
-{id:'upper_mag_cargo',name:'マギテック貨物トンネル',kind:'line',points:[[-1250,-180],[-850,-700],[450,-800],[1200,-650]],width:32,color:'#f0b36e',layer:'freight',dash:[12,8]},
-{id:'upper_eid_cargo',name:'エイドロン貨物トンネル',kind:'line',points:[[-1250,180],[-850,700],[450,800],[1200,650]],width:32,color:'#f0b36e',layer:'freight',dash:[12,8]},
-{id:'upper_emergency',name:'上層緊急横断路（通常閉鎖）',kind:'line',points:[[-900,-300],[-900,300]],width:12,color:'#bd7f7d',layer:'freight',dash:[6,8]}
-];
-const lowerFacilities=[
-{id:'lower_terminal',name:'下層ターミナル',short:'中央ターミナル',x:0,y:0,w:500,h:500,type:'terminal',detail:'上層・中層から一般リフトで接続する下層の交通拠点。'},
-{id:'last_hub',name:'ラストハブ',short:'ラストハブ',x:0,y:0,w:1300,h:1300,type:'living',detail:'中央ターミナル周辺半径330～650mの円環生活区。居住・休止・中古部品の市場・小工房。',ringDistrict:true},
-{id:'reclaim_belt',name:'リクレイムベルト',short:'再処理区',x:-950,y:0,w:1000,h:700,type:'recycling',detail:'廃機体・金属・回収物を解体・選別・再利用する再処理区。'},
-{id:'acid_s9',name:'アシッドゾーンS9',short:'S9腐食帯',x:-1250,y:-600,w:900,h:500,type:'hazard',detail:'腐食性廃液を扱う危険作業区。'},
-{id:'bioreactor',name:'バイオリアクター',short:'バイオ再生',x:-950,y:800,w:700,h:500,type:'nature',detail:'有機廃棄物を燃料・肥料・熱エネルギーなどに再生する施設。'},
-{id:'material_hollow',name:'マテリアル・ホロー',short:'資源搬入',x:1050,y:-650,w:700,h:500,type:'industrial',detail:'地上・外部から鉱石や土砂などを搬入する船底資源設備。'},
-{id:'junk_tank',name:'ジャンク・リビルド槽',short:'廃整備槽',x:250,y:-650,w:350,h:250,type:'recycling',detail:'公式地図での接続案内は非公開。'},
-{id:'general_processing',name:'一般処理区',short:'一般処理',x:-450,y:-450,w:350,h:250,type:'recycling',detail:'低危険度の廃棄物や金属屑などを処理。'},
-{id:'managed_processing',name:'管理処理区',short:'管理処理',x:-800,y:-500,w:350,h:250,type:'hazard',detail:'使用済み燃料・バッテリー・冷却液などの管理処理。'},
-{id:'hazard_processing',name:'危険処理区',short:'危険処理',x:-1200,y:-550,w:400,h:300,type:'hazard',detail:'爆発性試作品や危険廃機体などの処理。'},
-{id:'special_isolation',name:'特別隔離区',short:'特別隔離',x:-1600,y:-500,w:350,h:300,type:'hazard',detail:'グロウメタ汚染物・自己増殖素材などを隔離。'},
-{id:'discard_registration',name:'廃棄物搬入登録区',short:'搬入登録',x:-500,y:0,w:250,h:180,type:'recycling',detail:'搬入される廃棄物の登録。'},
-{id:'metal_refining',name:'金属再精錬区',short:'金属再精錬',x:-1350,y:100,w:450,h:300,type:'recycling',detail:'金属資源を再生する再精錬施設。'},
-{id:'recycled_storage',name:'再生資源倉庫',short:'再生資源庫',x:-1450,y:450,w:400,h:250,type:'industrial',detail:'再生資源の集積・搬出。'},
-{id:'biological_tanks',name:'バイオ処理槽',short:'バイオ処理槽',x:-850,y:800,w:350,h:250,type:'nature',detail:'有機処理系の一施設。'},
-{id:'resource_storage',name:'大型資源仮置場',short:'資源仮置場',x:850,y:-550,w:350,h:250,type:'industrial',detail:'外部からの大量資源を一時集積。'},
-{id:'heavy_maintenance',name:'重機整備区',short:'重機整備',x:-450,y:350,w:350,h:250,type:'industrial',detail:'重量機・設備の整備区。'}
-];
-const lowerRoads=[
-{id:'lower_concourse',name:'下層ターミナルコンコース',kind:'ring',r:290,width:80,color:'#bac6c9'},
-{id:'last_hub_ring',name:'ラストハブ環状路',kind:'ring',r:600,width:30,color:'#a8b5bd'},
-{id:'reclaim_spine',name:'再生工業幹線',kind:'line',points:[[-600,0],[-1550,100]],width:48,color:'#f0b36e',layer:'freight'},
-{id:'hazard_corridor',name:'S9危険物隔離通路',kind:'line',points:[[-650,-300],[-900,-450],[-1250,-600],[-1600,-500]],width:24,color:'#bd7f7d',layer:'freight'},
-{id:'organic_corridor',name:'有機処理密閉路',kind:'line',points:[[-500,350],[-500,650],[-850,800],[-1200,850],[-1450,700]],width:24,color:'#d5ab70',layer:'freight'},
-{id:'material_road',name:'重資源搬送路',kind:'line',points:[[500,-300],[850,-550],[1450,-650]],width:48,color:'#f0b36e',layer:'freight'},
-{id:'recycled_tunnel',name:'再生資源上送トンネル',kind:'line',points:[[-1450,450],[-800,300],[-300,150]],width:32,color:'#db8d5a',layer:'freight',dash:[11,7]},
-{id:'bio_tunnel',name:'バイオ資源還流トンネル',kind:'line',points:[[-650,1050],[-250,700],[-250,250]],width:32,color:'#db8d5a',layer:'freight',dash:[11,7]},
-{id:'lower_emergency',name:'下層非常迂回環状路',kind:'ring',r:850,width:12,color:'#bd7f7d',layer:'freight',dash:[6,8]},
-{id:'junk_path',name:'廃整備用旧通路',kind:'line',points:[[350,-450],[250,-650]],width:8,color:'#69b9e5',layer:'freight',dash:[5,6]},
-{id:'propulsion_road',name:'船尾機関整備道路',kind:'line',points:[[-1200,300],[-1750,300]],width:48,color:'#f0b36e',layer:'freight'},
-{id:'security_seal',name:'危険区封鎖操作路',kind:'line',points:[[-900,-200],[-1350,-200]],width:8,color:'#bd7f7d',layer:'freight',dash:[4,6]}
-];
+const upperFacilities=[];
+const upperRoads=[];
+const lowerFacilities=[];
+const lowerRoads=[];
 Object.assign(groups,{
 shared:{fill:'#42687a',line:'#b0e8f7'},
 security:{fill:'#64687d',line:'#e2d1ff'},
@@ -166,6 +66,48 @@ lower:{name:'下層《ジェネレートシェル階層》',status:'仮表示',f
 };
 let facilities=middleFacilities,roads=middleRoads,currentMap='middle';
 function renderPlaces(){document.getElementById('places').innerHTML=facilities.map(f=>`<button type="button" style="margin:3px;font-size:11px;padding:5px 8px" data-place="${f.id}">${f.name}</button>`).join('')}
+function validateFloorJSON(id,data){
+ if(!data||data.schemaVersion!==1||data.floor!==id||!Array.isArray(data.facilities)||!Array.isArray(data.roads)||data.facilities.length===0)throw Error(id+' のJSON形式が不正です');
+ if(data.facilities[0].type!=='terminal')throw Error(id+' の中央ターミナルが見つかりません');
+ const seen=new Set();
+ for(const f of data.facilities){
+  if(!f||typeof f.id!=='string'||!f.id||seen.has(f.id)||typeof f.name!=='string'||!groups[f.type]||![f.x,f.y,f.w,f.h].every(Number.isFinite)||f.w<=0||f.h<=0)throw Error(id+' の施設データが不正です');
+  seen.add(f.id);
+ }
+ for(const road of data.roads){
+  if(!road||typeof road.id!=='string'||!['ring','line'].includes(road.kind)||!Number.isFinite(road.width)||road.width<=0)throw Error(id+' の道路データが不正です');
+  if(road.kind==='ring'&&!Number.isFinite(road.r))throw Error(id+' の環状路半径が不正です');
+  if(road.kind==='line'&&(!Array.isArray(road.points)||road.points.length<2||!road.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite))))throw Error(id+' の道路座標が不正です');
+ }
+ return data;
+}
+async function loadMapDataFromJSON(){
+ document.querySelectorAll('[data-map]').forEach(b=>b.disabled=true);
+ document.getElementById('mapNotice').textContent='地図のJSONデータを読み込み中です…';
+ try{
+  // GitHub Pagesと同一オリジンの静的JSONを読み込む（API・ライブラリ不要）。
+  const files=['upper','middle','lower','middle-proposals'];
+  const results=await Promise.all(files.map(async id=>{
+   const res=await fetch('./data/'+id+'.json',{cache:'no-cache'});
+   if(!res.ok)throw Error(id+'.json : HTTP '+res.status);
+   return res.json();
+  }));
+  for(let i=0;i<3;i++){
+   const id=files[i],data=validateFloorJSON(id,results[i]);
+   mapSets[id].facilities.push(...data.facilities);
+   mapSets[id].roads.push(...data.roads);
+  }
+  const proposal=results[3];
+  if(!proposal||proposal.status!=='proposal'||proposal.floor!=='middle'||!Array.isArray(proposal.zones)||!proposal.zones.every(z=>z&&typeof z.name==='string'&&[z.x,z.y,z.w,z.h].every(Number.isFinite)))throw Error('未確定区画JSONの形式が不正です');
+  middleDraftZones.push(...proposal.zones);
+  document.querySelectorAll('[data-map]').forEach(b=>b.disabled=false);
+  switchMap('middle');
+ }catch(err){
+  console.error('Map JSON loading failed',err);
+  document.getElementById('mapNotice').textContent='地図データを表示できません：'+err.message+'。GitHub Pagesの公開更新を確認し、ページを再読み込みしてください。';
+  document.getElementById('places').textContent='地図データの読み込みに失敗しました';
+ }
+}
 function switchMap(id){
  const map=mapSets[id];if(!map)return;
  currentMap=id;facilities=map.facilities;roads=map.roads;chosen=null;
@@ -203,5 +145,5 @@ function renderInfo(){const el=document.getElementById('info');if(!chosen){el.in
 function selectPlace(id){chosen=facilities.find(x=>x.id===id);renderInfo();draw()}
 canvas.addEventListener('click',e=>{const box=canvas.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*W,y=(e.clientY-box.top)/box.height*H;let near=null,dist=35;for(const f of facilities){const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);if(d<dist){near=f;dist=d}}chosen=near||{kind:'cell',col:Math.min(19,Math.max(0,Math.floor(x/CW))),row:Math.min(19,Math.max(0,Math.floor(y/CH)))};renderInfo();draw()});
 document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=()=>{chosen=null;renderInfo();draw()};
-renderPlaces();document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});switchMap('middle');
+renderPlaces();document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});loadMapDataFromJSON();
 </script></body></html>
