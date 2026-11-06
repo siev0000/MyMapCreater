@@ -17,7 +17,19 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .worldEmptyInner{max-width:410px;border:1px solid #3b596c;border-radius:15px;padding:24px 20px;background:#122733}
 .worldEmptyInner h2{font-size:20px;margin:0 0 12px}
 .worldEmptyInner p{font-size:13px;color:#b6cddd;line-height:1.7;margin:0}
-.app[data-world="dark_world"] .floor-tabs,.app[data-world="dark_world"] #menuBtn,.app[data-world="dark_world"] .mapbox,.app[data-world="dark_world"] .mapchips,.app[data-world="dark_world"] .mapfooter,.app[data-world="dark_world"] .zoomControls,.app[data-world="dark_world"] .drawerShade,.app[data-world="dark_world"] .drawer{display:none}
+.app[data-world="dark_world"] .topbar{grid-template-areas:"title menu" "world world"}
+.app[data-world="dark_world"] .floor-tabs,.app[data-world="dark_world"] .mapfooter,.app[data-world="dark_world"] #shipOrientationChip,.app[data-world="dark_world"] .drawerTabs,.app[data-world="dark_world"] .drawerSection{display:none!important}
+.app[data-world="dark_world"] #darkWorldControls{display:flex!important}
+.darkSwatchGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.darkSwatch{display:flex;gap:7px;align-items:center;text-align:left;font-size:12px;min-height:37px;min-width:0;padding:6px}
+.darkSwatch.on{background:#245c77;border-color:#a9def5}
+.darkColor{display:inline-block;flex:none;width:17px;height:17px;border-radius:5px;border:1px solid #ffffff55}
+.darkModeButtons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.darkModeButtons button{padding:8px 3px;font-size:11px}
+.darkEditingInfo{font-size:12px;line-height:1.65;color:#b9d1df}
+.darkActionButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.darkActionButtons button{font-size:12px;padding:10px 5px}
+#darkWorldControls[hidden]{display:none!important}
 .iconbtn{width:40px;height:40px;padding:0;flex:none;font-size:21px;display:grid;place-items:center}
 .brand{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;overflow:hidden}
 .brand h1{margin:0;font-size:14px;font-weight:750;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
@@ -95,7 +107,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 <main class="mapstage">
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
  <section id="worldEmpty" class="worldEmpty" hidden aria-live="polite"><div class="worldEmptyInner"><h2 id="emptyWorldTitle">ダークワールド</h2><p>このマップのデータはまだ登録されていません。追加後にここから切り替えられます。</p></div></section>
- <div class="mapchips"><span class="chip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
+ <div class="mapchips"><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
  <div class="zoomControls" aria-label="地図の拡大縮小">
   <button id="zoomOut" type="button" aria-label="縮小">−</button>
@@ -113,6 +125,18 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
    </div>
   </div>
   <div class="drawerBody">
+   <div id="darkWorldControls" class="drawerSection" hidden>
+    <section class="panel"><h2>ダークワールド（仮マップ）</h2><p>12×20マスのテスト地図。領地・ヘル・中間マスの位置や距離、地形は未確定です。</p><p id="darkStatus" class="darkEditingInfo">マップを読み込み中…</p></section>
+    <section class="panel"><h2>マスの操作</h2><div class="darkModeButtons">
+      <button class="on" type="button" data-dark-mode="inspect">確認</button>
+      <button type="button" data-dark-mode="terrain">地形編集</button>
+      <button type="button" data-dark-mode="territory">領地編集</button>
+     </div><p>編集したい種類を選び、地図のマスをタップしてください。領地と地形はそれぞれ独立しています。</p></section>
+    <section class="panel"><h2>選択マス</h2><div id="darkTileInfo" class="darkEditingInfo">マスを選択してください。</div></section>
+    <section class="panel"><h2>地形マス</h2><div id="darkTerrainPalette" class="darkSwatchGrid"></div></section>
+    <section class="panel"><h2>領地・区画</h2><div id="darkOwnerPalette" class="darkSwatchGrid"></div></section>
+    <section class="panel"><h2>データ管理</h2><div class="darkActionButtons"><button type="button" id="darkExport">JSON書き出し</button><button type="button" id="darkReset">初期配置に戻す</button></div><p>変更はこのブラウザに自動保存されます。GitHubやNotionへは自動送信しません。</p></section>
+   </div>
    <div id="panelFacilities" class="drawerSection" role="tabpanel" data-menu-panel="facilities">
     <section class="panel" id="selectedPanel" hidden aria-live="polite">
      <h2>選択施設の概要</h2><div class="selectedDetail" id="selectedDetail"></div>
@@ -158,7 +182,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の概要"><div id="info"></div><div class="popHint">このポップアップのどこをタップしても閉じます</div></div>
  </div>
 </main>
-</div><script>
+</div><script src="./dark-world.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;function gridSpec(){const cols=2500/gridMeters,rows=4000/gridMeters;return {cols,rows,cw:W/cols,ch:H/rows}}
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
@@ -166,12 +190,12 @@ const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:t
 /* Add new maps to this catalog. Planned maps show an honest empty state until their data is available. */
 const WORLD_CATALOG={
  apocrypha_archive:{title:'アポクリファ＝アーカイブ',status:'ready',floors:['upper','middle','lower']},
- dark_world:{title:'ダークワールド',status:'planned',floors:[]}
+ dark_world:{title:'ダークワールド',status:'prototype',floors:[]}
 };
 let activeWorldId='apocrypha_archive',preferredFloor='middle';
 function initWorldSelector(){
  const sel=document.getElementById('worldSelect');
- sel.innerHTML=Object.entries(WORLD_CATALOG).map(([id,w])=>'<option value="'+id+'">'+w.title+(w.status==='planned'?'（準備中）':'')+'</option>').join('');
+ sel.innerHTML=Object.entries(WORLD_CATALOG).map(([id,w])=>'<option value="'+id+'">'+w.title+(w.status==='prototype'?'（仮マップ）':w.status==='planned'?'（準備中）':'')+'</option>').join('');
  sel.value=activeWorldId;
 }
 function switchWorld(id,persist=true){
@@ -181,19 +205,26 @@ function switchWorld(id,persist=true){
  document.getElementById('worldSelect').value=id;
  document.getElementById('appRoot').dataset.world=id;
  const empty=document.getElementById('worldEmpty');
- if(world.status==='ready'&&id==='apocrypha_archive'){
+ if(id==='apocrypha_archive'){
+  document.getElementById('darkWorldControls').hidden=true;
+  document.getElementById('shipOrientationChip').hidden=false;
   empty.hidden=true;
   switchMap(preferredFloor);
- }else{
-  closeDrawer();
-  closePopup();
-  chosen=null;
+ }else if(id==='dark_world'){
+  closeDrawer();closePopup();
+  chosen=null;resetView();
   document.getElementById('selectedPanel').hidden=true;
-  document.getElementById('emptyWorldTitle').textContent=world.title;
-  document.getElementById('mapTitle').textContent=world.title;
-  document.getElementById('mapSubtitle').textContent='マップデータ未登録・準備中';
-  document.title=world.title+'｜マップ準備中';
-  empty.hidden=false;
+  document.getElementById('darkWorldControls').hidden=false;
+  document.getElementById('shipOrientationChip').hidden=true;
+  document.getElementById('mapTitle').textContent='ダークワールド';
+  document.getElementById('mapSubtitle').textContent='12×20マス／領地と地形の仮配置';
+  document.getElementById('gridReadout').textContent='12×20｜距離未設定';
+  document.getElementById('layoutNotice').textContent='仮配置・Notion未反映';
+  document.getElementById('emptyWorldTitle').textContent='ダークワールド';
+  document.title='ダークワールド｜仮の領地・地形マップ';
+  const loaded=Boolean(darkWorld.model);
+  empty.hidden=loaded;
+  draw();
  }
  if(persist)saveDisplaySettings();
 }
@@ -366,6 +397,14 @@ async function loadMapDataFromJSON(){
     if(draft.editorMeta?.status!=='draft')throw Error(id+' の配置案が未確定として登録されていません');
     layoutDrafts[id]=draft;
   }
+  try{
+   const darkResponse=await fetch('./data/dark-world-draft.json',{cache:'no-cache'});
+   if(!darkResponse.ok)throw Error('dark-world-draft.json : HTTP '+darkResponse.status);
+   darkWorld.load(await darkResponse.json());
+  }catch(darkError){
+   console.error('Dark World prototype load failed',darkError);
+   document.getElementById('worldEmpty').querySelector('p').textContent='仮マップのJSONを読み込めませんでした。GitHub Pagesの反映後に再読み込みしてください。';
+  }
   document.querySelectorAll('[data-map]').forEach(b=>b.disabled=false);
   switchWorld(activeWorldId,false);
  }catch(err){
@@ -436,6 +475,7 @@ function drawGridLayer(){
  ctx.restore();
 }
 function draw(){
+if(activeWorldId==='dark_world'){darkWorld.draw();return}
 ctx.setTransform(1,0,0,1,0,0);
 ctx.clearRect(0,0,W,H);
 ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
@@ -596,6 +636,7 @@ canvas.addEventListener('click',e=>{
  if(Date.now()<ignoreClickUntil)return;
  const p=mapCoordinateFromClient(e.clientX,e.clientY),x=p.x,y=p.y;
  if(x<0||x>W||y<0||y>H)return;
+ if(activeWorldId==='dark_world'){darkWorld.selectAt(x,y);return}
  let near=null,dist=35/view.zoom;
  for(const f of facilities){
   if(f.ringDistrict)continue;
@@ -629,6 +670,11 @@ document.querySelectorAll('[data-menu-tab]').forEach(b=>b.addEventListener('clic
 document.getElementById('drawerShade').addEventListener('click',closeDrawer);
 document.getElementById('popupMask').addEventListener('click',clearSelected);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){clearSelected();closeDrawer()}});
+const darkWorld=window.DarkWorldMap.create({
+ canvas,ctx,getView:()=>view,redraw:()=>draw(),
+ isDrawerOpen:()=>document.getElementById('drawer').classList.contains('open'),
+ gridVisible:()=>state.grid,gridOnTop:()=>state.gridOnTop
+});
 restoreDisplaySettings();
 initWorldSelector();
 loadMapDataFromJSON();
