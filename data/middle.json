@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "floor": "middle",
+  "unit": "m",
+  "note": "GitHub表示用データ。世界設定の正本はNotion。再配置の検討内容は未反映。",
+  "facilities": [
+    {
+      "id": "terminal",
+      "name": "リンクターミナル",
+      "x": 0,
+      "y": 0,
+      "w": 500,
+      "h": 500,
+      "type": "terminal",
+      "detail": "上層・下層を結ぶ中央交通拠点。一般リフトと大型機用リフトを運用。"
+    },
+    {
+      "id": "town",
+      "name": "コアシェルタウン",
+      "x": 0,
+      "y": 450,
+      "w": 700,
+      "h": 300,
+      "type": "town",
+      "detail": "居住・市場・充電・燃料補給・交流施設。"
+    },
+    {
+      "id": "valley",
+      "name": "リファインバレー",
+      "x": 0,
+      "y": -450,
+      "w": 800,
+      "h": 300,
+      "type": "workshop",
+      "detail": "武器修理・機体整備・カスタム改造・個人工房。"
+    },
+    {
+      "id": "lab",
+      "name": "アルキメリア装備開発ラボ",
+      "x": -450,
+      "y": -500,
+      "w": 300,
+      "h": 220,
+      "type": "workshop",
+      "detail": "中層の装備開発ラボ。"
+    },
+    {
+      "id": "dome",
+      "name": "レジストリンク・ドーム",
+      "x": 1050,
+      "y": 0,
+      "w": 650,
+      "h": 600,
+      "type": "guild",
+      "detail": "ギルド複合区。任務・報酬・作戦室・倉庫はドーム内部通路で接続。"
+    },
+    {
+      "id": "arbora",
+      "name": "アルボラセクター",
+      "x": -150,
+      "y": 900,
+      "w": 1500,
+      "h": 500,
+      "type": "nature",
+      "detail": "人工自然・植物育成・生態系管理の地区。"
+    },
+    {
+      "id": "fuel",
+      "name": "標準燃料生産施設",
+      "x": -1400,
+      "y": 450,
+      "w": 500,
+      "h": 400,
+      "type": "industrial",
+      "detail": "一般燃料を大量生産する施設。"
+    },
+    {
+      "id": "oil",
+      "name": "植物油加工区",
+      "x": -850,
+      "y": 700,
+      "w": 400,
+      "h": 300,
+      "type": "industrial",
+      "detail": "植物性油の加工。"
+    },
+    {
+      "id": "fiber",
+      "name": "繊維・樹脂加工区",
+      "x": -1150,
+      "y": 750,
+      "w": 400,
+      "h": 300,
+      "type": "industrial",
+      "detail": "植物繊維・樹脂の加工。"
+    },
+    {
+      "id": "resource",
+      "name": "植物資源加工施設",
+      "x": -1100,
+      "y": 1000,
+      "w": 450,
+      "h": 300,
+      "type": "industrial",
+      "detail": "栽培植物資源の加工。"
+    },
+    {
+      "id": "greenhouse",
+      "name": "生態系再現温室群",
+      "x": -200,
+      "y": 900,
+      "w": 800,
+      "h": 420,
+      "type": "nature",
+      "detail": "人工生態系を再現する温室群。"
+    },
+    {
+      "id": "water",
+      "name": "水・土壌循環施設",
+      "x": -650,
+      "y": 900,
+      "w": 250,
+      "h": 250,
+      "type": "nature",
+      "detail": "水・土壌循環機能。"
+    },
+    {
+      "id": "bio",
+      "name": "生物・植物管理施設",
+      "x": 200,
+      "y": 1050,
+      "w": 250,
+      "h": 180,
+      "type": "nature",
+      "detail": "生物と植物の管理。"
+    },
+    {
+      "id": "research",
+      "name": "バイオ素材研究温室",
+      "x": 450,
+      "y": 900,
+      "w": 300,
+      "h": 250,
+      "type": "nature",
+      "detail": "バイオ素材の研究温室。"
+    },
+    {
+      "id": "cargo",
+      "name": "中層貨物検査区",
+      "x": -450,
+      "y": 0,
+      "w": 280,
+      "h": 200,
+      "type": "industrial",
+      "detail": "貨物検査と貨物リフト接続。"
+    }
+  ],
+  "roads": [
+    {
+      "id": "concourse",
+      "name": "ターミナルコンコース",
+      "kind": "ring",
+      "r": 290,
+      "width": 80,
+      "color": "#bac6c9"
+    },
+    {
+      "id": "ring",
+      "name": "中層中央環状路",
+      "kind": "ring",
+      "r": 650,
+      "width": 36,
+      "color": "#a8b5bd"
+    },
+    {
+      "id": "walk",
+      "name": "コアシェル生活遊歩路",
+      "kind": "ring",
+      "r": 495,
+      "width": 8,
+      "color": "#69b9e5"
+    },
+    {
+      "id": "refine",
+      "name": "リファイン工房道路",
+      "kind": "line",
+      "points": [
+        [
+          -500,
+          -400
+        ],
+        [
+          0,
+          -650
+        ],
+        [
+          500,
+          -400
+        ]
+      ],
+      "width": 24,
+      "color": "#a8b5bd"
+    },
+    {
+      "id": "mission",
+      "name": "任務大通り",
+      "kind": "line",
+      "points": [
+        [
+          650,
+          0
+        ],
+        [
+          1050,
+          0
+        ]
+      ],
+      "width": 36,
+      "color": "#c6d1d4"
+    },
+    {
+      "id": "arboraRoad",
+      "name": "アルボラ大通り",
+      "kind": "line",
+      "points": [
+        [
+          0,
+          650
+        ],
+        [
+          0,
+          900
+        ]
+      ],
+      "width": 36,
+      "color": "#c6d1d4"
+    },
+    {
+      "id": "arboraLoop",
+      "name": "アルボラ管理環状路",
+      "kind": "line",
+      "points": [
+        [
+          -850,
+          700
+        ],
+        [
+          -700,
+          1100
+        ],
+        [
+          500,
+          1100
+        ],
+        [
+          650,
+          750
+        ],
+        [
+          -850,
+          700
+        ]
+      ],
+      "width": 30,
+      "color": "#a8b5bd"
+    },
+    {
+      "id": "industrialRoad",
+      "name": "中層工業貨物幹線",
+      "kind": "line",
+      "points": [
+        [
+          -650,
+          250
+        ],
+        [
+          -1050,
+          400
+        ],
+        [
+          -1400,
+          450
+        ],
+        [
+          -1150,
+          750
+        ],
+        [
+          -1100,
+          1000
+        ]
+      ],
+      "width": 48,
+      "color": "#f0b36e",
+      "layer": "freight"
+    },
+    {
+      "id": "cargoTunnel",
+      "name": "中層貨物トンネル",
+      "kind": "line",
+      "points": [
+        [
+          -450,
+          0
+        ],
+        [
+          -800,
+          250
+        ],
+        [
+          -1200,
+          500
+        ]
+      ],
+      "width": 32,
+      "color": "#db8d5a",
+      "layer": "freight",
+      "dash": [
+        12,
+        8
+      ]
+    },
+    {
+      "id": "botanical",
+      "name": "植物管理トンネル",
+      "kind": "line",
+      "points": [
+        [
+          -650,
+          900
+        ],
+        [
+          -200,
+          900
+        ],
+        [
+          450,
+          900
+        ]
+      ],
+      "width": 8,
+      "color": "#e8cd7f",
+      "layer": "freight",
+      "dash": [
+        7,
+        6
+      ]
+    },
+    {
+      "id": "pod",
+      "name": "中層輸送ポッド環状線",
+      "kind": "ring",
+      "r": 680,
+      "width": 16,
+      "color": "#b7a1fc",
+      "layer": "pods",
+      "dash": [
+        9,
+        7
+      ]
+    },
+    {
+      "id": "emergency",
+      "name": "中層非常迂回環状路",
+      "kind": "ring",
+      "r": 800,
+      "width": 12,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        6,
+        9
+      ]
+    }
+  ]
+}
