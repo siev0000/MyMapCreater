@@ -45,7 +45,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 @media(max-width:520px){nav button{font-size:12px;padding:10px 3px}.toolbar button{padding:8px}.sidebar{display:flex}}
 </style></head><body>
 <div class="app">
-<header><div><h1>AA マップ配置エディター <span class="tag">下書き専用</span></h1><p class="note">Notionの施設設定を基に配置を試作し、確定前のJSONを作成します。編集内容はサーバーへ自動保存されません。</p></div>
+<header><div><h1>AA マップ配置エディター <span class="tag">下書き専用</span></h1><p class="note">中層・下層には船尾中央栽培の配置案を読み込みます。Notion現行は保持され、編集内容もサーバーへ自動保存されません。</p></div>
 <a href="./index.html">← 閲覧マップへ戻る</a></header>
 <div id="loading">施設・道路JSONを読み込み中…</div>
 <div id="workspace" hidden>
@@ -56,7 +56,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <button id="grid" class="active">グリッド</button><button id="gridSize">100m四方（50mへ切替）</button>
 <button id="labels" class="active">施設名</button>
 <button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
-<button id="export">JSONを書き出す</button><button id="import">JSONを読み込む</button>
+<button id="export">JSONを書き出す</button><button id="resetFloor">Notion現行配置を読み込む</button><button id="import">JSONを読み込む</button>
 <input id="importFile" type="file" accept=".json,application/json" hidden>
 </div>
 <div class="layout">
@@ -86,7 +86,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
   const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
   const snap=n=>state.snap?Math.round(n/25)*25:Math.round(n);
-  let floors={},baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
+  let floors={},sourceFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
   const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
   const state={snap:true,grid:true,overlay:true,labels:true};let gridMeters=100;
   function current(){return floors[active]}
@@ -131,11 +131,19 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         if(!res.ok)throw Error(f+".json を取得できません（HTTP "+res.status+"）");
         return valid(await res.json(),f);
       }));
-      F.forEach((f,i)=>floors[f]=values[i]);
+      const drafts=await Promise.all(F.map(async f=>{
+        if(f==="upper")return null;
+        const res=await fetch("./data/"+f+"-draft.json",{cache:"no-cache"});
+        if(!res.ok)return null;
+        const d=valid(await res.json(),f);
+        if(d.editorMeta?.status!=="draft")throw Error(f+" の下書き状態が不正です");
+        return d;
+      }));
+      F.forEach((f,i)=>{sourceFloors[f]=clone(values[i]);floors[f]=drafts[i]||values[i];if(drafts[i])draftFloors.add(f)});
       for(const f of F){const previous=active;active=f;baselineWarnings[f]=diagnostics();active=previous;}
       $("loading").hidden=true;
       $("workspace").hidden=false;
-      showStatus("現行JSONを読み込みました。編集は確定データに自動反映されません。");
+      showStatus("中層・下層は船尾中央栽培の下書きを表示しています。NotionとGitHubの現行JSONには未反映です。");
       render();
     }catch(e){$("loading").textContent="地図データの読み込みに失敗しました: "+e.message+"。GitHub Pagesで開いてください。";showStatus(e.message,true)}
   }
@@ -281,7 +289,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(!current())return;
     document.querySelectorAll("[data-floor]").forEach(b=>{const ok=b.dataset.floor===active;b.classList.toggle("active",ok);b.setAttribute("aria-pressed",String(ok))});
     document.querySelectorAll("[data-kind]").forEach(b=>b.classList.toggle("active",b.dataset.kind===kind));
-    $("floorText").textContent=floorName()+(dirty.has(active)?" — 編集中":" — 現行設定を読み込み");
+    $("floorText").textContent=floorName()+(dirty.has(active)?" — 編集中":draftFloors.has(active)?" — 配置案を読み込み":" — Notion現行を読み込み");
     $("overlay").disabled=active==="upper";
     for(const [id,enabled] of [["overlay",state.overlay],["snap",state.snap],["grid",state.grid],["labels",state.labels]])$(id).classList.toggle("active",enabled);
     $("undo").disabled=history[active].length===0;$("redo").disabled=future[active].length===0;
@@ -420,6 +428,15 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const r=selectedItem();if(!r||r.kind!=="line"||r.points.length<=2)return;
     saveSnapshot();r.points.splice(i,1);render();
   }
+  function resetToNotion(){
+    if(!sourceFloors[active])return;
+    if(!confirm(floorName()+"の編集内容をNotion現行の座標に戻しますか？（GitHubのJSONは変更されません）"))return;
+    saveSnapshot();
+    floors[active]=clone(sourceFloors[active]);
+    draftFloors.delete(active);
+    const previous=active;baselineWarnings[active]=diagnostics();active=previous;
+    selection=null;render();showStatus("現行配置を編集中画面へ読み込みました。確定JSONには未反映です。");
+  }
   function exportJSON(){
     if(!current())return;
     const output=clone(current());
@@ -447,7 +464,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   $("labels").onclick=()=>{state.labels=!state.labels;render()};
   $("undo").onclick=()=>restore("undo");$("redo").onclick=()=>restore("redo");
   $("addFacility").onclick=newFacility;$("addRoad").onclick=newRoad;
-  $("export").onclick=exportJSON;$("import").onclick=()=>$("importFile").click();
+  $("export").onclick=exportJSON;$("resetFloor").onclick=resetToNotion;$("import").onclick=()=>$("importFile").click();
   $("importFile").addEventListener("change",async e=>{await importJSON(e.target.files?.[0]);e.target.value=""});
   $("search").addEventListener("input",renderList);
   $("items").addEventListener("click",e=>{const b=e.target.closest("[data-pick]");if(b){selection={id:b.dataset.pick,kind};render()}});
