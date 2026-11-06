@@ -120,9 +120,9 @@ function drawMiddleDistrictAndDrafts(){
  if(state.districts){
   for(const f of facilities.filter(f=>f.ringDistrict)){
    const [cx,cy]=xy(f.x,f.y),outer=f.outerRadius*.4,inner=f.innerRadius*.4;
-   ctx.save();ctx.fillStyle='rgba(75,115,119,.38)';ctx.beginPath();
+   ctx.save();ctx.fillStyle='rgba(67,130,103,.16)';ctx.beginPath();
    ctx.arc(cx,cy,outer,0,Math.PI*2);ctx.arc(cx,cy,inner,0,Math.PI*2,true);ctx.fill('evenodd');
-   ctx.strokeStyle='rgba(133,201,202,.62)';ctx.lineWidth=2;ctx.setLineDash([10,7]);
+   ctx.strokeStyle='rgba(140,207,159,.77)';ctx.lineWidth=2;ctx.setLineDash([10,7]);
    for(const radius of [inner,outer]){ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.stroke()}
    ctx.restore();
   }
@@ -232,7 +232,7 @@ function switchMap(id){
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>switchMap(b.dataset.map)));
 document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;switchMap(currentMap)};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
-function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function drawExclusiveSortieZones(){
  const zones=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones:[];
  if(!zones?.length)return;
@@ -281,6 +281,22 @@ for(const f of facilities){if(f.ringDistrict)continue;let [cx,cy]=xy(f.x,f.y);co
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();}
+function fitCanvasToViewport(){
+ const host=canvas.parentElement;
+ if(!host||!host.getBoundingClientRect)return;
+ const box=host.getBoundingClientRect();
+ if(box.width<=0||box.height<=0)return;
+ const shownWidth=Math.min(box.width,box.height*W/H);
+ canvas.style.width=shownWidth+'px';
+ canvas.style.height=(shownWidth*H/W)+'px';
+}
+if(typeof window!=='undefined'){
+ window.addEventListener('resize',fitCanvasToViewport);
+ if(typeof ResizeObserver!=='undefined'&&canvas.parentElement){
+  new ResizeObserver(fitCanvasToViewport).observe(canvas.parentElement);
+ }
+}
+fitCanvasToViewport();
 function closePopup(){
  const mask=document.getElementById('popupMask');mask.classList.remove('show');mask.setAttribute('aria-hidden','true');
 }
