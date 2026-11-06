@@ -1,0 +1,706 @@
+{
+  "schemaVersion": 1,
+  "floor": "lower",
+  "unit": "m",
+  "source": {
+    "system": "Notion",
+    "url": "https://www.notion.so/1ddfa1b30dc9805f8b20e211faf37709",
+    "section": "7.2-7.3",
+    "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
+  },
+  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 本ファイルは配置検討用の下書き。未承認の地理設定として扱う。",
+  "facilities": [
+    {
+      "id": "lower_terminal",
+      "name": "下層ターミナル",
+      "x": 0,
+      "y": 0,
+      "w": 500,
+      "h": 500,
+      "type": "terminal",
+      "detail": "上層・中層から一般リフトで接続する下層の交通拠点。",
+      "short": "中央ターミナル",
+      "sourceSection": "7.2"
+    },
+    {
+      "id": "last_hub",
+      "name": "ラストハブ",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 1300,
+      "type": "living",
+      "ringDistrict": true,
+      "innerRadius": 330,
+      "outerRadius": 650,
+      "detail": "ラストハブ。半径330～650mの円環地区。用途は現行Notionを参照。",
+      "short": "ラストハブ",
+      "sourceSection": "7.2",
+      "showLabel": false
+    },
+    {
+      "id": "reclaim_belt",
+      "name": "リクレイムベルト",
+      "x": 1050,
+      "y": 0,
+      "w": 750,
+      "h": 650,
+      "type": "recycling",
+      "detail": "廃機体・金属・回収物を解体・選別・再利用する再処理区。",
+      "short": "再処理区",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "acid_zone_s9",
+      "name": "アシッドゾーンS9",
+      "x": 1250,
+      "y": 850,
+      "w": 900,
+      "h": 500,
+      "type": "hazard",
+      "detail": "腐食性廃液を扱う危険作業区。",
+      "short": "S9腐食帯",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "bioreactor",
+      "name": "バイオリアクター",
+      "x": -1300,
+      "y": 0,
+      "w": 900,
+      "h": 1050,
+      "type": "nature",
+      "detail": "有機廃棄物を燃料・肥料・熱エネルギーなどに再生する施設。",
+      "short": "バイオ再生",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "material_hollow",
+      "name": "マテリアル・ホロー",
+      "x": 1050,
+      "y": -650,
+      "w": 700,
+      "h": 500,
+      "type": "industrial",
+      "detail": "地上・外部から鉱石や土砂などを搬入する船底資源設備。",
+      "short": "資源搬入",
+      "sourceSection": "7.2"
+    },
+    {
+      "id": "junk_rebuild_tank",
+      "name": "ジャンク・リビルド槽",
+      "x": 250,
+      "y": -650,
+      "w": 350,
+      "h": 250,
+      "type": "recycling",
+      "detail": "公式地図での接続案内は非公開。",
+      "short": "廃整備槽",
+      "sourceSection": "7.2"
+    },
+    {
+      "id": "lower_general_processing",
+      "name": "一般処理区",
+      "x": 650,
+      "y": 450,
+      "w": 350,
+      "h": 250,
+      "type": "recycling",
+      "detail": "低危険度の廃棄物や金属屑などを処理。",
+      "short": "一般処理",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "lower_managed_processing",
+      "name": "管理処理区",
+      "x": 1000,
+      "y": 600,
+      "w": 350,
+      "h": 250,
+      "type": "hazard",
+      "detail": "使用済み燃料・バッテリー・冷却液などの管理処理。",
+      "short": "管理処理",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "lower_hazardous_processing",
+      "name": "危険処理区",
+      "x": 1050,
+      "y": 830,
+      "w": 400,
+      "h": 300,
+      "type": "hazard",
+      "detail": "爆発性試作品や危険廃機体などの処理。",
+      "short": "危険処理",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "lower_special_isolation",
+      "name": "特別隔離区",
+      "x": 1500,
+      "y": 900,
+      "w": 350,
+      "h": 300,
+      "type": "hazard",
+      "detail": "グロウメタ汚染物・自己増殖素材などを隔離。",
+      "short": "特別隔離",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "lower_emergency_isolation",
+      "name": "緊急隔離施設",
+      "x": 1450,
+      "y": 500,
+      "w": 300,
+      "h": 200,
+      "type": "hazard",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "discard_registration",
+      "name": "廃棄物搬入登録区",
+      "x": 650,
+      "y": 0,
+      "w": 250,
+      "h": 180,
+      "type": "recycling",
+      "detail": "搬入される廃棄物の登録。",
+      "short": "搬入登録",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "waste_inspection_classification",
+      "name": "廃棄物検査・分類区",
+      "x": 900,
+      "y": 0,
+      "w": 250,
+      "h": 180,
+      "type": "recycling",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "discarded_machine_inspection",
+      "name": "廃機体事前検査区",
+      "x": 1200,
+      "y": 170,
+      "w": 300,
+      "h": 220,
+      "type": "recycling",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "parts_recovery_area",
+      "name": "部品回収区",
+      "x": 1150,
+      "y": -175,
+      "w": 300,
+      "h": 220,
+      "type": "recycling",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "metal_re_refining_area",
+      "name": "金属再精錬区",
+      "x": 1580,
+      "y": -150,
+      "w": 450,
+      "h": 300,
+      "type": "recycling",
+      "detail": "金属資源を再生する再精錬施設。",
+      "short": "金属再精錬",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "recycled_resource_storage",
+      "name": "再生資源倉庫",
+      "x": 1580,
+      "y": 200,
+      "w": 400,
+      "h": 250,
+      "type": "recycling",
+      "detail": "再生資源の集積・搬出。",
+      "short": "再生資源庫",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "fuel_discharge_neutralization",
+      "name": "燃料・電池放電中和施設",
+      "x": 800,
+      "y": 450,
+      "w": 280,
+      "h": 200,
+      "type": "hazard",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "organic_waste_intake",
+      "name": "有機廃棄物搬入口",
+      "x": -825,
+      "y": 390,
+      "w": 250,
+      "h": 180,
+      "type": "nature",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "biological_treatment_tanks",
+      "name": "バイオ処理槽",
+      "x": -1300,
+      "y": -100,
+      "w": 350,
+      "h": 250,
+      "type": "nature",
+      "detail": "有機処理系の一施設。",
+      "short": "バイオ処理槽",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "sludge_treatment_area",
+      "name": "汚泥処理区",
+      "x": -1600,
+      "y": -300,
+      "w": 300,
+      "h": 220,
+      "type": "nature",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "reusable_component_recovery",
+      "name": "再利用成分回収区",
+      "x": -1150,
+      "y": 300,
+      "w": 300,
+      "h": 180,
+      "type": "nature",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "waste_heat_recovery",
+      "name": "廃熱回収区",
+      "x": -1650,
+      "y": 300,
+      "w": 300,
+      "h": 220,
+      "type": "industrial",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "external_resource_intake",
+      "name": "外部資源吸収設備",
+      "x": 1450,
+      "y": -650,
+      "w": 300,
+      "h": 300,
+      "type": "industrial",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2"
+    },
+    {
+      "id": "resource_temporary_storage",
+      "name": "大型資源仮置場",
+      "x": 850,
+      "y": -550,
+      "w": 350,
+      "h": 250,
+      "type": "industrial",
+      "detail": "外部からの大量資源を一時集積。",
+      "short": "資源仮置場",
+      "sourceSection": "7.2"
+    },
+    {
+      "id": "foreign_object_inspection",
+      "name": "異物検査区",
+      "x": 550,
+      "y": -400,
+      "w": 300,
+      "h": 220,
+      "type": "industrial",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2"
+    },
+    {
+      "id": "heavy_machinery_maintenance",
+      "name": "重機整備区",
+      "x": -450,
+      "y": 350,
+      "w": 350,
+      "h": 250,
+      "type": "industrial",
+      "detail": "重量機・設備の整備区。",
+      "short": "重機整備",
+      "sourceSection": "7.2"
+    }
+  ],
+  "roads": [
+    {
+      "id": "lower_terminal_concourse",
+      "name": "下層ターミナルコンコース",
+      "roadType": "コンコース",
+      "width": 80,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "r": 290,
+      "connection": "ターミナル、ラストハブ環状路",
+      "notionshape": "半径250～330m"
+    },
+    {
+      "id": "last_hub_ring",
+      "name": "ラストハブ環状路",
+      "roadType": "地区環状道路",
+      "width": 30,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "r": 600,
+      "connection": "生活区、整備、各産業幹線",
+      "notionshape": "中心半径600m"
+    },
+    {
+      "id": "lower_reclaim_spine",
+      "name": "再生工業幹線",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          600,
+          0
+        ],
+        [
+          850,
+          0
+        ],
+        [
+          1200,
+          0
+        ],
+        [
+          1580,
+          200
+        ]
+      ],
+      "connection": "搬入登録、分類、廃機体検査、部品回収、再精錬、倉庫",
+      "notionshape": "[-600,0]→[-1,550,100]",
+      "sourceNotionGeometry": "[-600,0]→[-1,550,100]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lower_hazard_corridor",
+      "name": "S9危険物隔離通路",
+      "roadType": "隔離通路",
+      "width": 24,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          650,
+          350
+        ],
+        [
+          950,
+          600
+        ],
+        [
+          1250,
+          830
+        ],
+        [
+          1500,
+          900
+        ]
+      ],
+      "connection": "一般処理、管理処理、危険処理、特別隔離",
+      "notionshape": "[-650,-300]→[-900,-450]→[-1,250,-600]→[-1,600,-500]",
+      "sourceNotionGeometry": "[-650,-300]→[-900,-450]→[-1,250,-600]→[-1,600,-500]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lower_organic_corridor",
+      "name": "有機処理密閉路",
+      "roadType": "隔離通路",
+      "width": 24,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -500,
+          350
+        ],
+        [
+          -825,
+          390
+        ],
+        [
+          -1300,
+          150
+        ],
+        [
+          -1650,
+          300
+        ]
+      ],
+      "connection": "有機搬入口、処理槽、汚泥、廃熱",
+      "notionshape": "[-500,350]→[-500,650]→[-850,800]→[-1,200,850]→[-1,450,700]",
+      "sourceNotionGeometry": "[-500,350]→[-500,650]→[-850,800]→[-1,200,850]→[-1,450,700]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lower_material_hollow_road",
+      "name": "重資源搬送路",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          500,
+          -300
+        ],
+        [
+          850,
+          -550
+        ],
+        [
+          1450,
+          -650
+        ]
+      ],
+      "connection": "異物検査、仮置場、マテリアル・ホロー、外部吸収口",
+      "notionshape": "[500,-300]→[850,-550]→[1,450,-650]"
+    },
+    {
+      "id": "lower_recycled_export_tunnel",
+      "name": "再生資源上送トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
+      "kind": "line",
+      "points": [
+        [
+          1580,
+          200
+        ],
+        [
+          1050,
+          200
+        ],
+        [
+          400,
+          100
+        ]
+      ],
+      "connection": "再生資源倉庫、中央貨物リフト",
+      "notionshape": "[-1,450,450]→[-800,300]→[-300,150]",
+      "sourceNotionGeometry": "[-1,450,450]→[-800,300]→[-300,150]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lower_bio_return_tunnel",
+      "name": "バイオ資源還流トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -1600,
+          0
+        ],
+        [
+          -1300,
+          0
+        ],
+        [
+          -850,
+          0
+        ],
+        [
+          -450,
+          0
+        ]
+      ],
+      "connection": "回収成分、中央貨物リフト、中層アルボラ系統",
+      "notionshape": "[-650,1,050]→[-250,700]→[-250,250]",
+      "sourceNotionGeometry": "[-650,1,050]→[-250,700]→[-250,250]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lower_emergency_bypass",
+      "name": "下層非常迂回環状路",
+      "roadType": "非常用迂回路",
+      "width": 12,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        6,
+        8
+      ],
+      "kind": "ring",
+      "r": 850,
+      "connection": "各主要幹線、避難所",
+      "notionshape": "中心半径850m"
+    },
+    {
+      "id": "lower_junk_maintenance_path",
+      "name": "廃整備用旧通路",
+      "roadType": "整備通路",
+      "width": 8,
+      "color": "#e8cd7f",
+      "layer": "freight",
+      "dash": [
+        7,
+        6
+      ],
+      "kind": "line",
+      "points": [
+        [
+          350,
+          -450
+        ],
+        [
+          250,
+          -650
+        ]
+      ],
+      "connection": "ラストハブ外縁、ジャンク・リビルド槽",
+      "notionshape": "[350,-450]→[250,-650]"
+    },
+    {
+      "id": "lower_propulsion_service_road",
+      "name": "船尾機関整備道路",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -1200,
+          650
+        ],
+        [
+          -1750,
+          650
+        ]
+      ],
+      "connection": "再精錬、廃熱、船尾推進設備",
+      "notionshape": "[-1,200,300]→[-1,750,300]",
+      "sourceNotionGeometry": "[-1,200,300]→[-1,750,300]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lower_security_seal_route",
+      "name": "危険区封鎖操作路",
+      "roadType": "警備通路",
+      "width": 8,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        5,
+        6
+      ],
+      "kind": "line",
+      "points": [
+        [
+          950,
+          450
+        ],
+        [
+          1250,
+          600
+        ]
+      ],
+      "connection": "緊急隔離施設、隔壁制御",
+      "notionshape": "[-900,-200]→[-1,350,-200]",
+      "sourceNotionGeometry": "[-900,-200]→[-1,350,-200]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    }
+  ],
+  "editorMeta": {
+    "status": "draft",
+    "scenario": "船尾中央栽培・真下に有機再生",
+    "note": "Notion正本への反映前。現行マップを置き換えない。中層・下層の同一XY座標にアルボラセクターとバイオリアクターを揃え、船首側へ金属再処理・危険物処理を振り分ける。道路経路も検討段階。",
+    "revision": "central-aft-growing-v1"
+  }
+}
