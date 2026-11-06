@@ -1,0 +1,60 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AA 中層｜20×20マップ（実寸比率版）</title><style>
+:root{color-scheme:dark;font-family:system-ui,'Noto Sans JP',sans-serif}*{box-sizing:border-box}body{margin:0;background:#0b131c;color:#e5edf2}.app{max-width:1450px;margin:auto;padding:20px}h1{font-size:22px;margin:0 0 6px}.sub{color:#a4b8c7;font-size:12px;margin:0 0 15px}.shell{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:15px}.mapbox{background:#111f27;border:1px solid #35505c;border-radius:12px;padding:12px;min-width:0}canvas{display:block;width:100%;max-width:620px;margin:auto;aspect-ratio:5 / 8;cursor:crosshair;touch-action:manipulation;background:#172b2e;border:1px solid #456071}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}button{border:1px solid #456478;color:#e7f3fa;background:#1b3444;border-radius:7px;padding:8px 10px;cursor:pointer}button.on{background:#29576a;border-color:#78bbd4}aside{display:flex;flex-direction:column;gap:12px}.panel{border:1px solid #385365;background:#12212d;border-radius:10px;padding:14px}.panel h2{margin:0 0 11px;font-size:15px}.legend{display:grid;grid-template-columns:20px 1fr;gap:8px 10px;font-size:12px;align-items:center;margin:10px 0}.swatch{height:10px;border-radius:3px}.small{font-size:12px;line-height:1.65;color:#b2c6d2}#info{font-size:13px;line-height:1.7;min-height:140px}.muted{color:#90a8b9}#info h3{font-size:17px;margin:0 0 7px;color:#fff}#info .pill{display:inline-block;border:1px solid #567081;border-radius:5px;padding:1px 6px;margin:2px 4px 4px 0;font-size:11px}.notice{margin-top:14px;font-size:12px;line-height:1.6;color:#afc2d0}@media(max-width:820px){.app{padding:10px}.shell{grid-template-columns:1fr}aside{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr))}h1{font-size:18px}}
+</style></head><body><div class="app"><h1>中層《アームドヴェイン階層》｜20×20 MAP</h1><p class="sub">アポクリファ＝アーカイブ ／ 実寸比率の俯瞰施設・経路図 ／ Notion座標ベース ／ 1マス ＝ X方向200m × Y方向125m（実寸比率） ／ 上＝船首（+X）</p><div class="shell"><section class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="中層地図"></canvas><div class="controls"><button class="on" data-layer="labels">施設名</button><button class="on" data-layer="grid">20×20マス</button><button class="on" data-layer="roads">道路</button><button class="on" data-layer="pods">輸送ポッド</button><button class="on" data-layer="freight">貨物・整備路</button><button id="reset">選択解除</button></div><p class="notice">船体の X=±2,000m、Y=±1,250m を20×20で表示。マスは見た目も物理寸法も長方形（縦200m×横125m）です。マス・施設をクリック／タップすると詳細が表示されます。道が重なる箇所は色の濃い線を優先描画。大きな施設は占有範囲の概形を示しています。施設への取付道路は個別位置が未定のため推測で追加していません。</p></section><aside><div class="panel"><h2>選択情報</h2><p class="small">船首＝上（+X）／右舷＝右（+Y）<br>表示範囲：X −2000〜+2000m ／ Y −1250〜+1250m<br>画面比率：横5：縦8</p><div id="info"><span class="muted">マスまたは施設を選択してください。</span></div></div><div class="panel"><h2>施設・区画</h2><div id="places"></div></div><div class="panel"><h2>道路・移動経路</h2><div class="legend"><i class="swatch" style="background:#a8b5bd"></i>主要幹線・一般道路<i class="swatch" style="background:#69b9e5"></i>歩行・生活通路<i class="swatch" style="background:#f0b36e"></i>貨物道路・トンネル<i class="swatch" style="background:#b7a1fc"></i>輸送ポッド環状線<i class="swatch" style="background:#bd7f7d"></i>非常用迂回路</div><p class="small">移動可能な経路はNotion記載の道路・通路・リフト等に限定。施設同士の隣接は通行可能を意味しません。</p></div></aside></div></div><script>
+const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const N=20,W=1000,H=1600,CW=W/N,CH=H/N;
+// Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
+function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
+const state={labels:true,grid:true,roads:true,pods:true,freight:true};let chosen=null;
+const facilities=[
+{id:'terminal',name:'リンクターミナル',x:0,y:0,w:500,h:500,type:'terminal',detail:'上層・下層を結ぶ中央交通拠点。一般リフトと大型機用リフトを運用。'},
+{id:'town',name:'コアシェルタウン',x:0,y:450,w:700,h:300,type:'town',detail:'居住・市場・充電・燃料補給・交流施設。'},
+{id:'valley',name:'リファインバレー',x:0,y:-450,w:800,h:300,type:'workshop',detail:'武器修理・機体整備・カスタム改造・個人工房。'},
+{id:'lab',name:'アルキメリア装備開発ラボ',x:-450,y:-500,w:300,h:220,type:'workshop',detail:'中層の装備開発ラボ。'},
+{id:'dome',name:'レジストリンク・ドーム',x:1050,y:0,w:650,h:600,type:'guild',detail:'ギルド複合区。任務・報酬・作戦室・倉庫はドーム内部通路で接続。'},
+{id:'arbora',name:'アルボラセクター',x:-150,y:900,w:1500,h:500,type:'nature',detail:'人工自然・植物育成・生態系管理の地区。'},
+{id:'fuel',name:'標準燃料生産施設',x:-1400,y:450,w:500,h:400,type:'industrial',detail:'一般燃料を大量生産する施設。'},
+{id:'oil',name:'植物油加工区',x:-850,y:700,w:400,h:300,type:'industrial',detail:'植物性油の加工。'},
+{id:'fiber',name:'繊維・樹脂加工区',x:-1150,y:750,w:400,h:300,type:'industrial',detail:'植物繊維・樹脂の加工。'},
+{id:'resource',name:'植物資源加工施設',x:-1100,y:1000,w:450,h:300,type:'industrial',detail:'栽培植物資源の加工。'},
+{id:'greenhouse',name:'生態系再現温室群',x:-200,y:900,w:800,h:420,type:'nature',detail:'人工生態系を再現する温室群。'},
+{id:'water',name:'水・土壌循環施設',x:-650,y:900,w:250,h:250,type:'nature',detail:'水・土壌循環機能。'},
+{id:'bio',name:'生物・植物管理施設',x:200,y:1050,w:250,h:180,type:'nature',detail:'生物と植物の管理。'},
+{id:'research',name:'バイオ素材研究温室',x:450,y:900,w:300,h:250,type:'nature',detail:'バイオ素材の研究温室。'},
+{id:'cargo',name:'中層貨物検査区',x:-450,y:0,w:280,h:200,type:'industrial',detail:'貨物検査と貨物リフト接続。'}
+];
+const groups={terminal:{fill:'#346e87',line:'#98e5fc'},town:{fill:'#587789',line:'#a6dcf2'},workshop:{fill:'#776879',line:'#d5b4eb'},guild:{fill:'#817253',line:'#ead59a'},nature:{fill:'#356956',line:'#9dd7ad'},industrial:{fill:'#70634c',line:'#e8bc7e'}};
+const roads=[
+{id:'concourse',name:'ターミナルコンコース',kind:'ring',r:290,width:80,color:'#bac6c9'},
+{id:'ring',name:'中層中央環状路',kind:'ring',r:650,width:36,color:'#a8b5bd'},
+{id:'walk',name:'コアシェル生活遊歩路',kind:'ring',r:495,width:8,color:'#69b9e5'},
+{id:'refine',name:'リファイン工房道路',kind:'line',points:[[-500,-400],[0,-650],[500,-400]],width:24,color:'#a8b5bd'},
+{id:'mission',name:'任務大通り',kind:'line',points:[[650,0],[1050,0]],width:36,color:'#c6d1d4'},
+{id:'arboraRoad',name:'アルボラ大通り',kind:'line',points:[[0,650],[0,900]],width:36,color:'#c6d1d4'},
+{id:'arboraLoop',name:'アルボラ管理環状路',kind:'line',points:[[-850,700],[-700,1100],[500,1100],[650,750],[-850,700]],width:30,color:'#a8b5bd'},
+{id:'industrialRoad',name:'中層工業貨物幹線',kind:'line',points:[[-650,250],[-1050,400],[-1400,450],[-1150,750],[-1100,1000]],width:48,color:'#f0b36e',layer:'freight'},
+{id:'cargoTunnel',name:'中層貨物トンネル',kind:'line',points:[[-450,0],[-800,250],[-1200,500]],width:32,color:'#db8d5a',layer:'freight',dash:[12,8]},
+{id:'botanical',name:'植物管理トンネル',kind:'line',points:[[-650,900],[-200,900],[450,900]],width:8,color:'#e8cd7f',layer:'freight',dash:[7,6]},
+{id:'pod',name:'中層輸送ポッド環状線',kind:'ring',r:680,width:16,color:'#b7a1fc',layer:'pods',dash:[9,7]},
+{id:'emergency',name:'中層非常迂回環状路',kind:'ring',r:800,width:12,color:'#bd7f7d',layer:'freight',dash:[6,9]}
+];
+function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
+function drawRoad(road){if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
+// fixed environmental patches for district presentation, not exact borders
+ctx.save();ctx.globalAlpha=.6;ctx.fillStyle='#24453d';ctx.beginPath();ctx.ellipse(...xy(-100,880),260,250,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#303c43';ctx.beginPath();ctx.ellipse(...xy(-50,0),280,310,0,0,Math.PI*2);ctx.fill();ctx.restore();
+if(state.grid){ctx.strokeStyle='rgba(173,210,218,.16)';ctx.lineWidth=1;for(let k=0;k<=N;k++){let gx=k*CW,gy=k*CH;ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke()}}
+// Real facilities and district region footprint, mark area before roads
+for(let f of facilities){if(f.id==='terminal')continue;const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4;const g=groups[f.type];ctx.fillStyle=g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);ctx.strokeStyle=g.line+'aa';ctx.lineWidth=1.6;ctx.strokeRect(cx-w/2,cy-h/2,w,h)}
+for(let r of roads)drawRoad(r);
+// Terminal tower after roads, explicit center footprint
+const term=facilities[0];ctx.fillStyle=groups.terminal.fill;circle(0,0,250);ctx.fill();ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
+for(const f of facilities){let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
+if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!['arbora','greenhouse'].includes(f.id)).concat(facilities.filter(f=>['arbora','greenhouse'].includes(f.id)));for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=f.name.replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.id==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+if(chosen&&chosen.kind==='cell'){ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*CW+1,chosen.row*CH+1,CW-2,CH-2)}
+ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();}
+function renderInfo(){const el=document.getElementById('info');if(!chosen){el.innerHTML='<span class="muted">マスまたは施設を選択してください。</span>';return}if(chosen.kind==='cell'){let x0=2000-(chosen.row+1)*200,x1=2000-chosen.row*200,y0=-1250+chosen.col*125,y1=y0+125;el.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><span class="pill">座標範囲 X ${x0} ～ ${x1}m</span><span class="pill">Y ${y0} ～ ${y1}m</span><div class="small">マス内を移動できるかどうかは経路設定によります。</div>`;return}let f=chosen,g=groups[f.type];el.innerHTML=`<h3>${f.name}</h3><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span><p>${f.detail}</p><div class="small">表示色：<span style="color:${g.line}">●</span> ${f.type}</div>`}
+function selectPlace(id){chosen=facilities.find(x=>x.id===id);renderInfo();draw()}
+canvas.addEventListener('click',e=>{const box=canvas.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*W,y=(e.clientY-box.top)/box.height*H;let near=null,dist=35;for(const f of facilities){const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);if(d<dist){near=f;dist=d}}chosen=near||{kind:'cell',col:Math.min(19,Math.max(0,Math.floor(x/CW))),row:Math.min(19,Math.max(0,Math.floor(y/CH)))};renderInfo();draw()});
+document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=()=>{chosen=null;renderInfo();draw()};
+document.getElementById('places').innerHTML=facilities.map(f=>`<button style="margin:3px;font-size:11px;padding:5px 8px" data-place="${f.id}">${f.name}</button>`).join('');document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});draw();
+</script></body></html>
