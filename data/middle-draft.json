@@ -1,0 +1,534 @@
+{
+  "schemaVersion": 1,
+  "floor": "middle",
+  "unit": "m",
+  "source": {
+    "system": "Notion",
+    "url": "https://www.notion.so/1ddfa1b30dc9805f8b20e211faf37709",
+    "section": "6.2-6.3",
+    "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
+  },
+  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 本ファイルは配置検討用の下書き。未承認の地理設定として扱う。",
+  "facilities": [
+    {
+      "id": "middle_terminal",
+      "name": "中層ターミナル",
+      "x": 0,
+      "y": 0,
+      "w": 500,
+      "h": 500,
+      "type": "terminal",
+      "detail": "上層・下層を結ぶ中央交通拠点。一般リフトと大型機用リフトを運用。",
+      "sourceSection": "6.2",
+      "short": "リンクターミナル"
+    },
+    {
+      "id": "core_shell_refine",
+      "name": "コアシェル・リファイン",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1440,
+      "type": "town",
+      "ringDistrict": true,
+      "innerRadius": 330,
+      "outerRadius": 720,
+      "detail": "コアシェル・リファイン。半径330～720mの円環地区。用途は現行Notionを参照。",
+      "showLabel": false,
+      "sourceSection": "6.2"
+    },
+    {
+      "id": "core_shell_town",
+      "name": "コアシェルタウン",
+      "x": 0,
+      "y": 450,
+      "w": 700,
+      "h": 300,
+      "type": "town",
+      "detail": "居住・市場・充電・燃料補給・交流施設。",
+      "sourceSection": "6.2"
+    },
+    {
+      "id": "refine_valley",
+      "name": "リファインバレー",
+      "x": 0,
+      "y": -450,
+      "w": 800,
+      "h": 300,
+      "type": "workshop",
+      "detail": "武器修理・機体整備・カスタム改造・個人工房。",
+      "sourceSection": "6.2"
+    },
+    {
+      "id": "alchimeria_lab",
+      "name": "アルキメリア装備開発ラボ",
+      "x": -450,
+      "y": -500,
+      "w": 300,
+      "h": 220,
+      "type": "workshop",
+      "detail": "中層の装備開発ラボ。",
+      "sourceSection": "6.2"
+    },
+    {
+      "id": "resist_link_dome",
+      "name": "レジストリンク・ドーム",
+      "x": 1050,
+      "y": 0,
+      "w": 650,
+      "h": 600,
+      "type": "guild",
+      "detail": "ギルド複合区。任務・報酬・作戦室・倉庫はドーム内部通路で接続。",
+      "sourceSection": "6.2"
+    },
+    {
+      "id": "arbora_sector",
+      "name": "アルボラセクター",
+      "x": -1300,
+      "y": 0,
+      "w": 1050,
+      "h": 1300,
+      "type": "nature",
+      "detail": "人工自然・植物育成・生態系管理の地区。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "standard_fuel_factory",
+      "name": "標準燃料生産施設",
+      "x": -1650,
+      "y": 950,
+      "w": 500,
+      "h": 400,
+      "type": "industrial",
+      "detail": "一般燃料を大量生産する施設。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "plant_oil_processing",
+      "name": "植物油加工区",
+      "x": -1000,
+      "y": 950,
+      "w": 400,
+      "h": 300,
+      "type": "industrial",
+      "detail": "植物性油の加工。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "fiber_resin_processing",
+      "name": "植物繊維・樹脂加工区",
+      "x": -1600,
+      "y": -950,
+      "w": 400,
+      "h": 300,
+      "type": "industrial",
+      "detail": "植物繊維・樹脂の加工。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "middle_material_processing",
+      "name": "植物資源加工施設",
+      "x": -1000,
+      "y": -950,
+      "w": 450,
+      "h": 300,
+      "type": "industrial",
+      "detail": "栽培植物資源の加工。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "ecosystem_greenhouses",
+      "name": "生態系再現温室群",
+      "x": -1325,
+      "y": -175,
+      "w": 600,
+      "h": 420,
+      "type": "nature",
+      "detail": "人工生態系を再現する温室群。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "water_soil_cycle",
+      "name": "水・土壌循環施設",
+      "x": -1600,
+      "y": 425,
+      "w": 250,
+      "h": 250,
+      "type": "nature",
+      "detail": "水・土壌循環機能。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "biological_management",
+      "name": "生物・植物管理施設",
+      "x": -950,
+      "y": 425,
+      "w": 250,
+      "h": 180,
+      "type": "nature",
+      "detail": "生物と植物の管理。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "bio_material_greenhouse",
+      "name": "バイオ素材研究温室",
+      "x": -950,
+      "y": -425,
+      "w": 300,
+      "h": 250,
+      "type": "nature",
+      "detail": "バイオ素材の研究温室。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。"
+    },
+    {
+      "id": "middle_cargo_inspection",
+      "name": "中層貨物検査区",
+      "x": -450,
+      "y": 0,
+      "w": 280,
+      "h": 200,
+      "type": "industrial",
+      "detail": "貨物検査と貨物リフト接続。",
+      "sourceSection": "6.2"
+    }
+  ],
+  "roads": [
+    {
+      "id": "middle_terminal_concourse",
+      "name": "中層ターミナルコンコース",
+      "roadType": "コンコース",
+      "width": 80,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "r": 290,
+      "connection": "ターミナル、中央環状路",
+      "notionshape": "半径250～330m"
+    },
+    {
+      "id": "middle_public_ring",
+      "name": "中層中央環状路",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "r": 650,
+      "connection": "コアシェル、任務大通り、アルボラ大通り、工業幹線",
+      "notionshape": "中心半径650m"
+    },
+    {
+      "id": "middle_core_prom_enable",
+      "name": "コアシェル生活遊歩路",
+      "roadType": "歩行通路",
+      "width": 8,
+      "color": "#69b9e5",
+      "kind": "ring",
+      "r": 495,
+      "geometryStatus": "approximate_center_of_annular_range",
+      "connection": "住宅、市場、娯楽、医療、修理",
+      "notionshape": "半径430～560m"
+    },
+    {
+      "id": "middle_refine_service_road",
+      "name": "リファイン工房道路",
+      "roadType": "一般道路",
+      "width": 24,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          -500,
+          -400
+        ],
+        [
+          0,
+          -650
+        ],
+        [
+          500,
+          -400
+        ]
+      ],
+      "connection": "リファインバレー、アルキメリア",
+      "notionshape": "[-500,-400]→[0,-650]→[500,-400]"
+    },
+    {
+      "id": "middle_mission_avenue",
+      "name": "任務大通り",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          650,
+          0
+        ],
+        [
+          1050,
+          0
+        ]
+      ],
+      "connection": "中央環状路、レジストリンク・ドーム",
+      "notionshape": "[650,0]→[1,050,0]"
+    },
+    {
+      "id": "middle_resist_internal_corridor",
+      "name": "ドーム内部連絡通路",
+      "roadType": "歩行通路",
+      "width": 8,
+      "color": "#69b9e5",
+      "kind": "internal",
+      "geometryStatus": "not_specified",
+      "connection": "受付、報酬、作戦室、倉庫",
+      "notionshape": "ドーム内部"
+    },
+    {
+      "id": "middle_arbora_boulevard",
+      "name": "アルボラ大通り",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          -650,
+          0
+        ],
+        [
+          -850,
+          0
+        ],
+        [
+          -1050,
+          0
+        ]
+      ],
+      "connection": "中央環状路、アルボラセクター",
+      "notionshape": "[0,650]→[0,900]",
+      "sourceNotionGeometry": "[0,650]→[0,900]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "middle_arbora_loop",
+      "name": "アルボラ管理環状路",
+      "roadType": "地区環状道路",
+      "width": 30,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          -775,
+          -600
+        ],
+        [
+          -1800,
+          -600
+        ],
+        [
+          -1800,
+          600
+        ],
+        [
+          -775,
+          600
+        ],
+        [
+          -775,
+          -600
+        ]
+      ],
+      "connection": "温室、管理、水・土壌、研究温室",
+      "notionshape": "[-850,700]→[-700,1,100]→[500,1,100]→[650,750]→閉路",
+      "sourceNotionGeometry": "[-850,700]→[-700,1,100]→[500,1,100]→[650,750]→閉路",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "middle_industrial_freight_road",
+      "name": "中層工業貨物幹線",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -600,
+          -260
+        ],
+        [
+          -800,
+          -800
+        ],
+        [
+          -1000,
+          -950
+        ],
+        [
+          -1600,
+          -950
+        ]
+      ],
+      "connection": "燃料工場、植物油、繊維・樹脂、資源加工",
+      "notionshape": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
+      "sourceNotionGeometry": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "middle_cargo_tunnel",
+      "name": "中層貨物トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -450,
+          0
+        ],
+        [
+          -750,
+          0
+        ],
+        [
+          -1200,
+          0
+        ]
+      ],
+      "connection": "貨物検査、工業貨物幹線、貨物リフト",
+      "notionshape": "[-450,0]→[-800,250]→[-1,200,500]",
+      "sourceNotionGeometry": "[-450,0]→[-800,250]→[-1,200,500]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "middle_botanical_service_tunnel",
+      "name": "植物管理トンネル",
+      "roadType": "整備通路",
+      "width": 8,
+      "color": "#e8cd7f",
+      "layer": "freight",
+      "dash": [
+        7,
+        6
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -1600,
+          425
+        ],
+        [
+          -1325,
+          75
+        ],
+        [
+          -950,
+          425
+        ],
+        [
+          -950,
+          -425
+        ]
+      ],
+      "connection": "水・土壌、温室、生物管理、研究温室",
+      "notionshape": "[-650,900]→[-200,900]→[450,900]",
+      "sourceNotionGeometry": "[-650,900]→[-200,900]→[450,900]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "middle_pod_loop",
+      "name": "中層輸送ポッド環状線",
+      "roadType": "輸送ポッド線",
+      "width": 16,
+      "color": "#b7a1fc",
+      "layer": "pods",
+      "dash": [
+        9,
+        7
+      ],
+      "kind": "ring",
+      "r": 650,
+      "geometryStatus": "along_middle_public_ring",
+      "connection": "ターミナル、ドーム、アルボラ入口、コアシェル",
+      "notionshape": "中央環状路沿い"
+    },
+    {
+      "id": "middle_emergency_bypass",
+      "name": "中層非常迂回環状路",
+      "roadType": "非常用迂回路",
+      "width": 12,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        6,
+        8
+      ],
+      "kind": "ring",
+      "r": 800,
+      "connection": "主経路閉鎖時の迂回",
+      "notionshape": "中心半径800m"
+    },
+    {
+      "id": "draft_industrial_starboard",
+      "name": "右舷側の加工区貨物道路（案）",
+      "kind": "line",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "points": [
+        [
+          -600,
+          260
+        ],
+        [
+          -800,
+          780
+        ],
+        [
+          -1000,
+          950
+        ],
+        [
+          -1650,
+          950
+        ]
+      ],
+      "reviewStatus": "draft",
+      "geometryStatus": "draft_new"
+    }
+  ],
+  "editorMeta": {
+    "status": "draft",
+    "scenario": "船尾中央栽培・真下に有機再生",
+    "note": "Notion正本への反映前。現行マップを置き換えない。中層・下層の同一XY座標にアルボラセクターとバイオリアクターを揃え、船首側へ金属再処理・危険物処理を振り分ける。道路経路も検討段階。",
+    "revision": "central-aft-growing-v1"
+  }
+}
