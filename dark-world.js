@@ -135,7 +135,7 @@ function create(options){
    const changed=tile.terrain!==base.tiles[idx]?.terrain;
    if(display.tiles || (display.reference && changed)){
     ctx.save();
-    ctx.globalAlpha=display.reference?(display.tiles?.49:.72):1;
+    ctx.globalAlpha=display.reference?((display.tiles?0.49:0.72)):1;
     ctx.fillStyle=terrain?.color||"#172734";ctx.fillRect(x,y,w+.3,h+.3);
     ctx.restore();
     if(display.tiles && terrain?.symbol){
