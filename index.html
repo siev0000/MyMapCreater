@@ -29,6 +29,15 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .darkEditingInfo{font-size:12px;line-height:1.65;color:#b9d1df}
 .darkActionButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .darkActionButtons button{font-size:12px;padding:10px 5px}
+.darkOverlayButtons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.darkOverlayButtons button{padding:9px 3px;font-size:11px}
+.darkList{display:flex;flex-direction:column;gap:7px}
+.darkListItem{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;border:1px solid #3a5969;border-radius:9px;padding:7px;background:#122a37}
+.darkListItem input{min-width:0;width:100%;padding:6px 7px;color:#f1f7fa;background:#0b1f2d;border:1px solid #52768a;border-radius:6px;font-size:12px}
+.darkListItem button{padding:6px 8px;font-size:11px}
+.darkTextInput{width:100%;margin:7px 0;padding:9px;color:#f1f7fa;background:#0b1f2d;border:1px solid #52768a;border-radius:7px;font-size:13px}
+.darkTiny{font-size:11px;line-height:1.55;color:#a4c2d0}
+.darkModeButtons{grid-template-columns:repeat(3,minmax(0,1fr))}
 #darkWorldControls[hidden]{display:none!important}
 .iconbtn{width:40px;height:40px;padding:0;flex:none;font-size:21px;display:grid;place-items:center}
 .brand{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;overflow:hidden}
@@ -128,14 +137,30 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
    <div id="darkWorldControls" class="drawerSection" hidden>
     <section class="panel"><h2>ダークワールド（仮マップ）</h2><p>12×20マスのテスト地図。領地・ヘル・中間マスの位置や距離、地形は未確定です。</p><p id="darkStatus" class="darkEditingInfo">マップを読み込み中…</p></section>
     <section class="panel"><h2>地図の表示</h2><div class="darkActionButtons"><button type="button" id="darkGridToggle">グリッド：ON</button><button type="button" id="darkGridTop">最前面：OFF</button></div><p>この表示設定はアポクリファ＝アーカイブと共通で、ブラウザに保存されます。</p></section>
+    <section class="panel"><h2>レイヤー表示</h2><div class="darkOverlayButtons">
+      <button class="on" id="darkBorders" type="button">境界：ON</button>
+      <button class="on" id="darkRoutes" type="button">経路：ON</button>
+      <button class="on" id="darkSites" type="button">拠点：ON</button>
+     </div><p>領地の境界線・移動経路・都市／拠点を独立して表示できます。</p></section>
     <section class="panel"><h2>マスの操作</h2><div class="darkModeButtons">
       <button class="on" type="button" data-dark-mode="inspect">確認</button>
       <button type="button" data-dark-mode="terrain">地形編集</button>
       <button type="button" data-dark-mode="territory">領地編集</button>
-     </div><p>編集したい種類を選び、地図のマスをタップしてください。領地と地形はそれぞれ独立しています。</p></section>
+      <button type="button" data-dark-mode="route">経路を引く</button>
+      <button type="button" data-dark-mode="site">拠点を追加</button>
+     </div><p>地形・領地は1マスずつ変更。経路は始点と終点の2マスを順にタップ。拠点は名称を入力後、設置マスをタップします。</p></section>
     <section class="panel"><h2>選択マス</h2><div id="darkTileInfo" class="darkEditingInfo">マスを選択してください。</div></section>
     <section class="panel"><h2>地形マス</h2><div id="darkTerrainPalette" class="darkSwatchGrid"></div></section>
     <section class="panel"><h2>領地・区画</h2><div id="darkOwnerPalette" class="darkSwatchGrid"></div></section>
+    <section class="panel"><h2>都市・拠点</h2><label class="darkTiny" for="darkSiteName">追加する拠点名</label>
+     <input id="darkSiteName" class="darkTextInput" type="text" value="新しい拠点（仮）" maxlength="90">
+     <div id="darkSiteList" class="darkList"></div>
+     <p>既存拠点の名前は直接変更できます。削除は各行の「削除」から行えます。</p>
+    </section>
+    <section class="panel"><h2>移動経路</h2><p id="darkRouteHint" class="darkTiny">地図上で2マスを選ぶと、仮の経路を追加します。</p>
+     <div id="darkRouteList" class="darkList"></div>
+     <p>黄色の破線は未確定の経路案であり、実際の通行を保証しません。</p>
+    </section>
     <section class="panel"><h2>データ管理</h2><div class="darkActionButtons"><button type="button" id="darkExport">JSON書き出し</button><button type="button" id="darkReset">初期配置に戻す</button></div><p>変更はこのブラウザに自動保存されます。GitHubやNotionへは自動送信しません。</p></section>
    </div>
    <div id="panelFacilities" class="drawerSection" role="tabpanel" data-menu-panel="facilities">
