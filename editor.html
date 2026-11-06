@@ -56,9 +56,17 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <button id="grid" class="active">グリッド</button><button id="gridSize">100m四方（50mへ切替）</button>
 <button id="labels" class="active">施設名</button>
 <button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
-<button id="saveLocal" style="background:#28664b;border-color:#83c5a1;font-weight:700">この端末に保存</button><button id="export">JSONを書き出す</button><button id="clearLocal">端末の保存を破棄</button><button id="resetFloor">Notion現行配置を読み込む</button><button id="import">JSONを読み込む</button>
+<button id="saveLocal" style="background:#28664b;border-color:#83c5a1;font-weight:700">この端末に保存</button><button id="saveGithub" style="background:#24597b;border-color:#91c9e3;font-weight:700">GitHubに下書きを保存</button><button id="export">JSONを書き出す</button><button id="clearLocal">端末の保存を破棄</button><button id="resetFloor">Notion現行配置を読み込む</button><button id="import">JSONを読み込む</button>
 <input id="importFile" type="file" accept=".json,application/json" hidden>
 </div>
+<details id="githubAuthHelp" class="panel" style="margin:0 0 14px">
+<summary style="cursor:pointer;font-weight:700">GitHubに直接保存するための認証設定</summary>
+<p class="note">GitHub Pagesにはログイン用サーバーがないため、ここでは期間・対象リポジトリを限定した Fine-grained personal access token を使用します。GitHubの通常ログイン連携とは異なります。</p>
+<p class="note">GitHubで <strong>Only select repositories → siev0000/MyMapCreater → Contents: Read and write</strong> を選び、期限を短めに設定してください。トークンをチャットやJSON、GitHubのファイルに貼り付けないでください。</p>
+<label>保存時に使うGitHubトークン（保存後に入力欄を消去・端末に記憶しません）
+<input id="githubToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_..." inputmode="text"></label>
+<p class="note"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Fine-grained token を作成</a>　｜　保存先は <code>data/middle-draft.json</code> または <code>data/lower-draft.json</code> のみです。</p>
+</details>
 <div class="layout">
 <section class="mapwrap"><h2 id="floorText">中層</h2>
 <canvas id="map" width="1000" height="1600" aria-label="施設のドラッグ移動と道路編集が可能なマップ"></canvas>
@@ -73,7 +81,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <div class="panel"><h2>チェック結果</h2><div id="warnings">確認中…</div><p class="hint">重なりが意図された親地区と内部施設は警告から除きます。道路の接続・隔壁・上下の移送可否は、現行Notionを確認して別途確定してください。</p></div>
 </aside></div></div>
 <div id="saveState" role="status" style="color:#b9e1ce;padding:6px 4px;font-size:12px">保存状態：読み込み中</div><div id="message" role="status">準備中…</div>
-<footer>編集内容はこのブラウザに自動保存され、同じ端末・ブラウザから再開できます。別の端末への共有・GitHubやNotionへの保存は行われません。別端末へ移す・GitHubへ反映する場合はJSONを書き出してください。ブラウザのデータ削除・プライベートモードでは保存が失われる場合があります。世界設定の正本はNotionです。</footer>
+<footer>編集内容はこのブラウザに自動保存され、同じ端末・ブラウザから再開できます。GitHubへは「GitHubに下書きを保存」を押したときだけ更新されます。Notionや確定JSONは変更しません。別端末へ移す・GitHubへ反映する場合はJSONを書き出してください。ブラウザのデータ削除・プライベートモードでは保存が失われる場合があります。世界設定の正本はNotionです。</footer>
 </div>
 <script>(function editorApp(){
   "use strict";
@@ -380,6 +388,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     document.querySelectorAll("[data-kind]").forEach(b=>b.classList.toggle("active",b.dataset.kind===kind));
     $("floorText").textContent=floorName()+(dirty.has(active)?" — 編集中":draftFloors.has(active)?" — 配置案を読み込み":" — Notion現行を読み込み");
     $("overlay").disabled=active==="upper";
+    $("saveGithub").disabled=active==="upper";
     for(const [id,enabled] of [["overlay",state.overlay],["snap",state.snap],["grid",state.grid],["labels",state.labels]])$(id).classList.toggle("active",enabled);
     $("undo").disabled=history[active].length===0;$("redo").disabled=future[active].length===0;
     if(unsavedLocal.has(active))saveLocal(active);
@@ -542,6 +551,81 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const previous=active;baselineWarnings[active]=diagnostics();active=previous;
     selection=null;render();showStatus("現行配置を編集中画面へ読み込みました。確定JSONには未反映です。");
   }
+  async function saveGithub(){
+    const floor=active;
+    if(!["middle","lower"].includes(floor)){
+      showStatus("GitHubへの直接保存は中層・下層の下書きファイルだけに対応しています。",true);return;
+    }
+    const tokenInput=$("githubToken");
+    const token=tokenInput.value.trim();
+    if(!token){
+      $("githubAuthHelp").open=true;
+      tokenInput.focus();
+      showStatus("GitHubへの保存にはFine-grained tokenが必要です。認証設定を開きました。",true);
+      return;
+    }
+    if(!confirm(floorName()+"の編集内容をGitHubの data/"+floor+"-draft.json に保存しますか？\nNotionや確定JSONは変更しません。"))return;
+    tokenInput.value="";
+    $("saveGithub").disabled=true;
+    const output=clone(floors[floor]);
+    output.editorMeta={...(output.editorMeta||{}),status:"draft",editedAt:new Date().toISOString()};
+    const url="https://api.github.com/repos/siev0000/MyMapCreater/contents/data/"+floor+"-draft.json";
+    const headers={
+      "Accept":"application/vnd.github+json",
+      "Authorization":"Bearer "+token,
+      "X-GitHub-Api-Version":"2022-11-28"
+    };
+    try{
+      showStatus("GitHubの最新版を確認しています…");
+      const get=await fetch(url,{method:"GET",headers,cache:"no-store"});
+      if(!get.ok){
+        if(get.status===401||get.status===403||get.status===404)throw Error("認証またはリポジトリ権限を確認してください（HTTP "+get.status+"）。");
+        throw Error("GitHubの下書きを取得できません（HTTP "+get.status+"）。");
+      }
+      const remote=await get.json();
+      if(!remote.sha||remote.type!=="file"||typeof remote.content!=="string")throw Error("GitHub側のファイル形式を確認できません。");
+      const decoded=atob(remote.content.replace(/\s/g,""));
+      const remoteBytes=Uint8Array.from(decoded,c=>c.charCodeAt(0));
+      const remoteData=JSON.parse(new TextDecoder().decode(remoteBytes));
+      const expected=initialFloors[floor];
+      if(!expected||JSON.stringify(remoteData)!==JSON.stringify(expected)){
+        throw Error("GitHubの下書きが読み込み時から更新されています。安全のため上書きしませんでした。この端末の作業内容は保持しています。");
+      }
+      valid(output,floor);
+      if(output.restrictedZones&&floor==="lower"&&initialFloors.lower?.restrictedZones?.length){
+        const protectedZones=initialFloors.lower.restrictedZones;
+        if(JSON.stringify(output.restrictedZones)!==JSON.stringify(protectedZones))throw Error("船首の上層専用区が変更されているため、保存を中止しました。");
+      }
+      const jsonText=JSON.stringify(output,null,2)+"\n";
+      const encoded=new TextEncoder().encode(jsonText);
+      let binary="";
+      for(let i=0;i<encoded.length;i+=8192){
+        binary+=String.fromCharCode(...encoded.subarray(i,i+8192));
+      }
+      const body={message:"Save "+floor+" map layout draft from editor",content:btoa(binary),sha:remote.sha};
+      showStatus("GitHubに下書きJSONを保存しています…");
+      const put=await fetch(url,{method:"PUT",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify(body)});
+      if(!put.ok){
+        if(put.status===409||put.status===422)throw Error("更新が競合したため保存できませんでした（HTTP "+put.status+"）。画面の配置は保持しています。");
+        if(put.status===401||put.status===403)throw Error("認証・書き込み権限を確認してください（HTTP "+put.status+"）。");
+        throw Error("GitHubへの保存に失敗しました（HTTP "+put.status+"）。");
+      }
+      const result=await put.json();
+      if(!result.content?.sha||!result.commit?.sha)throw Error("保存応答に確定情報がありません。GitHubの履歴を確認してください。");
+      floors[floor]=clone(output);
+      initialFloors[floor]=clone(output);
+      draftFloors.add(floor);
+      unsavedLocal.add(floor);
+      saveLocal(floor);
+      showStatus("GitHubに "+floor+"-draft.json を保存しました（コミット "+result.commit.sha.slice(0,8)+"）。Notion・確定JSONは未変更です。");
+      render();
+    }catch(error){
+      console.warn("GitHub下書き保存に失敗",error?.message);
+      showStatus("GitHubへ保存できませんでした: "+error.message+" JSON書き出しで作業を保管できます。",true);
+    }finally{
+      $("saveGithub").disabled=active==="upper";
+    }
+  }
   function exportJSON(){
     if(!current())return;
     const output=clone(current());
@@ -571,6 +655,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   $("addFacility").onclick=newFacility;$("addRoad").onclick=newRoad;
   $("saveLocal").onclick=()=>{if(saveLocal())showStatus(floorName()+"の配置をこのブラウザに保存しました。別端末・GitHubには同期されません。");else showStatus("端末内保存に失敗しました。JSONを書き出してください。",true)};
   $("clearLocal").onclick=clearLocal;
+  $("saveGithub").onclick=saveGithub;
   $("export").onclick=exportJSON;$("resetFloor").onclick=resetToNotion;$("import").onclick=()=>$("importFile").click();
   $("importFile").addEventListener("change",async e=>{await importJSON(e.target.files?.[0]);e.target.value=""});
   $("search").addEventListener("input",renderList);
