@@ -23,9 +23,16 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .scale{font-size:10px;color:#cce2ea;background:rgba(6,16,24,.76);padding:5px 10px;border-radius:99px;border:1px solid #416071}
 .drawerShade{position:absolute;inset:0;z-index:15;background:rgba(2,8,12,.52);display:none}
 .drawerShade.show{display:block}
-.drawer{position:absolute;left:0;right:auto;top:0;bottom:0;z-index:16;width:min(355px,78vw);border-right:1px solid #49697c;background:#10222e;box-shadow:14px 0 38px #0007;transform:translateX(-102%);transition:transform .23s ease;display:flex;flex-direction:column;overflow:hidden}
+.drawer{position:absolute;left:auto;right:0;top:0;bottom:0;z-index:16;width:min(355px,78vw);border-left:1px solid #49697c;background:#10222e;box-shadow:-14px 0 38px #0007;transform:translateX(102%);transition:transform .23s ease;display:flex;flex-direction:column;overflow:hidden}
 .drawer.open{transform:translateX(0)}
-.drawerHeader{display:flex;justify-content:flex-start;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #314f60;font-weight:750}
+.drawerHeader{display:flex;flex-direction:column;gap:7px;padding:12px 12px 9px;border-bottom:1px solid #314f60;font-weight:750;flex:none}
+.drawerTitle{font-size:13px;font-weight:750;color:#d5ebf7}
+.drawerTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.drawerTab{font-size:12px;font-weight:700;padding:9px 4px;border-color:#3f6276;background:#162d3c;white-space:nowrap}
+.drawerTab.on{background:#28617e;border-color:#9fd5ec}
+.drawerBody{flex:1;min-height:0}
+.drawerSection{display:flex;flex-direction:column;gap:14px}
+.drawerSection[hidden]{display:none!important}
 .drawerBody{min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:14px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
 .panel{border:1px solid #345568;border-radius:12px;background:#152c3a;padding:12px}
 .panel h2{font-size:14px;margin:0 0 10px}
@@ -63,13 +70,13 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 </style></head>
 <body><div class="app">
 <header class="topbar">
- <button id="menuBtn" class="iconbtn" type="button" aria-label="表示メニューを開く" aria-controls="drawer" aria-expanded="false">☰</button>
  <div class="brand"><h1 id="mapTitle">中層《アームドヴェイン階層》</h1><p id="mapSubtitle">100m四方 ・ 配置案を読み込み中</p></div>
  <nav class="floor-tabs" role="tablist" aria-label="階層マップ">
   <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="upper">上層</button>
   <button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層</button>
   <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層</button>
  </nav>
+ <button id="menuBtn" class="iconbtn" type="button" aria-label="表示メニューを開く" aria-controls="drawer" aria-expanded="false">☰</button>
 </header>
 <main class="mapstage">
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
@@ -82,11 +89,25 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  </div>
  <div class="drawerShade" id="drawerShade"></div>
  <aside class="drawer" id="drawer" aria-label="表示メニュー" aria-hidden="true">
-  <div class="drawerHeader"><button type="button" id="closeDrawer" class="iconbtn" aria-label="メニューを閉じる">×</button><span>表示・施設メニュー</span></div>
+  <div class="drawerHeader">
+   <div class="drawerTitle">マップメニュー</div>
+   <div class="drawerTabs" role="tablist" aria-label="メニュー項目">
+    <button type="button" class="drawerTab on" role="tab" data-menu-tab="facilities" aria-selected="true" aria-controls="panelFacilities">施設</button>
+    <button type="button" class="drawerTab" role="tab" data-menu-tab="display" aria-selected="false" aria-controls="panelDisplay">表示設定</button>
+    <button type="button" class="drawerTab" role="tab" data-menu-tab="info" aria-selected="false" aria-controls="panelInfo">情報</button>
+   </div>
+  </div>
   <div class="drawerBody">
-   <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
-   <section class="panel"><h2>表示切替</h2>
-    <div class="controls">
+   <div id="panelFacilities" class="drawerSection" role="tabpanel" data-menu-panel="facilities">
+    <section class="panel" id="selectedPanel" hidden aria-live="polite">
+     <h2>選択施設の概要</h2><div class="selectedDetail" id="selectedDetail"></div>
+    </section>
+    <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>選択してもメニューは閉じません。該当する場所にズームします。</p></section>
+   </div>
+   <div id="panelDisplay" class="drawerSection" role="tabpanel" data-menu-panel="display" hidden>
+    <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
+    <section class="panel"><h2>表示切替</h2>
+     <div class="controls">
       <button class="on" data-layer="labels">施設名</button>
       <button class="on" data-layer="grid">グリッド</button>
       <button id="gridSize">100m四方（50mに切替）</button>
@@ -96,25 +117,24 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
       <button class="on" data-layer="freight">貨物・整備路</button>
       <button data-layer="drafts" hidden>旧区画案</button>
       <button id="reset">選択解除</button>
-    </div>
-   </section>
-   <section class="panel" id="selectedPanel" hidden aria-live="polite">
-    <h2>選択施設の概要</h2><div class="selectedDetail" id="selectedDetail"></div>
-   </section>
-   <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>施設を選ぶと、このメニューに説明を表示し、地図上の位置を少し拡大します。</p></section>
-   <section class="panel"><h2>中央部の区画と寸法</h2><div class="legend">
-    <i class="swatch" style="background:#438ca6"></i><span>中央ターミナル塔：直径500m</span>
-    <i class="swatch" style="background:#ead29f"></i><span>コンコース：半径250〜330m（外径660m）</span>
-    <i class="swatch" style="background:#84c69e"></i><span>中層生活・整備環状地区：外径1,440m</span>
-   </div><p>中央の大きな円全体がターミナル本体ではありません。</p></section>
-   <section class="panel"><h2>道路・経路</h2><div class="legend">
-    <i class="swatch" style="background:#a8b5bd"></i><span>幹線・一般道路</span>
-    <i class="swatch" style="background:#69b9e5"></i><span>歩行・生活通路</span>
-    <i class="swatch" style="background:#f0b36e"></i><span>貨物道路・トンネル</span>
-    <i class="swatch" style="background:#b7a1fc"></i><span>輸送ポッド</span>
-    <i class="swatch" style="background:#bd7f7d"></i><span>非常用迂回路</span>
-   </div></section>
-   <section class="panel"><h2>地図の説明</h2><p class="notice" id="mapNotice">データを読み込み中です。</p><p>施設の隣接や未描画の空間は、通行可能という意味ではありません。正式な地理設定はNotionに従います。</p></section>
+     </div>
+    </section>
+   </div>
+   <div id="panelInfo" class="drawerSection" role="tabpanel" data-menu-panel="info" hidden>
+    <section class="panel"><h2>中央部の区画と寸法</h2><div class="legend">
+     <i class="swatch" style="background:#438ca6"></i><span>中央ターミナル塔：直径500m</span>
+     <i class="swatch" style="background:#ead29f"></i><span>コンコース：半径250〜330m（外径660m）</span>
+     <i class="swatch" style="background:#84c69e"></i><span>中層生活・整備環状地区：外径1,440m</span>
+    </div><p>中央の大きな円全体がターミナル本体ではありません。</p></section>
+    <section class="panel"><h2>道路・経路</h2><div class="legend">
+     <i class="swatch" style="background:#a8b5bd"></i><span>幹線・一般道路</span>
+     <i class="swatch" style="background:#69b9e5"></i><span>歩行・生活通路</span>
+     <i class="swatch" style="background:#f0b36e"></i><span>貨物道路・トンネル</span>
+     <i class="swatch" style="background:#b7a1fc"></i><span>輸送ポッド</span>
+     <i class="swatch" style="background:#bd7f7d"></i><span>非常用迂回路</span>
+    </div></section>
+    <section class="panel"><h2>地図の説明</h2><p class="notice" id="mapNotice">データを読み込み中です。</p><p>施設の隣接や未描画の空間は、通行可能という意味ではありません。正式な地理設定はNotionに従います。</p></section>
+   </div>
   </div>
  </aside>
  <div class="popupMask" id="popupMask" aria-hidden="true">
@@ -157,8 +177,8 @@ function focusOnFacility(f){
  const [px,py]=xy(f.x,f.y),r=canvas.getBoundingClientRect(),menu=document.getElementById('drawer');
  let targetX=W/2;
  if(menu.classList.contains('open')&&menu.getBoundingClientRect){
-  const mr=menu.getBoundingClientRect(),visibleLeft=Math.max(r.left,mr.right);
-  targetX=visibleLeft<r.right-12?clamp((visibleLeft+r.right-2*r.left)/(2*r.width)*W,W*.50,W*.88):W*.88;
+  const mr=menu.getBoundingClientRect(),visibleRight=Math.min(r.right,mr.left);
+  targetX=visibleRight>r.left+12?clamp((visibleRight-r.left)/(2*r.width)*W,W*.11,W*.50):W*.12;
  }
  view.zoom=1.85;
  view.offsetX=targetX-W/2-view.zoom*(px-W/2);
@@ -378,6 +398,17 @@ function renderInfo(){
  }
  const mask=document.getElementById('popupMask');mask.classList.add('show');mask.setAttribute('aria-hidden','false');
 }
+function switchMenuTab(name){
+ const key=['facilities','display','info'].includes(name)?name:'facilities';
+ document.querySelectorAll('[data-menu-tab]').forEach(b=>{
+  const active=b.dataset.menuTab===key;
+  b.classList.toggle('on',active);
+  b.setAttribute('aria-selected',String(active));
+ });
+ document.querySelectorAll('[data-menu-panel]').forEach(p=>p.hidden=p.dataset.menuPanel!==key);
+ const body=document.querySelector('.drawerBody');
+ if(body)body.scrollTop=0;
+}
 function closeDrawer(){
  document.getElementById('drawer').classList.remove('open');
  document.getElementById('drawerShade').classList.remove('show');
@@ -397,6 +428,7 @@ function openDrawer(){
 }
 function clearSelected(){chosen=null;document.getElementById('selectedPanel').hidden=true;renderInfo();draw()}
 function selectPlace(id){
+ switchMenuTab('facilities');
  const f=facilities.find(x=>x.id===id);
  if(!f)return;
  chosen=f;
@@ -484,7 +516,7 @@ document.getElementById('menuBtn').addEventListener('click',()=>{
  const open=document.getElementById('drawer').classList.contains('open');
  open?closeDrawer():openDrawer();
 });
-document.getElementById('closeDrawer').addEventListener('click',closeDrawer);
+document.querySelectorAll('[data-menu-tab]').forEach(b=>b.addEventListener('click',()=>switchMenuTab(b.dataset.menuTab)));
 document.getElementById('drawerShade').addEventListener('click',closeDrawer);
 document.getElementById('popupMask').addEventListener('click',clearSelected);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){clearSelected();closeDrawer()}});
