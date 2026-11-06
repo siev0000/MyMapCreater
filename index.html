@@ -111,6 +111,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
       <button class="on" data-layer="labels">施設名</button>
       <button class="on" data-layer="grid">グリッド</button>
       <button id="gridSize">100m四方（50mに切替）</button>
+      <button id="gridOnTop" type="button" aria-pressed="false">グリッド最前面</button>
       <button class="on" data-layer="districts">地区境界</button>
       <button class="on" data-layer="roads">道路</button>
       <button class="on" data-layer="pods">輸送ポッド</button>
@@ -118,6 +119,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
       <button data-layer="drafts" hidden>旧区画案</button>
       <button id="reset">選択解除</button>
      </div>
+     <p>表示設定はこのブラウザに自動保存されます。再読み込み後も反映されます。</p>
     </section>
    </div>
    <div id="panelInfo" class="drawerSection" role="tabpanel" data-menu-panel="info" hidden>
@@ -145,7 +147,43 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;function gridSpec(){const cols=2500/gridMeters,rows=4000/gridMeters;return {cols,rows,cw:W/cols,ch:H/rows}}
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
-const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false};let chosen=null;
+const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false,gridOnTop:false};let chosen=null;
+const DISPLAY_SETTINGS_KEY='aa-map-viewer-display-v1';
+const DISPLAY_LAYER_KEYS=['labels','grid','roads','pods','freight','districts','drafts'];
+function saveDisplaySettings(){
+ try{
+  const layers={};
+  for(const key of DISPLAY_LAYER_KEYS)layers[key]=state[key];
+  localStorage.setItem(DISPLAY_SETTINGS_KEY,JSON.stringify({version:1,layers,gridMeters,gridOnTop:state.gridOnTop,showProposal}));
+ }catch(error){console.warn('表示設定を保存できませんでした',error)}
+}
+function updateDisplaySettingsButtons(){
+ document.querySelectorAll('[data-layer]').forEach(b=>{
+  const on=Boolean(state[b.dataset.layer]);
+  b.classList.toggle('on',on);
+  b.setAttribute('aria-pressed',String(on));
+ });
+ const top=document.getElementById('gridOnTop');
+ top.classList.toggle('on',state.gridOnTop);
+ top.setAttribute('aria-pressed',String(state.gridOnTop));
+ document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';
+ document.getElementById('gridReadout').textContent=gridMeters+'m / '+gridSpec().cols+'×'+gridSpec().rows;
+}
+function restoreDisplaySettings(){
+ try{
+  const raw=localStorage.getItem(DISPLAY_SETTINGS_KEY);
+  if(raw){
+   const saved=JSON.parse(raw);
+   if(saved&&saved.version===1){
+    for(const key of DISPLAY_LAYER_KEYS)if(typeof saved.layers?.[key]==='boolean')state[key]=saved.layers[key];
+    if(saved.gridMeters===50||saved.gridMeters===100)gridMeters=saved.gridMeters;
+    if(typeof saved.gridOnTop==='boolean')state.gridOnTop=saved.gridOnTop;
+    if(typeof saved.showProposal==='boolean')showProposal=saved.showProposal;
+   }
+  }
+ }catch(error){console.warn('表示設定を復元できませんでした',error)}
+ updateDisplaySettingsButtons();
+}
 const view={zoom:1,offsetX:0,offsetY:0};
 const clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
 function resetView(){
@@ -305,7 +343,7 @@ function switchMap(id){
  renderPlaces();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>switchMap(b.dataset.map)));
-document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;switchMap(currentMap)};
+document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;saveDisplaySettings();switchMap(currentMap)};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function drawExclusiveSortieZones(){
@@ -331,6 +369,16 @@ function drawExclusiveSortieZones(){
  }
  ctx.restore();
 }
+function drawGridLayer(){
+ if(!state.grid)return;
+ const q=gridSpec();
+ ctx.save();
+ ctx.strokeStyle=state.gridOnTop?'rgba(199,238,248,.46)':'rgba(173,210,218,.16)';
+ ctx.lineWidth=state.gridOnTop?1.2:1;
+ for(let c=0;c<=q.cols;c++){const gx=c*q.cw;ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke()}
+ for(let r=0;r<=q.rows;r++){const gy=r*q.ch;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke()}
+ ctx.restore();
+}
 function draw(){
 ctx.setTransform(1,0,0,1,0,0);
 ctx.clearRect(0,0,W,H);
@@ -347,7 +395,7 @@ else if(currentMap==='lower'){ctx.fillStyle='#46372d';ctx.fillRect(0,H*.68,W,H*.
 ctx.restore();
 drawExclusiveSortieZones();
 drawMiddleDistrictAndDrafts();
-if(state.grid){const q=gridSpec();ctx.save();ctx.strokeStyle='rgba(173,210,218,.16)';ctx.lineWidth=1;for(let c=0;c<=q.cols;c++){let gx=c*q.cw;ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke()}for(let r=0;r<=q.rows;r++){let gy=r*q.ch;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke()}ctx.restore()}
+if(!state.gridOnTop)drawGridLayer();
 // Real facilities and district region footprint, mark area before roads
 for(let f of facilities){if(f.type==='terminal'||f.ringDistrict)continue;const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4;const g=groups[f.type];ctx.fillStyle=g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);ctx.strokeStyle=g.line+'aa';ctx.lineWidth=1.6;ctx.strokeRect(cx-w/2,cy-h/2,w,h)}
 for(let r of roads)drawRoad(r);
@@ -362,7 +410,7 @@ ctx.restore();
 for(const f of facilities){if(f.ringDistrict)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
-ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();ctx.restore();}
+ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(state.gridOnTop)drawGridLayer();ctx.restore();}
 function fitCanvasToViewport(){
  const host=canvas.parentElement;
  if(!host||!host.getBoundingClientRect)return;
@@ -506,7 +554,12 @@ canvas.addEventListener('click',e=>{
  document.getElementById('selectedPanel').hidden=true;
  renderInfo();draw();
 });
-document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=clearSelected;document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';document.getElementById('gridReadout').textContent=gridMeters+'m / '+gridSpec().cols+'×'+gridSpec().rows;draw()};
+document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{
+ const n=b.dataset.layer;state[n]=!state[n];updateDisplaySettingsButtons();saveDisplaySettings();draw();
+});
+document.getElementById('gridOnTop').onclick=()=>{state.gridOnTop=!state.gridOnTop;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
+document.getElementById('reset').onclick=clearSelected;
+document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
 renderPlaces();
 document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});
 document.getElementById('zoomIn').onclick=()=>zoomCenter(1.25);
@@ -520,5 +573,6 @@ document.querySelectorAll('[data-menu-tab]').forEach(b=>b.addEventListener('clic
 document.getElementById('drawerShade').addEventListener('click',closeDrawer);
 document.getElementById('popupMask').addEventListener('click',clearSelected);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){clearSelected();closeDrawer()}});
+restoreDisplaySettings();
 loadMapDataFromJSON();
 </script></body></html>
