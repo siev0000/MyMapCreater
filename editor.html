@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AAマップ配置エディター｜MyMapCreater</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,"Noto Sans JP",sans-serif;font-size:14px}
+*{box-sizing:border-box}body{margin:0;background:#0b1520;color:#e7f0f5}button,input,textarea,select{font:inherit}
+.app{max-width:1510px;margin:auto;padding:18px}header{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:22px;margin:0}h2{font-size:16px;margin:0 0 10px}h3{font-size:14px;margin:0 0 8px}
+a{color:#96d9f4;text-decoration:none}a:hover{text-decoration:underline}
+.note{color:#a9bfcc;font-size:12px;line-height:1.6}.tag{font-size:11px;padding:4px 9px;background:#5e4f30;color:#fff0c5;border-radius:20px}
+nav,.toolbar,.editKind{display:flex;flex-wrap:wrap;gap:7px}
+nav{border:1px solid #364f60;background:#142330;border-radius:12px;padding:7px;margin-bottom:12px}
+button{background:#20384b;border:1px solid #486477;color:#e4f2fa;border-radius:8px;padding:8px 11px;cursor:pointer}
+button.active{background:#28647b;border-color:#94d5ef}button:hover:not(:disabled){border-color:#b5e4f8}button:disabled{opacity:.38;cursor:not-allowed}
+nav button{flex:1;min-width:88px;font-weight:700;padding:11px}
+.toolbar{margin:10px 0 14px}.toolbar button{font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 335px;gap:16px}
+.mapwrap{padding:12px;background:#111f2b;border:1px solid #37566b;border-radius:12px;min-width:0}
+canvas{display:block;width:100%;max-width:610px;margin:auto;aspect-ratio:5 / 8;background:#10212b;touch-action:none;cursor:crosshair;border:1px solid #46677e}
+.mapmeta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:9px;color:#acc5d2;font-size:12px}
+.sidebar{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{padding:14px;background:#132431;border:1px solid #375369;border-radius:11px}
+#items{max-height:245px;overflow:auto;display:flex;flex-direction:column;gap:4px;margin-top:9px}
+.item{display:flex;text-align:left;align-items:center;gap:8px;width:100%;padding:7px 8px;background:#172d3b}
+.item.selected{background:#31566c;border-color:#e5d98c}.item small{display:block;color:#91b0c0;font-size:10px;margin-top:3px}
+.item em{font-size:10px;color:#ffe2a2;margin-left:auto}
+.dot{display:inline-block;width:9px;height:9px;min-width:9px;border-radius:50%}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fields label:first-child{grid-column:span 2}
+label{display:flex;flex-direction:column;gap:5px;margin:8px 0;color:#bed3df;font-size:12px}
+input,textarea,select{width:100%;padding:8px;color:#eff7fc;background:#0e1c28;border:1px solid #486074;border-radius:7px;min-width:0}
+input:focus,textarea:focus,select:focus{outline:2px solid #6fa9c6}textarea{resize:vertical}
+.value-id{font-size:10px;color:#a5c0cf;overflow-wrap:anywhere;padding:6px;background:#0d202b;border-radius:6px}
+.hint{color:#a6bbcb;font-size:12px;line-height:1.7}
+.danger{color:#ffcece;border-color:#8b5050;background:#47242d;margin-top:10px}
+.addbar{display:flex;gap:7px;margin-top:8px}.addbar button{flex:1}
+.points{display:flex;flex-direction:column;gap:5px}.point{display:grid;grid-template-columns:25px 1fr 1fr 30px;gap:4px;align-items:center}.point input{padding:6px}.point button{padding:5px}
+#warnings{font-size:12px;line-height:1.55;color:#bce4cb}#warnings.warn{color:#f3ca8c}
+#warnings ul{padding-left:17px;max-height:160px;overflow:auto}
+#message{font-size:12px;color:#a6d9e9;padding:10px 14px;background:#142c3a;border:1px solid #32556c;border-radius:10px;margin:12px 0}
+#message.warn{color:#ffd7a3}
+#loading{border:1px solid #436273;border-radius:10px;padding:18px;margin:20px 0}
+footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
+@media(max-width:940px){.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}.app{padding:10px}h1{font-size:19px}}
+@media(max-width:520px){nav button{font-size:12px;padding:10px 3px}.toolbar button{padding:8px}.sidebar{display:flex}}
+</style></head><body>
+<div class="app">
+<header><div><h1>AA マップ配置エディター <span class="tag">下書き専用</span></h1><p class="note">Notionの施設設定を基に配置を試作し、確定前のJSONを作成します。編集内容はサーバーへ自動保存されません。</p></div>
+<a href="./index.html">← 閲覧マップへ戻る</a></header>
+<div id="loading">施設・道路JSONを読み込み中…</div>
+<div id="workspace" hidden>
+<nav aria-label="階層選択"><button data-floor="upper">上層</button><button data-floor="middle" class="active">中層</button><button data-floor="lower">下層</button></nav>
+<div class="toolbar">
+<button id="overlay" class="active">中層⇄下層 重ね表示</button>
+<button id="snap" class="active">25mスナップ</button>
+<button id="grid" class="active">20×20グリッド</button>
+<button id="labels" class="active">施設名</button>
+<button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
+<button id="export">JSONを書き出す</button><button id="import">JSONを読み込む</button>
+<input id="importFile" type="file" accept=".json,application/json" hidden>
+</div>
+<div class="layout">
+<section class="mapwrap"><h2 id="floorText">中層</h2>
+<canvas id="map" width="1000" height="1600" aria-label="施設のドラッグ移動と道路編集が可能なマップ"></canvas>
+<div class="mapmeta"><span>船首＝上／左舷＝左／船体表示範囲 X ±2,000m・Y ±1,250m</span><span id="cursor">X 0m / Y 0m</span></div>
+<p class="note">施設を選んでドラッグすると移動、右下の黄色い四角を引くとサイズ変更。道路は頂点をドラッグ。環状路は線をドラッグして半径を変更できます。<strong>塗りのない領域は通行可能な空き地を意味しません。</strong></p>
+</section>
+<aside class="sidebar">
+<div class="panel"><h2>編集対象</h2><div class="editKind"><button data-kind="facility" class="active">施設・区画</button><button data-kind="road">道路・通路</button></div>
+<div class="addbar"><button id="addFacility">＋施設追加</button><button id="addRoad">＋道路追加</button></div>
+<label>施設・道路を検索<input id="search" placeholder="名前またはID"></label><div class="note">登録件数: <strong id="itemCount">0</strong></div><div id="items"></div></div>
+<div class="panel"><h2>選択項目の編集</h2><div id="detail"><p class="hint">施設・道路を選択してください。</p></div></div>
+<div class="panel"><h2>チェック結果</h2><div id="warnings">確認中…</div><p class="hint">重なりが意図された親地区と内部施設は警告から除きます。道路の接続・隔壁・上下の移送可否は、現行Notionを確認して別途確定してください。</p></div>
+</aside></div></div>
+<div id="message" role="status">準備中…</div>
+<footer>データの正本はNotionです。本画面はGitHub Pages上で読み込むだけの下書き編集用ツールで、直接GitHub・Notionを書き換えません。確定前にJSONを確認し、Notion反映後に確定JSONを更新してください。</footer>
+</div>
+<script>(function editorApp(){
+  "use strict";
+  const F=["upper","middle","lower"], LABEL={upper:"上層",middle:"中層",lower:"下層"};
+  const COLORS={terminal:"#66c9e5",town:"#8bc8e2",workshop:"#d5a9f5",guild:"#f6d08e",nature:"#7fd8a8",industrial:"#e3b374",shared:"#9fd3e7",security:"#d2bcf4",magitech:"#88baff",eidolon:"#d8adfc",living:"#a7d4df",recycling:"#d4b67d",hazard:"#f2a09b"};
+  const $=id=>document.getElementById(id);
+  const canvas=$("map"),ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height,SC=.4;
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const clone=x=>JSON.parse(JSON.stringify(x));
+  const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
+  const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
+  const snap=n=>state.snap?Math.round(n/25)*25:Math.round(n);
+  let floors={},dirty=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
+  const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
+  const state={snap:true,grid:true,overlay:true,labels:true};
+  function current(){return floors[active]}
+  function valid(d,floor){
+    if(!d||d.schemaVersion!==1||d.floor!==floor||!Array.isArray(d.facilities)||!Array.isArray(d.roads)||!d.facilities.length)throw Error(floor+" の形式が不正です");
+    const facilityIds=new Set(),roadIds=new Set();
+    for(const f of d.facilities){
+      if(!f||typeof f.id!=="string"||!f.id||facilityIds.has(f.id)||typeof f.name!=="string"||![f.x,f.y,f.w,f.h].every(Number.isFinite)||f.w<=0||f.h<=0)throw Error("施設データが不正です: "+f?.id);
+      facilityIds.add(f.id);
+    }
+    for(const r of d.roads){
+      if(!r||typeof r.id!=="string"||!r.id||roadIds.has(r.id)||!Number.isFinite(r.width)||r.width<=0||!["line","ring","internal"].includes(r.kind))throw Error("道路データが不正です");
+      if(r.kind==="line"&&(!Array.isArray(r.points)||r.points.length<2||!r.points.every(p=>p.length===2&&p.every(Number.isFinite))))throw Error("道路の座標が不正です: "+r.id);
+      if(r.kind==="ring"&&!Number.isFinite(r.r))throw Error("環状道路の半径が不正です: "+r.id);
+      roadIds.add(r.id);
+    }
+    return clone(d);
+  }
+  function saveSnapshot(){
+    const h=history[active];
+    h.push(JSON.stringify(current()));
+    if(h.length>80)h.shift();
+    future[active]=[];
+    dirty.add(active);
+  }
+  function restore(which){
+    const src=which==="undo"?history[active]:future[active],target=which==="undo"?future[active]:history[active];
+    if(!src.length)return;
+    target.push(JSON.stringify(current()));
+    floors[active]=JSON.parse(src.pop());
+    dirty.add(active);
+    if(selection&&!items().some(x=>x.id===selection.id))selection=null;
+    render();
+  }
+  function items(){const d=current();return !d?[]:kind==="facility"?d.facilities:d.roads}
+  function selectedItem(){return selection?items().find(x=>x.id===selection.id)||null:null}
+  function showStatus(msg,warning=false){$("message").textContent=msg;$("message").classList.toggle("warn",warning)}
+  async function load(){
+    try{
+      const values=await Promise.all(F.map(async f=>{
+        const res=await fetch("./data/"+f+".json",{cache:"no-cache"});
+        if(!res.ok)throw Error(f+".json を取得できません（HTTP "+res.status+"）");
+        return valid(await res.json(),f);
+      }));
+      F.forEach((f,i)=>floors[f]=values[i]);
+      $("loading").hidden=true;
+      $("workspace").hidden=false;
+      showStatus("現行JSONを読み込みました。編集は確定データに自動反映されません。");
+      render();
+    }catch(e){$("loading").textContent="地図データの読み込みに失敗しました: "+e.message+"。GitHub Pagesで開いてください。";showStatus(e.message,true)}
+  }
+  function floorName(){return LABEL[active]}
+  function switchFloor(f){
+    if(!floors[f])return;
+    active=f;selection=null;drag=null;
+    render();
+  }
+  function rect(f){
+    const {px,py}=worldToPixel(f.x,f.y);
+    return {left:px-f.h*SC/2,top:py-f.w*SC/2,right:px+f.h*SC/2,bottom:py+f.w*SC/2,cx:px,cy:py};
+  }
+  function drawAnnulus(f,color,alpha){
+    const c=worldToPixel(f.x,f.y),outer=(f.outerRadius||Math.max(f.w,f.h)/2)*SC,inner=(f.innerRadius||0)*SC;
+    ctx.save();ctx.beginPath();ctx.arc(c.px,c.py,outer,0,Math.PI*2);
+    if(inner)ctx.arc(c.px,c.py,inner,0,Math.PI*2,true);
+    ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.fill("evenodd");
+    ctx.globalAlpha=alpha*1.4;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([8,6]);
+    for(const r of [outer,inner].filter(Boolean)){ctx.beginPath();ctx.arc(c.px,c.py,r,0,Math.PI*2);ctx.stroke()}
+    ctx.restore();
+  }
+  function roadPath(r){
+    if(r.kind==="internal")return false;
+    ctx.beginPath();
+    if(r.kind==="ring"){ctx.arc(W/2,H/2,r.r*SC,0,Math.PI*2);return true}
+    if(r.kind==="line"){r.points.forEach((p,i)=>{const c=worldToPixel(p[0],p[1]);i?ctx.lineTo(c.px,c.py):ctx.moveTo(c.px,c.py)});return true}
+    return false;
+  }
+  function drawRoad(r,alpha=1){
+    ctx.save();ctx.globalAlpha=alpha;
+    if(roadPath(r)){ctx.strokeStyle=r.color||"#a5b8c8";ctx.lineWidth=Math.max(2,r.width*SC);ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(r.dash||[]);ctx.stroke()}
+    ctx.restore();
+  }
+  function draw(){
+    ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
+    if(state.grid){ctx.save();ctx.strokeStyle="#6b91a533";ctx.lineWidth=1;for(let i=0;i<=20;i++){ctx.beginPath();ctx.moveTo(i*W/20,0);ctx.lineTo(i*W/20,H);ctx.moveTo(0,i*H/20);ctx.lineTo(W,i*H/20);ctx.stroke()}ctx.restore()}
+    if(state.overlay&&active!=="upper"){
+      const other=floors[active==="middle"?"lower":"middle"];
+      if(other){
+        for(const f of other.facilities){
+          if(f.ringDistrict){drawAnnulus(f,"#e9a2bb",.11);continue}
+          const b=rect(f);ctx.save();ctx.strokeStyle="#ef99b8";ctx.globalAlpha=.37;ctx.lineWidth=1.5;ctx.setLineDash([8,6]);ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);ctx.restore();
+        }
+      }
+    }
+    for(const f of current().facilities.filter(f=>f.ringDistrict))drawAnnulus(f,"#63a5a1",.22);
+    for(const f of current().facilities){
+      if(f.ringDistrict)continue;
+      const b=rect(f),color=COLORS[f.type]||"#b3c6d2";
+      ctx.fillStyle=color+"33";ctx.fillRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
+      ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
+    }
+    for(const r of current().roads)drawRoad(r,.78);
+    if(state.labels){
+      ctx.save();ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+      for(const f of current().facilities){
+        if(f.showLabel===false||f.ringDistrict)continue;
+        const c=worldToPixel(f.x,f.y),label=f.short||f.name;
+        ctx.strokeStyle="#0e202a";ctx.lineWidth=4;ctx.strokeText(label,c.px,c.py-12,230);
+        ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
+      }
+      ctx.restore();
+    }
+    const item=selectedItem();
+    if(item&&selection?.kind===kind){
+      ctx.save();ctx.strokeStyle="#fff29c";ctx.lineWidth=4;ctx.setLineDash([]);
+      if(kind==="facility"){
+        if(item.ringDistrict){const c=worldToPixel(item.x,item.y);ctx.beginPath();ctx.arc(c.px,c.py,(item.outerRadius||720)*SC,0,Math.PI*2);ctx.stroke()}
+        else {
+          const b=rect(item);ctx.strokeRect(b.left-3,b.top-3,b.right-b.left+6,b.bottom-b.top+6);
+          ctx.fillStyle="#fff29c";ctx.fillRect(b.right-8,b.bottom-8,16,16);
+        }
+      }else{
+        if(roadPath(item))ctx.stroke();
+        if(item.kind==="line"){item.points.forEach(p=>{const c=worldToPixel(p[0],p[1]);ctx.beginPath();ctx.fillStyle="#fff29c";ctx.arc(c.px,c.py,8,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#16222c";ctx.lineWidth=2;ctx.stroke()})}
+      }
+      ctx.restore();
+    }
+    ctx.save();ctx.fillStyle="#f1f7f9";ctx.textAlign="center";ctx.font="bold 18px sans-serif";
+    ctx.fillText("▲ 船首 +X",500,24);ctx.fillText("船尾 −X ▼",500,H-16);
+    ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText("左舷 −Y",0,0);
+    ctx.restore();
+    ctx.save();ctx.fillStyle="#f1f7f9";ctx.textAlign="center";ctx.font="bold 18px sans-serif";ctx.translate(W-19,H/2);ctx.rotate(Math.PI/2);ctx.fillText("右舷 +Y",0,0);ctx.restore();
+  }
+  function diagnostics(){
+    const d=current(),warn=[];
+    if(!d)return warn;
+    const facilities=d.facilities.filter(f=>!f.ringDistrict);
+    for(const f of facilities){
+      if(f.x-f.w/2< -2000||f.x+f.w/2>2000||f.y-f.h/2< -1250||f.y+f.h/2>1250)warn.push("範囲外: "+f.name);
+    }
+    for(let i=0;i<facilities.length;i++)for(let j=i+1;j<facilities.length;j++){
+      const a=facilities[i],b=facilities[j];
+      const overlapX=Math.min(a.x+a.w/2,b.x+b.w/2)-Math.max(a.x-a.w/2,b.x-b.w/2),
+            overlapY=Math.min(a.y+a.h/2,b.y+b.h/2)-Math.max(a.y-a.h/2,b.y-b.h/2);
+      if(overlapX>12&&overlapY>12){
+        const aInB=a.x-a.w/2>=b.x-b.w/2&&a.x+a.w/2<=b.x+b.w/2&&a.y-a.h/2>=b.y-b.h/2&&a.y+a.h/2<=b.y+b.h/2;
+        const bInA=b.x-b.w/2>=a.x-a.w/2&&b.x+b.w/2<=a.x+a.w/2&&b.y-b.h/2>=a.y-a.h/2&&b.y+b.h/2<=a.y+a.h/2;
+        if(!aInB&&!bInA)warn.push("施設重複の可能性: "+a.name+" / "+b.name);
+      }
+    }
+    return warn;
+  }
+  function renderList(){
+    const q=$("search").value.toLowerCase().trim();
+    const x=items().filter(i=>(i.name||"").toLowerCase().includes(q)||(i.id||"").toLowerCase().includes(q));
+    $("items").innerHTML=x.map(i=>`<button type="button" data-pick="${esc(i.id)}" class="item ${selection?.id===i.id?"selected":""}"><span class="dot" style="background:${esc(kind==="facility"?COLORS[i.type]||"#aabfca":i.color||"#aabfca")}"></span><span>${esc(i.name)}<small>${esc(i.id)}</small></span>${i.reviewStatus==="draft"?"<em>仮</em>":""}</button>`).join("")||'<p class="hint">対象がありません。</p>';
+    $("itemCount").textContent=String(items().length);
+  }
+  function field(label,name,value,type="text",extra=""){
+    return `<label>${esc(label)}<input type="${type}" data-field="${esc(name)}" value="${esc(value)}" ${extra}></label>`;
+  }
+  function renderDetail(){
+    const item=selectedItem(),e=$("detail");
+    if(!item){e.innerHTML='<p class="hint">地図や一覧で施設・道路を選択してください。</p>';return}
+    const typeOptions=Object.keys(COLORS).map(t=>`<option value="${t}" ${t===item.type?"selected":""}>${esc(t)}</option>`).join("");
+    const common=`<div class="value-id">ID: ${esc(item.id)}</div>`;
+    if(kind==="facility"){
+      const isRing=item.ringDistrict===true;
+      e.innerHTML=`${common}<div class="fields">
+        ${field("施設名","name",item.name)}
+        <label>施設分類<select data-field="type">${typeOptions}</select></label>
+        ${field("X / 船首・船尾 (m)","x",item.x,"number",isRing?"disabled":"step='25'")}
+        ${field("Y / 左右舷 (m)","y",item.y,"number",isRing?"disabled":"step='25'")}
+        ${field("X方向の長さ (m)","w",item.w,"number",isRing?"disabled min='1'":"min='1' step='25'")}
+        ${field("Y方向の長さ (m)","h",item.h,"number",isRing?"disabled min='1'":"min='1' step='25'")}
+        </div><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
+        ${isRing?'<p class="hint">円環地区の形状・中心は既存設定で固定しています。通常の矩形施設とは別に扱います。</p>':`<button type="button" class="danger" id="delete">この施設を削除（下書き）</button>`}
+        <p class="hint">既存の施設IDは維持。編集内容はJSON書き出しまで確定されません。</p>`;
+    }else{
+      const pts=item.kind==="line"?(item.points||[]):[];
+      e.innerHTML=`${common}<div class="fields">
+        ${field("道路名","name",item.name)}
+        ${field("道路幅 (m)","width",item.width,"number","min='1' step='1'")}
+        ${item.kind==="ring"?field("中心半径 (m)","r",item.r,"number","min='10' step='25'"):""}
+        </div><p class="hint">経路種別: ${esc(item.roadType||item.kind)}。${item.kind==="internal"?"位置がNotionで未指定のため描画していません。":"黄色い頂点はドラッグできます。"}</p>
+        ${item.kind==="line"?`<h4>道路の頂点</h4><div class="points">${pts.map((p,i)=>`<div class="point"><strong>${i+1}</strong><input aria-label="頂点${i+1} X" type="number" data-vertex="${i}" data-axis="0" value="${p[0]}"><input aria-label="頂点${i+1} Y" type="number" data-vertex="${i}" data-axis="1" value="${p[1]}"><button data-delete-point="${i}" title="頂点削除" ${pts.length<=2?"disabled":""}>×</button></div>`).join("")}</div><button type="button" id="addPoint">頂点を追加</button>`:""}
+        <button type="button" class="danger" id="delete">この道路を削除（下書き）</button>`;
+    }
+  }
+  function render(){
+    if(!current())return;
+    document.querySelectorAll("[data-floor]").forEach(b=>{const ok=b.dataset.floor===active;b.classList.toggle("active",ok);b.setAttribute("aria-pressed",String(ok))});
+    document.querySelectorAll("[data-kind]").forEach(b=>b.classList.toggle("active",b.dataset.kind===kind));
+    $("floorText").textContent=floorName()+(dirty.has(active)?" — 編集中":" — 現行設定を読み込み");
+    $("overlay").disabled=active==="upper";
+    for(const [id,enabled] of [["overlay",state.overlay],["snap",state.snap],["grid",state.grid],["labels",state.labels]])$(id).classList.toggle("active",enabled);
+    $("undo").disabled=history[active].length===0;$("redo").disabled=future[active].length===0;
+    const warnings=diagnostics();$("warnings").innerHTML=warnings.length?`<strong>位置の要確認: ${warnings.length} 件</strong><ul>${warnings.slice(0,8).map(w=>`<li>${esc(w)}</li>`).join("")}</ul>${warnings.length>8?`ほか${warnings.length-8}件`:""}`:'<span>範囲外・部分重複の警告はありません（経路接続は別途確認）。</span>';
+    $("warnings").classList.toggle("warn",warnings.length>0);
+    renderList();renderDetail();draw();
+  }
+  function localPos(e){const r=canvas.getBoundingClientRect();return {px:(e.clientX-r.left)/r.width*W,py:(e.clientY-r.top)/r.height*H}}
+  function distanceToSeg(px,py,a,b){
+    const dx=b.px-a.px,dy=b.py-a.py,t=Math.max(0,Math.min(1,((px-a.px)*dx+(py-a.py)*dy)/(dx*dx+dy*dy||1)));
+    return Math.hypot(px-(a.px+t*dx),py-(a.py+t*dy));
+  }
+  function pickFacility(p){
+    if(selection&&kind==="facility"){
+      const curr=selectedItem();
+      if(curr&&!curr.ringDistrict){const b=rect(curr);if(Math.hypot(p.px-b.right,p.py-b.bottom)<18)return {item:curr,mode:"resize"}}
+    }
+    for(const f of [...items()].reverse()){
+      if(f.ringDistrict)continue;
+      const b=rect(f);
+      if(p.px>=b.left&&p.px<=b.right&&p.py>=b.top&&p.py<=b.bottom)return {item:f,mode:"move"};
+    }
+    return null;
+  }
+  function pickRoad(p){
+    let best=null,bd=15,vertex=null;
+    for(const r of items()){
+      if(r.kind==="internal")continue;
+      if(r.kind==="line"){
+        r.points.forEach((node,i)=>{const c=worldToPixel(node[0],node[1]),dd=Math.hypot(p.px-c.px,p.py-c.py);if(dd<bd){best=r;bd=dd;vertex=i}});
+      }
+    }
+    if(vertex!==null)return {item:best,mode:"vertex",index:vertex};
+    best=null;bd=15;
+    for(const r of items()){
+      if(r.kind==="ring"){
+        const d=Math.abs(Math.hypot(p.px-W/2,p.py-H/2)-r.r*SC);
+        if(d<bd){bd=d;best={item:r,mode:"radius"}}
+      }else if(r.kind==="line"){
+        for(let i=1;i<r.points.length;i++){
+          const a=worldToPixel(...r.points[i-1]),b=worldToPixel(...r.points[i]),d=distanceToSeg(p.px,p.py,a,b);
+          if(d<bd){bd=d;best={item:r,mode:"select"}}
+        }
+      }
+    }
+    return best;
+  }
+  function down(e){
+    if(e.button!==0||!current())return;
+    const p=localPos(e),w=pixelToWorld(p.px,p.py);cursorWorld=w;
+    const hit=kind==="facility"?pickFacility(p):pickRoad(p);
+    if(!hit){selection=null;render();return}
+    selection={id:hit.item.id,kind};
+    drag={pointerId:e.pointerId,start:p,world:w,mode:hit.mode,index:hit.index,itemId:hit.item.id,initial:clone(hit.item),saved:false};
+    canvas.setPointerCapture(e.pointerId);
+    render();
+    e.preventDefault();
+  }
+  function move(e){
+    const p=localPos(e),w=pixelToWorld(p.px,p.py);cursorWorld=w;
+    $("cursor").textContent=`X ${Math.round(w.x)}m / Y ${Math.round(w.y)}m`;
+    if(!drag||drag.pointerId!==e.pointerId)return;
+    if(Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<3&&!drag.saved)return;
+    if(!drag.saved){saveSnapshot();drag.saved=true}
+    const obj=items().find(x=>x.id===drag.itemId);if(!obj)return;
+    if(kind==="facility"){
+      if(drag.mode==="move"){
+        obj.x=snap(drag.initial.x+w.x-drag.world.x);
+        obj.y=snap(drag.initial.y+w.y-drag.world.y);
+      }else if(drag.mode==="resize"){
+        const c=worldToPixel(obj.x,obj.y);
+        obj.w=Math.max(25,snap(Math.max(25,(p.py-c.py)*5)));
+        obj.h=Math.max(25,snap(Math.max(25,(p.px-c.px)*5)));
+      }
+    }else if(drag.mode==="vertex"){
+      obj.points[drag.index]=[snap(drag.initial.points[drag.index][0]+w.x-drag.world.x),snap(drag.initial.points[drag.index][1]+w.y-drag.world.y)];
+    }else if(drag.mode==="radius"){
+      obj.r=Math.max(25,snap(Math.hypot(p.px-W/2,p.py-H/2)/SC));
+    }
+    draw();renderDetail();$("floorText").textContent=floorName()+" — 編集中";
+    $("undo").disabled=false;
+  }
+  function up(e){
+    if(!drag||drag.pointerId!==e.pointerId)return;
+    if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
+    drag=null;render();
+  }
+  function detailChange(e){
+    const item=selectedItem(),target=e.target;if(!item||!target)return;
+    if(target.dataset.field){
+      const key=target.dataset.field,value=target.type==="number"?Number(target.value):target.value;
+      if(target.type==="number"&&!Number.isFinite(value)){renderDetail();return}
+      if(["w","h","width","r"].includes(key)&&value<=0){renderDetail();return}
+      if(item[key]===value)return;
+      saveSnapshot();item[key]=value;render();
+    }else if(target.dataset.vertex!==undefined){
+      const idx=Number(target.dataset.vertex),axis=Number(target.dataset.axis),v=Number(target.value);
+      if(!Number.isFinite(v))return;
+      saveSnapshot();item.points[idx][axis]=v;render();
+    }
+  }
+  function newFacility(){
+    const d=current();if(!d)return;
+    saveSnapshot();
+    let n=1,id;do{id="draft_facility_"+n++}while(d.facilities.some(f=>f.id===id));
+    const x=snap(cursorWorld.x),y=snap(cursorWorld.y);
+    d.facilities.push({id,name:"新規施設（仮）",x,y,w:200,h:200,type:"industrial",detail:"位置・用途を検討中。Notionへは未反映。",reviewStatus:"draft"});
+    kind="facility";selection={id,kind};render();
+  }
+  function newRoad(){
+    const d=current();if(!d)return;
+    saveSnapshot();
+    let n=1,id;do{id="draft_road_"+n++}while(d.roads.some(r=>r.id===id));
+    const x=snap(cursorWorld.x),y=snap(cursorWorld.y);
+    d.roads.push({id,name:"新規道路（仮）",kind:"line",roadType:"一般道路",points:[[x,y],[x+150,y]],width:24,color:"#a8b5bd",reviewStatus:"draft"});
+    kind="road";selection={id,kind};render();
+  }
+  function deleteItem(){
+    const item=selectedItem();if(!item)return;
+    if(item.ringDistrict){showStatus("円環地区は個別削除できません。",true);return}
+    if(!confirm(`「${item.name}」を編集中データから削除しますか？（元のJSONとNotionは変わりません）`))return;
+    saveSnapshot();
+    const arr=items(),idx=arr.findIndex(x=>x.id===item.id);if(idx>=0)arr.splice(idx,1);
+    selection=null;render();
+  }
+  function addPoint(){
+    const r=selectedItem();if(!r||r.kind!=="line")return;
+    saveSnapshot();
+    const last=r.points.at(-1);r.points.push([last[0]+125,last[1]]);render();
+  }
+  function removePoint(i){
+    const r=selectedItem();if(!r||r.kind!=="line"||r.points.length<=2)return;
+    saveSnapshot();r.points.splice(i,1);render();
+  }
+  function exportJSON(){
+    if(!current())return;
+    const output=clone(current());
+    output.editorMeta={status:"draft",editedAt:new Date().toISOString(),note:"仮配置データ。Notionの確定設定への反映前に確認が必要。"};
+    const blob=new Blob([JSON.stringify(output,null,2)+"\n"],{type:"application/json"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=active+"-draft.json";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showStatus(floorName()+"の下書きJSONを書き出しました。GitHubやNotionは自動変更されません。");
+  }
+  async function importJSON(file){
+    if(!file)return;
+    try{
+      const value=valid(JSON.parse(await file.text()),active);
+      if(!confirm(floorName()+"の編集中データを選択したJSONで置き換えますか？（元の確定データは変更されません）"))return;
+      saveSnapshot();floors[active]=value;selection=null;render();
+      showStatus(file.name+" を下書きとして読み込みました。");
+    }catch(e){showStatus("読み込みに失敗しました: "+e.message,true)}
+  }
+  document.querySelectorAll("[data-floor]").forEach(b=>b.addEventListener("click",()=>switchFloor(b.dataset.floor)));
+  document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>{kind=b.dataset.kind;selection=null;render()}));
+  $("overlay").onclick=()=>{state.overlay=!state.overlay;render()};
+  $("snap").onclick=()=>{state.snap=!state.snap;render()};
+  $("grid").onclick=()=>{state.grid=!state.grid;render()};
+  $("labels").onclick=()=>{state.labels=!state.labels;render()};
+  $("undo").onclick=()=>restore("undo");$("redo").onclick=()=>restore("redo");
+  $("addFacility").onclick=newFacility;$("addRoad").onclick=newRoad;
+  $("export").onclick=exportJSON;$("import").onclick=()=>$("importFile").click();
+  $("importFile").addEventListener("change",async e=>{await importJSON(e.target.files?.[0]);e.target.value=""});
+  $("search").addEventListener("input",renderList);
+  $("items").addEventListener("click",e=>{const b=e.target.closest("[data-pick]");if(b){selection={id:b.dataset.pick,kind};render()}});
+  $("detail").addEventListener("change",detailChange);
+  $("detail").addEventListener("click",e=>{const p=e.target.closest("[data-delete-point]");if(p){removePoint(+p.dataset.deletePoint);return}if(e.target.id==="addPoint")addPoint();if(e.target.id==="delete")deleteItem()});
+  canvas.addEventListener("pointerdown",down);
+  canvas.addEventListener("pointermove",move);
+  canvas.addEventListener("pointerup",up);
+  canvas.addEventListener("pointercancel",up);
+  window.addEventListener("keydown",e=>{
+    if((e.ctrlKey||e.metaKey)&&["z","Z"].includes(e.key)&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){e.preventDefault();restore(e.shiftKey?"redo":"undo")}
+  });
+  window.addEventListener("beforeunload",e=>{if(dirty.size){e.preventDefault();e.returnValue=""}});
+  load();
+})();</script>
+</body></html>
