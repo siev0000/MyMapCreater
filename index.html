@@ -127,6 +127,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="drawerBody">
    <div id="darkWorldControls" class="drawerSection" hidden>
     <section class="panel"><h2>ダークワールド（仮マップ）</h2><p>12×20マスのテスト地図。領地・ヘル・中間マスの位置や距離、地形は未確定です。</p><p id="darkStatus" class="darkEditingInfo">マップを読み込み中…</p></section>
+    <section class="panel"><h2>地図の表示</h2><div class="darkActionButtons"><button type="button" id="darkGridToggle">グリッド：ON</button><button type="button" id="darkGridTop">最前面：OFF</button></div><p>この表示設定はアポクリファ＝アーカイブと共通で、ブラウザに保存されます。</p></section>
     <section class="panel"><h2>マスの操作</h2><div class="darkModeButtons">
       <button class="on" type="button" data-dark-mode="inspect">確認</button>
       <button type="button" data-dark-mode="terrain">地形編集</button>
@@ -238,6 +239,10 @@ function saveDisplaySettings(){
  }catch(error){console.warn('表示設定を保存できませんでした',error)}
 }
 function updateDisplaySettingsButtons(){
+ const darkGrid=document.getElementById('darkGridToggle');
+ const darkTop=document.getElementById('darkGridTop');
+ if(darkGrid){darkGrid.textContent='グリッド：'+(state.grid?'ON':'OFF');darkGrid.classList.toggle('on',state.grid)}
+ if(darkTop){darkTop.textContent='最前面：'+(state.gridOnTop?'ON':'OFF');darkTop.classList.toggle('on',state.gridOnTop)}
  document.querySelectorAll('[data-layer]').forEach(b=>{
   const on=Boolean(state[b.dataset.layer]);
   b.classList.toggle('on',on);
@@ -655,6 +660,8 @@ document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{
  const n=b.dataset.layer;state[n]=!state[n];updateDisplaySettingsButtons();saveDisplaySettings();draw();
 });
 document.getElementById('gridOnTop').onclick=()=>{state.gridOnTop=!state.gridOnTop;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
+document.getElementById('darkGridToggle').onclick=()=>{state.grid=!state.grid;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
+document.getElementById('darkGridTop').onclick=()=>{state.gridOnTop=!state.gridOnTop;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
 document.getElementById('reset').onclick=clearSelected;
 document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
 renderPlaces();
