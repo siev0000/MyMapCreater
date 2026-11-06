@@ -15,7 +15,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .floor-tab small{display:none}
 .mapstage{min-height:0;position:relative;overflow:hidden}
 .mapbox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0b1822;overflow:hidden}
-.mapbox canvas{display:block;max-height:100%;max-width:100%;width:auto;height:auto;aspect-ratio:5/8;object-fit:contain;cursor:crosshair;touch-action:manipulation;background:#172b30}
+.mapbox canvas{display:block;max-height:100%;max-width:100%;width:auto;height:auto;aspect-ratio:5/8;object-fit:contain;cursor:grab;touch-action:none;background:#172b30}
 .mapchips{position:absolute;left:10px;top:10px;display:flex;flex-wrap:wrap;gap:5px;pointer-events:none;max-width:calc(100% - 20px)}
 .chip{font-size:10px;padding:5px 8px;border-radius:99px;background:rgba(6,16,24,.82);border:1px solid rgba(117,164,190,.4);color:#d7edfa}
 #layoutNotice{color:#efd4a3}
@@ -23,7 +23,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .scale{font-size:10px;color:#cce2ea;background:rgba(6,16,24,.76);padding:5px 10px;border-radius:99px;border:1px solid #416071}
 .drawerShade{position:absolute;inset:0;z-index:15;background:rgba(2,8,12,.52);display:none}
 .drawerShade.show{display:block}
-.drawer{position:absolute;left:0;right:auto;top:0;bottom:0;z-index:16;width:min(355px,90vw);border-right:1px solid #49697c;background:#10222e;box-shadow:14px 0 38px #0007;transform:translateX(-102%);transition:transform .23s ease;display:flex;flex-direction:column;overflow:hidden}
+.drawer{position:absolute;left:0;right:auto;top:0;bottom:0;z-index:16;width:min(355px,78vw);border-right:1px solid #49697c;background:#10222e;box-shadow:14px 0 38px #0007;transform:translateX(-102%);transition:transform .23s ease;display:flex;flex-direction:column;overflow:hidden}
 .drawer.open{transform:translateX(0)}
 .drawerHeader{display:flex;justify-content:flex-start;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #314f60;font-weight:750}
 .drawerBody{min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:14px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
@@ -35,12 +35,20 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .controls #reset{grid-column:span 2;text-align:center}
 #gridSize{font-size:11px}
 #places{display:flex;flex-wrap:wrap;gap:6px;max-height:240px;overflow-y:auto}
-.listbtn{padding:7px 9px;font-size:12px}
+.listbtn{padding:7px 9px;font-size:12px}.listbtn.on{background:#276380;border-color:#b8e3f3}
 .legend{display:grid;grid-template-columns:18px 1fr;gap:7px 9px;font-size:12px;align-items:center;line-height:1.35}
 .swatch{height:9px;border-radius:4px}
 .layoutButton{width:100%;text-align:center;background:#64492e;border-color:#bd9460;font-weight:650}
 .editLink{display:block;border:1px solid #7cb6d4;padding:10px;text-align:center;border-radius:9px;color:#e9f6ff;background:#25506a;text-decoration:none;font-size:12px}
 .notice{font-size:12px;line-height:1.7;color:var(--muted)}
+.selectedDetail{font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.selectedDetail h3{font-size:15px;margin:0 0 9px;color:#f3fbff}
+.selectedDetail p{margin:8px 0;color:#dcebf4}
+.selectedDetail .meta{margin:8px 0}
+.zoomControls{position:absolute;right:11px;bottom:46px;z-index:18;display:flex;align-items:center;gap:5px;background:rgba(9,23,32,.92);border:1px solid #4a7185;border-radius:12px;padding:5px;box-shadow:0 5px 16px #0005}
+.zoomControls button{min-width:40px;min-height:40px;padding:4px 8px;font-size:20px;font-weight:700;touch-action:manipulation}
+.zoomControls .zoomReset{font-size:12px;min-width:58px}
+@media(max-width:425px){.drawer{width:min(340px,78vw)}.zoomControls{right:8px;bottom:38px;gap:3px}.zoomControls button{min-width:35px;min-height:37px}.zoomControls .zoomReset{min-width:51px}}
 .popupMask{position:absolute;inset:0;background:rgba(3,9,14,.58);display:none;z-index:25;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));cursor:pointer}
 .popupMask.show{display:flex}
 .popupCard{width:min(560px,100%);max-height:72%;overflow-y:auto;background:#152a37;border-radius:16px;border:1px solid #6289a0;padding:17px 18px 13px;box-shadow:0 18px 44px #0009}
@@ -67,6 +75,11 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
  <div class="mapchips"><span class="chip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
+ <div class="zoomControls" aria-label="地図の拡大縮小">
+  <button id="zoomOut" type="button" aria-label="縮小">−</button>
+  <button id="zoomReset" type="button" class="zoomReset" aria-label="等倍に戻す">100%</button>
+  <button id="zoomIn" type="button" aria-label="拡大">＋</button>
+ </div>
  <div class="drawerShade" id="drawerShade"></div>
  <aside class="drawer" id="drawer" aria-label="表示メニュー" aria-hidden="true">
   <div class="drawerHeader"><button type="button" id="closeDrawer" class="iconbtn" aria-label="メニューを閉じる">×</button><span>表示・施設メニュー</span></div>
@@ -85,7 +98,10 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
       <button id="reset">選択解除</button>
     </div>
    </section>
-   <section class="panel"><h2>施設一覧</h2><div id="places"></div></section>
+   <section class="panel" id="selectedPanel" hidden aria-live="polite">
+    <h2>選択施設の概要</h2><div class="selectedDetail" id="selectedDetail"></div>
+   </section>
+   <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>施設を選ぶと、このメニューに説明を表示し、地図上の位置を少し拡大します。</p></section>
    <section class="panel"><h2>中央部の区画と寸法</h2><div class="legend">
     <i class="swatch" style="background:#438ca6"></i><span>中央ターミナル塔：直径500m</span>
     <i class="swatch" style="background:#ead29f"></i><span>コンコース：半径250〜330m（外径660m）</span>
@@ -110,6 +126,45 @@ const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
 const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false};let chosen=null;
+const view={zoom:1,offsetX:0,offsetY:0};
+const clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
+function resetView(){
+ view.zoom=1;view.offsetX=0;view.offsetY=0;
+ updateZoomUI();
+}
+function updateZoomUI(){
+ const b=document.getElementById('zoomReset');if(b)b.textContent=Math.round(view.zoom*100)+'%';
+}
+function mapCoordinateFromClient(clientX,clientY){
+ const r=canvas.getBoundingClientRect(),sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*H;
+ return {x:W/2+(sx-W/2-view.offsetX)/view.zoom,y:H/2+(sy-H/2-view.offsetY)/view.zoom};
+}
+function zoomAround(next,clientX,clientY){
+ const r=canvas.getBoundingClientRect();
+ if(!r.width||!r.height)return;
+ const sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*H;
+ const bx=(sx-W/2-view.offsetX)/view.zoom,by=(sy-H/2-view.offsetY)/view.zoom;
+ view.zoom=clamp(next,1,4);
+ view.offsetX=sx-W/2-bx*view.zoom;view.offsetY=sy-H/2-by*view.zoom;
+ updateZoomUI();draw();
+}
+function zoomCenter(factor){
+ const rect=canvas.getBoundingClientRect();
+ zoomAround(view.zoom*factor,rect.left+rect.width/2,rect.top+rect.height/2);
+}
+function focusOnFacility(f){
+ if(!f)return;
+ const [px,py]=xy(f.x,f.y),r=canvas.getBoundingClientRect(),menu=document.getElementById('drawer');
+ let targetX=W/2;
+ if(menu.classList.contains('open')&&menu.getBoundingClientRect){
+  const mr=menu.getBoundingClientRect(),visibleLeft=Math.max(r.left,mr.right);
+  targetX=visibleLeft<r.right-12?clamp((visibleLeft+r.right-2*r.left)/(2*r.width)*W,W*.50,W*.88):W*.88;
+ }
+ view.zoom=1.85;
+ view.offsetX=targetX-W/2-view.zoom*(px-W/2);
+ view.offsetY=-view.zoom*(py-H/2);
+ updateZoomUI();draw();
+}
 const middleFacilities=[];
 const groups={terminal:{fill:'#346e87',line:'#98e5fc'},town:{fill:'#587789',line:'#a6dcf2'},workshop:{fill:'#776879',line:'#d5b4eb'},guild:{fill:'#817253',line:'#ead59a'},nature:{fill:'#356956',line:'#9dd7ad'},industrial:{fill:'#70634c',line:'#e8bc7e'}};
 const middleRoads=[];
@@ -213,7 +268,7 @@ async function loadMapDataFromJSON(){
 function switchMap(id){
  const map=mapSets[id];if(!map)return;
  const preview=showProposal&&layoutDrafts[id];
- currentMap=id;facilities=preview?preview.facilities:map.facilities;roads=preview?preview.roads:map.roads;chosen=null;
+ currentMap=id;facilities=preview?preview.facilities:map.facilities;roads=preview?preview.roads:map.roads;chosen=null;resetView();document.getElementById('selectedPanel').hidden=true;
  const toggle=document.getElementById('layoutToggle');
  toggle.hidden=!layoutDrafts[id];
  toggle.textContent=preview?'配置案を表示中｜Notion現行を表示':'Notion現行を表示中｜配置案を表示';
@@ -256,7 +311,14 @@ function drawExclusiveSortieZones(){
  }
  ctx.restore();
 }
-function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
+function draw(){
+ctx.setTransform(1,0,0,1,0,0);
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
+ctx.save();
+ctx.translate(W/2+view.offsetX,H/2+view.offsetY);
+ctx.scale(view.zoom,view.zoom);
+ctx.translate(-W/2,-H/2);
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
 if(currentMap==='middle'){/* Decorative terrain ellipses removed: not a Notion-defined landform. */}
@@ -280,7 +342,7 @@ ctx.restore();
 for(const f of facilities){if(f.ringDistrict)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
-ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();}
+ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();ctx.restore();}
 function fitCanvasToViewport(){
  const host=canvas.parentElement;
  if(!host||!host.getBoundingClientRect)return;
@@ -325,7 +387,7 @@ function closeDrawer(){
  document.getElementById('drawer').setAttribute('aria-hidden','true');
 }
 function openDrawer(){
- chosen=null;renderInfo();draw();
+ closePopup();
  document.getElementById('drawer').classList.add('open');
  document.getElementById('drawerShade').classList.add('show');
  document.getElementById('menuBtn').setAttribute('aria-expanded','true');
@@ -333,15 +395,72 @@ function openDrawer(){
  document.getElementById('menuBtn').textContent='×';
  document.getElementById('drawer').setAttribute('aria-hidden','false');
 }
-function clearSelected(){chosen=null;renderInfo();draw()}
+function clearSelected(){chosen=null;document.getElementById('selectedPanel').hidden=true;renderInfo();draw()}
 function selectPlace(id){
- chosen=facilities.find(x=>x.id===id)||null;
- closeDrawer();renderInfo();draw();
+ const f=facilities.find(x=>x.id===id);
+ if(!f)return;
+ chosen=f;
+ closePopup();
+ const selectedPanel=document.getElementById('selectedPanel');
+ const detail=document.getElementById('selectedDetail');
+ detail.innerHTML=`<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${f.w}×${f.h}m</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>`;
+ selectedPanel.hidden=false;
+ document.querySelectorAll('#places [data-place]').forEach(b=>b.classList.toggle('on',b.dataset.place===id));
+ focusOnFacility(f);
+ selectedPanel.scrollIntoView?.({behavior:'smooth',block:'nearest'});
 }
+const activePointers=new Map();
+let ignoreClickUntil=0;
+canvas.addEventListener('pointerdown',e=>{
+ if(e.pointerType==='mouse'&&e.button!==0)return;
+ activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false});
+ if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!activePointers.has(e.pointerId))return;
+ const previous=activePointers.get(e.pointerId),oldX=previous.x,oldY=previous.y;
+ if(activePointers.size===2){
+  const before=[...activePointers.values()];
+  const oldDist=Math.hypot(before[0].x-before[1].x,before[0].y-before[1].y);
+  const oldCx=(before[0].x+before[1].x)/2,oldCy=(before[0].y+before[1].y)/2;
+  previous.x=e.clientX;previous.y=e.clientY;previous.moved=true;
+  const now=[...activePointers.values()];
+  const newDist=Math.hypot(now[0].x-now[1].x,now[0].y-now[1].y);
+  const newCx=(now[0].x+now[1].x)/2,newCy=(now[0].y+now[1].y)/2;
+  if(oldDist>0)zoomAround(view.zoom*newDist/oldDist,oldCx,oldCy);
+  const r=canvas.getBoundingClientRect();
+  view.offsetX+=(newCx-oldCx)/r.width*W;
+  view.offsetY+=(newCy-oldCy)/r.height*H;
+  draw();
+  ignoreClickUntil=Date.now()+400;
+ }else{
+  const dx=e.clientX-oldX,dy=e.clientY-oldY;
+  previous.x=e.clientX;previous.y=e.clientY;
+  if(Math.hypot(e.clientX-previous.startX,e.clientY-previous.startY)>5)previous.moved=true;
+  if(previous.moved){
+   const r=canvas.getBoundingClientRect();
+   view.offsetX+=dx/r.width*W;view.offsetY+=dy/r.height*H;
+   draw();ignoreClickUntil=Date.now()+400;
+  }
+ }
+});
+function stopPointer(e){
+ const previous=activePointers.get(e.pointerId);
+ if(previous?.moved)ignoreClickUntil=Date.now()+400;
+ activePointers.delete(e.pointerId);
+ if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId);
+}
+canvas.addEventListener('pointerup',stopPointer);
+canvas.addEventListener('pointercancel',stopPointer);
+canvas.addEventListener('wheel',e=>{
+ e.preventDefault();
+ zoomAround(view.zoom*(e.deltaY<0?1.15:1/1.15),e.clientX,e.clientY);
+},{passive:false});
 canvas.addEventListener('click',e=>{
- const box=canvas.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*W,y=(e.clientY-box.top)/box.height*H;
+ if(Date.now()<ignoreClickUntil)return;
+ const p=mapCoordinateFromClient(e.clientX,e.clientY),x=p.x,y=p.y;
  if(x<0||x>W||y<0||y>H)return;
- let near=null,dist=35;
+ let near=null,dist=35/view.zoom;
  for(const f of facilities){
   if(f.ringDistrict)continue;
   const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);
@@ -349,15 +468,18 @@ canvas.addEventListener('click',e=>{
  }
  const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
  const restricted=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones?.find(z=>wx>=z.bounds.xMin&&wx<=z.bounds.xMax&&wy>=z.bounds.yMin&&wy<=z.bounds.yMax):null;
- const radius=Math.hypot(wx,wy);
- const tower=facilities.find(f=>f.type==='terminal');
+ const radius=Math.hypot(wx,wy),tower=facilities.find(f=>f.type==='terminal');
  if(!near&&!restricted&&radius<=250&&tower)near=tower;
  chosen=near||(restricted?{kind:'reserved',...restricted}:radius<=330&&radius>250?{kind:'concourse'}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});
+ document.getElementById('selectedPanel').hidden=true;
  renderInfo();draw();
 });
-document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=clearSelected;document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';switchMap(currentMap)};
+document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=clearSelected;document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';document.getElementById('gridReadout').textContent=gridMeters+'m / '+gridSpec().cols+'×'+gridSpec().rows;draw()};
 renderPlaces();
 document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});
+document.getElementById('zoomIn').onclick=()=>zoomCenter(1.25);
+document.getElementById('zoomOut').onclick=()=>zoomCenter(1/1.25);
+document.getElementById('zoomReset').onclick=()=>{resetView();draw()};
 document.getElementById('menuBtn').addEventListener('click',()=>{
  const open=document.getElementById('drawer').classList.contains('open');
  open?closeDrawer():openDrawer();
