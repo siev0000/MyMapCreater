@@ -23,9 +23,9 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .scale{font-size:10px;color:#cce2ea;background:rgba(6,16,24,.76);padding:5px 10px;border-radius:99px;border:1px solid #416071}
 .drawerShade{position:absolute;inset:0;z-index:15;background:rgba(2,8,12,.52);display:none}
 .drawerShade.show{display:block}
-.drawer{position:absolute;right:0;top:0;bottom:0;z-index:16;width:min(355px,90vw);border-left:1px solid #49697c;background:#10222e;box-shadow:-14px 0 38px #0007;transform:translateX(102%);transition:transform .23s ease;display:flex;flex-direction:column;overflow:hidden}
+.drawer{position:absolute;left:0;right:auto;top:0;bottom:0;z-index:16;width:min(355px,90vw);border-right:1px solid #49697c;background:#10222e;box-shadow:14px 0 38px #0007;transform:translateX(-102%);transition:transform .23s ease;display:flex;flex-direction:column;overflow:hidden}
 .drawer.open{transform:translateX(0)}
-.drawerHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #314f60;font-weight:750}
+.drawerHeader{display:flex;justify-content:flex-start;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #314f60;font-weight:750}
 .drawerBody{min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:14px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
 .panel{border:1px solid #345568;border-radius:12px;background:#152c3a;padding:12px}
 .panel h2{font-size:14px;margin:0 0 10px}
@@ -69,7 +69,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
  <div class="drawerShade" id="drawerShade"></div>
  <aside class="drawer" id="drawer" aria-label="表示メニュー" aria-hidden="true">
-  <div class="drawerHeader"><span>表示・施設メニュー</span><button type="button" id="closeDrawer" class="iconbtn" aria-label="メニューを閉じる">×</button></div>
+  <div class="drawerHeader"><button type="button" id="closeDrawer" class="iconbtn" aria-label="メニューを閉じる">×</button><span>表示・施設メニュー</span></div>
   <div class="drawerBody">
    <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
    <section class="panel"><h2>表示切替</h2>
@@ -320,6 +320,8 @@ function closeDrawer(){
  document.getElementById('drawer').classList.remove('open');
  document.getElementById('drawerShade').classList.remove('show');
  document.getElementById('menuBtn').setAttribute('aria-expanded','false');
+ document.getElementById('menuBtn').setAttribute('aria-label','表示メニューを開く');
+ document.getElementById('menuBtn').textContent='☰';
  document.getElementById('drawer').setAttribute('aria-hidden','true');
 }
 function openDrawer(){
@@ -327,6 +329,8 @@ function openDrawer(){
  document.getElementById('drawer').classList.add('open');
  document.getElementById('drawerShade').classList.add('show');
  document.getElementById('menuBtn').setAttribute('aria-expanded','true');
+ document.getElementById('menuBtn').setAttribute('aria-label','表示メニューを閉じる');
+ document.getElementById('menuBtn').textContent='×';
  document.getElementById('drawer').setAttribute('aria-hidden','false');
 }
 function clearSelected(){chosen=null;renderInfo();draw()}
