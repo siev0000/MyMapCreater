@@ -1,18 +1,111 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AA 階層マップ｜上層・中層・下層</title><style>
-:root{color-scheme:dark;font-family:system-ui,'Noto Sans JP',sans-serif}*{box-sizing:border-box}body{margin:0;background:#0b131c;color:#e5edf2}.app{max-width:1450px;margin:auto;padding:20px}h1{font-size:22px;margin:0 0 6px}.sub{color:#a4b8c7;font-size:12px;margin:0 0 15px}.shell{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:15px}.mapbox{background:#111f27;border:1px solid #35505c;border-radius:12px;padding:12px;min-width:0}canvas{display:block;width:100%;max-width:620px;margin:auto;aspect-ratio:5 / 8;cursor:crosshair;touch-action:manipulation;background:#172b2e;border:1px solid #456071}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}button{border:1px solid #456478;color:#e7f3fa;background:#1b3444;border-radius:7px;padding:8px 10px;cursor:pointer}button.on{background:#29576a;border-color:#78bbd4}aside{display:flex;flex-direction:column;gap:12px}.panel{border:1px solid #385365;background:#12212d;border-radius:10px;padding:14px}.panel h2{margin:0 0 11px;font-size:15px}.legend{display:grid;grid-template-columns:20px 1fr;gap:8px 10px;font-size:12px;align-items:center;margin:10px 0}.swatch{height:10px;border-radius:3px}.small{font-size:12px;line-height:1.65;color:#b2c6d2}#info{font-size:13px;line-height:1.7;min-height:140px}.muted{color:#90a8b9}#info h3{font-size:17px;margin:0 0 7px;color:#fff}#info .pill{display:inline-block;border:1px solid #567081;border-radius:5px;padding:1px 6px;margin:2px 4px 4px 0;font-size:11px}.notice{margin-top:14px;font-size:12px;line-height:1.6;color:#afc2d0}@media(max-width:820px){.app{padding:10px}.shell{grid-template-columns:1fr}aside{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr))}h1{font-size:18px}}
-
-.floor-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 15px;padding:7px;border:1px solid #354e60;background:#111d29;border-radius:12px}
-.floor-tab{flex:1 1 145px;min-height:43px;font-size:14px;font-weight:700;transition:background .1s}
-.floor-tab.on{background:#245b75;border-color:#88d7ff;box-shadow:inset 0 -3px #91d7ff}
-.floor-tab small{display:block;font-size:10px;opacity:.76;font-weight:400}
-.map-status{font-size:11px;color:#d7bb83;display:inline-block;padding:1px 6px;margin-left:6px;border:1px solid #796b50;border-radius:99px}
-@media(max-width:600px){.floor-tabs{gap:5px}.floor-tab{min-width:0;flex:1 1 0;padding:7px 3px;font-size:12px}.floor-tab small{font-size:9px}}
-</style></head><body><div class="app"><h1 id="mapTitle">中層《アームドヴェイン階層》｜25×40 MAP</h1><p class="sub" id="mapSubtitle">アポクリファ＝アーカイブ ／ 実寸比率の俯瞰施設・経路図 ／ Notion座標ベース ／ 1マス ＝ 100m × 100m（正方形） ／ 上＝船首（+X）</p>
-<nav class="floor-tabs" role="tablist" aria-label="階層マップの切り替え">
-<button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="upper">上層<small>セントラルコア</small></button>
-<button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層<small>アームドヴェイン</small></button>
-<button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層<small>ジェネレートシェル</small></button>
-</nav><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px"><button id="layoutToggle" style="background:#6d5134;border-color:#bd9560;font-weight:700">配置案表示中／Notion現行に切替</button><span id="layoutNotice" style="color:#ead19e;font-size:12px">中層・下層の新配置は未確定です</span></div><div style="display:flex;justify-content:flex-end;margin:-4px 0 12px"><a href="./editor.html" style="display:inline-flex;align-items:center;gap:8px;padding:10px 15px;background:#24536c;border:1px solid #78bdda;border-radius:9px;color:#e9f8ff;text-decoration:none;font-weight:700">✎ マップの配置を編集する（下書き）</a></div><div class="shell"><section class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="中層地図"></canvas><div class="controls"><button class="on" data-layer="labels">施設名</button><button class="on" data-layer="grid">グリッド</button><button id="gridSize">100m四方（50mに切替）</button><button class="on" data-layer="districts">地区境界</button><button data-layer="drafts" hidden>旧・未設定区画案</button><button class="on" data-layer="roads">道路</button><button class="on" data-layer="pods">輸送ポッド</button><button class="on" data-layer="freight">貨物・整備路</button><button id="reset">選択解除</button></div><p class="notice" id="mapNotice">船体の X=±2,000m、Y=±1,250m を横25×縦40マス（100m四方）で表示。詳細時は50m四方に切り替えできます。マス・施設をクリック／タップすると詳細が表示されます。道が重なる箇所は色の濃い線を優先描画。大きな施設は占有範囲の概形を示しています。施設への取付道路は個別位置が未定のため推測で追加していません。</p></section><aside><div class="panel"><h2>選択情報</h2><p class="small">船首＝上（+X）／右舷＝右（+Y）<br>表示範囲：X −2000〜+2000m ／ Y −1250〜+1250m<br>画面比率：横5：縦8</p><div id="info"><span class="muted">マスまたは施設を選択してください。</span></div></div><div class="panel"><h2>施設・区画</h2><div id="places"></div></div><div class="panel"><h2>地図の状態</h2><div class="legend"><i class="swatch" style="background:#3d6662"></i>現行Notionの確定地区<i class="swatch" style="background:#344047;border:1px solid #c3a66e"></i>配置検討案は画面上部で切り替え<i class="swatch" style="background:#172c30;border:1px solid #647987"></i>未割当・未描画の区画</div><p class="small">無地の区画は「空き地」「自由に歩ける場所」ではありません。配置案はNotion未反映で、正式な地理設定ではありません。</p></div><div class="panel"><h2>道路・移動経路</h2><div class="legend"><i class="swatch" style="background:#a8b5bd"></i>主要幹線・一般道路<i class="swatch" style="background:#69b9e5"></i>歩行・生活通路<i class="swatch" style="background:#f0b36e"></i>貨物道路・トンネル<i class="swatch" style="background:#b7a1fc"></i>輸送ポッド環状線<i class="swatch" style="background:#bd7f7d"></i>非常用迂回路</div><p class="small">移動可能な経路はNotion記載の道路・通路・リフト等に限定。施設同士の隣接は通行可能を意味しません。</p></div></aside></div></div><script>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>AA 階層マップ｜上層・中層・下層</title><style>
+:root{color-scheme:dark;--panel:#102330;--line:#3a5c70;--muted:#a8c0cf;--fg:#edf6fb; font-family:system-ui,'Noto Sans JP',sans-serif}
+*{box-sizing:border-box}html,body{margin:0;height:100%;}body{overflow:hidden;background:#08131b;color:var(--fg)}
+button{font:inherit;cursor:pointer;color:inherit;border:1px solid #45667a;background:#1b3445;border-radius:9px;padding:9px 12px}
+button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color:#98cdea}button.on{background:#245e78;border-color:#89d3f2}
+.app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+.topbar{position:relative;z-index:5;display:flex;align-items:center;gap:10px;min-height:61px;padding:8px 12px;border-bottom:1px solid var(--line);background:#0d1c28;padding-top:max(8px,env(safe-area-inset-top))}
+.iconbtn{width:40px;height:40px;padding:0;flex:none;font-size:21px;display:grid;place-items:center}
+.brand{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.brand h1{margin:0;font-size:14px;font-weight:750;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.brand p{margin:0;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.floor-tabs{display:flex;gap:5px;flex:none}
+.floor-tab{min-width:49px;padding:9px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.floor-tab.on{background:#2a627a;border-color:#9cd8f3}
+.floor-tab small{display:none}
+.mapstage{min-height:0;position:relative;overflow:hidden}
+.mapbox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0b1822;overflow:hidden}
+.mapbox canvas{display:block;max-height:100%;max-width:100%;width:auto;height:auto;aspect-ratio:5/8;object-fit:contain;cursor:crosshair;touch-action:manipulation;background:#172b30}
+.mapchips{position:absolute;left:10px;top:10px;display:flex;flex-wrap:wrap;gap:5px;pointer-events:none;max-width:calc(100% - 20px)}
+.chip{font-size:10px;padding:5px 8px;border-radius:99px;background:rgba(6,16,24,.82);border:1px solid rgba(117,164,190,.4);color:#d7edfa}
+#layoutNotice{color:#efd4a3}
+.mapfooter{position:absolute;bottom:8px;left:8px;right:8px;display:flex;justify-content:center;pointer-events:none}
+.scale{font-size:10px;color:#cce2ea;background:rgba(6,16,24,.76);padding:5px 10px;border-radius:99px;border:1px solid #416071}
+.drawerShade{position:absolute;inset:0;z-index:15;background:rgba(2,8,12,.52);display:none}
+.drawerShade.show{display:block}
+.drawer{position:absolute;right:0;top:0;bottom:0;z-index:16;width:min(355px,90vw);border-left:1px solid #49697c;background:#10222e;box-shadow:-14px 0 38px #0007;transform:translateX(102%);transition:transform .23s ease;display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawerHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #314f60;font-weight:750}
+.drawerBody{min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:14px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.panel{border:1px solid #345568;border-radius:12px;background:#152c3a;padding:12px}
+.panel h2{font-size:14px;margin:0 0 10px}
+.panel p{font-size:12px;line-height:1.6;color:var(--muted);margin:8px 0}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.controls button{font-size:12px;text-align:left;padding:9px}
+.controls #reset{grid-column:span 2;text-align:center}
+#gridSize{font-size:11px}
+#places{display:flex;flex-wrap:wrap;gap:6px;max-height:240px;overflow-y:auto}
+.listbtn{padding:7px 9px;font-size:12px}
+.legend{display:grid;grid-template-columns:18px 1fr;gap:7px 9px;font-size:12px;align-items:center;line-height:1.35}
+.swatch{height:9px;border-radius:4px}
+.layoutButton{width:100%;text-align:center;background:#64492e;border-color:#bd9460;font-weight:650}
+.editLink{display:block;border:1px solid #7cb6d4;padding:10px;text-align:center;border-radius:9px;color:#e9f6ff;background:#25506a;text-decoration:none;font-size:12px}
+.notice{font-size:12px;line-height:1.7;color:var(--muted)}
+.popupMask{position:absolute;inset:0;background:rgba(3,9,14,.58);display:none;z-index:25;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));cursor:pointer}
+.popupMask.show{display:flex}
+.popupCard{width:min(560px,100%);max-height:72%;overflow-y:auto;background:#152a37;border-radius:16px;border:1px solid #6289a0;padding:17px 18px 13px;box-shadow:0 18px 44px #0009}
+.popupCard h3{margin:0 0 9px;font-size:18px}
+.popupCard p{font-size:13px;line-height:1.65;margin:8px 0}
+.popupCard .small,.popupCard .extra{color:#b6d2e1;font-size:12px}
+.meta{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
+.pill{font-size:11px;border:1px solid #628092;padding:3px 8px;border-radius:99px;color:#d6edf8}
+.popHint{font-size:11px;color:#95b3c2;margin-top:12px}
+@media(min-width:760px){.topbar{min-height:72px;padding:10px 20px}.brand h1{font-size:17px}.brand p{font-size:12px}.floor-tab{font-size:14px;min-width:76px;padding:11px 15px}.mapchips{left:18px;top:15px}}
+@media(max-width:375px){.topbar{gap:6px;padding-inline:7px}.iconbtn{width:36px;height:38px}.floor-tab{min-width:42px;padding:7px 6px}.brand h1{font-size:12px}.brand p{font-size:9px}}
+</style></head>
+<body><div class="app">
+<header class="topbar">
+ <button id="menuBtn" class="iconbtn" type="button" aria-label="表示メニューを開く" aria-controls="drawer" aria-expanded="false">☰</button>
+ <div class="brand"><h1 id="mapTitle">中層《アームドヴェイン階層》</h1><p id="mapSubtitle">100m四方 ・ 配置案を読み込み中</p></div>
+ <nav class="floor-tabs" role="tablist" aria-label="階層マップ">
+  <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="upper">上層</button>
+  <button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層</button>
+  <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層</button>
+ </nav>
+</header>
+<main class="mapstage">
+ <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
+ <div class="mapchips"><span class="chip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
+ <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
+ <div class="drawerShade" id="drawerShade"></div>
+ <aside class="drawer" id="drawer" aria-label="表示メニュー" aria-hidden="true">
+  <div class="drawerHeader"><span>表示・施設メニュー</span><button type="button" id="closeDrawer" class="iconbtn" aria-label="メニューを閉じる">×</button></div>
+  <div class="drawerBody">
+   <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
+   <section class="panel"><h2>表示切替</h2>
+    <div class="controls">
+      <button class="on" data-layer="labels">施設名</button>
+      <button class="on" data-layer="grid">グリッド</button>
+      <button id="gridSize">100m四方（50mに切替）</button>
+      <button class="on" data-layer="districts">地区境界</button>
+      <button class="on" data-layer="roads">道路</button>
+      <button class="on" data-layer="pods">輸送ポッド</button>
+      <button class="on" data-layer="freight">貨物・整備路</button>
+      <button data-layer="drafts" hidden>旧区画案</button>
+      <button id="reset">選択解除</button>
+    </div>
+   </section>
+   <section class="panel"><h2>施設一覧</h2><div id="places"></div></section>
+   <section class="panel"><h2>中央部の区画と寸法</h2><div class="legend">
+    <i class="swatch" style="background:#438ca6"></i><span>中央ターミナル塔：直径500m</span>
+    <i class="swatch" style="background:#ead29f"></i><span>コンコース：半径250〜330m（外径660m）</span>
+    <i class="swatch" style="background:#84c69e"></i><span>中層生活・整備環状地区：外径1,440m</span>
+   </div><p>中央の大きな円全体がターミナル本体ではありません。</p></section>
+   <section class="panel"><h2>道路・経路</h2><div class="legend">
+    <i class="swatch" style="background:#a8b5bd"></i><span>幹線・一般道路</span>
+    <i class="swatch" style="background:#69b9e5"></i><span>歩行・生活通路</span>
+    <i class="swatch" style="background:#f0b36e"></i><span>貨物道路・トンネル</span>
+    <i class="swatch" style="background:#b7a1fc"></i><span>輸送ポッド</span>
+    <i class="swatch" style="background:#bd7f7d"></i><span>非常用迂回路</span>
+   </div></section>
+   <section class="panel"><h2>地図の説明</h2><p class="notice" id="mapNotice">データを読み込み中です。</p><p>施設の隣接や未描画の空間は、通行可能という意味ではありません。正式な地理設定はNotionに従います。</p></section>
+  </div>
+ </aside>
+ <div class="popupMask" id="popupMask" aria-hidden="true">
+  <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の概要"><div id="info"></div><div class="popHint">このポップアップのどこをタップしても閉じます</div></div>
+ </div>
+</main>
+</div><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;function gridSpec(){const cols=2500/gridMeters,rows=4000/gridMeters;return {cols,rows,cw:W/cols,ch:H/rows}}
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
@@ -66,7 +159,10 @@ lower:{name:'下層《ジェネレートシェル階層》',status:'Notion初期
 };
 const layoutDrafts={};let showProposal=true;
 let facilities=middleFacilities,roads=middleRoads,currentMap='middle';
-function renderPlaces(){document.getElementById('places').innerHTML=facilities.map(f=>`<button type="button" style="margin:3px;font-size:11px;padding:5px 8px" data-place="${f.id}">${f.name}</button>`).join('')}
+function escHTML(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderPlaces(){
+ document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>`<button class="listbtn" type="button" data-place="${escHTML(f.id)}">${escHTML(f.name)}</button>`).join('');
+}
 function validateFloorJSON(id,data){
  if(!data||data.schemaVersion!==1||data.floor!==id||!Array.isArray(data.facilities)||!Array.isArray(data.roads)||data.facilities.length===0)throw Error(id+' のJSON形式が不正です');
  if(data.facilities[0].type!=='terminal')throw Error(id+' の中央ターミナルが見つかりません');
@@ -123,11 +219,12 @@ function switchMap(id){
  toggle.textContent=preview?'配置案を表示中｜Notion現行を表示':'Notion現行を表示中｜配置案を表示';
  document.getElementById('layoutNotice').textContent=preview?'配置検討中・Notion未反映':'Notionの登録座標を表示中';
 
- document.getElementById('mapTitle').textContent=map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+' MAP';
- document.getElementById('mapSubtitle').textContent='アポクリファ＝アーカイブ ／ Notion座標ベース ／ 1マス：'+gridMeters+'m × '+gridMeters+'m（正方形） ／ 船首＝上 ／ '+(preview?'配置案・Notion未反映':map.status);
+ document.getElementById('mapTitle').textContent=map.name;
+ document.getElementById('mapSubtitle').textContent=gridMeters+'m四方 ・ '+(preview?'配置案・未確定':map.status);
  document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+gridMeters+'m四方）で表示。'+(preview?'【未確定の配置案】船尾中央の栽培区と真下のバイオリアクターを試作表示。下層船首側約1/3は上層専用の左右出撃区として確保（境界は仮値）。一般ターミナルとは別系統です。道路も再配置検討中です。':'【Notion現行】'+map.description)+' ※隣接する施設でも登録経路がなければ移動できません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
+ document.getElementById('gridReadout').textContent=gridMeters+'m / '+gridSpec().cols+'×'+gridSpec().rows;
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
  document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=true; // 古い6区画の暫定用途案は混乱を防ぐため非表示
  renderPlaces();renderInfo();draw();
@@ -173,14 +270,81 @@ if(state.grid){const q=gridSpec();ctx.save();ctx.strokeStyle='rgba(173,210,218,.
 for(let f of facilities){if(f.type==='terminal'||f.ringDistrict)continue;const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4;const g=groups[f.type];ctx.fillStyle=g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);ctx.strokeStyle=g.line+'aa';ctx.lineWidth=1.6;ctx.strokeRect(cx-w/2,cy-h/2,w,h)}
 for(let r of roads)drawRoad(r);
 // Terminal tower after roads, explicit center footprint
-const term=facilities[0];ctx.fillStyle=groups.terminal.fill;circle(0,0,250);ctx.fill();ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
+const term=facilities[0];
+ctx.save();
+ctx.strokeStyle='#ead29f';ctx.lineWidth=2.5;ctx.setLineDash([]);
+circle(0,0,330);ctx.stroke();
+ctx.strokeStyle='#99cfe1';ctx.lineWidth=2;circle(0,0,250);ctx.stroke();
+ctx.fillStyle=groups.terminal.fill;circle(0,0,250);ctx.fill();ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
+ctx.restore();
 for(const f of facilities){if(f.ringDistrict)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
-if(chosen&&chosen.kind==='cell'){ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*CW+1,chosen.row*CH+1,CW-2,CH-2)}
+if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();}
-function renderInfo(){const el=document.getElementById('info');if(!chosen){el.innerHTML='<span class="muted">マスまたは施設を選択してください。</span>';return}if(chosen.kind==='reserved'){el.innerHTML='<h3>'+chosen.name+'</h3><p>上層専用の船外出撃区です。下層の一般施設を置かず、中央ターミナルと別の専用接続を利用します。区画の境界は検討用です。</p>';return}if(chosen.kind==='cell'){let x0=2000-(chosen.row+1)*gridMeters,x1=2000-chosen.row*gridMeters,y0=-1250+chosen.col*gridMeters,y1=y0+gridMeters;el.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><span class="pill">座標範囲 X ${x0} ～ ${x1}m</span><span class="pill">Y ${y0} ～ ${y1}m</span><div class="small">マス内を移動できるかどうかは経路設定によります。</div>`;return}let f=chosen,g=groups[f.type];el.innerHTML=`<h3>${f.name}</h3><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span><p>${f.detail}</p><div class="small">表示色：<span style="color:${g.line}">●</span> ${f.type}</div>`}
-function selectPlace(id){chosen=facilities.find(x=>x.id===id);renderInfo();draw()}
-canvas.addEventListener('click',e=>{const box=canvas.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*W,y=(e.clientY-box.top)/box.height*H;let near=null,dist=35;for(const f of facilities){const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);if(d<dist){near=f;dist=d}}const point=xy(0,0),wx=(H/2-y)/.4,wy=(x-W/2)/.4;const restricted=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones?.find(z=>wx>=z.bounds.xMin&&wx<=z.bounds.xMax&&wy>=z.bounds.yMin&&wy<=z.bounds.yMax):null;chosen=near||(restricted?{kind:'reserved',...restricted}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});renderInfo();draw()});
-document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=()=>{chosen=null;renderInfo();draw()};document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';switchMap(currentMap)};
-renderPlaces();document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});loadMapDataFromJSON();
+function closePopup(){
+ const mask=document.getElementById('popupMask');mask.classList.remove('show');mask.setAttribute('aria-hidden','true');
+}
+function renderInfo(){
+ const info=document.getElementById('info');
+ if(!chosen){info.innerHTML='';closePopup();return}
+ if(chosen.kind==='reserved'){
+  info.innerHTML='<h3>'+escHTML(chosen.name)+'</h3><p>下層の一般利用区とは独立した上層専用の船外出撃区です。正確な区画境界は検討中です。</p>';
+ }else if(chosen.kind==='concourse'){
+  info.innerHTML='<h3>ターミナルコンコース</h3><p>中央塔の周囲にある乗降・案内区画。半径250〜330m、外径660mで、中央塔本体（直径500m）とは別です。</p>';
+ }else if(chosen.kind==='cell'){
+  const x0=2000-(chosen.row+1)*gridMeters,x1=2000-chosen.row*gridMeters,y0=-1250+chosen.col*gridMeters,y1=y0+gridMeters;
+  info.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><div class="meta"><span class="pill">X ${x0}〜${x1}m</span><span class="pill">Y ${y0}〜${y1}m</span></div><p>通行可否は道路・通路などの接続設定に従います。</p>`;
+ }else{
+  const f=chosen;
+  info.innerHTML=`<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span></div><p>${escHTML(f.detail||'説明未登録')}</p>${f.type==='terminal'?'<p class="extra">中央ターミナル本体は直径500m。周囲に外径660mのコンコース、その外側に生活・整備地区があります。</p>':''}`;
+ }
+ const mask=document.getElementById('popupMask');mask.classList.add('show');mask.setAttribute('aria-hidden','false');
+}
+function closeDrawer(){
+ document.getElementById('drawer').classList.remove('open');
+ document.getElementById('drawerShade').classList.remove('show');
+ document.getElementById('menuBtn').setAttribute('aria-expanded','false');
+ document.getElementById('drawer').setAttribute('aria-hidden','true');
+}
+function openDrawer(){
+ chosen=null;renderInfo();draw();
+ document.getElementById('drawer').classList.add('open');
+ document.getElementById('drawerShade').classList.add('show');
+ document.getElementById('menuBtn').setAttribute('aria-expanded','true');
+ document.getElementById('drawer').setAttribute('aria-hidden','false');
+}
+function clearSelected(){chosen=null;renderInfo();draw()}
+function selectPlace(id){
+ chosen=facilities.find(x=>x.id===id)||null;
+ closeDrawer();renderInfo();draw();
+}
+canvas.addEventListener('click',e=>{
+ const box=canvas.getBoundingClientRect(),x=(e.clientX-box.left)/box.width*W,y=(e.clientY-box.top)/box.height*H;
+ if(x<0||x>W||y<0||y>H)return;
+ let near=null,dist=35;
+ for(const f of facilities){
+  if(f.ringDistrict)continue;
+  const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);
+  if(d<dist){near=f;dist=d}
+ }
+ const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
+ const restricted=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones?.find(z=>wx>=z.bounds.xMin&&wx<=z.bounds.xMax&&wy>=z.bounds.yMin&&wy<=z.bounds.yMax):null;
+ const radius=Math.hypot(wx,wy);
+ const tower=facilities.find(f=>f.type==='terminal');
+ if(!near&&!restricted&&radius<=250&&tower)near=tower;
+ chosen=near||(restricted?{kind:'reserved',...restricted}:radius<=330&&radius>250?{kind:'concourse'}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});
+ renderInfo();draw();
+});
+document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const n=b.dataset.layer;state[n]=!state[n];b.classList.toggle('on',state[n]);draw()});document.getElementById('reset').onclick=clearSelected;document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';switchMap(currentMap)};
+renderPlaces();
+document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});
+document.getElementById('menuBtn').addEventListener('click',()=>{
+ const open=document.getElementById('drawer').classList.contains('open');
+ open?closeDrawer():openDrawer();
+});
+document.getElementById('closeDrawer').addEventListener('click',closeDrawer);
+document.getElementById('drawerShade').addEventListener('click',closeDrawer);
+document.getElementById('popupMask').addEventListener('click',clearSelected);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){clearSelected();closeDrawer()}});
+loadMapDataFromJSON();
 </script></body></html>
