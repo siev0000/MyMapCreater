@@ -86,7 +86,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
   const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
   const snap=n=>state.snap?Math.round(n/25)*25:Math.round(n);
-  let floors={},dirty=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
+  let floors={},baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
   const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
   const state={snap:true,grid:true,overlay:true,labels:true};
   function current(){return floors[active]}
@@ -132,6 +132,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         return valid(await res.json(),f);
       }));
       F.forEach((f,i)=>floors[f]=values[i]);
+      for(const f of F){const previous=active;active=f;baselineWarnings[f]=diagnostics();active=previous;}
       $("loading").hidden=true;
       $("workspace").hidden=false;
       showStatus("現行JSONを読み込みました。編集は確定データに自動反映されません。");
@@ -284,9 +285,13 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     $("overlay").disabled=active==="upper";
     for(const [id,enabled] of [["overlay",state.overlay],["snap",state.snap],["grid",state.grid],["labels",state.labels]])$(id).classList.toggle("active",enabled);
     $("undo").disabled=history[active].length===0;$("redo").disabled=future[active].length===0;
-    const warnings=diagnostics();$("warnings").innerHTML=warnings.length?`<strong>位置の要確認: ${warnings.length} 件</strong><ul>${warnings.slice(0,8).map(w=>`<li>${esc(w)}</li>`).join("")}</ul>${warnings.length>8?`ほか${warnings.length-8}件`:""}`:'<span>範囲外・部分重複の警告はありません（経路接続は別途確認）。</span>';
-    $("warnings").classList.toggle("warn",warnings.length>0);
-    renderList();renderDetail();draw();
+    const warnings=diagnostics(),base=baselineWarnings[active]||[],fresh=warnings.filter(x=>!base.includes(x));
+    $("warnings").innerHTML=(fresh.length
+      ? `<strong>新たな位置の要確認: ${fresh.length} 件</strong><ul>${fresh.slice(0,8).map(w=>`<li>${esc(w)}</li>`).join("")}</ul>`
+      : '<span>編集中に新しく発生した配置警告はありません。</span>')
+      +(base.length?`<details style="margin-top:9px"><summary>初期配置の要確認候補: ${base.length} 件（Notion由来）</summary><ul>${base.slice(0,20).map(w=>`<li>${esc(w)}</li>`).join("")}</ul></details>`:"");
+    $("warnings").classList.toggle("warn",fresh.length>0);
+        renderList();renderDetail();draw();
   }
   function localPos(e){const r=canvas.getBoundingClientRect();return {px:(e.clientX-r.left)/r.width*W,py:(e.clientY-r.top)/r.height*H}}
   function distanceToSeg(px,py,a,b){
