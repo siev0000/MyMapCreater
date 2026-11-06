@@ -53,7 +53,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <div class="toolbar">
 <button id="overlay" class="active">中層⇄下層 重ね表示</button>
 <button id="snap" class="active">25mスナップ</button>
-<button id="grid" class="active">20×20グリッド</button>
+<button id="grid" class="active">20×32グリッド（125m四方）</button>
 <button id="labels" class="active">施設名</button>
 <button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
 <button id="export">JSONを書き出す</button><button id="import">JSONを読み込む</button>
@@ -62,7 +62,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <div class="layout">
 <section class="mapwrap"><h2 id="floorText">中層</h2>
 <canvas id="map" width="1000" height="1600" aria-label="施設のドラッグ移動と道路編集が可能なマップ"></canvas>
-<div class="mapmeta"><span>船首＝上／左舷＝左／船体表示範囲 X ±2,000m・Y ±1,250m</span><span id="cursor">X 0m / Y 0m</span></div>
+<div class="mapmeta"><span>船首＝上／左舷＝左／横20×縦32マス（125m四方）／船体表示範囲 X ±2,000m・Y ±1,250m</span><span id="cursor">X 0m / Y 0m</span></div>
 <p class="note">施設を選んでドラッグすると移動、右下の黄色い四角を引くとサイズ変更。道路は頂点をドラッグ。環状路は線をドラッグして半径を変更できます。<strong>塗りのない領域は通行可能な空き地を意味しません。</strong></p>
 </section>
 <aside class="sidebar">
@@ -172,7 +172,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   }
   function draw(){
     ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
-    if(state.grid){ctx.save();ctx.strokeStyle="#6b91a533";ctx.lineWidth=1;for(let i=0;i<=20;i++){ctx.beginPath();ctx.moveTo(i*W/20,0);ctx.lineTo(i*W/20,H);ctx.moveTo(0,i*H/20);ctx.lineTo(W,i*H/20);ctx.stroke()}ctx.restore()}
+    if(state.grid){ctx.save();ctx.strokeStyle="#6b91a533";ctx.lineWidth=1;for(let col=0;col<=20;col++){ctx.beginPath();ctx.moveTo(col*W/20,0);ctx.lineTo(col*W/20,H);ctx.stroke()}for(let row=0;row<=32;row++){ctx.beginPath();ctx.moveTo(0,row*H/32);ctx.lineTo(W,row*H/32);ctx.stroke()}ctx.restore()}
     if(state.overlay&&active!=="upper"){
       const other=floors[active==="middle"?"lower":"middle"];
       if(other){
