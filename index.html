@@ -135,13 +135,15 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   </div>
   <div class="drawerBody">
    <div id="darkWorldControls" class="drawerSection" hidden>
-    <section class="panel"><h2>ダークワールド（仮マップ）</h2><p>12×20マスのテスト地図。領地・ヘル・中間マスの位置や距離、地形は未確定です。</p><p id="darkStatus" class="darkEditingInfo">マップを読み込み中…</p></section>
+    <section class="panel"><h2>ダークワールド（仮マップ）</h2><p>上中央＝ヘル。参考画像の輪郭を独立した地形レイヤーとして表示。領地・ヘル・中間マスと距離は仮設定です。</p><p id="darkStatus" class="darkEditingInfo">マップを読み込み中…</p></section>
     <section class="panel"><h2>地図の表示</h2><div class="darkActionButtons"><button type="button" id="darkGridToggle">グリッド：ON</button><button type="button" id="darkGridTop">最前面：OFF</button></div><p>この表示設定はアポクリファ＝アーカイブと共通で、ブラウザに保存されます。</p></section>
     <section class="panel"><h2>レイヤー表示</h2><div class="darkOverlayButtons">
+      <button class="on" id="darkReference" type="button">参考地形：ON</button>
+      <button id="darkTiles" type="button">地形マス：OFF</button>
       <button class="on" id="darkBorders" type="button">境界：ON</button>
       <button class="on" id="darkRoutes" type="button">経路：ON</button>
       <button class="on" id="darkSites" type="button">拠点：ON</button>
-     </div><p>領地の境界線・移動経路・都市／拠点を独立して表示できます。</p></section>
+     </div><p>参考画像の地形を下地に表示。地形マスをONにすると12×20マスの属性色を重ねます。細かい輪郭はマス数に依存しません。</p></section>
     <section class="panel"><h2>マスの操作</h2><div class="darkModeButtons">
       <button class="on" type="button" data-dark-mode="inspect">確認</button>
       <button type="button" data-dark-mode="terrain">地形編集</button>
@@ -208,7 +210,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の概要"><div id="info"></div><div class="popHint">このポップアップのどこをタップしても閉じます</div></div>
  </div>
 </main>
-</div><script src="./dark-world.js"></script><script>
+</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;function gridSpec(){const cols=2500/gridMeters,rows=4000/gridMeters;return {cols,rows,cw:W/cols,ch:H/rows}}
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
@@ -232,18 +234,24 @@ function switchWorld(id,persist=true){
  document.getElementById('appRoot').dataset.world=id;
  const empty=document.getElementById('worldEmpty');
  if(id==='apocrypha_archive'){
+  canvas.height=1600;
+  canvas.style.aspectRatio='5/8';
+  fitCanvasToViewport();
   document.getElementById('darkWorldControls').hidden=true;
   document.getElementById('shipOrientationChip').hidden=false;
   empty.hidden=true;
   switchMap(preferredFloor);
  }else if(id==='dark_world'){
   closeDrawer();closePopup();
+  canvas.height=1000;
+  canvas.style.aspectRatio='1/1';
+  fitCanvasToViewport();
   chosen=null;resetView();
   document.getElementById('selectedPanel').hidden=true;
   document.getElementById('darkWorldControls').hidden=false;
   document.getElementById('shipOrientationChip').hidden=true;
   document.getElementById('mapTitle').textContent='ダークワールド';
-  document.getElementById('mapSubtitle').textContent='12×20マス／領地と地形の仮配置';
+  document.getElementById('mapSubtitle').textContent='参考画像の輪郭＋12×20編集マス／仮配置';
   document.getElementById('gridReadout').textContent='12×20｜距離未設定';
   document.getElementById('layoutNotice').textContent='仮配置・Notion未反映';
   document.getElementById('emptyWorldTitle').textContent='ダークワールド';
@@ -306,16 +314,17 @@ function updateZoomUI(){
  const b=document.getElementById('zoomReset');if(b)b.textContent=Math.round(view.zoom*100)+'%';
 }
 function mapCoordinateFromClient(clientX,clientY){
- const r=canvas.getBoundingClientRect(),sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*H;
- return {x:W/2+(sx-W/2-view.offsetX)/view.zoom,y:H/2+(sy-H/2-view.offsetY)/view.zoom};
+ const r=canvas.getBoundingClientRect(),h=canvas.height;
+ const sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*h;
+ return {x:W/2+(sx-W/2-view.offsetX)/view.zoom,y:h/2+(sy-h/2-view.offsetY)/view.zoom};
 }
 function zoomAround(next,clientX,clientY){
  const r=canvas.getBoundingClientRect();
  if(!r.width||!r.height)return;
- const sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*H;
- const bx=(sx-W/2-view.offsetX)/view.zoom,by=(sy-H/2-view.offsetY)/view.zoom;
+ const h=canvas.height,sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*h;
+ const bx=(sx-W/2-view.offsetX)/view.zoom,by=(sy-h/2-view.offsetY)/view.zoom;
  view.zoom=clamp(next,1,4);
- view.offsetX=sx-W/2-bx*view.zoom;view.offsetY=sy-H/2-by*view.zoom;
+ view.offsetX=sx-W/2-bx*view.zoom;view.offsetY=sy-h/2-by*view.zoom;
  updateZoomUI();draw();
 }
 function zoomCenter(factor){
@@ -542,9 +551,10 @@ function fitCanvasToViewport(){
  if(!host||!host.getBoundingClientRect)return;
  const box=host.getBoundingClientRect();
  if(box.width<=0||box.height<=0)return;
- const shownWidth=Math.min(box.width,box.height*W/H);
+ const displayedHeight=canvas.height;
+ const shownWidth=Math.min(box.width,box.height*W/displayedHeight);
  canvas.style.width=shownWidth+'px';
- canvas.style.height=(shownWidth*H/W)+'px';
+ canvas.style.height=(shownWidth*displayedHeight/W)+'px';
 }
 if(typeof window!=='undefined'){
  window.addEventListener('resize',fitCanvasToViewport);
@@ -636,7 +646,7 @@ canvas.addEventListener('pointermove',e=>{
   if(oldDist>0)zoomAround(view.zoom*newDist/oldDist,oldCx,oldCy);
   const r=canvas.getBoundingClientRect();
   view.offsetX+=(newCx-oldCx)/r.width*W;
-  view.offsetY+=(newCy-oldCy)/r.height*H;
+  view.offsetY+=(newCy-oldCy)/r.height*canvas.height;
   draw();
   ignoreClickUntil=Date.now()+400;
  }else{
@@ -645,7 +655,7 @@ canvas.addEventListener('pointermove',e=>{
   if(Math.hypot(e.clientX-previous.startX,e.clientY-previous.startY)>5)previous.moved=true;
   if(previous.moved){
    const r=canvas.getBoundingClientRect();
-   view.offsetX+=dx/r.width*W;view.offsetY+=dy/r.height*H;
+   view.offsetX+=dx/r.width*W;view.offsetY+=dy/r.height*canvas.height;
    draw();ignoreClickUntil=Date.now()+400;
   }
  }
@@ -665,7 +675,7 @@ canvas.addEventListener('wheel',e=>{
 canvas.addEventListener('click',e=>{
  if(Date.now()<ignoreClickUntil)return;
  const p=mapCoordinateFromClient(e.clientX,e.clientY),x=p.x,y=p.y;
- if(x<0||x>W||y<0||y>H)return;
+ if(x<0||x>W||y<0||y>canvas.height)return;
  if(activeWorldId==='dark_world'){darkWorld.selectAt(x,y);return}
  let near=null,dist=35/view.zoom;
  for(const f of facilities){
