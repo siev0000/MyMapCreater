@@ -4,14 +4,14 @@
 button{font:inherit;cursor:pointer;color:inherit;border:1px solid #45667a;background:#1b3445;border-radius:9px;padding:9px 12px}
 button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color:#98cdea}button.on{background:#245e78;border-color:#89d3f2}
 .app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
-.topbar{position:relative;z-index:5;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"title menu" "world floors";align-items:center;gap:6px 9px;min-height:94px;padding:8px 12px;border-bottom:1px solid var(--line);background:#0d1c28;padding-top:max(8px,env(safe-area-inset-top))}
+.topbar{position:relative;z-index:5;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"title menu" "world world" "floors shape";align-items:center;gap:6px 9px;min-height:94px;padding:8px 12px;border-bottom:1px solid var(--line);background:#0d1c28;padding-top:max(8px,env(safe-area-inset-top))}
 .topbar .brand{grid-area:title}
 .topbar #menuBtn{grid-area:menu;justify-self:end}
 .worldNav{grid-area:world;display:flex;align-items:center;min-width:0;gap:6px}
 .worldNav label{font-size:10px;color:#abc6d6;flex:none}
 .worldSelect{width:100%;min-width:0;max-width:330px;border:1px solid #53788e;border-radius:9px;background:#173548;color:#f1f9ff;font-size:12px;font-family:inherit;min-height:36px;padding:6px 7px}
 .worldSelect:focus-visible{outline:2px solid #97d6ef;outline-offset:1px}
-.floor-tabs{grid-area:floors}
+.floor-tabs{grid-area:floors;justify-self:start}
 .worldEmpty{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;padding:20px;text-align:center;background:#0b1822}
 .worldEmpty[hidden]{display:none}
 .worldEmptyInner{max-width:410px;border:1px solid #3b596c;border-radius:15px;padding:24px 20px;background:#122733}
@@ -120,6 +120,11 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .shipViews button{cursor:pointer;color:#d8e9f0;background:transparent;border:1px solid transparent;border-radius:7px;padding:5px 8px;font-size:12px;white-space:nowrap}
 .shipViews button.on{background:#296780;border-color:#7eaec5;color:#fff}
 .shipViews[hidden]{display:none!important}
+.shapeHeader{grid-area:shape;display:flex;align-items:center;gap:6px;justify-self:end}
+.shapeHeader[hidden]{display:none!important}
+.shapeHeaderLabel{font-size:11px;color:#b8ceda;white-space:nowrap}
+.shapeHeader .shipViews button{padding:6px 9px;font-size:12px}
+@media(max-width:440px){.shapeHeaderLabel{font-size:10px}.shapeHeader .shipViews button{padding:6px 7px;font-size:11px}.floor-tab{min-width:42px;padding:7px 6px}}
 </style></head>
 <body><div class="app" id="appRoot" data-world="apocrypha_archive">
 <header class="topbar">
@@ -129,13 +134,14 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層</button>
   <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層</button>
  </nav>
+ <div class="shapeHeader" id="shipViewControls" aria-label="船体形状の独立表示"><span class="shapeHeaderLabel">船体形状</span><span class="shipViews"><button id="shipTopView" type="button" aria-pressed="false">上面</button><button id="shipSideView" type="button" aria-pressed="false">側面</button></span></div>
  <div class="worldNav"><label for="worldSelect">マップ</label><select id="worldSelect" class="worldSelect" aria-label="表示するマップを選択"></select></div>
  <button id="menuBtn" class="iconbtn" type="button" aria-label="表示メニューを開く" aria-controls="drawer" aria-expanded="false">☰</button>
 </header>
 <main class="mapstage">
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
  <section id="worldEmpty" class="worldEmpty" hidden aria-live="polite"><div class="worldEmptyInner"><h2 id="emptyWorldTitle">ダークワールド</h2><p>このマップのデータはまだ登録されていません。追加後にここから切り替えられます。</p></div></section>
- <div class="mapchips"><span class="shipViews" id="shipViewControls" aria-label="船体図の表示切替"><button id="shipTopView" class="on" type="button" aria-pressed="true">上面図</button><button id="shipSideView" type="button" aria-pressed="false">側面図</button></span><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
+ <div class="mapchips"><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
  <div class="zoomControls" aria-label="地図の拡大縮小">
   <button id="zoomOut" type="button" aria-label="縮小">−</button>
@@ -276,11 +282,9 @@ function updateAAGridInfo(){
  document.getElementById('aaGridRows').value=String(q.rows);
  document.getElementById('aaGridStatus').textContent='現在：'+q.cols+'×'+q.rows+'／1マス '+aaCellLabel();
  if(active){
-  document.getElementById('gridReadout').textContent=shipView==='side'
-   ?'側面模式図｜階層高さは未確定'
-   :q.cols+'×'+q.rows+'｜'+aaCellLabel();
+  if(shipView==='map')document.getElementById('gridReadout').textContent=q.cols+'×'+q.rows+'｜'+aaCellLabel();
   const subtitle=document.getElementById('mapSubtitle');
-  if(subtitle&&subtitle.textContent)subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':mapSets[preferredFloor]?.status||'');
+  if(shipView==='map'&&subtitle&&subtitle.textContent)subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':mapSets[preferredFloor]?.status||'');
   const notice=document.getElementById('mapNotice');
   if(notice?.textContent?.startsWith('X=±2,000m、Y=±1,250mを横')){
    const prefix='X=±2,000m、Y=±1,250mを横'+q.cols+'×縦'+q.rows+'マス（1マス'+aaCellLabel()+'）で表示。';
@@ -304,28 +308,96 @@ function applyAAGridSize(cols,rows){
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
 const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false,gridOnTop:false,hull:true};let chosen=null;
-let shipView='top';
-function setShipView(mode){
- if(mode!=='top'&&mode!=='side')return;
+let shipView='map';
+function setShipView(mode,persist=true){
+ if(!['map','top','side'].includes(mode))return;
  shipView=mode;
  if(activeWorldId==='apocrypha_archive'){
-  canvas.height=mode==='top'?1600:560;
-  canvas.style.aspectRatio=mode==='top'?'5/8':'25/14';
-  fitCanvasToViewport();
-  resetView();
-  chosen=null;document.getElementById('selectedPanel').hidden=true;
-  closePopup();
-  document.getElementById('shipOrientationChip').textContent=mode==='top'?'▲ 船首 +X':'◀ 船首 +X';
-  document.getElementById('gridReadout').textContent=mode==='top'
-   ?gridSpec().cols+'×'+gridSpec().rows+'｜'+aaCellLabel()
-   :'側面模式図｜階層高さは未確定';
+  canvas.height=mode==='side'?560:1600;
+  canvas.style.aspectRatio=mode==='side'?'25/14':'5/8';
+  fitCanvasToViewport();resetView();chosen=null;closePopup();
+  document.getElementById('selectedPanel').hidden=true;
+  const title=document.getElementById('mapTitle');
+  const subtitle=document.getElementById('mapSubtitle');
+  const readout=document.getElementById('gridReadout');
+  const notice=document.getElementById('layoutNotice');
+  const orientation=document.getElementById('shipOrientationChip');
+  if(mode==='map'){
+   const map=mapSets[preferredFloor];
+   if(map){title.textContent=map.name;subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':map.status)}
+   readout.textContent=gridSpec().cols+'×'+gridSpec().rows+'｜'+aaCellLabel();
+   notice.textContent=showProposal&&layoutDrafts[preferredFloor]?'配置検討中・Notion未反映':'Notionの登録座標を表示中';
+   orientation.textContent='▲ 船首 +X';
+  }else{
+   title.textContent=mode==='top'?'アポクリファ＝アーカイブ｜船体上面形状':'アポクリファ＝アーカイブ｜船体側面形状';
+   subtitle.textContent='船体外形の模式図・詳細形状は未確定';
+   readout.textContent=mode==='top'?'全長4,000m｜最大幅2,500m':'全長4,000m｜船体高さ未確定';
+   notice.textContent='船体形状・仮案';
+   orientation.textContent=mode==='top'?'▲ 船首 +X':'◀ 船首 +X';
+  }
+  document.querySelectorAll('[data-map]').forEach(b=>{
+   const on=mode==='map'&&b.dataset.map===preferredFloor;
+   b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));
+  });
+  document.getElementById('map').setAttribute('aria-label',mode==='map'?'施設・道路をタップして概要を表示するマップ':'船体'+(mode==='top'?'上面':'側面')+'の外形模式図');
+  document.title=mode==='map'?'AA '+(mapSets[preferredFloor]?.name||'階層マップ'):'AA 船体'+(mode==='top'?'上面':'側面')+'形状';
  }
- for(const [id,selected] of [['shipTopView',mode==='top'],['shipSideView',mode==='side']]){
-  const b=document.getElementById(id);
-  b.classList.toggle('on',selected);b.setAttribute('aria-pressed',String(selected));
+ for(const [id,on] of [['shipTopView',mode==='top'],['shipSideView',mode==='side']]){
+  const b=document.getElementById(id);b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));
  }
  if(activeWorldId==='apocrypha_archive')draw();
- saveDisplaySettings();
+ if(persist)saveDisplaySettings();
+}
+function drawHullTopStandalone(){
+ ctx.setTransform(1,0,0,1,0,0);
+ ctx.fillStyle='#07131d';ctx.fillRect(0,0,W,H);
+ ctx.save();
+ const points=[];
+ for(let i=0;i<=80;i++){
+  const t=i/80,y=t*H,w=(W-28)*hullWidth(t)/2;
+  points.push([W/2-w,y]);
+ }
+ for(let i=80;i>=0;i--){
+  const t=i/80,y=t*H,w=(W-28)*hullWidth(t)/2;
+  points.push([W/2+w,y]);
+ }
+ ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
+ ctx.fillStyle='#1d3444';ctx.fill();
+ ctx.save();ctx.clip();
+ // Longitudinal armor plating, not facility roads.
+ for(const side of [-1,1]){
+  ctx.strokeStyle='rgba(124,165,190,.35)';ctx.lineWidth=5;
+  ctx.beginPath();
+  for(let i=0;i<=64;i++){
+   const t=i/64,y=t*H,x=W/2+side*(W-28)*hullWidth(t)*.34;
+   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.stroke();
+ }
+ for(const t of [.13,.23,.38,.54,.71,.85,.94]){
+  const y=t*H,w=(W-28)*hullWidth(t)/2;
+  ctx.strokeStyle='rgba(174,197,204,.34)';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(W/2-w+23,y);ctx.lineTo(W/2+w-23,y);ctx.stroke();
+ }
+ // Central superstructure and stern-side enclosed nature compartment are approximate.
+ ctx.fillStyle='#395263';ctx.strokeStyle='#b6a17e';ctx.lineWidth=6;
+ ctx.fillRect(348,620,304,265);ctx.strokeRect(348,620,304,265);
+ ctx.fillStyle='#274657';ctx.fillRect(404,656,192,190);
+ ctx.strokeStyle='#81bbd2';ctx.lineWidth=3;ctx.strokeRect(404,656,192,190);
+ ctx.beginPath();ctx.ellipse(500,1172,210,145,0,0,Math.PI*2);
+ ctx.fillStyle='#2b584e';ctx.fill();ctx.strokeStyle='#9cbdac';ctx.lineWidth=8;ctx.stroke();
+ for(let i=0;i<8;i++){
+  const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(500,1172);ctx.lineTo(500+209*Math.cos(a),1172+144*Math.sin(a));ctx.stroke();
+ }
+ ctx.restore();
+ // Hull plating is a coordinate-bound overlay, not a PNG.
+ hullTopPath(0);ctx.strokeStyle='#a1acb2';ctx.lineWidth=16;ctx.stroke();
+ hullTopPath(11);ctx.strokeStyle='#4b6273';ctx.lineWidth=10;ctx.stroke();
+ hullTopPath(22);ctx.strokeStyle='#c1a982';ctx.lineWidth=2;ctx.setLineDash([25,14]);ctx.stroke();ctx.setLineDash([]);
+ ctx.fillStyle='#ecf5f9';ctx.textAlign='center';ctx.font='bold 24px system-ui';
+ ctx.fillText('船首 +X',500,57);
+ ctx.font='19px system-ui';ctx.fillStyle='#aebfcb';ctx.fillText('船尾 −X',500,1565);
+ ctx.restore();
 }
 function hullWidth(t){
  // Approximate side-to-side ship breadth, with a bow taper and modest stern narrowing.
@@ -435,15 +507,16 @@ function switchWorld(id,persist=true){
  document.getElementById('appRoot').dataset.world=id;
  const empty=document.getElementById('worldEmpty');
  if(id==='apocrypha_archive'){
-  canvas.height=shipView==='top'?1600:560;
-  canvas.style.aspectRatio=shipView==='top'?'5/8':'25/14';
+  canvas.height=shipView==='side'?560:1600;
+  canvas.style.aspectRatio=shipView==='side'?'25/14':'5/8';
   fitCanvasToViewport();
   document.getElementById('shipViewControls').hidden=false;
-  document.getElementById('shipOrientationChip').textContent=shipView==='top'?'▲ 船首 +X':'◀ 船首 +X';
+  document.getElementById('shipOrientationChip').textContent=shipView==='side'?'◀ 船首 +X':'▲ 船首 +X';
   document.getElementById('darkWorldControls').hidden=true;
   document.getElementById('shipOrientationChip').hidden=false;
   empty.hidden=true;
   switchMap(preferredFloor);
+  if(shipView!=='map')setShipView(shipView,false);
  }else if(id==='dark_world'){
   closeDrawer();closePopup();
   canvas.height=1000;
@@ -508,6 +581,7 @@ function restoreDisplaySettings(){
     if(saved.gridMeters===50||saved.gridMeters===100)gridMeters=saved.gridMeters;
     if(typeof saved.hull==='boolean')state.hull=saved.hull;
     if(saved.shipView==='side'||saved.shipView==='top')shipView=saved.shipView;
+    else if(saved.shipView==='map')shipView='map';
     if(saved.aaGrids && typeof saved.aaGrids==='object'){
      for(const id of GRID_FLOOR_IDS){
       const v=saved.aaGrids[id];
@@ -736,11 +810,14 @@ function switchMap(id){
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>{
  if(activeWorldId!=='apocrypha_archive')return;
+ shipView='map';
+ canvas.height=1600;canvas.style.aspectRatio='5/8';fitCanvasToViewport();
  switchMap(b.dataset.map);
+ setShipView('map',false);
  saveDisplaySettings();
 }));
 document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(e.target.value));
-document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;saveDisplaySettings();switchMap(currentMap)};
+document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;shipView='map';canvas.height=1600;canvas.style.aspectRatio='5/8';fitCanvasToViewport();switchMap(currentMap);setShipView('map',false);saveDisplaySettings()};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function drawCompoundFacilities(){
@@ -821,6 +898,7 @@ function drawGridLayer(){
 function draw(){
 if(activeWorldId==='dark_world'){darkWorld.draw();return}
 if(shipView==='side'){drawHullSide();return}
+if(shipView==='top'){drawHullTopStandalone();return}
 ctx.setTransform(1,0,0,1,0,0);
 ctx.clearRect(0,0,W,H);
 ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
@@ -931,6 +1009,7 @@ function openDrawer(){
 }
 function clearSelected(){chosen=null;document.getElementById('selectedPanel').hidden=true;renderInfo();draw()}
 function selectPlace(id){
+ if(shipView!=='map'&&activeWorldId==='apocrypha_archive')setShipView('map',false);
  switchMenuTab('facilities');
  const f=findFacility(id);
  if(!f)return;
@@ -992,7 +1071,7 @@ canvas.addEventListener('wheel',e=>{
  zoomAround(view.zoom*(e.deltaY<0?1.15:1/1.15),e.clientX,e.clientY);
 },{passive:false});
 canvas.addEventListener('click',e=>{
- if(activeWorldId==='apocrypha_archive'&&shipView==='side')return;
+ if(activeWorldId==='apocrypha_archive'&&shipView!=='map')return;
  if(Date.now()<ignoreClickUntil)return;
  const p=mapCoordinateFromClient(e.clientX,e.clientY),x=p.x,y=p.y;
  if(x<0||x>W||y<0||y>canvas.height)return;
