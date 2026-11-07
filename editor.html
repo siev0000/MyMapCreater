@@ -84,6 +84,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <footer>編集内容はこのブラウザに自動保存され、同じ端末・ブラウザから再開できます。GitHubへは「GitHubに下書きを保存」を押したときだけ更新されます。Notionや確定JSONは変更しません。別端末へ移す・GitHubへ反映する場合はJSONを書き出してください。ブラウザのデータ削除・プライベートモードでは保存が失われる場合があります。世界設定の正本はNotionです。</footer>
 </div>
 <script src="./middle-central-ring.js"></script>
+<script src="./aa-terminal-interior.js"></script>
 <script>(function editorApp(){
   "use strict";
   const F=["upper","middle","lower"], LABEL={upper:"上層",middle:"中層",lower:"下層"};
@@ -364,11 +365,14 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     for(const f of current().facilities){
       if(f.ringDistrict)continue;
       if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
-      if(active==="middle"&&f.type==="terminal"&&current().editorMeta?.layoutModel==="middle-terminal-internal-guild-v2"){
+      if(f.type==="terminal"&&current().editorMeta?.status==="draft"){
         const c=worldToPixel(f.x,f.y),r=250*SC;
         ctx.save();ctx.beginPath();ctx.arc(c.px,c.py,r,0,Math.PI*2);
         ctx.fillStyle="rgba(52,110,135,.78)";ctx.strokeStyle="#9adbef";ctx.lineWidth=3;
-        ctx.fill();ctx.stroke();ctx.restore();continue;
+        ctx.fill();ctx.stroke();ctx.restore();
+        if(active!=="middle"&&window.AATerminalInterior)
+          window.AATerminalInterior.draw(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},f,{labels:state.labels,roads:true,zoom:1.8,chosen:selectedItem()});
+        continue;
       }
       const b=rect(f),color=COLORS[f.type]||"#b3c6d2";
       ctx.save();
@@ -405,7 +409,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
           ctx.font="bold 14px system-ui,sans-serif";
           continue;
         }
-        if(active==="middle"&&f.type==="terminal"&&current().editorMeta?.layoutModel==="middle-terminal-internal-guild-v2")continue;
+        if(f.type==="terminal"&&current().editorMeta?.status==="draft")continue;
         const c=worldToPixel(f.x,f.y),label=f.short||f.name;
         ctx.strokeStyle="#0e202a";ctx.lineWidth=4;ctx.strokeText(label,c.px,c.py-12,230);
         ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
