@@ -29,6 +29,13 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .darkEditingInfo{font-size:12px;line-height:1.65;color:#b9d1df}
 .darkActionButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .darkActionButtons button{font-size:12px;padding:10px 5px}
+.mapGridInputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:7px 0}
+.mapGridInputs label{font-size:12px;color:#b8d3e2;min-width:0}
+.mapGridInputs input{width:100%;min-width:0;font:inherit;font-size:15px;padding:9px 7px;margin-top:5px;border:1px solid #52768a;border-radius:8px;background:#0c1e29;color:#fff}
+.mapGridApply{width:100%;font-weight:700;margin-top:4px}
+.mapGridPresets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:9px}
+.mapGridPresets button{padding:8px 2px;font-size:11px;white-space:nowrap}
+.mapGridHint{font-size:11px;line-height:1.55;color:#b8cddc}
 .darkOverlayButtons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
 .darkOverlayButtons button{padding:9px 3px;font-size:11px}
 .darkList{display:flex;flex-direction:column;gap:7px}
@@ -136,6 +143,21 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="drawerBody">
    <div id="darkWorldControls" class="drawerSection" hidden>
     <section class="panel"><h2>ダークワールド（仮マップ）</h2><p>上中央＝ヘル。参考画像の輪郭を独立した地形レイヤーとして表示。領地・ヘル・中間マスと距離は仮設定です。</p><p id="darkStatus" class="darkEditingInfo">マップを読み込み中…</p></section>
+    <section class="panel"><h2>マス数の設定</h2>
+     <div id="darkGridCurrent" class="darkGridCurrent">現在：64×64</div>
+     <div class="mapGridInputs">
+      <label for="darkGridCols">横マス数<input type="number" id="darkGridCols" min="4" max="128" step="1" value="64"></label>
+      <label for="darkGridRows">縦マス数<input type="number" id="darkGridRows" min="4" max="128" step="1" value="64"></label>
+     </div>
+     <button id="darkGridApply" class="mapGridApply" type="button">マス数を変更</button>
+     <div class="mapGridPresets">
+      <button type="button" data-dark-grid-preset="32">32×32</button>
+      <button type="button" data-dark-grid-preset="48">48×48</button>
+      <button type="button" data-dark-grid-preset="64">64×64</button>
+      <button type="button" data-dark-grid-preset="96">96×96</button>
+     </div>
+     <p class="mapGridHint">4〜128マス／方向。参考画像の輪郭はそのまま。編集済みの領地・地形・拠点・経路を比率に合わせて再配置します。マス数を減らすと細かな編集は失われることがあります。</p>
+    </section>
     <section class="panel"><h2>地図の表示</h2><div class="darkActionButtons"><button type="button" id="darkGridToggle">グリッド：ON</button><button type="button" id="darkGridTop">最前面：OFF</button></div><p>この表示設定はアポクリファ＝アーカイブと共通で、ブラウザに保存されます。</p></section>
     <section class="panel"><h2>レイヤー表示</h2><div class="darkOverlayButtons">
       <button class="on" id="darkReference" type="button">参考地形：ON</button>
@@ -143,7 +165,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
       <button class="on" id="darkBorders" type="button">境界：ON</button>
       <button class="on" id="darkRoutes" type="button">経路：ON</button>
       <button class="on" id="darkSites" type="button">拠点：ON</button>
-     </div><p>参考画像の地形を下地に表示。地形マスをONにすると12×20マスの属性色を重ねます。細かい輪郭はマス数に依存しません。</p></section>
+     </div><p>参考画像の地形を下地に表示。地形マスをONにすると編集用マスの属性色を重ねます。細かい輪郭はマス数に依存しません。</p></section>
     <section class="panel"><h2>マスの操作</h2><div class="darkModeButtons">
       <button class="on" type="button" data-dark-mode="inspect">確認</button>
       <button type="button" data-dark-mode="terrain">地形編集</button>
@@ -173,6 +195,15 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
    </div>
    <div id="panelDisplay" class="drawerSection" role="tabpanel" data-menu-panel="display" hidden>
     <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
+    <section class="panel"><h2>マス数の設定（現在の階層）</h2>
+     <div class="mapGridInputs">
+      <label for="aaGridCols">横マス数<input type="number" id="aaGridCols" min="4" max="200" step="1" value="25"></label>
+      <label for="aaGridRows">縦マス数<input type="number" id="aaGridRows" min="4" max="200" step="1" value="40"></label>
+     </div>
+     <button id="aaGridApply" type="button" class="mapGridApply">この階層に適用</button>
+     <p id="aaGridStatus" class="mapGridHint">現在：25×40</p>
+     <p class="mapGridHint">施設の座標と船の実寸（横2,500m×縦4,000m）は変更しません。自由指定ではマスの縦横の実寸が異なる場合があります。階層ごとにブラウザへ保存します。</p>
+    </section>
     <section class="panel"><h2>表示切替</h2>
      <div class="controls">
       <button class="on" data-layer="labels">施設名</button>
@@ -211,7 +242,45 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  </div>
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
-const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;function gridSpec(){const cols=2500/gridMeters,rows=4000/gridMeters;return {cols,rows,cw:W/cols,ch:H/rows}}
+const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;
+const GRID_FLOOR_IDS=['upper','middle','lower'];
+const aaGrids={upper:{cols:25,rows:40},middle:{cols:25,rows:40},lower:{cols:25,rows:40}};
+const validAA=n=>Number.isInteger(n)&&n>=4&&n<=200;
+function gridSpec(id=preferredFloor){
+ const shape=aaGrids[id]||aaGrids.middle,cols=shape.cols,rows=shape.rows;
+ return {cols,rows,cw:W/cols,ch:H/rows,cellY:2500/cols,cellX:4000/rows};
+}
+function readableMeters(n){return String(Math.round(n*100)/100)}
+function aaCellLabel(){
+ const q=gridSpec();
+ return Math.abs(q.cellX-q.cellY)<.001
+  ?readableMeters(q.cellX)+'m四方'
+  :readableMeters(q.cellY)+'m（横）×'+readableMeters(q.cellX)+'m（縦）';
+}
+function updateAAGridInfo(){
+ const q=gridSpec(),active=activeWorldId==='apocrypha_archive';
+ document.getElementById('aaGridCols').value=String(q.cols);
+ document.getElementById('aaGridRows').value=String(q.rows);
+ document.getElementById('aaGridStatus').textContent='現在：'+q.cols+'×'+q.rows+'／1マス '+aaCellLabel();
+ if(active){
+  document.getElementById('gridReadout').textContent=q.cols+'×'+q.rows+'｜'+aaCellLabel();
+  const subtitle=document.getElementById('mapSubtitle');
+  if(subtitle&&subtitle.textContent)subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':mapSets[preferredFloor]?.status||'');
+ }
+}
+function applyAAGridSize(cols,rows){
+ if(!validAA(cols)||!validAA(rows)){
+  document.getElementById('aaGridStatus').textContent='横・縦とも4〜200の整数で指定してください。';
+  return false;
+ }
+ aaGrids[preferredFloor]={cols,rows};
+ updateAAGridInfo();saveDisplaySettings();
+ if(activeWorldId==='apocrypha_archive'){
+  if(chosen?.kind==='cell')chosen=null;
+  renderInfo();draw();
+ }
+ return true;
+}
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
 const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false,gridOnTop:false};let chosen=null;
@@ -268,7 +337,7 @@ function saveDisplaySettings(){
  try{
   const layers={};
   for(const key of DISPLAY_LAYER_KEYS)layers[key]=state[key];
-  localStorage.setItem(DISPLAY_SETTINGS_KEY,JSON.stringify({version:1,layers,gridMeters,gridOnTop:state.gridOnTop,showProposal,worldId:activeWorldId,aaFloor:preferredFloor}));
+  localStorage.setItem(DISPLAY_SETTINGS_KEY,JSON.stringify({version:1,layers,gridMeters,aaGrids,gridOnTop:state.gridOnTop,showProposal,worldId:activeWorldId,aaFloor:preferredFloor}));
  }catch(error){console.warn('表示設定を保存できませんでした',error)}
 }
 function updateDisplaySettingsButtons(){
@@ -284,8 +353,8 @@ function updateDisplaySettingsButtons(){
  const top=document.getElementById('gridOnTop');
  top.classList.toggle('on',state.gridOnTop);
  top.setAttribute('aria-pressed',String(state.gridOnTop));
- document.getElementById('gridSize').textContent=gridMeters+'m四方（'+(gridMeters===100?'50':'100')+'mに切替）';
- document.getElementById('gridReadout').textContent=gridMeters+'m / '+gridSpec().cols+'×'+gridSpec().rows;
+ document.getElementById('gridSize').textContent='50m／100mの既定値に切替';
+ updateAAGridInfo();
 }
 function restoreDisplaySettings(){
  try{
@@ -295,6 +364,14 @@ function restoreDisplaySettings(){
    if(saved&&saved.version===1){
     for(const key of DISPLAY_LAYER_KEYS)if(typeof saved.layers?.[key]==='boolean')state[key]=saved.layers[key];
     if(saved.gridMeters===50||saved.gridMeters===100)gridMeters=saved.gridMeters;
+    if(saved.aaGrids && typeof saved.aaGrids==='object'){
+     for(const id of GRID_FLOOR_IDS){
+      const v=saved.aaGrids[id];
+      if(v&&validAA(v.cols)&&validAA(v.rows))aaGrids[id]={cols:v.cols,rows:v.rows};
+     }
+    }else if(gridMeters===50){
+     for(const id of GRID_FLOOR_IDS)aaGrids[id]={cols:50,rows:80};
+    }
     if(typeof saved.gridOnTop==='boolean')state.gridOnTop=saved.gridOnTop;
     if(typeof saved.showProposal==='boolean')showProposal=saved.showProposal;
     if(typeof saved.worldId==='string'&&WORLD_CATALOG[saved.worldId])activeWorldId=saved.worldId;
@@ -462,11 +539,11 @@ function switchMap(id){
  document.getElementById('layoutNotice').textContent=preview?'配置検討中・Notion未反映':'Notionの登録座標を表示中';
 
  document.getElementById('mapTitle').textContent=map.name;
- document.getElementById('mapSubtitle').textContent=gridMeters+'m四方 ・ '+(preview?'配置案・未確定':map.status);
- document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+gridMeters+'m四方）で表示。'+(preview?'【未確定の配置案】船尾中央の栽培区と真下のバイオリアクターを試作表示。下層船首側約1/3は上層専用の左右出撃区として確保（境界は仮値）。一般ターミナルとは別系統です。道路も再配置検討中です。':'【Notion現行】'+map.description)+' ※隣接する施設でも登録経路がなければ移動できません。';
+ document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
+ document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）で表示。'+(preview?'【未確定の配置案】船尾中央の栽培区と真下のバイオリアクターを試作表示。下層船首側約1/3は上層専用の左右出撃区として確保（境界は仮値）。一般ターミナルとは別系統です。道路も再配置検討中です。':'【Notion現行】'+map.description)+' ※隣接する施設でも登録経路がなければ移動できません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
- document.getElementById('gridReadout').textContent=gridMeters+'m / '+gridSpec().cols+'×'+gridSpec().rows;
+ updateAAGridInfo();
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
  document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=true; // 古い6区画の暫定用途案は混乱を防ぐため非表示
  renderPlaces();renderInfo();draw();
@@ -574,8 +651,9 @@ function renderInfo(){
  }else if(chosen.kind==='concourse'){
   info.innerHTML='<h3>ターミナルコンコース</h3><p>中央塔の周囲にある乗降・案内区画。半径250〜330m、外径660mで、中央塔本体（直径500m）とは別です。</p>';
  }else if(chosen.kind==='cell'){
-  const x0=2000-(chosen.row+1)*gridMeters,x1=2000-chosen.row*gridMeters,y0=-1250+chosen.col*gridMeters,y1=y0+gridMeters;
-  info.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><div class="meta"><span class="pill">X ${x0}〜${x1}m</span><span class="pill">Y ${y0}〜${y1}m</span></div><p>通行可否は道路・通路などの接続設定に従います。</p>`;
+  const q=gridSpec(),x0=2000-(chosen.row+1)*q.cellX,x1=2000-chosen.row*q.cellX,y0=-1250+chosen.col*q.cellY,y1=y0+q.cellY;
+  const fmt=n=>Math.round(n*100)/100;
+  info.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><div class="meta"><span class="pill">X ${fmt(x0)}〜${fmt(x1)}m</span><span class="pill">Y ${fmt(y0)}〜${fmt(y1)}m</span></div><p>通行可否は道路・通路などの接続設定に従います。</p>`;
  }else{
   const f=chosen;
   info.innerHTML=`<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span></div><p>${escHTML(f.detail||'説明未登録')}</p>${f.type==='terminal'?'<p class="extra">中央ターミナル本体は直径500m。周囲に外径660mのコンコース、その外側に生活・整備地区があります。</p>':''}`;
@@ -698,7 +776,15 @@ document.getElementById('gridOnTop').onclick=()=>{state.gridOnTop=!state.gridOnT
 document.getElementById('darkGridToggle').onclick=()=>{state.grid=!state.grid;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
 document.getElementById('darkGridTop').onclick=()=>{state.gridOnTop=!state.gridOnTop;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
 document.getElementById('reset').onclick=clearSelected;
-document.getElementById('gridSize').onclick=()=>{gridMeters=gridMeters===100?50:100;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
+document.getElementById('gridSize').onclick=()=>{
+ gridMeters=gridMeters===100?50:100;
+ applyAAGridSize(2500/gridMeters,4000/gridMeters);
+ updateDisplaySettingsButtons();
+};
+document.getElementById('aaGridApply').onclick=()=>applyAAGridSize(
+ Number(document.getElementById('aaGridCols').value),
+ Number(document.getElementById('aaGridRows').value)
+);
 renderPlaces();
 document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});
 document.getElementById('zoomIn').onclick=()=>zoomCenter(1.25);
