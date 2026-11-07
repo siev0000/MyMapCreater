@@ -321,6 +321,20 @@
       "type": "industrial",
       "detail": "貨物検査と貨物リフト接続。",
       "sourceSection": "6.2"
+    },
+    {
+      "id": "middle_weapon_operation_field",
+      "name": "兵器動作場",
+      "short": "兵器動作場",
+      "type": "shared",
+      "x": 1550,
+      "y": 0,
+      "w": 550,
+      "h": 500,
+      "zoneOutline": true,
+      "provisional": true,
+      "detail": "兵器の起動・操作・動作確認に用いる船首側の試験区画（配置案）。試験方法、内部設備、安全管理範囲などの詳細は未確定。",
+      "sourceSection": "user-requested-draft"
     }
   ],
   "roads": [
@@ -1337,12 +1351,32 @@
       ],
       "reviewStatus": "draft",
       "geometryStatus": "draft_new"
+    },
+    {
+      "id": "draft_weapon_operation_access",
+      "name": "兵器動作場取付道路（案）",
+      "roadType": "一般道路",
+      "width": 24,
+      "color": "#9fc4d4",
+      "kind": "line",
+      "points": [
+        [
+          1150,
+          0
+        ],
+        [
+          1275,
+          0
+        ]
+      ],
+      "connection": "任務大通り・非常迂回路[X1150,0]から兵器動作場船尾側入口[X1275,0]へ。既存幹線はそのまま維持。",
+      "geometryStatus": "draft_only"
     }
   ],
   "editorMeta": {
     "status": "draft",
     "scenario": "船尾中央栽培・真下に有機再生",
-    "note": "GitHub配置案・Notion未反映。ドームは道路を遮断する建物ではなく区画の外枠。中央の道路帯を空けるため内部5施設を側区画へ配置。中層中央環状路は半径650mの閉じたリング、輸送ポッドは半径670mの閉じたリング、任務大通りはコンコースからドーム中央通過路を経て船首側非常迂回路へ連続接続。生活遊歩路は中央ターミナル寄りへ回避する閉路を維持。非常迂回環状路はドーム外郭を避ける連続閉路として再配線。位置・寸法・通路線形は未確定、船首側の新施設は未追加。",
-    "revision": "central-aft-growing-v4-continuous-thoroughfares"
+    "note": "GitHub配置案・Notion未反映。中層船首側[X1550,Y0]に兵器動作場（550×500m・外枠表示）を仮追加。兵器の起動・操作・動作確認用の区画として扱うが、設備・安全管理は未確定。既存任務大通りと非常迂回環状路の共通接続点[X1150,Y0]から入口[X1275,Y0]へ取付道路を接続し、元の道路は分断しない。ギルド複合区内部の5区画は維持。",
+    "revision": "central-aft-growing-v5-bow-weapon-operation-field"
   }
 }
