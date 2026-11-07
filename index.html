@@ -1106,18 +1106,22 @@ function facilityInfoHTML(f){
  return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${escHTML(sizeLabel)}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
 }
 function renderPlaces(){
+ const selectedId=chosen?.id;
+ const selectedParent=chosen?.parentId;
  document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>{
   if(currentMap==='middle'&&showProposal&&f.id==='resist_link_dome'&&f.containedIn==='middle_terminal')return '';
   if(currentMap==='middle'&&showProposal&&f.id==='middle_terminal'&&facilities.some(g=>g.id==='resist_link_dome'&&g.containedIn==='middle_terminal')){
    const guild=facilities.find(g=>g.id==='resist_link_dome');
-   return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="middle_terminal">'+escHTML(f.name)+'</button><div class="placeGroupChildren">'+
-    '<button class="listbtn" type="button" data-place="resist_link_dome">内包施設：レジストリンク・ドーム</button>'+
-    (guild.internalFacilities||[]).map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">　'+escHTML(c.name)+'</button>').join('')+'</div></div>';
+   const openTerminal=selectedId==='middle_terminal'||selectedId==='resist_link_dome'||selectedParent==='resist_link_dome';
+   const openGuild=selectedId==='resist_link_dome'||selectedParent==='resist_link_dome';
+   return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="middle_terminal">'+escHTML(f.name)+'</button>'+
+    (openTerminal?'<div class="placeGroupChildren"><button class="listbtn" type="button" data-place="resist_link_dome">内包施設：レジストリンク・ドーム</button>'+
+    (openGuild?(guild.internalFacilities||[]).map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">　'+escHTML(c.name)+'</button>').join(''):'')+'</div>':'')+'</div>';
   }
   if(!f.areaFrame||!Array.isArray(f.internalFacilities))return `<button class="listbtn" type="button" data-place="${escHTML(f.id)}">${escHTML(f.name)}</button>`;
-  return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="'+escHTML(f.id)+'">'+escHTML(f.name)+'（複合区）</button><div class="placeGroupChildren">'
-   +f.internalFacilities.map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">'+escHTML(c.name)+'</button>').join('')
-   +'</div></div>';
+  const expanded=selectedId===f.id||selectedParent===f.id;
+  return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="'+escHTML(f.id)+'">'+escHTML(f.name)+'（複合区）</button>'+
+   (expanded?'<div class="placeGroupChildren">'+f.internalFacilities.map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">'+escHTML(c.name)+'</button>').join('')+'</div>':'')+'</div>';
  }).join('');
 }
 function validateFloorJSON(id,data){
@@ -1285,7 +1289,7 @@ function drawCompoundFacilities(){
    ctx.fillStyle='rgba(129,104,67,.78)';ctx.fillRect(nx-w/2,ny-h/2,w,h);
    ctx.strokeStyle=chosen?.id===v.id?'#fff5a2':'#f1d6a6';ctx.lineWidth=chosen?.id===v.id?3:1.8;
    ctx.strokeRect(nx-w/2,ny-h/2,w,h);
-   if(state.labels&&view.zoom>=1.25){
+   if(state.labels&&(chosen?.id===parent.id||chosen?.parentId===parent.id)&&view.zoom>=1.25){
     ctx.font='bold 10px system-ui';ctx.textBaseline='middle';ctx.textAlign='center';
     ctx.lineWidth=3.3;ctx.strokeStyle='#121e29';ctx.strokeText(child.short||child.name,nx,ny,w-5);
     ctx.fillStyle='#fff7e7';ctx.fillText(child.short||child.name,nx,ny,w-5);
@@ -1295,7 +1299,7 @@ function drawCompoundFacilities(){
    const [ix,iy]=xy(parent.x+parent.internalEntrance.dx,parent.y+parent.internalEntrance.dy);
    ctx.fillStyle='#f5e6c3';ctx.beginPath();ctx.arc(ix,iy,5,0,Math.PI*2);ctx.fill();
   }
-  if(state.labels){
+  if(state.labels&&(chosen?.id===parent.id||chosen?.parentId===parent.id)){
    ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.lineWidth=4;ctx.strokeStyle='#14202a';ctx.strokeText(parent.name+'〈複合区〉',cx,cy-ph/2-13);
    ctx.fillStyle='#f8dfab';ctx.fillText(parent.name+'〈複合区〉',cx,cy-ph/2-13);
@@ -1548,11 +1552,20 @@ if(isProtectedDraft&&state.structures&&window.AAStructureOverlay){
 // The guild sits *inside* the Link Terminal in the middle draft.
 if(!(isProtectedDraft&&currentMap==='middle'))drawTerminalTowerBase();
 if(isProtectedDraft&&currentMap!=='middle'&&window.AATerminalInterior){
- window.AATerminalInterior.draw(ctx,xy,facilities[0],{labels:state.labels,zoom:view.zoom,roads:state.roads,chosen});
+ window.AATerminalInterior.draw(ctx,xy,facilities[0],{labels:state.labels&&chosen?.id===facilities[0].id,zoom:view.zoom,roads:state.roads,chosen});
 }
 if(isProtectedDraft&&currentMap==='middle')drawCompoundFacilities();
 for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft)continue;let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+if(state.labels&&isProtectedDraft){
+ const terminal=facilities[0];
+ if(terminal&&(!chosen||chosen.id!==terminal.id)){
+  const [lx,ly]=xy(terminal.x,terminal.y);
+  ctx.save();ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+  ctx.strokeStyle='#132632';ctx.lineWidth=3;ctx.strokeText(terminal.short||terminal.name,lx,ly+14);
+  ctx.fillStyle='#eaf7fb';ctx.fillText(terminal.short||terminal.name,lx,ly+14);ctx.restore();
+ }
+}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.restore(); // exit the protected interior clipping region
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(isProtectedDraft)drawHullStructuralLabels();drawLowerAccessGatesAndBulkheads();drawRestrictedThrusterAccess();ctx.restore();}
