@@ -1,0 +1,1920 @@
+{
+  "schemaVersion": 1,
+  "floor": "middle",
+  "unit": "m",
+  "source": {
+    "system": "Notion",
+    "url": "https://www.notion.so/1ddfa1b30dc9805f8b20e211faf37709",
+    "section": "6.2-6.3",
+    "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
+  },
+  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 本ファイルは配置検討用の下書き。未承認の地理設定として扱う。 独立施設の多角形形状重複0件（配置案、道路の再調整は別途必要）。",
+  "facilities": [
+    {
+      "id": "middle_terminal",
+      "name": "中層ターミナル",
+      "x": 0,
+      "y": 0,
+      "w": 500,
+      "h": 500,
+      "type": "terminal",
+      "detail": "上層・下層を結ぶ中央交通拠点。一般リフトと大型機用リフトを運用。",
+      "sourceSection": "6.2",
+      "short": "リンクターミナル",
+      "sourcePosition": [
+        0,
+        0
+      ],
+      "sourceSize": [
+        500,
+        500
+      ],
+      "draftRepositioned": true
+    },
+    {
+      "id": "core_shell_refine",
+      "name": "コアシェル・リファイン",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1440,
+      "type": "town",
+      "ringDistrict": true,
+      "innerRadius": 330,
+      "outerRadius": 720,
+      "detail": "コアシェル・リファイン。半径330～720mの円環地区。用途は現行Notionを参照。",
+      "showLabel": false,
+      "sourceSection": "6.2",
+      "sourcePosition": [
+        0,
+        0
+      ],
+      "sourceSize": [
+        1440,
+        1440
+      ],
+      "draftRepositioned": true
+    },
+    {
+      "id": "core_shell_town",
+      "name": "コアシェルタウン",
+      "x": 0,
+      "y": 470,
+      "w": 700,
+      "h": 300,
+      "type": "town",
+      "detail": "居住・市場・充電・燃料補給・交流施設。",
+      "sourceSection": "6.2",
+      "sourcePosition": [
+        0,
+        450
+      ],
+      "sourceSize": [
+        700,
+        300
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -310,
+          -150
+        ],
+        [
+          310,
+          -150
+        ],
+        [
+          350,
+          -110
+        ],
+        [
+          350,
+          110
+        ],
+        [
+          310,
+          150
+        ],
+        [
+          -310,
+          150
+        ],
+        [
+          -350,
+          110
+        ],
+        [
+          -350,
+          -110
+        ]
+      ]
+    },
+    {
+      "id": "refine_valley",
+      "name": "リファインバレー",
+      "x": 0,
+      "y": -470,
+      "w": 800,
+      "h": 300,
+      "type": "workshop",
+      "detail": "武器修理・機体整備・カスタム改造・個人工房。",
+      "sourceSection": "6.2",
+      "sourcePosition": [
+        0,
+        -450
+      ],
+      "sourceSize": [
+        800,
+        300
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -360,
+          -150
+        ],
+        [
+          360,
+          -150
+        ],
+        [
+          400,
+          -110
+        ],
+        [
+          400,
+          110
+        ],
+        [
+          360,
+          150
+        ],
+        [
+          -360,
+          150
+        ],
+        [
+          -400,
+          110
+        ],
+        [
+          -400,
+          -110
+        ]
+      ]
+    },
+    {
+      "id": "alchimeria_lab",
+      "name": "アルキメリア装備開発ラボ",
+      "x": -420,
+      "y": 20,
+      "w": 300,
+      "h": 220,
+      "type": "workshop",
+      "detail": "中層の装備開発ラボ。",
+      "sourceSection": "6.2",
+      "sourcePosition": [
+        -450,
+        -500
+      ],
+      "sourceSize": [
+        300,
+        220
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -150,
+          -110
+        ],
+        [
+          150,
+          -110
+        ],
+        [
+          150,
+          80
+        ],
+        [
+          120,
+          80
+        ],
+        [
+          120,
+          110
+        ],
+        [
+          -150,
+          110
+        ]
+      ]
+    },
+    {
+      "id": "resist_link_dome",
+      "name": "レジストリンク・ドーム",
+      "x": 560,
+      "y": 0,
+      "w": 650,
+      "h": 600,
+      "type": "guild",
+      "detail": "中央ターミナル近傍のギルド複合区。大枠内に共通任務受付・作戦会議区・ストレージゾーン・アルキメリア区画・バイオノーム区画を収め、内部通路で接続する。",
+      "sourceSection": "6.2",
+      "areaFrame": true,
+      "internalLayoutStatus": "draft_visual_only",
+      "internalEntrance": {
+        "id": "entrance",
+        "name": "ドーム入口",
+        "dx": -315,
+        "dy": 0
+      },
+      "internalFacilities": [
+        {
+          "id": "dome_common_reception",
+          "name": "共通任務受付",
+          "short": "任務受付",
+          "dx": -220,
+          "dy": -165,
+          "w": 140,
+          "h": 150,
+          "detail": "依頼の登録・検索、船内ランクと資格の照合、完了報告・回収品受領、クレジット・現物などの報酬受け渡しを行う。",
+          "functions": [
+            "依頼登録・検索",
+            "船内ランク・受注資格の照合",
+            "完了報告・回収品受領",
+            "任務報酬の受け渡し"
+          ]
+        },
+        {
+          "id": "dome_operations",
+          "name": "作戦会議区",
+          "short": "作戦会議",
+          "dx": 45,
+          "dy": -165,
+          "w": 135,
+          "h": 150,
+          "detail": "任務の作戦立案・分隊連携に使う区画。簡易作戦ブースから大会議室までを含む。",
+          "functions": [
+            "簡易作戦ブース",
+            "中規模戦術室",
+            "分隊本部",
+            "大会議室",
+            "個別通信ブース"
+          ]
+        },
+        {
+          "id": "dome_storage",
+          "name": "ストレージゾーン",
+          "short": "倉庫",
+          "dx": 222,
+          "dy": -165,
+          "w": 150,
+          "h": 150,
+          "detail": "素材・装備・報酬物資の保管区。危険物や生物の回収品は密閉容器庫で扱う。",
+          "functions": [
+            "素材・回収品倉庫",
+            "装備一時保管庫",
+            "報酬物資保管区",
+            "危険物・生物用密閉容器庫"
+          ]
+        },
+        {
+          "id": "dome_alchimeria",
+          "name": "アルキメリア区画",
+          "short": "アルキメリア",
+          "dx": 45,
+          "dy": 165,
+          "w": 135,
+          "h": 150,
+          "detail": "技術者ギルド側の受付。装備・素材の鑑定、修理や再設計相談、素材収集依頼、装備開発ラボの受付を扱う。",
+          "functions": [
+            "装備・素材の鑑定",
+            "修理・再設計相談",
+            "素材収集依頼",
+            "装備開発ラボへの受付"
+          ]
+        },
+        {
+          "id": "dome_bionome",
+          "name": "バイオノーム区画",
+          "short": "バイオノーム",
+          "dx": 222,
+          "dy": 165,
+          "w": 150,
+          "h": 150,
+          "detail": "農業ギルド側の受付。栽培・採取や生物回収・捕獲任務、植物素材・燃料の管理とアルボラセクターへの連絡を扱う。",
+          "functions": [
+            "栽培・採取任務",
+            "生物回収・捕獲任務",
+            "植物素材・燃料の管理",
+            "アルボラセクターとの連絡"
+          ]
+        }
+      ],
+      "internalConnections": [
+        [
+          "entrance",
+          "dome_common_reception"
+        ],
+        [
+          "dome_common_reception",
+          "dome_operations"
+        ],
+        [
+          "dome_common_reception",
+          "dome_alchimeria"
+        ],
+        [
+          "dome_operations",
+          "dome_storage"
+        ],
+        [
+          "dome_alchimeria",
+          "dome_bionome"
+        ]
+      ],
+      "sourcePosition": [
+        700,
+        0
+      ],
+      "sourceSize": [
+        650,
+        600
+      ],
+      "draftRepositioned": true
+    },
+    {
+      "id": "arbora_sector",
+      "name": "アルボラセクター",
+      "x": -1040,
+      "y": 0,
+      "w": 1050,
+      "h": 1300,
+      "type": "nature",
+      "detail": "人工自然・植物育成・生態系管理の地区。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1300,
+        0
+      ],
+      "sourceSize": [
+        1050,
+        1300
+      ],
+      "draftRepositioned": true,
+      "zoneOutline": true,
+      "draftRegion": true
+    },
+    {
+      "id": "standard_fuel_factory",
+      "name": "標準燃料生産施設",
+      "x": -1320,
+      "y": 540,
+      "w": 500,
+      "h": 400,
+      "type": "industrial",
+      "detail": "一般燃料を大量生産する施設。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1650,
+        950
+      ],
+      "sourceSize": [
+        500,
+        400
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -190,
+          -200
+        ],
+        [
+          190,
+          -200
+        ],
+        [
+          250,
+          -140
+        ],
+        [
+          250,
+          140
+        ],
+        [
+          190,
+          200
+        ],
+        [
+          -190,
+          200
+        ],
+        [
+          -250,
+          140
+        ],
+        [
+          -250,
+          -140
+        ]
+      ]
+    },
+    {
+      "id": "plant_oil_processing",
+      "name": "植物油加工区",
+      "x": -800,
+      "y": 540,
+      "w": 400,
+      "h": 300,
+      "type": "industrial",
+      "detail": "植物性油の加工。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1000,
+        950
+      ],
+      "sourceSize": [
+        400,
+        300
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -200,
+          -150
+        ],
+        [
+          200,
+          -150
+        ],
+        [
+          200,
+          110
+        ],
+        [
+          160,
+          110
+        ],
+        [
+          160,
+          150
+        ],
+        [
+          -200,
+          150
+        ]
+      ]
+    },
+    {
+      "id": "fiber_resin_processing",
+      "name": "植物繊維・樹脂加工区",
+      "x": -1280,
+      "y": -540,
+      "w": 400,
+      "h": 300,
+      "type": "industrial",
+      "detail": "植物繊維・樹脂の加工。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1600,
+        -950
+      ],
+      "sourceSize": [
+        400,
+        300
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -200,
+          -150
+        ],
+        [
+          200,
+          -150
+        ],
+        [
+          200,
+          110
+        ],
+        [
+          160,
+          110
+        ],
+        [
+          160,
+          150
+        ],
+        [
+          -200,
+          150
+        ]
+      ]
+    },
+    {
+      "id": "middle_material_processing",
+      "name": "植物資源加工施設",
+      "x": -800,
+      "y": -540,
+      "w": 450,
+      "h": 300,
+      "type": "industrial",
+      "detail": "栽培植物資源の加工。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1000,
+        -950
+      ],
+      "sourceSize": [
+        450,
+        300
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -225,
+          -150
+        ],
+        [
+          225,
+          -150
+        ],
+        [
+          225,
+          110
+        ],
+        [
+          185,
+          110
+        ],
+        [
+          185,
+          150
+        ],
+        [
+          -225,
+          150
+        ]
+      ]
+    },
+    {
+      "id": "ecosystem_greenhouses",
+      "name": "生態系再現温室群",
+      "x": -1060,
+      "y": -100,
+      "w": 600,
+      "h": 420,
+      "type": "nature",
+      "detail": "人工生態系を再現する温室群。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1325,
+        -175
+      ],
+      "sourceSize": [
+        600,
+        420
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -240,
+          -210
+        ],
+        [
+          240,
+          -210
+        ],
+        [
+          300,
+          -150
+        ],
+        [
+          300,
+          150
+        ],
+        [
+          240,
+          210
+        ],
+        [
+          -240,
+          210
+        ],
+        [
+          -300,
+          150
+        ],
+        [
+          -300,
+          -150
+        ]
+      ]
+    },
+    {
+      "id": "water_soil_cycle",
+      "name": "水・土壌循環施設",
+      "x": -1500,
+      "y": 190,
+      "w": 230,
+      "h": 230,
+      "type": "nature",
+      "detail": "水・土壌循環機能。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1600,
+        425
+      ],
+      "sourceSize": [
+        250,
+        250
+      ],
+      "draftRepositioned": true,
+      "draftScale": 0.92,
+      "footprint": [
+        [
+          -115,
+          -115
+        ],
+        [
+          115,
+          -115
+        ],
+        [
+          115,
+          85
+        ],
+        [
+          85,
+          85
+        ],
+        [
+          85,
+          115
+        ],
+        [
+          -115,
+          115
+        ]
+      ]
+    },
+    {
+      "id": "biological_management",
+      "name": "生物・植物管理施設",
+      "x": -800,
+      "y": 240,
+      "w": 250,
+      "h": 180,
+      "type": "nature",
+      "detail": "生物と植物の管理。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -950,
+        425
+      ],
+      "sourceSize": [
+        250,
+        180
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -125,
+          -90
+        ],
+        [
+          125,
+          -90
+        ],
+        [
+          125,
+          60
+        ],
+        [
+          95,
+          60
+        ],
+        [
+          95,
+          90
+        ],
+        [
+          -125,
+          90
+        ]
+      ]
+    },
+    {
+      "id": "bio_material_greenhouse",
+      "name": "バイオ素材研究温室",
+      "x": -590,
+      "y": -240,
+      "w": 300,
+      "h": 250,
+      "type": "nature",
+      "detail": "バイオ素材の研究温室。",
+      "sourceSection": "6.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -900,
+        -500
+      ],
+      "sourceSize": [
+        300,
+        250
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -110,
+          -125
+        ],
+        [
+          110,
+          -125
+        ],
+        [
+          150,
+          -85
+        ],
+        [
+          150,
+          85
+        ],
+        [
+          110,
+          125
+        ],
+        [
+          -110,
+          125
+        ],
+        [
+          -150,
+          85
+        ],
+        [
+          -150,
+          -85
+        ]
+      ]
+    },
+    {
+      "id": "middle_cargo_inspection",
+      "name": "中層貨物検査区",
+      "x": -510,
+      "y": 250,
+      "w": 280,
+      "h": 200,
+      "type": "industrial",
+      "detail": "貨物検査と貨物リフト接続。",
+      "sourceSection": "6.2",
+      "sourcePosition": [
+        -450,
+        0
+      ],
+      "sourceSize": [
+        280,
+        200
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -140,
+          -100
+        ],
+        [
+          140,
+          -100
+        ],
+        [
+          140,
+          70
+        ],
+        [
+          110,
+          70
+        ],
+        [
+          110,
+          100
+        ],
+        [
+          -140,
+          100
+        ]
+      ]
+    },
+    {
+      "id": "middle_weapon_operation_field",
+      "name": "兵器動作場",
+      "short": "兵器動作場",
+      "type": "shared",
+      "x": 1240,
+      "y": 0,
+      "w": 550,
+      "h": 500,
+      "zoneOutline": true,
+      "provisional": true,
+      "detail": "兵器の起動・操作・動作確認に用いる船首側の試験区画（配置案）。試験方法、内部設備、安全管理範囲などの詳細は未確定。",
+      "sourceSection": "user-requested-draft",
+      "sourcePosition": [
+        1550,
+        0
+      ],
+      "sourceSize": [
+        550,
+        500
+      ],
+      "draftRepositioned": true,
+      "draftRegion": true
+    }
+  ],
+  "roads": [
+    {
+      "id": "middle_terminal_concourse",
+      "name": "中層ターミナルコンコース",
+      "roadType": "コンコース",
+      "width": 80,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "r": 290,
+      "connection": "ターミナル、中央環状路",
+      "notionshape": "半径250～330m",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_public_ring",
+      "name": "中層中央環状路",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "connection": "中層ターミナルから任務大通りへ接続。レジストリンク・ドーム内部の中央通過路を横切り、遮断せず周回する配置案",
+      "notionshape": "中心半径650m",
+      "geometryStatus": "draft_continuous_ring_through_guild_central_corridor",
+      "r": 650,
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_core_prom_enable",
+      "name": "コアシェル生活遊歩路",
+      "roadType": "歩行通路",
+      "width": 8,
+      "color": "#69b9e5",
+      "kind": "line",
+      "geometryStatus": "draft_reroute_around_resist_dome",
+      "connection": "コアシェルの歩行通路。ドーム内側ではコンコース沿いに迂回する配置案",
+      "notionshape": "半径430～560m",
+      "points": [
+        [
+          260,
+          210
+        ],
+        [
+          240,
+          220
+        ],
+        [
+          220,
+          240
+        ],
+        [
+          190,
+          250
+        ],
+        [
+          170,
+          260
+        ],
+        [
+          140,
+          260
+        ],
+        [
+          120,
+          270
+        ],
+        [
+          90,
+          280
+        ],
+        [
+          60,
+          280
+        ],
+        [
+          30,
+          280
+        ],
+        [
+          0,
+          280
+        ],
+        [
+          -20,
+          280
+        ],
+        [
+          -50,
+          280
+        ],
+        [
+          -80,
+          280
+        ],
+        [
+          -110,
+          270
+        ],
+        [
+          -140,
+          270
+        ],
+        [
+          -160,
+          260
+        ],
+        [
+          -190,
+          250
+        ],
+        [
+          -210,
+          240
+        ],
+        [
+          -240,
+          230
+        ],
+        [
+          -260,
+          210
+        ],
+        [
+          -280,
+          200
+        ],
+        [
+          -300,
+          190
+        ],
+        [
+          -320,
+          170
+        ],
+        [
+          -330,
+          150
+        ],
+        [
+          -350,
+          140
+        ],
+        [
+          -360,
+          120
+        ],
+        [
+          -370,
+          100
+        ],
+        [
+          -380,
+          80
+        ],
+        [
+          -390,
+          60
+        ],
+        [
+          -390,
+          40
+        ],
+        [
+          -390,
+          20
+        ],
+        [
+          -400,
+          0
+        ],
+        [
+          -390,
+          -20
+        ],
+        [
+          -390,
+          -40
+        ],
+        [
+          -390,
+          -60
+        ],
+        [
+          -380,
+          -80
+        ],
+        [
+          -370,
+          -100
+        ],
+        [
+          -360,
+          -120
+        ],
+        [
+          -350,
+          -140
+        ],
+        [
+          -330,
+          -150
+        ],
+        [
+          -320,
+          -170
+        ],
+        [
+          -300,
+          -190
+        ],
+        [
+          -280,
+          -200
+        ],
+        [
+          -260,
+          -210
+        ],
+        [
+          -240,
+          -230
+        ],
+        [
+          -210,
+          -240
+        ],
+        [
+          -190,
+          -250
+        ],
+        [
+          -160,
+          -260
+        ],
+        [
+          -140,
+          -270
+        ],
+        [
+          -110,
+          -270
+        ],
+        [
+          -80,
+          -280
+        ],
+        [
+          -50,
+          -280
+        ],
+        [
+          -20,
+          -280
+        ],
+        [
+          0,
+          -280
+        ],
+        [
+          30,
+          -280
+        ],
+        [
+          60,
+          -280
+        ],
+        [
+          90,
+          -280
+        ],
+        [
+          120,
+          -270
+        ],
+        [
+          140,
+          -260
+        ],
+        [
+          170,
+          -260
+        ],
+        [
+          190,
+          -250
+        ],
+        [
+          220,
+          -240
+        ],
+        [
+          240,
+          -220
+        ],
+        [
+          260,
+          -210
+        ],
+        [
+          280,
+          -210
+        ],
+        [
+          280,
+          210
+        ],
+        [
+          260,
+          210
+        ]
+      ],
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_refine_service_road",
+      "name": "リファイン工房道路",
+      "roadType": "一般道路",
+      "width": 24,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          -400,
+          -230
+        ],
+        [
+          0,
+          -370
+        ],
+        [
+          400,
+          -230
+        ]
+      ],
+      "connection": "リファインバレー、アルキメリア",
+      "notionshape": "[-500,-400]→[0,-650]→[500,-400]",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_mission_avenue",
+      "name": "任務大通り",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          260,
+          0
+        ],
+        [
+          280,
+          0
+        ],
+        [
+          400,
+          0
+        ],
+        [
+          520,
+          0
+        ],
+        [
+          540,
+          0
+        ],
+        [
+          820,
+          0
+        ],
+        [
+          920,
+          0
+        ]
+      ],
+      "connection": "ターミナルコンコース→生活遊歩路→中央環状路→ギルド複合区の中央通過路→船首側の非常迂回環状路。途中の受付等に分岐する。",
+      "notionshape": "Notionの任務大通り [650,0]→[1,050,0] を、複合区内を通り抜ける接続幹線に再構成した未確定案",
+      "geometryStatus": "draft_connected_through_road",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_resist_internal_corridor",
+      "name": "ドーム内部連絡通路",
+      "roadType": "歩行通路",
+      "width": 8,
+      "color": "#69b9e5",
+      "kind": "internal",
+      "geometryStatus": "not_specified",
+      "connection": "受付、報酬、作戦室、倉庫",
+      "notionshape": "ドーム内部",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_arbora_boulevard",
+      "name": "アルボラ大通り",
+      "roadType": "主要幹線道路",
+      "width": 36,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          -520,
+          0
+        ],
+        [
+          -680,
+          0
+        ],
+        [
+          -840,
+          0
+        ]
+      ],
+      "connection": "中央環状路、アルボラセクター",
+      "notionshape": "[0,650]→[0,900]",
+      "sourceNotionGeometry": "[0,650]→[0,900]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_arbora_loop",
+      "name": "アルボラ管理環状路",
+      "roadType": "地区環状道路",
+      "width": 30,
+      "color": "#a8b5bd",
+      "kind": "line",
+      "points": [
+        [
+          -620,
+          -340
+        ],
+        [
+          -1440,
+          -340
+        ],
+        [
+          -1440,
+          340
+        ],
+        [
+          -620,
+          340
+        ],
+        [
+          -620,
+          -340
+        ]
+      ],
+      "connection": "温室、管理、水・土壌、研究温室",
+      "notionshape": "[-850,700]→[-700,1,100]→[500,1,100]→[650,750]→閉路",
+      "sourceNotionGeometry": "[-850,700]→[-700,1,100]→[500,1,100]→[650,750]→閉路",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_industrial_freight_road",
+      "name": "中層工業貨物幹線",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -480,
+          -150
+        ],
+        [
+          -640,
+          -460
+        ],
+        [
+          -800,
+          -540
+        ],
+        [
+          -1280,
+          -540
+        ]
+      ],
+      "connection": "燃料工場、植物油、繊維・樹脂、資源加工",
+      "notionshape": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
+      "sourceNotionGeometry": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_cargo_tunnel",
+      "name": "中層貨物トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -360,
+          0
+        ],
+        [
+          -600,
+          0
+        ],
+        [
+          -960,
+          0
+        ]
+      ],
+      "connection": "貨物検査、工業貨物幹線、貨物リフト",
+      "notionshape": "[-450,0]→[-800,250]→[-1,200,500]",
+      "sourceNotionGeometry": "[-450,0]→[-800,250]→[-1,200,500]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_botanical_service_tunnel",
+      "name": "植物管理トンネル",
+      "roadType": "整備通路",
+      "width": 8,
+      "color": "#e8cd7f",
+      "layer": "freight",
+      "dash": [
+        7,
+        6
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -1280,
+          240
+        ],
+        [
+          -1060,
+          40
+        ],
+        [
+          -760,
+          240
+        ],
+        [
+          -760,
+          -240
+        ]
+      ],
+      "connection": "水・土壌、温室、生物管理、研究温室",
+      "notionshape": "[-650,900]→[-200,900]→[450,900]",
+      "sourceNotionGeometry": "[-650,900]→[-200,900]→[450,900]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_pod_loop",
+      "name": "中層輸送ポッド環状線",
+      "roadType": "輸送ポッド線",
+      "width": 16,
+      "color": "#b7a1fc",
+      "layer": "pods",
+      "dash": [
+        9,
+        7
+      ],
+      "kind": "ring",
+      "geometryStatus": "draft_continuous_parallel_pod_loop",
+      "connection": "中層中央環状路に沿った周回線。ドーム中央通過路と駅接続する検討案（駅位置未設定）",
+      "notionshape": "中央環状路沿い",
+      "r": 670,
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "middle_emergency_bypass",
+      "name": "中層非常迂回環状路",
+      "roadType": "非常用迂回路",
+      "width": 12,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        6,
+        8
+      ],
+      "kind": "line",
+      "connection": "中央環状路を補完する閉路。ドーム外側の船首側区間を迂回し、任務大通り[X1150,0]で接続する案",
+      "notionshape": "中心半径800m",
+      "points": [
+        [
+          560,
+          220
+        ],
+        [
+          540,
+          240
+        ],
+        [
+          520,
+          260
+        ],
+        [
+          500,
+          280
+        ],
+        [
+          480,
+          300
+        ],
+        [
+          460,
+          320
+        ],
+        [
+          430,
+          340
+        ],
+        [
+          400,
+          350
+        ],
+        [
+          380,
+          370
+        ],
+        [
+          350,
+          380
+        ],
+        [
+          320,
+          400
+        ],
+        [
+          290,
+          410
+        ],
+        [
+          250,
+          420
+        ],
+        [
+          220,
+          430
+        ],
+        [
+          190,
+          440
+        ],
+        [
+          150,
+          440
+        ],
+        [
+          120,
+          450
+        ],
+        [
+          90,
+          450
+        ],
+        [
+          50,
+          450
+        ],
+        [
+          20,
+          460
+        ],
+        [
+          -20,
+          460
+        ],
+        [
+          -60,
+          450
+        ],
+        [
+          -90,
+          450
+        ],
+        [
+          -120,
+          450
+        ],
+        [
+          -160,
+          440
+        ],
+        [
+          -190,
+          430
+        ],
+        [
+          -230,
+          430
+        ],
+        [
+          -260,
+          420
+        ],
+        [
+          -290,
+          410
+        ],
+        [
+          -320,
+          390
+        ],
+        [
+          -350,
+          380
+        ],
+        [
+          -380,
+          370
+        ],
+        [
+          -410,
+          350
+        ],
+        [
+          -430,
+          330
+        ],
+        [
+          -460,
+          320
+        ],
+        [
+          -480,
+          300
+        ],
+        [
+          -510,
+          280
+        ],
+        [
+          -530,
+          260
+        ],
+        [
+          -550,
+          240
+        ],
+        [
+          -560,
+          220
+        ],
+        [
+          -580,
+          190
+        ],
+        [
+          -590,
+          170
+        ],
+        [
+          -610,
+          150
+        ],
+        [
+          -620,
+          120
+        ],
+        [
+          -620,
+          100
+        ],
+        [
+          -630,
+          70
+        ],
+        [
+          -640,
+          50
+        ],
+        [
+          -640,
+          30
+        ],
+        [
+          -640,
+          0
+        ],
+        [
+          -640,
+          -30
+        ],
+        [
+          -640,
+          -50
+        ],
+        [
+          -630,
+          -70
+        ],
+        [
+          -620,
+          -100
+        ],
+        [
+          -620,
+          -120
+        ],
+        [
+          -610,
+          -150
+        ],
+        [
+          -590,
+          -170
+        ],
+        [
+          -580,
+          -190
+        ],
+        [
+          -560,
+          -220
+        ],
+        [
+          -550,
+          -240
+        ],
+        [
+          -530,
+          -260
+        ],
+        [
+          -510,
+          -280
+        ],
+        [
+          -480,
+          -300
+        ],
+        [
+          -460,
+          -320
+        ],
+        [
+          -430,
+          -330
+        ],
+        [
+          -410,
+          -350
+        ],
+        [
+          -380,
+          -370
+        ],
+        [
+          -350,
+          -380
+        ],
+        [
+          -320,
+          -390
+        ],
+        [
+          -290,
+          -410
+        ],
+        [
+          -260,
+          -420
+        ],
+        [
+          -230,
+          -430
+        ],
+        [
+          -190,
+          -430
+        ],
+        [
+          -160,
+          -440
+        ],
+        [
+          -120,
+          -450
+        ],
+        [
+          -90,
+          -450
+        ],
+        [
+          -60,
+          -450
+        ],
+        [
+          -20,
+          -460
+        ],
+        [
+          20,
+          -460
+        ],
+        [
+          50,
+          -450
+        ],
+        [
+          90,
+          -450
+        ],
+        [
+          120,
+          -450
+        ],
+        [
+          150,
+          -440
+        ],
+        [
+          190,
+          -440
+        ],
+        [
+          220,
+          -430
+        ],
+        [
+          250,
+          -420
+        ],
+        [
+          290,
+          -410
+        ],
+        [
+          320,
+          -400
+        ],
+        [
+          350,
+          -380
+        ],
+        [
+          380,
+          -370
+        ],
+        [
+          400,
+          -350
+        ],
+        [
+          430,
+          -340
+        ],
+        [
+          460,
+          -320
+        ],
+        [
+          480,
+          -300
+        ],
+        [
+          500,
+          -280
+        ],
+        [
+          520,
+          -260
+        ],
+        [
+          540,
+          -240
+        ],
+        [
+          560,
+          -220
+        ],
+        [
+          920,
+          -220
+        ],
+        [
+          920,
+          0
+        ],
+        [
+          920,
+          220
+        ],
+        [
+          560,
+          220
+        ]
+      ],
+      "geometryStatus": "draft_continuous_emergency_outer_bypass",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "draft_industrial_starboard",
+      "name": "右舷側の加工区貨物道路（案）",
+      "kind": "line",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "points": [
+        [
+          -480,
+          150
+        ],
+        [
+          -640,
+          440
+        ],
+        [
+          -800,
+          540
+        ],
+        [
+          -1320,
+          540
+        ]
+      ],
+      "reviewStatus": "draft",
+      "geometryStatus": "draft_new",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "draft_weapon_operation_access",
+      "name": "兵器動作場取付道路（案）",
+      "roadType": "一般道路",
+      "width": 24,
+      "color": "#9fc4d4",
+      "kind": "line",
+      "points": [
+        [
+          920,
+          0
+        ],
+        [
+          1020,
+          0
+        ]
+      ],
+      "connection": "任務大通り・非常迂回路[X1150,0]から兵器動作場船尾側入口[X1275,0]へ。既存幹線はそのまま維持。",
+      "geometryStatus": "draft_only",
+      "status": "draft_route_requires_review"
+    }
+  ],
+  "editorMeta": {
+    "status": "draft",
+    "scenario": "船尾中央栽培・真下に有機再生",
+    "note": "GitHub配置案・Notion未反映。中層船首側[X1550,Y0]に兵器動作場（550×500m・外枠表示）を仮追加。兵器の起動・操作・動作確認用の区画として扱うが、設備・安全管理は未確定。既存任務大通りと非常迂回環状路の共通接続点[X1150,Y0]から入口[X1275,Y0]へ取付道路を接続し、元の道路は分断しない。ギルド複合区内部の5区画は維持。",
+    "revision": "polygon-packed-10m-v2",
+    "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
+    "sourceFile": "data/middle-draft.json",
+    "review": "polygon_collision_checked"
+  }
+}
