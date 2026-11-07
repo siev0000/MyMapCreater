@@ -1107,7 +1107,7 @@ async function loadMapDataFromJSON(){
  document.getElementById('mapNotice').textContent='地図のJSONデータを読み込み中です…';
  try{
   // GitHub Pagesと同一オリジンの静的JSONを読み込む（API・ライブラリ不要）。
-  const files=['upper','middle','lower','middle-proposals','middle-draft','lower-draft'];
+  const files=['upper','middle','lower','middle-proposals','middle-draft','lower-draft','upper-layout-draft','middle-layout-draft','lower-layout-draft'];
   const results=await Promise.all(files.map(async id=>{
    const res=await fetch('./data/'+id+'.json',{cache:'no-cache'});
    if(!res.ok)throw Error(id+'.json : HTTP '+res.status);
@@ -1121,12 +1121,11 @@ async function loadMapDataFromJSON(){
   const proposal=results[3];
   if(!proposal||proposal.status!=='proposal'||proposal.floor!=='middle'||!Array.isArray(proposal.zones)||!proposal.zones.every(z=>z&&typeof z.name==='string'&&[z.x,z.y,z.w,z.h].every(Number.isFinite)))throw Error('未確定区画JSONの形式が不正です');
   middleDraftZones.push(...proposal.zones);
-  for(const [idx,id] of [[4,'middle'],[5,'lower']]){
+  for(const [idx,id] of [[6,'upper'],[7,'middle'],[8,'lower']]){
     const draft=validateFloorJSON(id,results[idx]);
-    if(draft.editorMeta?.status!=='draft')throw Error(id+' の配置案が未確定として登録されていません');
-    layoutDrafts[id]=buildProtectedHullDraft(id,draft);
+    if(draft.editorMeta?.status!=='draft'||draft.editorMeta?.revision!=='polygon-packed-10m-v2')throw Error(id+' の多角形配置案の形式が不正です');
+    layoutDrafts[id]=draft;
   }
-  layoutDrafts.upper=buildProtectedHullDraft('upper',mapSets.upper);
   try{
    const darkResponse=await fetch('./data/dark-world-draft.json',{cache:'no-cache'});
    if(!darkResponse.ok)throw Error('dark-world-draft.json : HTTP '+darkResponse.status);
@@ -1602,7 +1601,8 @@ canvas.addEventListener('click',e=>{
  }
  if(!near)for(const f of facilities){
   if(f.ringDistrict||f.areaFrame)continue;
-  if(f.zoneOutline&&Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2)zoneParent=f;
+  if(f.zoneOutline&&!f.draftRegion&&Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2)zoneParent=f;
+  if(f.footprint&&pointInsideFacility(f,wx,wy)){near=f;break}
   const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);
   if(d<dist){near=f;dist=d}
  }
