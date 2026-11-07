@@ -144,6 +144,12 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .propulsionListButton span{font-size:10px;color:#e2ce9e}
 .propulsionListButton.on{background:#514d36;border-color:#ead9a4}
 .propulsionHint{color:#c4d5df;font-size:11px;line-height:1.6}
+
+.shipHullLayersLegend{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:5px 12px;padding:7px 10px;margin:3px auto 6px;border:1px solid #345263;background:#102533;border-radius:9px;max-width:760px;font-size:11px;color:#dae9ef}
+.shipHullLayersLegend[hidden]{display:none}
+.shipHullLayersLegend span{display:inline-flex;align-items:center;gap:5px}
+.shipHullLayersLegend i{display:inline-block;width:13px;height:13px;border:1px solid #a9b7bf;border-radius:2px;flex:none}
+.shipHullLayersLegend .shipLayerDraft{color:#d8be83;font-size:10px}
 </style></head>
 <body><div class="app" id="appRoot" data-world="apocrypha_archive">
 <header class="topbar">
@@ -161,6 +167,13 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
  <section id="worldEmpty" class="worldEmpty" hidden aria-live="polite"><div class="worldEmptyInner"><h2 id="emptyWorldTitle">ダークワールド</h2><p>このマップのデータはまだ登録されていません。追加後にここから切り替えられます。</p></div></section>
  <details id="shipPartsLegend" class="shipPartsLegend" hidden><summary>船体の部位を確認 <span id="shipPartsCount"></span></summary><p class="shipPartsHint">図の番号または一覧を押すと部位名と用途が表示されます。外装の細部は仮デザインです。</p><div id="shipPartsList" class="shipPartsList"></div><div id="shipPartDetail" class="shipPartDetail" aria-live="polite">部位を選択してください。</div></details>
+ <div id="shipHullLayersLegend" class="shipHullLayersLegend" aria-label="船体断面構成（配置案）">
+ <span><i style="background:#667484"></i>外装甲</span>
+ <span><i style="background:#223d50"></i>機関・保守</span>
+ <span><i style="background:#52514b"></i>隔壁・緩衝</span>
+ <span><i style="background:#1b343c"></i>居住・研究</span>
+ <span class="shipLayerDraft">外周構造は仮寸法／一般通路と非接続</span>
+ </div>
  <div class="mapchips"><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span><span class="chip" id="thrusterAccessChip">× 外壁機関区・緩衝帯｜一般ルートから進入不可</span></div>
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
  <div class="zoomControls" aria-label="地図の拡大縮小">
@@ -310,9 +323,9 @@ function updateAAGridInfo(){
   const subtitle=document.getElementById('mapSubtitle');
   if(shipView==='map'&&subtitle&&subtitle.textContent)subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':mapSets[preferredFloor]?.status||'');
   const notice=document.getElementById('mapNotice');
-  if(notice?.textContent?.startsWith('X=±2,000m、Y=±1,250mを横')){
-   const prefix='X=±2,000m、Y=±1,250mを横'+q.cols+'×縦'+q.rows+'マス（1マス'+aaCellLabel()+'）で表示。';
-   notice.textContent=notice.textContent.replace(/^X=±2,000m、Y=±1,250mを横.*?で表示。/,prefix);
+  if(notice?.textContent?.startsWith('船体本体は全長4,000m×最大幅2,500m')){
+   const prefix='船体本体は全長4,000m×最大幅2,500m、'+q.cols+'×'+q.rows+'マス（1マス'+aaCellLabel()+'）。';
+   notice.textContent=notice.textContent.replace(/^船体本体は全長4,000m×最大幅2,500m、.*?）。/,prefix);
   }
  }
 }
@@ -499,6 +512,7 @@ function setShipView(mode,persist=true){
    b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));
   });
   document.getElementById('thrusterAccessChip').hidden=mode!=='map';
+  document.getElementById('shipHullLayersLegend').hidden=mode!=='map';
   document.getElementById('propulsionPanel').hidden=mode!=='map';
   document.getElementById('map').setAttribute('aria-label',mode==='map'?'施設・道路をタップして概要を表示するマップ':'船体'+(mode==='top'?'上面':'側面')+'の外形模式図');
   document.title=mode==='map'?'AA '+(mapSets[preferredFloor]?.name||'階層マップ'):'AA 船体'+(mode==='top'?'上面':'側面')+'形状';
@@ -721,6 +735,7 @@ function switchWorld(id,persist=true){
   fitCanvasToViewport();
   document.getElementById('shipViewControls').hidden=false;
   document.getElementById('propulsionPanel').hidden=shipView!=='map';
+  document.getElementById('shipHullLayersLegend').hidden=shipView!=='map';
   document.getElementById('shipOrientationChip').textContent=shipView==='side'?'◀ 船首 +X':'▲ 船首 +X';
   document.getElementById('darkWorldControls').hidden=true;
   document.getElementById('shipOrientationChip').hidden=false;
@@ -736,6 +751,7 @@ function switchWorld(id,persist=true){
   document.getElementById('shipPartsLegend').hidden=true;
   document.getElementById('thrusterAccessChip').hidden=true;
   document.getElementById('propulsionPanel').hidden=true;
+  document.getElementById('shipHullLayersLegend').hidden=true;
   fitCanvasToViewport();
   chosen=null;resetView();
   document.getElementById('selectedPanel').hidden=true;
@@ -1061,7 +1077,7 @@ document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()
 document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(e.target.value));
 document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;shipView='map';canvas.height=1600;canvas.style.aspectRatio='5/8';fitCanvasToViewport();switchMap(currentMap);setShipView('map',false);saveDisplaySettings()};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
-function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function drawCompoundFacilities(){
  for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
   const [cx,cy]=xy(parent.x,parent.y),pw=parent.h*.4,ph=parent.w*.4;
