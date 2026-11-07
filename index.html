@@ -161,7 +161,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
  <section id="worldEmpty" class="worldEmpty" hidden aria-live="polite"><div class="worldEmptyInner"><h2 id="emptyWorldTitle">ダークワールド</h2><p>このマップのデータはまだ登録されていません。追加後にここから切り替えられます。</p></div></section>
  <details id="shipPartsLegend" class="shipPartsLegend" hidden><summary>船体の部位を確認 <span id="shipPartsCount"></span></summary><p class="shipPartsHint">図の番号または一覧を押すと部位名と用途が表示されます。外装の細部は仮デザインです。</p><div id="shipPartsList" class="shipPartsList"></div><div id="shipPartDetail" class="shipPartDetail" aria-live="polite">部位を選択してください。</div></details>
- <div class="mapchips"><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span><span class="chip" id="thrusterAccessChip">× 推進機関区（仮位置）：一般ルートから進入不可</span></div>
+ <div class="mapchips"><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span><span class="chip" id="thrusterAccessChip">× 外壁機関区・緩衝帯｜一般ルートから進入不可</span></div>
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
  <div class="zoomControls" aria-label="地図の拡大縮小">
   <button id="zoomOut" type="button" aria-label="縮小">−</button>
@@ -230,8 +230,8 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
      <h2>選択施設の概要</h2><div class="selectedDetail" id="selectedDetail"></div>
     </section>
     <section class="panel propulsionPanel" id="propulsionPanel"><h2>推進機関区・専用保守設備</h2>
-    <p class="propulsionHelp"><span id="propulsionFloorName"></span>｜青色の外周区画（上層）、緑色（中層）、橙色（下層）は専用設備の仮配置です。<strong>一般ルートから進入不可</strong>。番号か一覧で説明を確認できます。</p>
-    <div id="propulsionList" class="propulsionList"></div><p class="propulsionHint">※区画数・場所・寸法と整備通路の接続位置は未確定。道路網には接続していません。</p></section>
+    <p class="propulsionHelp"><span id="propulsionFloorName"></span>｜外周の青色区画（上層）、緑色（中層）、橙色（下層）は船外側の専用設備の仮配置です。<strong>一般ルートから進入不可</strong>。番号か一覧で説明を確認できます。</p>
+    <div id="propulsionList" class="propulsionList"></div><p class="propulsionHint">※外側に整備余白、内側に緩衝帯を仮表示。実際の位置・寸法は未確定で、道路網に接続していません。</p></section>
     <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>選択してもメニューは閉じません。該当する場所にズームします。</p></section>
    </div>
    <div id="panelDisplay" class="drawerSection" role="tabpanel" data-menu-panel="display" hidden>
@@ -285,9 +285,9 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;
-const MAP_INSET_X=.86,MAP_INSET_Y=.92; // margins for external propulsion maintenance equipment; source coordinates unchanged
+const MAP_INSET_X=.70,MAP_INSET_Y=.80; // extra exterior engineering perimeter; physical hull dimensions remain unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
-const aaGrids={upper:{cols:25,rows:40},middle:{cols:25,rows:40},lower:{cols:25,rows:40}};
+const aaGrids={upper:{cols:50,rows:80},middle:{cols:50,rows:80},lower:{cols:50,rows:80}};
 const validAA=n=>Number.isInteger(n)&&n>=4&&n<=200;
 function gridSpec(id=preferredFloor){
  const shape=aaGrids[id]||aaGrids.middle,cols=shape.cols,rows=shape.rows;
@@ -378,7 +378,7 @@ const PROPULSION_AREAS=[
 let selectedPropulsionAreaId=null;
 function propulsionAreaPosition(area){
  const y=H*area.t,half=(W-28)*hullWidth(area.t)/2;
- return {x:W/2+area.side*(half+17),y};
+ return {x:W/2+area.side*(half+108),y};
 }
 function propulsionAreaDetails(area){
  const floor=mapSets[currentMap]?.name||'現在の階層';
@@ -423,12 +423,12 @@ function drawRestrictedThrusterAccess(){
  // Inner hull = service zone; outer plate = accessible only to certified maintenance.
  for(const area of PROPULSION_AREAS){
   const {x,y}=propulsionAreaPosition(area),selected=area.id===selectedPropulsionAreaId;
-  const innerX=x-area.side*34,outerX=x+area.side*28;
+  const innerX=x-area.side*79,outerX=x+area.side*30;
   ctx.fillStyle=selected?'rgba(233,197,110,.26)':'rgba(93,154,178,.16)';
   ctx.strokeStyle=selected?'#ffe9a8':tint;
   ctx.lineWidth=selected?4:2;ctx.setLineDash([7,4]);
   ctx.beginPath();ctx.roundRect(Math.min(innerX,outerX)-12,y-29,Math.abs(outerX-innerX)+24,58,10);ctx.fill();ctx.stroke();ctx.setLineDash([]);
-  ctx.beginPath();ctx.moveTo(x-area.side*31,y);ctx.lineTo(x+area.side*31,y);
+  ctx.beginPath();ctx.moveTo(x-area.side*76,y);ctx.lineTo(x+area.side*30,y);
   ctx.strokeStyle=tint;ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
   ctx.beginPath();ctx.arc(x,y,17,0,Math.PI*2);
   ctx.fillStyle=selected?'#f7d78d':'#19384a';ctx.fill();ctx.strokeStyle=selected?'#fff3bd':tint;ctx.lineWidth=3;ctx.stroke();
@@ -799,7 +799,7 @@ function restoreDisplaySettings(){
     if(saved.aaGrids && typeof saved.aaGrids==='object'){
      for(const id of GRID_FLOOR_IDS){
       const v=saved.aaGrids[id];
-      if(v&&validAA(v.cols)&&validAA(v.rows))aaGrids[id]={cols:v.cols,rows:v.rows};
+      if(v&&validAA(v.cols)&&validAA(v.rows))aaGrids[id]=(v.cols===25&&v.rows===40)?{cols:50,rows:80}:{cols:v.cols,rows:v.rows};
      }
     }else if(gridMeters===50){
      for(const id of GRID_FLOOR_IDS)aaGrids[id]={cols:50,rows:80};
@@ -1101,6 +1101,30 @@ function drawExclusiveSortieZones(){
  }
  ctx.restore();
 }
+function drawEngineeringOuterGrid(){
+ if(!state.grid)return;
+ ctx.save();ctx.strokeStyle='rgba(92,165,186,.22)';ctx.lineWidth=.8;
+ // Logical px 20 = 50m. This is a margin OUTSIDE the canonical ship.
+ for(let x=-200;x<=W+200;x+=20){ctx.beginPath();ctx.moveTo(x,-220);ctx.lineTo(x,H+220);ctx.stroke()}
+ for(let y=-220;y<=H+220;y+=20){ctx.beginPath();ctx.moveTo(-200,y);ctx.lineTo(W+200,y);ctx.stroke()}
+ ctx.strokeStyle='rgba(87,178,208,.66)';ctx.lineWidth=2;ctx.setLineDash([12,8]);
+ ctx.strokeRect(-190,-190,W+380,H+380);ctx.setLineDash([]);
+ ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillStyle='#afdeec';
+ ctx.fillText('船外機関装備・保守余白（配置案）',W/2,-114);
+ ctx.fillText('船体本体の寸法・既存施設の座標は維持',W/2,H+144);
+ ctx.restore();
+}
+function drawInnerEngineeringBuffer(){
+ if(!state.hull)return;
+ ctx.save();
+ // Clear conceptual separation: hull / protected engineering strip / habitable interior.
+ // The band is only a draft; existing canonical coordinates are not changed.
+ hullTopPath(60);ctx.strokeStyle='rgba(110,178,196,.20)';ctx.lineWidth=115;ctx.stroke();
+ hullTopPath(118);ctx.strokeStyle='rgba(243,204,126,.78)';ctx.lineWidth=3;ctx.setLineDash([14,10]);ctx.stroke();ctx.setLineDash([]);
+ ctx.font='bold 14px system-ui';ctx.fillStyle='#f1d495';ctx.textAlign='center';
+ ctx.fillText('外壁機関・緩衝帯（配置案）',W/2,108);
+ ctx.restore();
+}
 function drawGridLayer(){
  if(!state.grid)return;
  const q=gridSpec();
@@ -1122,7 +1146,9 @@ ctx.save();
 ctx.translate(W/2+view.offsetX,H/2+view.offsetY);
 ctx.scale(view.zoom*MAP_INSET_X,view.zoom*MAP_INSET_Y);
 ctx.translate(-W/2,-H/2);
+drawEngineeringOuterGrid();
 drawHullTop();
+drawInnerEngineeringBuffer();
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
 if(currentMap==='middle'){/* Decorative terrain ellipses removed: not a Notion-defined landform. */}
