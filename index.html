@@ -512,7 +512,7 @@ function setShipView(mode,persist=true){
    b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));
   });
   document.getElementById('thrusterAccessChip').hidden=mode!=='map';
-  document.getElementById('shipHullLayersLegend').hidden=mode!=='map';
+  document.getElementById('shipHullLayersLegend').hidden=mode!=='map'||!(showProposal&&layoutDrafts[preferredFloor]);
   document.getElementById('propulsionPanel').hidden=mode!=='map';
   document.getElementById('map').setAttribute('aria-label',mode==='map'?'施設・道路をタップして概要を表示するマップ':'船体'+(mode==='top'?'上面':'側面')+'の外形模式図');
   document.title=mode==='map'?'AA '+(mapSets[preferredFloor]?.name||'階層マップ'):'AA 船体'+(mode==='top'?'上面':'側面')+'形状';
@@ -735,7 +735,7 @@ function switchWorld(id,persist=true){
   fitCanvasToViewport();
   document.getElementById('shipViewControls').hidden=false;
   document.getElementById('propulsionPanel').hidden=shipView!=='map';
-  document.getElementById('shipHullLayersLegend').hidden=shipView!=='map';
+  document.getElementById('shipHullLayersLegend').hidden=shipView!=='map'||!(showProposal&&layoutDrafts[preferredFloor]);
   document.getElementById('shipOrientationChip').textContent=shipView==='side'?'◀ 船首 +X':'▲ 船首 +X';
   document.getElementById('darkWorldControls').hidden=true;
   document.getElementById('shipOrientationChip').hidden=false;
