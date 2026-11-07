@@ -264,6 +264,12 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <p class="mapGridHint">再配置後の施設と道路の交差が残るため、認証門への新規道路は未登録です。</p>
  <p><a href="./docs/aa-upper-access-audit-v1.md" target="_blank" rel="noopener noreferrer">接続監査メモ（GitHub配置案）を開く</a></p>
  </section>
+ <section class="panel" id="middleCentralLayout" hidden>
+ <h2>中層中央生活圏（再配置案）</h2>
+ <p class="mapGridHint">リンクターミナルφ500m（暫定）の外周に、レジストリンク・ドームの環状受付を配置。半径335～425mの4分割環状施設に8つの受付、各受付に小作戦室を併設しています。</p>
+ <p class="mapGridHint">青＝分散受付窓口／紫系の小部屋＝作戦室／紫ゲート＝大型機専用の隔離開口／青緑ゲート＝一般歩行通路。大型機用通路は船首・船尾の2か所で一般の受付帯と区分します。</p>
+ <p class="mapGridHint">街区の住宅・商店・個人工房とアルキメリアラボは同じ都市生活圏に隣接。中央部の道路のみ検討線を表示し、外周道路・貨物路の接続は未確定です。Notionには反映していません。</p>
+ </section>
  <section class="panel" id="aaCollisionAudit" hidden>
  <h2>施設の重複確認 <span id="aaCollisionCount"></span></h2>
  <p class="mapGridHint">赤色枠は再配置案で重なっている独立施設です。地区全体の枠とその内部施設など、完全に包含される組み合わせは除外しています。重複項目を押すと該当施設へ移動します。</p>
@@ -322,7 +328,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の概要"><div id="info"></div><div class="popHint">このポップアップのどこをタップしても閉じます</div></div>
  </div>
 </main>
-</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script>
+</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script src="./middle-central-ring.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=10;
 const MAP_INSET_X=.70,MAP_INSET_Y=.80; // exterior margin; ship dimensions and canonical source unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
@@ -1085,8 +1091,9 @@ function facilityInfoHTML(f){
  const functions=Array.isArray(f.functions)&&f.functions.length?
   '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
  const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
- const draftNote=f.sourcePosition?'<p class="compoundNote">10m単位の再配置案。Notion元座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m、元寸法：'+escHTML(f.sourceSize?.[0])+'×'+escHTML(f.sourceSize?.[1])+'m。形状・寸法は仮調整。道路は再敷設前のため配置案では非表示です。</p>':'';
- return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${f.w}×${f.h}m ${dimensions}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
+ const sizeLabel=f.ringComplex?'環状受付｜半径'+f.ringComplex.innerRadius+'～'+f.ringComplex.outerRadius+'m':f.w+'×'+f.h+'m '+dimensions;
+ const draftNote=f.sourcePosition?'<p class="compoundNote">10m単位の再配置案。Notion元座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m、元寸法：'+escHTML(f.sourceSize?.[0])+'×'+escHTML(f.sourceSize?.[1])+'m。形状・寸法は仮調整。${currentMap==='middle'&&showProposal?'中央部の道路のみ再配置案として表示。外周道路は未検証。':'道路は再敷設前のため配置案では非表示です。'}</p>':'';
+ return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${escHTML(sizeLabel)}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
 }
 function renderPlaces(){
  document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>{
@@ -1172,9 +1179,10 @@ function switchMap(id){
  document.getElementById('layoutNotice').textContent=preview?'多重船殻・再配置案／未確定':'Notion現行座標（緩衝区未反映）';
 
  document.getElementById('upperAccessAudit').hidden=!(id==='upper'&&preview);
+ document.getElementById('middleCentralLayout').hidden=!(id==='middle'&&preview);
  document.getElementById('mapTitle').textContent=map.name;
  document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
- document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。下層は専用通路と封鎖隔壁を仮配置済み。上中層の道路は未調整のため配置案では非表示です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
+ document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。下層は専用通路と封鎖隔壁を仮配置済み。上層の道路は未調整で非表示。中層は中央生活圏の検討用通路のみ表示し、外周道路は未検証です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  updateAAGridInfo();
@@ -1222,6 +1230,10 @@ function polygonsOverlap(f,g){
 }
 function drawCompoundFacilities(){
  for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
+  if(parent.ringComplex&&window.AAMiddleCentral){
+   window.AAMiddleCentral.drawGuild(ctx,xy,parent,{zoom:view.zoom,labels:state.labels,roads:state.roads,chosen});
+   continue;
+  }
   const [cx,cy]=xy(parent.x,parent.y),pw=parent.h*.4,ph=parent.w*.4;
   ctx.save();
   ctx.fillStyle='rgba(208,180,122,.055)';ctx.fillRect(cx-pw/2,cy-ph/2,pw,ph);
@@ -1485,7 +1497,11 @@ for(const f of facilities){
  }
  ctx.restore();
 }
+if(isProtectedDraft&&currentMap==='middle'&&window.AAMiddleCentral){
+ window.AAMiddleCentral.drawUrbanBlocks(ctx,xy,layoutDrafts.middle?.centralUrbanPlan,{zoom:view.zoom,labels:state.labels});
+}
 if(!isProtectedDraft||(currentMap==='lower'&&roads.some(r=>r.geometryStatus==='draft_10m_routed')))for(let r of roads)drawRoad(r);
+else if(isProtectedDraft&&currentMap==='middle')for(const r of roads.filter(r=>r.geometryStatus==='draft_central_access'&&r.kind==='line'))drawRoad(r);
 drawCompoundFacilities();
 drawCollisionWarnings();
 if(isProtectedDraft&&state.structures&&window.AAStructureOverlay){
@@ -1653,7 +1669,11 @@ canvas.addEventListener('click',e=>{
  let near=null,dist=35/view.zoom,compoundParent=null,zoneParent=null;
  const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
  for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
-  if(Math.abs(wx-parent.x)<=parent.w/2&&Math.abs(wy-parent.y)<=parent.h/2){
+  const rd=Math.hypot(wx-parent.x,wy-parent.y);
+  const insideParent=parent.ringComplex
+   ?rd>=parent.ringComplex.innerRadius&&rd<=parent.ringComplex.outerRadius
+   :Math.abs(wx-parent.x)<=parent.w/2&&Math.abs(wy-parent.y)<=parent.h/2;
+  if(insideParent){
    compoundParent=parent;
    if(view.zoom>=1.25){
     for(const child of parent.internalFacilities){
