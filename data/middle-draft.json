@@ -78,8 +78,121 @@
       "w": 650,
       "h": 600,
       "type": "guild",
-      "detail": "ギルド複合区。任務・報酬・作戦室・倉庫はドーム内部通路で接続。",
-      "sourceSection": "6.2"
+      "detail": "中央ターミナル近傍のギルド複合区。大枠内に共通任務受付・作戦会議区・ストレージゾーン・アルキメリア区画・バイオノーム区画を収め、内部通路で接続する。",
+      "sourceSection": "6.2",
+      "areaFrame": true,
+      "internalLayoutStatus": "draft_visual_only",
+      "internalEntrance": {
+        "id": "entrance",
+        "name": "ドーム入口",
+        "dx": -315,
+        "dy": 0
+      },
+      "internalFacilities": [
+        {
+          "id": "dome_common_reception",
+          "name": "共通任務受付",
+          "short": "任務受付",
+          "dx": -225,
+          "dy": 0,
+          "w": 140,
+          "h": 160,
+          "detail": "依頼の登録・検索、船内ランクと資格の照合、完了報告・回収品受領、クレジット・現物などの報酬受け渡しを行う。",
+          "functions": [
+            "依頼登録・検索",
+            "船内ランク・受注資格の照合",
+            "完了報告・回収品受領",
+            "任務報酬の受け渡し"
+          ]
+        },
+        {
+          "id": "dome_operations",
+          "name": "作戦会議区",
+          "short": "作戦会議",
+          "dx": 35,
+          "dy": -160,
+          "w": 170,
+          "h": 160,
+          "detail": "任務の作戦立案・分隊連携に使う区画。簡易作戦ブースから大会議室までを含む。",
+          "functions": [
+            "簡易作戦ブース",
+            "中規模戦術室",
+            "分隊本部",
+            "大会議室",
+            "個別通信ブース"
+          ]
+        },
+        {
+          "id": "dome_storage",
+          "name": "ストレージゾーン",
+          "short": "倉庫",
+          "dx": 220,
+          "dy": -160,
+          "w": 150,
+          "h": 155,
+          "detail": "素材・装備・報酬物資の保管区。危険物や生物の回収品は密閉容器庫で扱う。",
+          "functions": [
+            "素材・回収品倉庫",
+            "装備一時保管庫",
+            "報酬物資保管区",
+            "危険物・生物用密閉容器庫"
+          ]
+        },
+        {
+          "id": "dome_alchimeria",
+          "name": "アルキメリア区画",
+          "short": "アルキメリア",
+          "dx": 35,
+          "dy": 160,
+          "w": 170,
+          "h": 160,
+          "detail": "技術者ギルド側の受付。装備・素材の鑑定、修理や再設計相談、素材収集依頼、装備開発ラボの受付を扱う。",
+          "functions": [
+            "装備・素材の鑑定",
+            "修理・再設計相談",
+            "素材収集依頼",
+            "装備開発ラボへの受付"
+          ]
+        },
+        {
+          "id": "dome_bionome",
+          "name": "バイオノーム区画",
+          "short": "バイオノーム",
+          "dx": 220,
+          "dy": 160,
+          "w": 150,
+          "h": 155,
+          "detail": "農業ギルド側の受付。栽培・採取や生物回収・捕獲任務、植物素材・燃料の管理とアルボラセクターへの連絡を扱う。",
+          "functions": [
+            "栽培・採取任務",
+            "生物回収・捕獲任務",
+            "植物素材・燃料の管理",
+            "アルボラセクターとの連絡"
+          ]
+        }
+      ],
+      "internalConnections": [
+        [
+          "entrance",
+          "dome_common_reception"
+        ],
+        [
+          "dome_common_reception",
+          "dome_operations"
+        ],
+        [
+          "dome_common_reception",
+          "dome_alchimeria"
+        ],
+        [
+          "dome_operations",
+          "dome_storage"
+        ],
+        [
+          "dome_alchimeria",
+          "dome_bionome"
+        ]
+      ]
     },
     {
       "id": "arbora_sector",
@@ -1369,7 +1482,7 @@
   "editorMeta": {
     "status": "draft",
     "scenario": "船尾中央栽培・真下に有機再生",
-    "note": "Notion正本には未反映。レジストリンク・ドームを[X=1050,Y=0]から[X=700,Y=0]へ試行移動。中央ターミナル本体・コンコースと重ならない。大きなドームが環状路と交差しないように中央環状路・輸送ポッド線・生活遊歩路を迂回し、ターミナルからドーム入口への短い取付路と船首側接続路を配置した未確定案。栽培区の船尾中央案は維持。",
-    "revision": "central-aft-growing-v2-central-guild"
+    "note": "Notion未反映の配置案。中央寄りのレジストリンク・ドームを施設ではなくギルド複合区の大枠として描画し、既存Notionにある5内部区画へ分岐する。内部区画の寸法・相対座標・通路線形はマップ表示用の仮配置であり確定間取りではない。ドーム外枠の位置X700 Y0・寸法650×600と周辺道路案を維持。",
+    "revision": "central-aft-growing-v3-dome-compound"
   }
 }
