@@ -96,7 +96,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   const snap=n=>state.snap?Math.round(n/10)*10:Math.round(n);
   let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
   const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
-  const state={snap:true,grid:true,overlay:true,labels:true};let gridMeters=10;
+  const state={snap:true,grid:true,overlay:false,labels:true};let gridMeters=10;
   function current(){return floors[active]}
   function valid(d,floor){
     if(!d||d.schemaVersion!==1||d.floor!==floor||!Array.isArray(d.facilities)||!Array.isArray(d.roads)||!d.facilities.length)throw Error(floor+" の形式が不正です");
@@ -227,6 +227,21 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const a=facilityShape(f);let hit=false;
     for(let i=0,j=a.length-1;i<a.length;j=i++){const u=a[i],v=a[j];if((u.py>p.py)!==(v.py>p.py)&&p.px<(v.px-u.px)*(p.py-u.py)/(v.py-u.py)+u.px)hit=!hit}
     return hit;
+  }
+  function shapeOverlaps(a,b){
+    // All supported edited polygons are tested as polygons, not just their bounding rectangles.
+    const A=facilityShape(a),B=facilityShape(b);
+    const cross=(p,q,r)=>(q.px-p.px)*(r.py-p.py)-(q.py-p.py)*(r.px-p.px);
+    for(let i=0;i<A.length;i++)for(let j=0;j<B.length;j++){
+      const a0=A[i],a1=A[(i+1)%A.length],b0=B[j],b1=B[(j+1)%B.length];
+      if(cross(a0,a1,b0)*cross(a0,a1,b1)<0&&cross(b0,b1,a0)*cross(b0,b1,a1)<0)return true;
+    }
+    const inside=(p,poly)=>{
+      let ok=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+        const v=poly[i],w=poly[j];if((v.py>p.py)!==(w.py>p.py)&&p.px<(w.px-v.px)*(p.py-v.py)/(w.py-v.py)+v.px)ok=!ok;
+      }return ok;
+    };
+    return inside(A[0],B)||inside(B[0],A);
   }
   function createShape(f,kind){
     if(kind==='rect'){delete f.footprint;f.draftShape='rect';return}
@@ -399,7 +414,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(overlapX>12&&overlapY>12){
         const aInB=a.x-a.w/2>=b.x-b.w/2&&a.x+a.w/2<=b.x+b.w/2&&a.y-a.h/2>=b.y-b.h/2&&a.y+a.h/2<=b.y+b.h/2;
         const bInA=b.x-b.w/2>=a.x-a.w/2&&b.x+b.w/2<=a.x+a.w/2&&b.y-b.h/2>=a.y-a.h/2&&b.y+b.h/2<=a.y+a.h/2;
-        if(!aInB&&!bInA)warn.push("施設重複の可能性: "+a.name+" / "+b.name);
+        if(!aInB&&!bInA&&shapeOverlaps(a,b))warn.push("施設重複の可能性: "+a.name+" / "+b.name);
       }
     }
     return warn;
