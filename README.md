@@ -12,6 +12,9 @@
 
 ## 画面
 
+- **[第1段階｜全体骨格レビュー（overview.html）](./overview.html)** — 上層・中層・下層の主要地区だけを表示し、GitHub配置案とNotion由来の比較用JSONを照合する。
+- **[全体骨格の未解決課題・差分メモ](./docs/aa-stage1-skeleton-review-v1.md)** — 上層認証門、中層アルボラと工業群、下層船首出撃区と資源搬入の競合を整理。
+
 - [マップ表示（index.html）](./index.html) — 上層・中層・下層の表示、Notion比較用の配置とGitHub再配置案の切り替え
 - [配置エディター（editor.html）](./editor.html) — 施設と道路の下書き調整
 
