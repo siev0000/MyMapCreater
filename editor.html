@@ -304,6 +304,20 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   function pointInRestricted(x,y){
     return active==="lower"&&(current().restrictedZones||[]).some(z=>x>=z.bounds.xMin&&x<=z.bounds.xMax&&y>=z.bounds.yMin&&y<=z.bounds.yMax);
   }
+  function drawAccessControls(){
+    if(active!=="lower"||!current().routePolicy)return;
+    ctx.save();
+    const left=worldToPixel(700,-900),right=worldToPixel(700,900);
+    ctx.strokeStyle="#ff9da8";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(left.px,left.py);ctx.lineTo(right.px,right.py);ctx.stroke();
+    ctx.fillStyle="#ffe6eb";ctx.font="bold 15px system-ui";ctx.textAlign="center";
+    ctx.fillText("船首区隔壁・下層から通行不可",W/2,left.py+27);
+    for(const r of current().roads){if(!r.gate?.point)continue;const p=worldToPixel(...r.gate.point);
+      ctx.save();ctx.translate(p.px,p.py);ctx.rotate(Math.PI/4);
+      ctx.fillStyle=r.access==="hazard_authorized"?"#e9a573":r.access==="bio_authorized"?"#7bd7b9":"#a9c8e0";
+      ctx.fillRect(-5,-5,10,10);ctx.strokeStyle="#152837";ctx.lineWidth=2;ctx.strokeRect(-5,-5,10,10);ctx.restore();
+    }
+    ctx.restore();
+  }
   function drawSortieRestrictions(){
     if(active!=="lower")return;
     const zones=current().restrictedZones||[];
@@ -349,7 +363,8 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       }else{traceShape(f);ctx.fillStyle=color+"55";ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke()}
       ctx.restore();
     }
-    if(current().editorMeta?.revision!=='polygon-packed-10m-v2')for(const r of current().roads)drawRoad(r,.78);
+    if(current().editorMeta?.revision!=='polygon-packed-10m-v2'||current().editorMeta?.routingRevision)for(const r of current().roads)drawRoad(r,.9);
+    drawAccessControls();
     if(state.labels){
       ctx.save();ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
       for(const f of current().facilities){
@@ -402,6 +417,19 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     for(const f of facilities){
       if(f.x-f.w/2< -2000||f.x+f.w/2>2000||f.y-f.h/2< -1250||f.y+f.h/2>1250)warn.push("範囲外: "+f.name);
       if(intersectsRestrictedFacility(f))warn.push("上層専用出撃区に侵入: "+f.name);
+    }
+    if(active==="lower"&&d.routePolicy){
+      const ids=new Set(d.roads.filter(r=>r.connectsFacility).map(r=>r.connectsFacility));
+      for(const f of facilities){
+        if(f.type==="terminal")continue;
+        if(!ids.has(f.id))warn.push("取付通路が未設定: "+f.name);
+        const road=d.roads.find(r=>r.connectsFacility===f.id);
+        const end=road?.entrance;
+        if(end){
+          const dx=Math.max(0,Math.abs(end[0]-f.x)-f.w/2),dy=Math.max(0,Math.abs(end[1]-f.y)-f.h/2);
+          if(Math.hypot(dx,dy)>45)warn.push("取付通路の再接続が必要: "+f.name);
+        }
+      }
     }
     if(active==="lower"&&(d.restrictedZones||[]).length)for(const r of d.roads){
       if(r.kind==="line"&&r.points.some(([x,y])=>pointInRestricted(x,y)))warn.push("上層専用出撃区を通る道路: "+r.name);
