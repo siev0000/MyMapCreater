@@ -276,7 +276,9 @@ function updateAAGridInfo(){
  document.getElementById('aaGridRows').value=String(q.rows);
  document.getElementById('aaGridStatus').textContent='現在：'+q.cols+'×'+q.rows+'／1マス '+aaCellLabel();
  if(active){
-  document.getElementById('gridReadout').textContent=q.cols+'×'+q.rows+'｜'+aaCellLabel();
+  document.getElementById('gridReadout').textContent=shipView==='side'
+   ?'側面模式図｜階層高さは未確定'
+   :q.cols+'×'+q.rows+'｜'+aaCellLabel();
   const subtitle=document.getElementById('mapSubtitle');
   if(subtitle&&subtitle.textContent)subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':mapSets[preferredFloor]?.status||'');
   const notice=document.getElementById('mapNotice');
@@ -437,6 +439,7 @@ function switchWorld(id,persist=true){
   canvas.style.aspectRatio=shipView==='top'?'5/8':'25/14';
   fitCanvasToViewport();
   document.getElementById('shipViewControls').hidden=false;
+  document.getElementById('shipOrientationChip').textContent=shipView==='top'?'▲ 船首 +X':'◀ 船首 +X';
   document.getElementById('darkWorldControls').hidden=true;
   document.getElementById('shipOrientationChip').hidden=false;
   empty.hidden=true;
