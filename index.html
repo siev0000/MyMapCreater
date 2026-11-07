@@ -936,19 +936,106 @@ const layoutDrafts={};let showProposal=true;
 // Move whole facility footprints inward WITHOUT changing their canonical dimensions.
 // This is a draft; transformed roads remain provisional and require route review.
 function buildProtectedHullDraft(id,base){
- const px=x=>Math.round(x*.80*10)/10,py=y=>Math.round(y*.57*10)/10;
- const facilities=base.facilities.map(f=>({
-  ...f,x:px(f.x),y:py(f.y),
-  sourcePosition:[f.x,f.y],draftRepositioned:f.x!==0||f.y!==0,
-  internalFacilities:f.internalFacilities?f.internalFacilities.map(c=>({...c})):f.internalFacilities
- }));
- const roads=base.roads.map(r=>({
-  ...r,points:r.points?r.points.map(([x,y])=>[px(x),py(y)]):r.points,
-  status:'draft_route_requires_review'
- }));
+ // Ten-metre planning layout. Original Notion geometry stays in base/sourcePosition.
+ // Independent facilities are packed as separated rectangles, then given nonrectangular
+ // footprints (chamfered or L-corner). This guarantees that their final polygons do not overlap.
+ const snap=n=>Math.round(n/10)*10;
+ const basePoint=f=>({x:snap(f.x*.80),y:snap(f.y*.57)});
+ const shellProfile=[[0,.39],[.035,.63],[.12,.83],[.22,.94],[.40,1],[.68,.99],[.82,.97],[.94,.91],[1,.81]];
+ function hullFraction(t){
+  for(let i=1;i<shellProfile.length;i++)if(t<=shellProfile[i][0]){
+   const a=shellProfile[i-1],b=shellProfile[i],u=(t-a[0])/(b[0]-a[0]);
+   return a[1]+(b[1]-a[1])*u;
+  }
+  return .81;
+ }
+ const gap=20,guard=355; // 340m shell +15m reservation; draft values.
+ const containers=new Set(['reclaim_belt','acid_zone_s9','bioreactor','arbora_sector']);
+ const occupied=[];
+ const pointClear=(x,y,w,h)=>{
+  if(x-w/2 < -2000+guard||x+w/2>2000-guard)return false;
+  for(const xx of [x-w/2,x+w/2]){
+   const t=Math.max(0,Math.min(1,(2000-xx)/4000));
+   if(Math.abs(y)+h/2>1215*hullFraction(t)-guard)return false;
+  }
+  return true;
+ };
+ const free=(x,y,w,h)=>{
+  if(!pointClear(x,y,w,h))return false;
+  for(const p of occupied)if(Math.abs(x-p.x)<(w+p.w)/2+gap&&Math.abs(y-p.y)<(h+p.h)/2+gap)return false;
+  return true;
+ };
+ const wrap=f=>({...f,sourcePosition:[f.x,f.y],sourceSize:[f.w,f.h],draftRepositioned:true,
+  internalFacilities:f.internalFacilities?f.internalFacilities.map(c=>({...c})):f.internalFacilities});
+ const facilities=base.facilities.map(wrap);
+ const fixed=facilities.filter(f=>f.type==='terminal'||f.areaFrame);
+ for(const f of fixed){
+  const target=basePoint(f);f.x=f.type==='terminal'?0:target.x;f.y=f.type==='terminal'?0:target.y;
+  occupied.push({x:f.x,y:f.y,w:f.w,h:f.h,id:f.id});
+ }
+ function footprint(w,h,key){
+  const cut=snap(Math.min(w,h)*.14)||10;
+  const x=w/2,y=h/2;
+  // Real six- to eight-sided surfaces; not a decorative rectangle stroke.
+  if(key%3===0&&w>=160&&h>=130){
+   return [[-x,-y],[x,-y],[x,y-cut],[x-cut,y-cut],[x-cut,y],[-x,y]];
+  }
+  return [[-x+cut,-y],[x-cut,-y],[x,-y+cut],[x,y-cut],[x-cut,y],[-x+cut,y],[-x,y-cut],[-x,-y+cut]];
+ }
+ // Container/sector outlines are envelopes for facilities belonging to that zone,
+ // not individually leased buildings; they never block their own child installations.
+ const areas=facilities.filter(f=>containers.has(f.id)||f.zoneOutline);
+ for(const f of areas){const p=basePoint(f);f.x=p.x;f.y=p.y;f.zoneOutline=true;f.draftRegion=true;}
+ const list=facilities.filter(f=>!f.ringDistrict&&!f.zoneOutline&&!containers.has(f.id)&&f.type!=='terminal'&&!f.areaFrame);
+ list.sort((a,b)=>(b.w*b.h)-(a.w*a.h)||a.id.localeCompare(b.id));
+ let unable=[];
+ for(const f of list){
+  const origin=basePoint(f);
+  // Prefer nearby coordinates and retain dimensions when possible, but never overlap.
+  let best=null;
+  for(const size of [1,.92,.84,.76,.68,.60,.52,.44]){
+   const w=Math.max(40,snap(f.w*size)),h=Math.max(40,snap(f.h*size));
+   const xs=new Set([origin.x,0]),ys=new Set([origin.y,0]);
+   for(let x=-1600;x<=1600;x+=100)xs.add(x);
+   for(let y=-870;y<=870;y+=90)ys.add(snap(y));
+   for(const p of occupied){
+    xs.add(snap(p.x+(p.w+w)/2+gap));xs.add(snap(p.x-(p.w+w)/2-gap));
+    ys.add(snap(p.y+(p.h+h)/2+gap));ys.add(snap(p.y-(p.h+h)/2-gap));
+   }
+   const xc=[...xs].sort((a,b)=>Math.abs(a-origin.x)-Math.abs(b-origin.x));
+   const yc=[...ys].sort((a,b)=>Math.abs(a-origin.y)-Math.abs(b-origin.y));
+   // Use directional restrictions for upper's Magitech and Eidolon half decks.
+   for(const x of xc)for(const y of yc){
+    if(id==='upper'){
+     if(f.type==='magitech'&&y> -200)continue;
+     if(f.type==='eidolon'&&y<200)continue;
+     if(f.type==='shared'&&Math.abs(y)>290)continue;
+    }
+    const dist=(x-origin.x)**2+(y-origin.y)**2;
+    const score=dist/(100*100)+(1-size)*220;
+    if(best&&score>=best.score)continue;
+    if(!free(x,y,w,h))continue;
+    best={x,y,w,h,size,score};
+   }
+   if(best&&best.score < 150)break;
+  }
+  if(!best){
+   unable.push(f.id);continue;
+  }
+  Object.assign(f,{x:best.x,y:best.y,w:best.w,h:best.h,
+   draftScale:best.size,footprint:footprint(best.w,best.h,f.id.split('').reduce((n,c)=>n+c.charCodeAt(0),0))});
+  occupied.push({x:f.x,y:f.y,w:f.w,h:f.h,id:f.id});
+ }
+ if(unable.length)throw Error('配置案の収容に失敗: '+unable.join(','));
+ // Keep route geometry as unverified draft: old graph junctions do not remain valid
+ // automatically after shifting facilities.
+ const px=x=>snap(x*.8),py=y=>snap(y*.57);
+ const roads=base.roads.map(r=>({...r,
+  points:r.points?r.points.map(([x,y])=>[px(x),py(y)]):r.points,
+  status:'draft_route_requires_review'}));
  return {...base,facilities,roads,editorMeta:{
-  ...(base.editorMeta||{}),status:'draft',revision:'protected-hull-zones-v1',
-  description:'340m級の多重船殻・機関区・緩衝区を設けた再配置案。施設寸法は維持、中心座標を内側へ移動。道路接続は再検証対象。Notion未反映。'
+  ...(base.editorMeta||{}),status:'draft',revision:'polygon-packed-10m-v2',
+  description:'重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。'
  }};
 }
 
