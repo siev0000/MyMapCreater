@@ -254,7 +254,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
     <section class="panel" id="lowerRoutingPanel" hidden>
  <h2>下層の道路・通路 <span id="lowerRouteCount"></span></h2>
  <p id="lowerRouteAccessInfo" class="mapGridHint"></p>
- <div class="lowerRouteLegend"><span>━━ 一般連絡</span><span style="color:#a8c2dd">┄ 貨物・整備</span><span style="color:#85dbc0">┄ 有機物密閉</span><span style="color:#ef9a72">┄ 危険物専用</span><span style="color:#ffa5b4">━ 封鎖隔壁</span><span>◆ 認証ゲート</span></div>
+ <div class="lowerRouteLegend"><span style="color:#d7acf2">┄ 上層専用出撃路</span><span>━━ 一般連絡</span><span style="color:#a8c2dd">┄ 貨物・整備</span><span style="color:#85dbc0">┄ 有機物密閉</span><span style="color:#ef9a72">┄ 危険物専用</span><span style="color:#ffa5b4">━ 封鎖隔壁</span><span>◆ 認証ゲート</span></div>
  <p class="mapGridHint">経路は10m単位の配置検討案。危険物・密閉路と一般通路の交差は、自由に乗り換えできる交差点を意味しません。道路幅・個別ゲート位置は未確定です。</p>
  </section>
  <section class="panel" id="aaCollisionAudit" hidden>
@@ -1370,6 +1370,17 @@ function renderCollisionAudit(){
 function drawLowerAccessGatesAndBulkheads(){
  if(!(currentMap==='lower'&&showProposal&&layoutDrafts.lower?.routePolicy))return;
  ctx.save();
+ // These purple lanes belong only to the upper-deck sortie lift; they are NOT
+ // in the lower-floor road graph and can never be joined from lower corridors.
+ for(const route of layoutDrafts.lower.upperOnlyRoutes||[]){
+  ctx.beginPath();
+  route.points.forEach(([x,y],i)=>{const [px,py]=xy(x,y);i?ctx.lineTo(px,py):ctx.moveTo(px,py)});
+  ctx.strokeStyle='#d7acf2';ctx.lineWidth=5;ctx.setLineDash([11,7]);ctx.stroke();ctx.setLineDash([]);
+  for(const gate of route.gates||[]){
+   const [x,y]=xy(gate.x,gate.y);ctx.fillStyle='#d2b0ef';ctx.strokeStyle='#2c213b';ctx.lineWidth=2;
+   ctx.beginPath();ctx.rect(x-7,y-7,14,14);ctx.fill();ctx.stroke();
+  }
+ }
  // The foredeck belongs to the upper-floor sortie system, not lower public circulation.
  const boundary=xy(700,0),left=xy(700,-1250),right=xy(700,1250);
  const span=(W-28)*hullWidth(boundary[1]/H)/2-PROTECTED_SHELL.interior+5;
@@ -1395,7 +1406,7 @@ function renderLowerRoutingInfo(){
  elem.hidden=!active;if(!active)return;
  const r=layoutDrafts.lower.roads.filter(x=>x.connectsFacility),tot=layoutDrafts.lower.facilities.filter(x=>!x.ringDistrict&&!x.zoneOutline&&!x.areaFrame&&x.type!=='terminal').length;
  document.getElementById('lowerRouteCount').textContent=r.length+' / '+tot+'施設に取付経路';
- document.getElementById('lowerRouteAccessInfo').textContent='船首X+700mの隔壁で下層を封鎖。貨物・危険物・有機物の専用路は認証・隔離扉を必要とします。登録通路がない場所は通行できるとみなしませんが、それだけで壁の存在は確定しません。';
+ document.getElementById('lowerRouteAccessInfo').textContent='船首X+700mの隔壁で下層を封鎖。左右の上層専用出撃路は下層道路とは別系統。貨物・危険物・有機物の専用路は認証・隔離扉を必要とします。登録通路がない場所は通行できるとみなしませんが、それだけで壁の存在は確定しません。';
 }
 function drawCollisionWarnings(){
  if(!showProposal||!layoutDrafts[currentMap])return;
