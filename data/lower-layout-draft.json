@@ -1,0 +1,1811 @@
+{
+  "schemaVersion": 1,
+  "floor": "lower",
+  "unit": "m",
+  "source": {
+    "system": "Notion",
+    "url": "https://www.notion.so/1ddfa1b30dc9805f8b20e211faf37709",
+    "section": "7.2-7.3",
+    "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
+  },
+  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 本ファイルは配置検討用の下書き。未承認の地理設定として扱う。 独立施設の多角形形状重複0件（配置案、道路の再調整は別途必要）。",
+  "facilities": [
+    {
+      "id": "lower_terminal",
+      "name": "下層ターミナル",
+      "x": 0,
+      "y": 0,
+      "w": 500,
+      "h": 500,
+      "type": "terminal",
+      "detail": "上層・中層から一般リフトで接続する下層の交通拠点。",
+      "short": "中央ターミナル",
+      "sourceSection": "7.2",
+      "sourcePosition": [
+        0,
+        0
+      ],
+      "sourceSize": [
+        500,
+        500
+      ],
+      "draftRepositioned": true
+    },
+    {
+      "id": "last_hub",
+      "name": "ラストハブ",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 1300,
+      "type": "living",
+      "ringDistrict": true,
+      "innerRadius": 330,
+      "outerRadius": 650,
+      "detail": "ラストハブ。半径330～650mの円環地区。用途は現行Notionを参照。",
+      "short": "ラストハブ",
+      "sourceSection": "7.2",
+      "showLabel": false,
+      "sourcePosition": [
+        0,
+        0
+      ],
+      "sourceSize": [
+        1300,
+        1300
+      ],
+      "draftRepositioned": true
+    },
+    {
+      "id": "reclaim_belt",
+      "name": "リクレイムベルト",
+      "x": -800,
+      "y": -500,
+      "w": 800,
+      "h": 600,
+      "type": "recycling",
+      "detail": "廃機体・金属・回収物を解体・選別・再利用する再処理区。",
+      "short": "再処理区",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1000,
+        -875
+      ],
+      "sourceSize": [
+        800,
+        600
+      ],
+      "draftRepositioned": true,
+      "zoneOutline": true,
+      "draftRegion": true
+    },
+    {
+      "id": "acid_zone_s9",
+      "name": "アシッドゾーンS9",
+      "x": -1120,
+      "y": 510,
+      "w": 700,
+      "h": 500,
+      "type": "hazard",
+      "detail": "腐食性廃液を扱う危険作業区。",
+      "short": "S9腐食帯",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1400,
+        900
+      ],
+      "sourceSize": [
+        700,
+        500
+      ],
+      "draftRepositioned": true,
+      "zoneOutline": true,
+      "draftRegion": true
+    },
+    {
+      "id": "bioreactor",
+      "name": "バイオリアクター",
+      "x": -1040,
+      "y": 0,
+      "w": 900,
+      "h": 1050,
+      "type": "nature",
+      "detail": "有機廃棄物を燃料・肥料・熱エネルギーなどに再生する施設。",
+      "short": "バイオ再生",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
+      "sourcePosition": [
+        -1300,
+        0
+      ],
+      "sourceSize": [
+        900,
+        1050
+      ],
+      "draftRepositioned": true,
+      "zoneOutline": true,
+      "draftRegion": true
+    },
+    {
+      "id": "material_hollow",
+      "name": "マテリアル・ホロー",
+      "x": 240,
+      "y": -540,
+      "w": 600,
+      "h": 450,
+      "type": "industrial",
+      "detail": "地上・外部から鉱石や土砂などを搬入する船底資源設備。",
+      "short": "資源搬入",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        300,
+        -950
+      ],
+      "sourceSize": [
+        600,
+        450
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -240,
+          -225
+        ],
+        [
+          240,
+          -225
+        ],
+        [
+          300,
+          -165
+        ],
+        [
+          300,
+          165
+        ],
+        [
+          240,
+          225
+        ],
+        [
+          -240,
+          225
+        ],
+        [
+          -300,
+          165
+        ],
+        [
+          -300,
+          -165
+        ]
+      ]
+    },
+    {
+      "id": "junk_rebuild_tank",
+      "name": "ジャンク・リビルド槽",
+      "x": 420,
+      "y": -180,
+      "w": 300,
+      "h": 220,
+      "type": "recycling",
+      "detail": "公式地図での接続案内は非公開。",
+      "short": "廃整備槽",
+      "sourceSection": "7.2",
+      "sourcePosition": [
+        450,
+        -510
+      ],
+      "sourceSize": [
+        300,
+        220
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -150,
+          -110
+        ],
+        [
+          150,
+          -110
+        ],
+        [
+          150,
+          80
+        ],
+        [
+          120,
+          80
+        ],
+        [
+          120,
+          110
+        ],
+        [
+          -150,
+          110
+        ]
+      ]
+    },
+    {
+      "id": "lower_general_processing",
+      "name": "一般処理区",
+      "x": -440,
+      "y": 530,
+      "w": 280,
+      "h": 240,
+      "type": "recycling",
+      "detail": "低危険度の廃棄物や金属屑などを処理。",
+      "short": "一般処理",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -550,
+        925
+      ],
+      "sourceSize": [
+        280,
+        240
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -140,
+          -120
+        ],
+        [
+          140,
+          -120
+        ],
+        [
+          140,
+          90
+        ],
+        [
+          110,
+          90
+        ],
+        [
+          110,
+          120
+        ],
+        [
+          -140,
+          120
+        ]
+      ]
+    },
+    {
+      "id": "lower_managed_processing",
+      "name": "管理処理区",
+      "x": -660,
+      "y": 280,
+      "w": 280,
+      "h": 220,
+      "type": "hazard",
+      "detail": "使用済み燃料・バッテリー・冷却液などの管理処理。",
+      "short": "管理処理",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -875,
+        875
+      ],
+      "sourceSize": [
+        280,
+        220
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -110,
+          -110
+        ],
+        [
+          110,
+          -110
+        ],
+        [
+          140,
+          -80
+        ],
+        [
+          140,
+          80
+        ],
+        [
+          110,
+          110
+        ],
+        [
+          -110,
+          110
+        ],
+        [
+          -140,
+          80
+        ],
+        [
+          -140,
+          -80
+        ]
+      ]
+    },
+    {
+      "id": "lower_hazardous_processing",
+      "name": "危険処理区",
+      "x": -1000,
+      "y": 480,
+      "w": 350,
+      "h": 250,
+      "type": "hazard",
+      "detail": "爆発性試作品や危険廃機体などの処理。",
+      "short": "危険処理",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1250,
+        850
+      ],
+      "sourceSize": [
+        350,
+        250
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -175,
+          -125
+        ],
+        [
+          175,
+          -125
+        ],
+        [
+          175,
+          85
+        ],
+        [
+          135,
+          85
+        ],
+        [
+          135,
+          125
+        ],
+        [
+          -175,
+          125
+        ]
+      ]
+    },
+    {
+      "id": "lower_special_isolation",
+      "name": "特別隔離区",
+      "x": -1500,
+      "y": 340,
+      "w": 200,
+      "h": 300,
+      "type": "hazard",
+      "detail": "グロウメタ汚染物・自己増殖素材などを隔離。",
+      "short": "特別隔離",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1875,
+        600
+      ],
+      "sourceSize": [
+        200,
+        300
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -70,
+          -150
+        ],
+        [
+          70,
+          -150
+        ],
+        [
+          100,
+          -120
+        ],
+        [
+          100,
+          120
+        ],
+        [
+          70,
+          150
+        ],
+        [
+          -70,
+          150
+        ],
+        [
+          -100,
+          120
+        ],
+        [
+          -100,
+          -120
+        ]
+      ]
+    },
+    {
+      "id": "lower_emergency_isolation",
+      "name": "緊急隔離施設",
+      "x": -700,
+      "y": 640,
+      "w": 200,
+      "h": 200,
+      "type": "hazard",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -950,
+        1125
+      ],
+      "sourceSize": [
+        200,
+        200
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -70,
+          -100
+        ],
+        [
+          70,
+          -100
+        ],
+        [
+          100,
+          -70
+        ],
+        [
+          100,
+          70
+        ],
+        [
+          70,
+          100
+        ],
+        [
+          -70,
+          100
+        ],
+        [
+          -100,
+          70
+        ],
+        [
+          -100,
+          -70
+        ]
+      ]
+    },
+    {
+      "id": "discard_registration",
+      "name": "廃棄物搬入登録区",
+      "x": -400,
+      "y": -360,
+      "w": 180,
+      "h": 150,
+      "type": "recycling",
+      "detail": "搬入される廃棄物の登録。",
+      "short": "搬入登録",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -500,
+        -680
+      ],
+      "sourceSize": [
+        180,
+        150
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -70,
+          -75
+        ],
+        [
+          70,
+          -75
+        ],
+        [
+          90,
+          -55
+        ],
+        [
+          90,
+          55
+        ],
+        [
+          70,
+          75
+        ],
+        [
+          -70,
+          75
+        ],
+        [
+          -90,
+          55
+        ],
+        [
+          -90,
+          -55
+        ]
+      ]
+    },
+    {
+      "id": "waste_inspection_classification",
+      "name": "廃棄物検査・分類区",
+      "x": -650,
+      "y": -480,
+      "w": 200,
+      "h": 180,
+      "type": "recycling",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -850,
+        -850
+      ],
+      "sourceSize": [
+        200,
+        180
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -100,
+          -90
+        ],
+        [
+          100,
+          -90
+        ],
+        [
+          100,
+          60
+        ],
+        [
+          70,
+          60
+        ],
+        [
+          70,
+          90
+        ],
+        [
+          -100,
+          90
+        ]
+      ]
+    },
+    {
+      "id": "discarded_machine_inspection",
+      "name": "廃機体事前検査区",
+      "x": -900,
+      "y": -580,
+      "w": 260,
+      "h": 190,
+      "type": "recycling",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1125,
+        -1020
+      ],
+      "sourceSize": [
+        260,
+        190
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -100,
+          -95
+        ],
+        [
+          100,
+          -95
+        ],
+        [
+          130,
+          -65
+        ],
+        [
+          130,
+          65
+        ],
+        [
+          100,
+          95
+        ],
+        [
+          -100,
+          95
+        ],
+        [
+          -130,
+          65
+        ],
+        [
+          -130,
+          -65
+        ]
+      ]
+    },
+    {
+      "id": "parts_recovery_area",
+      "name": "部品回収区",
+      "x": -960,
+      "y": -370,
+      "w": 250,
+      "h": 180,
+      "type": "recycling",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1250,
+        -720
+      ],
+      "sourceSize": [
+        250,
+        180
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -95,
+          -90
+        ],
+        [
+          95,
+          -90
+        ],
+        [
+          125,
+          -60
+        ],
+        [
+          125,
+          60
+        ],
+        [
+          95,
+          90
+        ],
+        [
+          -95,
+          90
+        ],
+        [
+          -125,
+          60
+        ],
+        [
+          -125,
+          -60
+        ]
+      ]
+    },
+    {
+      "id": "metal_re_refining_area",
+      "name": "金属再精錬区",
+      "x": -1280,
+      "y": -540,
+      "w": 350,
+      "h": 250,
+      "type": "recycling",
+      "detail": "金属資源を再生する再精錬施設。",
+      "short": "金属再精錬",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1600,
+        -950
+      ],
+      "sourceSize": [
+        350,
+        250
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -135,
+          -125
+        ],
+        [
+          135,
+          -125
+        ],
+        [
+          175,
+          -85
+        ],
+        [
+          175,
+          85
+        ],
+        [
+          135,
+          125
+        ],
+        [
+          -135,
+          125
+        ],
+        [
+          -175,
+          85
+        ],
+        [
+          -175,
+          -85
+        ]
+      ]
+    },
+    {
+      "id": "recycled_resource_storage",
+      "name": "再生資源倉庫",
+      "x": -1400,
+      "y": -270,
+      "w": 320,
+      "h": 240,
+      "type": "recycling",
+      "detail": "再生資源の集積・搬出。",
+      "short": "再生資源庫",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1650,
+        -700
+      ],
+      "sourceSize": [
+        320,
+        240
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -130,
+          -120
+        ],
+        [
+          130,
+          -120
+        ],
+        [
+          160,
+          -90
+        ],
+        [
+          160,
+          90
+        ],
+        [
+          130,
+          120
+        ],
+        [
+          -130,
+          120
+        ],
+        [
+          -160,
+          90
+        ],
+        [
+          -160,
+          -90
+        ]
+      ]
+    },
+    {
+      "id": "fuel_discharge_neutralization",
+      "name": "燃料・電池放電中和施設",
+      "x": -450,
+      "y": 740,
+      "w": 250,
+      "h": 130,
+      "type": "hazard",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -600,
+        1180
+      ],
+      "sourceSize": [
+        250,
+        130
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -105,
+          -65
+        ],
+        [
+          105,
+          -65
+        ],
+        [
+          125,
+          -45
+        ],
+        [
+          125,
+          45
+        ],
+        [
+          105,
+          65
+        ],
+        [
+          -105,
+          65
+        ],
+        [
+          -125,
+          45
+        ],
+        [
+          -125,
+          -45
+        ]
+      ]
+    },
+    {
+      "id": "organic_waste_intake",
+      "name": "有機廃棄物搬入口",
+      "x": -670,
+      "y": 60,
+      "w": 250,
+      "h": 180,
+      "type": "nature",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -850,
+        625
+      ],
+      "sourceSize": [
+        250,
+        180
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -95,
+          -90
+        ],
+        [
+          95,
+          -90
+        ],
+        [
+          125,
+          -60
+        ],
+        [
+          125,
+          60
+        ],
+        [
+          95,
+          90
+        ],
+        [
+          -95,
+          90
+        ],
+        [
+          -125,
+          60
+        ],
+        [
+          -125,
+          -60
+        ]
+      ]
+    },
+    {
+      "id": "biological_treatment_tanks",
+      "name": "バイオ処理槽",
+      "x": -1040,
+      "y": -90,
+      "w": 350,
+      "h": 250,
+      "type": "nature",
+      "detail": "有機処理系の一施設。",
+      "short": "バイオ処理槽",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1300,
+        -150
+      ],
+      "sourceSize": [
+        350,
+        250
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -175,
+          -125
+        ],
+        [
+          175,
+          -125
+        ],
+        [
+          175,
+          85
+        ],
+        [
+          135,
+          85
+        ],
+        [
+          135,
+          125
+        ],
+        [
+          -175,
+          125
+        ]
+      ]
+    },
+    {
+      "id": "sludge_treatment_area",
+      "name": "汚泥処理区",
+      "x": -1400,
+      "y": -30,
+      "w": 300,
+      "h": 200,
+      "type": "nature",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1570,
+        -400
+      ],
+      "sourceSize": [
+        300,
+        200
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -150,
+          -100
+        ],
+        [
+          150,
+          -100
+        ],
+        [
+          150,
+          70
+        ],
+        [
+          120,
+          70
+        ],
+        [
+          120,
+          100
+        ],
+        [
+          -150,
+          100
+        ]
+      ]
+    },
+    {
+      "id": "reusable_component_recovery",
+      "name": "再利用成分回収区",
+      "x": -970,
+      "y": 170,
+      "w": 300,
+      "h": 180,
+      "type": "nature",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1150,
+        300
+      ],
+      "sourceSize": [
+        300,
+        180
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -120,
+          -90
+        ],
+        [
+          120,
+          -90
+        ],
+        [
+          150,
+          -60
+        ],
+        [
+          150,
+          60
+        ],
+        [
+          120,
+          90
+        ],
+        [
+          -120,
+          90
+        ],
+        [
+          -150,
+          60
+        ],
+        [
+          -150,
+          -60
+        ]
+      ]
+    },
+    {
+      "id": "waste_heat_recovery",
+      "name": "廃熱回収区",
+      "x": -1280,
+      "y": 200,
+      "w": 200,
+      "h": 220,
+      "type": "industrial",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -1650,
+        300
+      ],
+      "sourceSize": [
+        200,
+        220
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -70,
+          -110
+        ],
+        [
+          70,
+          -110
+        ],
+        [
+          100,
+          -80
+        ],
+        [
+          100,
+          80
+        ],
+        [
+          70,
+          110
+        ],
+        [
+          -70,
+          110
+        ],
+        [
+          -100,
+          80
+        ],
+        [
+          -100,
+          -80
+        ]
+      ]
+    },
+    {
+      "id": "external_resource_intake",
+      "name": "外部資源吸収設備",
+      "x": 690,
+      "y": -320,
+      "w": 200,
+      "h": 200,
+      "type": "industrial",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        450,
+        -1000
+      ],
+      "sourceSize": [
+        200,
+        200
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -100,
+          -100
+        ],
+        [
+          100,
+          -100
+        ],
+        [
+          100,
+          70
+        ],
+        [
+          70,
+          70
+        ],
+        [
+          70,
+          100
+        ],
+        [
+          -100,
+          100
+        ]
+      ]
+    },
+    {
+      "id": "resource_temporary_storage",
+      "name": "大型資源仮置場",
+      "x": 690,
+      "y": -540,
+      "w": 260,
+      "h": 200,
+      "type": "industrial",
+      "detail": "外部からの大量資源を一時集積。",
+      "short": "資源仮置場",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        160,
+        -950
+      ],
+      "sourceSize": [
+        260,
+        200
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -130,
+          -100
+        ],
+        [
+          130,
+          -100
+        ],
+        [
+          130,
+          70
+        ],
+        [
+          100,
+          70
+        ],
+        [
+          100,
+          100
+        ],
+        [
+          -130,
+          100
+        ]
+      ]
+    },
+    {
+      "id": "foreign_object_inspection",
+      "name": "異物検査区",
+      "x": -210,
+      "y": -560,
+      "w": 260,
+      "h": 200,
+      "type": "industrial",
+      "detail": "Notion「エリア」の現行座標表に登録された施設・区画。用途の詳細は各階層・施設ページを参照。",
+      "showLabel": false,
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        -230,
+        -975
+      ],
+      "sourceSize": [
+        260,
+        200
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -100,
+          -100
+        ],
+        [
+          100,
+          -100
+        ],
+        [
+          130,
+          -70
+        ],
+        [
+          130,
+          70
+        ],
+        [
+          100,
+          100
+        ],
+        [
+          -100,
+          100
+        ],
+        [
+          -130,
+          70
+        ],
+        [
+          -130,
+          -70
+        ]
+      ]
+    },
+    {
+      "id": "heavy_machinery_maintenance",
+      "name": "重機整備区",
+      "x": 200,
+      "y": 540,
+      "w": 350,
+      "h": 250,
+      "type": "industrial",
+      "detail": "重量機・設備の整備区。",
+      "short": "重機整備",
+      "sourceSection": "7.2",
+      "reviewStatus": "draft",
+      "draftNote": "上層専用の船首出撃区を避けて下層に再配置した仮座標。Notion未反映。",
+      "sourcePosition": [
+        250,
+        950
+      ],
+      "sourceSize": [
+        350,
+        250
+      ],
+      "draftRepositioned": true,
+      "draftScale": 1,
+      "footprint": [
+        [
+          -135,
+          -125
+        ],
+        [
+          135,
+          -125
+        ],
+        [
+          175,
+          -85
+        ],
+        [
+          175,
+          85
+        ],
+        [
+          135,
+          125
+        ],
+        [
+          -135,
+          125
+        ],
+        [
+          -175,
+          85
+        ],
+        [
+          -175,
+          -85
+        ]
+      ]
+    }
+  ],
+  "roads": [
+    {
+      "id": "lower_terminal_concourse",
+      "name": "下層ターミナルコンコース",
+      "roadType": "コンコース",
+      "width": 80,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "r": 290,
+      "connection": "ターミナル、ラストハブ環状路",
+      "notionshape": "半径250～330m",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "last_hub_ring",
+      "name": "ラストハブ環状路",
+      "roadType": "地区環状道路",
+      "width": 30,
+      "color": "#a8b5bd",
+      "kind": "ring",
+      "r": 600,
+      "connection": "生活区、整備、各産業幹線",
+      "notionshape": "中心半径600m",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_reclaim_spine",
+      "name": "再生工業幹線",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -320,
+          -280
+        ],
+        [
+          -520,
+          -400
+        ],
+        [
+          -800,
+          -500
+        ],
+        [
+          -1280,
+          -540
+        ]
+      ],
+      "connection": "搬入登録、分類、廃機体検査、部品回収、再精錬、倉庫",
+      "notionshape": "[-600,0]→[-1,550,100]",
+      "sourceNotionGeometry": "[-600,0]→[-1,550,100]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_hazard_corridor",
+      "name": "S9危険物隔離通路",
+      "roadType": "隔離通路",
+      "width": 24,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -360,
+          310
+        ],
+        [
+          -640,
+          480
+        ],
+        [
+          -1000,
+          480
+        ],
+        [
+          -1360,
+          510
+        ]
+      ],
+      "connection": "一般処理、管理処理、危険処理、特別隔離",
+      "notionshape": "[-650,-300]→[-900,-450]→[-1,250,-600]→[-1,600,-500]",
+      "sourceNotionGeometry": "[-650,-300]→[-900,-450]→[-1,250,-600]→[-1,600,-500]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_organic_corridor",
+      "name": "有機処理密閉路",
+      "roadType": "隔離通路",
+      "width": 24,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -400,
+          200
+        ],
+        [
+          -680,
+          360
+        ],
+        [
+          -1040,
+          0
+        ],
+        [
+          -1320,
+          170
+        ]
+      ],
+      "connection": "有機搬入口、処理槽、汚泥、廃熱",
+      "notionshape": "[-500,350]→[-500,650]→[-850,800]→[-1,200,850]→[-1,450,700]",
+      "sourceNotionGeometry": "[-500,350]→[-500,650]→[-850,800]→[-1,200,850]→[-1,450,700]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_material_hollow_road",
+      "name": "重資源搬送路",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          280,
+          -340
+        ],
+        [
+          240,
+          -540
+        ],
+        [
+          -180,
+          -560
+        ],
+        [
+          -480,
+          -480
+        ]
+      ],
+      "connection": "異物検査、仮置場、マテリアル・ホロー、外部吸収口",
+      "notionshape": "[500,-300]→[850,-550]→[1,450,-650]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_recycled_export_tunnel",
+      "name": "再生資源上送トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -1320,
+          -400
+        ],
+        [
+          -800,
+          -480
+        ],
+        [
+          -400,
+          -340
+        ],
+        [
+          -240,
+          -140
+        ]
+      ],
+      "connection": "再生資源倉庫、中央貨物リフト",
+      "notionshape": "[-1,450,450]→[-800,300]→[-300,150]",
+      "sourceNotionGeometry": "[-1,450,450]→[-800,300]→[-300,150]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_bio_return_tunnel",
+      "name": "バイオ資源還流トンネル",
+      "roadType": "貨物トンネル",
+      "width": 32,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "dash": [
+        10,
+        7
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -920,
+          170
+        ],
+        [
+          -680,
+          170
+        ],
+        [
+          -360,
+          90
+        ],
+        [
+          -200,
+          60
+        ]
+      ],
+      "connection": "回収成分、中央貨物リフト、中層アルボラ系統",
+      "notionshape": "[-650,1,050]→[-250,700]→[-250,250]",
+      "sourceNotionGeometry": "[-650,1,050]→[-250,700]→[-250,250]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_emergency_bypass",
+      "name": "下層非常迂回回廊（船首専用区回避案）",
+      "roadType": "非常用迂回路",
+      "width": 12,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        6,
+        8
+      ],
+      "kind": "line",
+      "connection": "各主要幹線、避難所",
+      "notionshape": "中心半径850m",
+      "points": [
+        [
+          360,
+          -510
+        ],
+        [
+          -360,
+          -630
+        ],
+        [
+          -1360,
+          -540
+        ],
+        [
+          -1520,
+          0
+        ],
+        [
+          -1360,
+          570
+        ],
+        [
+          -360,
+          630
+        ],
+        [
+          360,
+          510
+        ],
+        [
+          360,
+          0
+        ],
+        [
+          360,
+          -510
+        ]
+      ],
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_junk_maintenance_path",
+      "name": "廃整備用旧通路",
+      "roadType": "整備通路",
+      "width": 8,
+      "color": "#e8cd7f",
+      "layer": "freight",
+      "dash": [
+        7,
+        6
+      ],
+      "kind": "line",
+      "points": [
+        [
+          360,
+          -290
+        ],
+        [
+          280,
+          -370
+        ]
+      ],
+      "connection": "ラストハブ外縁、ジャンク・リビルド槽",
+      "notionshape": "[350,-450]→[250,-650]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_propulsion_service_road",
+      "name": "船尾機関整備道路",
+      "roadType": "重貨物道路",
+      "width": 48,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "kind": "line",
+      "points": [
+        [
+          -960,
+          340
+        ],
+        [
+          -1400,
+          340
+        ]
+      ],
+      "connection": "再精錬、廃熱、船尾推進設備",
+      "notionshape": "[-1,200,300]→[-1,750,300]",
+      "sourceNotionGeometry": "[-1,200,300]→[-1,750,300]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    },
+    {
+      "id": "lower_security_seal_route",
+      "name": "危険区封鎖操作路",
+      "roadType": "警備通路",
+      "width": 8,
+      "color": "#bd7f7d",
+      "layer": "freight",
+      "dash": [
+        5,
+        6
+      ],
+      "kind": "line",
+      "points": [
+        [
+          -600,
+          510
+        ],
+        [
+          -920,
+          540
+        ]
+      ],
+      "connection": "緊急隔離施設、隔壁制御",
+      "notionshape": "[-900,-200]→[-1,350,-200]",
+      "sourceNotionGeometry": "[-900,-200]→[-1,350,-200]",
+      "geometryStatus": "draft_redraw",
+      "reviewStatus": "draft",
+      "status": "draft_route_requires_review"
+    }
+  ],
+  "editorMeta": {
+    "status": "draft",
+    "scenario": "船尾中央栽培・上層専用の船首左右出撃区",
+    "revision": "polygon-packed-10m-v2",
+    "note": "ユーザー指定：下層船首側約1/3は上層専用・左右2系統の出撃区で、船外に接続する。中央ターミナルとは別系統。区画の境界X=+700mは約1/3の作業用仮値。上層・中層・下層一般移動の中央ターミナルは維持。出撃区に下層の通常施設と道路を置かない。Notion正本には未反映。",
+    "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
+    "sourceFile": "data/lower-draft.json",
+    "review": "polygon_collision_checked"
+  },
+  "restrictedZones": [
+    {
+      "id": "upper_expedition_port",
+      "name": "上層専用・左舷出撃区",
+      "owner": "upper",
+      "purpose": "sortie",
+      "status": "draft",
+      "access": "上層側の専用系統からアクセス。下層の一般経路からは接続しない。外部へ出撃。",
+      "bounds": {
+        "xMin": 700,
+        "xMax": 2000,
+        "yMin": -1250,
+        "yMax": 0
+      }
+    },
+    {
+      "id": "upper_expedition_starboard",
+      "name": "上層専用・右舷出撃区",
+      "owner": "upper",
+      "purpose": "sortie",
+      "status": "draft",
+      "access": "上層側の専用系統からアクセス。下層の一般経路からは接続しない。外部へ出撃。",
+      "bounds": {
+        "xMin": 700,
+        "xMax": 2000,
+        "yMin": 0,
+        "yMax": 1250
+      }
+    }
+  ]
+}
