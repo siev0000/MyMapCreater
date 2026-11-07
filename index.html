@@ -264,6 +264,11 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <p class="mapGridHint">再配置後の施設と道路の交差が残るため、認証門への新規道路は未登録です。</p>
  <p><a href="./docs/aa-upper-access-audit-v1.md" target="_blank" rel="noopener noreferrer">接続監査メモ（GitHub配置案）を開く</a></p>
  </section>
+ <section class="panel" id="otherTerminalLayout" hidden>
+ <h2>中央ターミナルの内部構成（上層・下層／仮表示）</h2>
+ <p id="otherTerminalLayoutText" class="mapGridHint">中央塔は直径500mのまま。乗降・認証・支援機能を、各階層の役割に合わせて区画配置します。</p>
+ <p class="mapGridHint">紫色の縦動線＝大型機専用48m、青緑の横動線＝一般24m。上層研究区の認証門、下層の危険物・貨物通路とは無条件に連絡しません。地図上の円弧は施設配置の検討用表示で、Notionの確定間取りではありません。</p>
+ </section>
  <section class="panel" id="middleCentralLayout" hidden>
  <h2>中層中央生活圏（再配置案）</h2>
  <p class="mapGridHint">リンクターミナル直径500mの内部に、レジストリンク・ドームを配置しました。中央の一般・大型機乗降区（半径100m）、待機・認証帯（100～130m）、環状の任務受付・小作戦室（130～210m）、外周の出口区（210～250m）の構成です。</p>
@@ -329,7 +334,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の概要"><div id="info"></div><div class="popHint">このポップアップのどこをタップしても閉じます</div></div>
  </div>
 </main>
-</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script src="./middle-central-ring.js"></script><script>
+</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script src="./middle-central-ring.js"></script><script src="./aa-terminal-interior.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=10;
 const MAP_INSET_X=.70,MAP_INSET_Y=.80; // exterior margin; ship dimensions and canonical source unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
@@ -1188,6 +1193,10 @@ function switchMap(id){
 
  document.getElementById('upperAccessAudit').hidden=!(id==='upper'&&preview);
  document.getElementById('middleCentralLayout').hidden=!(id==='middle'&&preview);
+ document.getElementById('otherTerminalLayout').hidden=!(id!=='middle'&&preview);
+ document.getElementById('otherTerminalLayoutText').textContent=id==='upper'?
+ '上層：一般・大型機乗降、共同案内、認証・保安検査、応急・避難案内。研究区の認証門は別施設、外征直通リフトは専用接続。':
+ '下層：一般・大型機乗降、簡易検査、応急修理・充電、避難誘導。ラストハブ生活区と連絡し、危険物・貨物搬送は別系統。';
  document.getElementById('mapTitle').textContent=map.name;
  document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
  document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。下層は専用通路と封鎖隔壁を仮配置済み。上層の道路は未調整で非表示。中層は中央生活圏の検討用通路のみ表示し、外周道路は未検証です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
@@ -1526,9 +1535,12 @@ if(isProtectedDraft&&state.structures&&window.AAStructureOverlay){
 }
 // The guild sits *inside* the Link Terminal in the middle draft.
 if(!(isProtectedDraft&&currentMap==='middle'))drawTerminalTowerBase();
+if(isProtectedDraft&&currentMap!=='middle'&&window.AATerminalInterior){
+ window.AATerminalInterior.draw(ctx,xy,facilities[0],{labels:state.labels,zoom:view.zoom,roads:state.roads,chosen});
+}
 if(isProtectedDraft&&currentMap==='middle')drawCompoundFacilities();
 for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
-if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft&&currentMap==='middle')continue;let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft)continue;let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.restore(); // exit the protected interior clipping region
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(isProtectedDraft)drawHullStructuralLabels();drawLowerAccessGatesAndBulkheads();drawRestrictedThrusterAccess();ctx.restore();}
