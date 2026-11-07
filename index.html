@@ -1092,7 +1092,7 @@ function facilityInfoHTML(f){
   '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
  const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
  const sizeLabel=f.ringComplex?'環状受付｜半径'+f.ringComplex.innerRadius+'～'+f.ringComplex.outerRadius+'m':f.w+'×'+f.h+'m '+dimensions;
- const draftNote=f.sourcePosition?'<p class="compoundNote">10m単位の再配置案。Notion元座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m、元寸法：'+escHTML(f.sourceSize?.[0])+'×'+escHTML(f.sourceSize?.[1])+'m。形状・寸法は仮調整。${currentMap==='middle'&&showProposal?'中央部の道路のみ再配置案として表示。外周道路は未検証。':'道路は再敷設前のため配置案では非表示です。'}</p>':'';
+ const draftNote=f.sourcePosition?'<p class="compoundNote">10m単位の再配置案。Notion元座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m、元寸法：'+escHTML(f.sourceSize?.[0])+'×'+escHTML(f.sourceSize?.[1])+'m。形状・寸法は仮調整。'+(currentMap==='middle'&&showProposal?'中央部の道路のみ再配置案として表示。外周道路は未検証。':'道路は再敷設前のため配置案では非表示です。')+'</p>':'';
  return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${escHTML(sizeLabel)}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
 }
 function renderPlaces(){
