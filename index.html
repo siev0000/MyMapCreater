@@ -906,6 +906,27 @@ middle:{name:'中層《アームドヴェイン階層》',status:'Notion初期�
 lower:{name:'下層《ジェネレートシェル階層》',status:'Notion初期配置',facilities:lowerFacilities,roads:lowerRoads,description:'Notionの初期配置に登録された下層の施設・道路を表示しています。ラストハブは中心がターミナルと重なる円環生活区です。'}
 };
 const layoutDrafts={};let showProposal=true;
+// Protected-hull floor layout (HTML-only planning alternative).
+// The ship remains 4000m x 2500m. All original Notion source coordinates remain intact.
+// Move whole facility footprints inward WITHOUT changing their canonical dimensions.
+// This is a draft; transformed roads remain provisional and require route review.
+function buildProtectedHullDraft(id,base){
+ const px=x=>Math.round(x*.80*10)/10,py=y=>Math.round(y*.57*10)/10;
+ const facilities=base.facilities.map(f=>({
+  ...f,x:px(f.x),y:py(f.y),
+  sourcePosition:[f.x,f.y],draftRepositioned:f.x!==0||f.y!==0,
+  internalFacilities:f.internalFacilities?f.internalFacilities.map(c=>({...c})):f.internalFacilities
+ }));
+ const roads=base.roads.map(r=>({
+  ...r,points:r.points?r.points.map(([x,y])=>[px(x),py(y)]):r.points,
+  status:'draft_route_requires_review'
+ }));
+ return {...base,facilities,roads,editorMeta:{
+  ...(base.editorMeta||{}),status:'draft',revision:'protected-hull-zones-v1',
+  description:'340m級の多重船殻・機関区・緩衝区を設けた再配置案。施設寸法は維持、中心座標を内側へ移動。道路接続は再検証対象。Notion未反映。'
+ }};
+}
+
 let facilities=middleFacilities,roads=middleRoads,currentMap='middle';
 function escHTML(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function virtualChild(parent,c){
@@ -932,7 +953,8 @@ function facilityInfoHTML(f){
  const functions=Array.isArray(f.functions)&&f.functions.length?
   '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
  const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
- return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${f.w}×${f.h}m ${dimensions}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}`;
+ const draftNote=f.sourcePosition?'<p class="compoundNote">船内緩衝区を確保するための再配置案。元のNotion座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m。施設の寸法は変更していません。正式経路は再検証が必要です。</p>':'';
+ return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${f.w}×${f.h}m ${dimensions}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
 }
 function renderPlaces(){
  document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>{
@@ -990,8 +1012,9 @@ async function loadMapDataFromJSON(){
   for(const [idx,id] of [[4,'middle'],[5,'lower']]){
     const draft=validateFloorJSON(id,results[idx]);
     if(draft.editorMeta?.status!=='draft')throw Error(id+' の配置案が未確定として登録されていません');
-    layoutDrafts[id]=draft;
+    layoutDrafts[id]=buildProtectedHullDraft(id,draft);
   }
+  layoutDrafts.upper=buildProtectedHullDraft('upper',mapSets.upper);
   try{
    const darkResponse=await fetch('./data/dark-world-draft.json',{cache:'no-cache'});
    if(!darkResponse.ok)throw Error('dark-world-draft.json : HTTP '+darkResponse.status);
@@ -1014,12 +1037,12 @@ function switchMap(id){
  currentMap=id;preferredFloor=id;facilities=preview?preview.facilities:map.facilities;roads=preview?preview.roads:map.roads;chosen=null;resetView();document.getElementById('selectedPanel').hidden=true;
  const toggle=document.getElementById('layoutToggle');
  toggle.hidden=!layoutDrafts[id];
- toggle.textContent=preview?'配置案を表示中｜Notion現行を表示':'Notion現行を表示中｜配置案を表示';
- document.getElementById('layoutNotice').textContent=preview?'配置検討中・Notion未反映':'Notionの登録座標を表示中';
+ toggle.textContent=preview?'外壁・緩衝区の再配置案｜Notion現行へ':'Notion現行の配置｜緩衝区を確保した案へ';
+ document.getElementById('layoutNotice').textContent=preview?'多重船殻・再配置案／未確定':'Notion現行座標（緩衝区未反映）';
 
  document.getElementById('mapTitle').textContent=map.name;
  document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
- document.getElementById('mapNotice').textContent='X=±2,000m、Y=±1,250mを横'+gridSpec().cols+'×縦'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）で表示。'+(preview?'【未確定の配置案】船尾中央の栽培区と真下のバイオリアクターを試作表示。下層船首側約1/3は上層専用の左右出撃区として確保（境界は仮値）。一般ターミナルとは別系統です。道路も再配置検討中です。':'【Notion現行】'+map.description)+' ※隣接する施設でも登録経路がなければ移動できません。';
+ document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。既存施設の寸法は維持し、中心位置を内側へ移動しました。道路接続・施設間の重複は今後の検証対象。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  updateAAGridInfo();
