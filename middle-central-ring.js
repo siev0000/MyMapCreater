@@ -49,85 +49,97 @@ function drawUrbanBlocks(ctx,xy,model,options={}){
 function drawGuild(ctx,xy,facility,options={}){
  const ring=facility?.ringComplex;if(!ring)return;
  const {zoom=1,labels=true,chosen=null,roads=true}=options;
- const inR=ring.innerRadius,outR=ring.outerRadius;
+ const inR=ring.innerRadius,outR=ring.outerRadius,terminalR=ring.terminalOuterRadius||250;
+ const passage=ring.passageways||[];
+ const getGate=a=>passage.find(g=>g.angleDeg===a);
  ctx.save();
- // Four 80-degree arc buildings. The 10-degree gaps are physical openings,
- // not closed traversable building surfaces.
+ ctx.lineJoin='round';
+ // Circular transport hub (0–100m), common concourse/inspection (100–130m).
+ const [cx,cy]=xy(facility.x,facility.y);
+ const pxPerMetre=Math.abs(xy(facility.x+1,facility.y)[1]-cy)||.4;
+ const circle=(r,fill,stroke,width=2)=>{
+  ctx.beginPath();ctx.arc(cx,cy,r*pxPerMetre,0,Math.PI*2);
+  ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();
+ };
+ circle(130,'rgba(71,111,137,.88)','#9cd7eb',2);
+ circle(100,'rgba(30,65,87,.96)','#b8e0ef',2.5);
+ ctx.beginPath();ctx.arc(cx,cy,terminalR*pxPerMetre,0,Math.PI*2);
+ ctx.lineWidth=2;ctx.strokeStyle='#b3dbe6';ctx.stroke();
+ // Eight stations in 4 pairs, grouped into 4 arc buildings.
+ // Gaps are actual passageways; 48m for large-machine gates and 24m for pedestrians.
  for(let q=0;q<4;q++){
-  const start=5+q*90,end=85+q*90;
+  const start=q*90+(getGate(q*90)?.halfAngleDeg||8);
+  const end=(q+1)*90-(getGate(((q+1)*90)%360)?.halfAngleDeg||8);
   ringSector(ctx,xy,inR,outR,start,end);
-  ctx.fillStyle=q%2?'rgba(154,129,82,.88)':'rgba(135,111,76,.9)';
-  ctx.strokeStyle=chosen?.id===facility.id?'#fff3a3':'#f0dba4';
+  ctx.fillStyle=q%2?'rgba(171,137,90,.92)':'rgba(147,115,76,.94)';
+  ctx.strokeStyle=chosen?.id===facility.id?'#fff3a3':'#f1d8a0';
   ctx.lineWidth=2;ctx.fill();ctx.stroke();
-  // Divide each quadrant into two independently staffed reception-and-briefing groups.
-  const angle=45+90*q,a=worldPoint(inR,angle),b=worldPoint(outR,angle);
-  ctx.beginPath();ctx.moveTo(...xy(...a));ctx.lineTo(...xy(...b));
-  ctx.strokeStyle='rgba(248,231,187,.65)';ctx.lineWidth=1;ctx.stroke();
+  const mid=(start+end)/2;
+  const [a,b]=[worldPoint(inR,mid),worldPoint(outR,mid)];
+  ctx.beginPath();ctx.moveTo(...xy(facility.x+a[0],facility.y+a[1]));ctx.lineTo(...xy(facility.x+b[0],facility.y+b[1]));
+  ctx.strokeStyle='rgba(252,235,192,.55)';ctx.lineWidth=1;ctx.stroke();
+  if(roads){ctx.strokeStyle='#ffe1aa';ctx.lineWidth=2;ctx.setLineDash([4,4]);strokeSegment(ctx,(x,y)=>xy(facility.x+x,facility.y+y),165,start+3,end-3);ctx.setLineDash([])}
  }
- // Annular pedestrian corridor is internal only and interrupted at every passage.
- if(roads){
-  ctx.save();ctx.strokeStyle='#f6e7bf';ctx.lineWidth=3.5;ctx.setLineDash([6,4]);
-  for(let q=0;q<4;q++)strokeSegment(ctx,xy,369,6+q*90,84+q*90);
-  ctx.setLineDash([]);ctx.restore();
+ // Gate gaps are structurally continuous, but separate traversal classes.
+ // Draw the public and 48m heavy passages inside the terminal.
+ if(roads)for(const gate of passage){
+  const radial=worldPoint(1,gate.angleDeg),from=xy(facility.x+radial[0]*90,facility.y+radial[1]*90);
+  const to=xy(facility.x+radial[0]*terminalR,facility.y+radial[1]*terminalR);
+  ctx.save();ctx.lineCap='butt';ctx.lineJoin='round';
+  const heavy=gate.access==='large_machine_authorized';
+  ctx.strokeStyle=heavy?'rgba(168,116,215,.95)':'rgba(93,201,197,.90)';
+  ctx.lineWidth=gate.width*pxPerMetre;ctx.beginPath();ctx.moveTo(...from);ctx.lineTo(...to);ctx.stroke();
+  const inner=xy(facility.x+radial[0]*(inR-2),facility.y+radial[1]*(inR-2));
+  const outer=xy(facility.x+radial[0]*(outR+2),facility.y+radial[1]*(outR+2));
+  // Gate boundary marker: no ordinary access into heavy lanes.
+  ctx.strokeStyle=heavy?'#edd1ff':'#b6faf0';ctx.lineWidth=3;
+  for(const [x,y] of [inner,outer]){
+   ctx.beginPath();ctx.arc(x,y,Math.max(4,gate.width*pxPerMetre*.23),0,Math.PI*2);ctx.stroke();
+  }
+  ctx.restore();
  }
- // Reception windows face inward. Two small briefing rooms adjoin each service desk.
+ // Eight identical task counters and two adjoining briefing cubicles per station.
  const angles=ring.receptionAnglesDeg||[];
  for(let i=0;i<angles.length;i++){
-  const angle=angles[i],p=worldPoint(ring.receptionRadius||355,angle);
-  const [sx,sy]=xy(...p);
-  ctx.save();ctx.translate(sx,sy);ctx.rotate((angle-90)*Math.PI/180);
-  ctx.fillStyle='#8ed5f3';ctx.strokeStyle='#edfaff';ctx.lineWidth=1.2;
-  ctx.fillRect(-6,-3,12,6);ctx.strokeRect(-6,-3,12,6);ctx.restore();
-  for(const off of [-4.6,4.6]){
-   const [mx,my]=xy(...worldPoint(ring.briefingRadius||393,angle+off));
-   ctx.save();ctx.translate(mx,my);ctx.rotate((angle+off-90)*Math.PI/180);
-   ctx.fillStyle='#5e5369';ctx.strokeStyle='#f1dfc6';ctx.lineWidth=1;
+  const a=angles[i],p=worldPoint(ring.receptionRadius||150,a);
+  const [x,y]=xy(facility.x+p[0],facility.y+p[1]);
+  ctx.save();ctx.translate(x,y);ctx.rotate((a-90)*Math.PI/180);
+  ctx.fillStyle='#83d5f9';ctx.strokeStyle='#edfaff';ctx.lineWidth=1.2;
+  ctx.fillRect(-6,-4,12,8);ctx.strokeRect(-6,-4,12,8);ctx.restore();
+  for(const offset of [-5.5,5.5]){
+   const v=worldPoint(ring.briefingRadius||180,a+offset),[rx,ry]=xy(facility.x+v[0],facility.y+v[1]);
+   ctx.save();ctx.translate(rx,ry);ctx.rotate((a+offset-90)*Math.PI/180);
+   ctx.fillStyle='#65536f';ctx.strokeStyle='#ecd6f3';ctx.lineWidth=1;
    ctx.fillRect(-5,-4,10,8);ctx.strokeRect(-5,-4,10,8);ctx.restore();
   }
-  if(labels&&zoom>=1.8){
+  if(labels&&zoom>=1.65){
    ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
-   ctx.lineWidth=2.5;ctx.strokeStyle='#152632';ctx.strokeText(String(i+1),sx,sy-8);
-   ctx.fillStyle='#f3fbff';ctx.fillText(String(i+1),sx,sy-8);
+   ctx.lineWidth=2.3;ctx.strokeStyle='#102737';ctx.strokeText('受付'+(i+1),x,y-11);
+   ctx.fillStyle='#eff9ff';ctx.fillText('受付'+(i+1),x,y-11);
   }
  }
- // Major functional rooms are real selectable nodes; the little rooms above are
- // illustrative distributed reception-and-briefing pods rather than separate cities.
+ // Management, conference, storage and specialist guild service positions.
  for(const child of facility.internalFacilities||[]){
-  const [mx,my]=xy(facility.x+child.dx,facility.y+child.dy);
-  const isSelected=chosen?.id===child.id;
-  ctx.save();ctx.fillStyle=isSelected?'#fff4a9':'#ceb29a';ctx.strokeStyle='#fff0d6';ctx.lineWidth=1.2;
-  ctx.beginPath();ctx.arc(mx,my,isSelected?6:4.5,0,Math.PI*2);ctx.fill();ctx.stroke();
-  if(labels&&zoom>=2){
-   ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 9px system-ui';
-   ctx.strokeStyle='#16202a';ctx.lineWidth=3;ctx.strokeText(child.short||child.name,mx,my-11);
-   ctx.fillStyle='#fff3dc';ctx.fillText(child.short||child.name,mx,my-11);
+  const [x,y]=xy(facility.x+child.dx,facility.y+child.dy);
+  ctx.fillStyle=chosen?.id===child.id?'#fff3a0':'#e4c4a0';
+  ctx.strokeStyle='#332c35';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y,5.5,0,2*Math.PI);ctx.fill();ctx.stroke();
+  if(labels&&zoom>=2.45){
+   ctx.font='10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.lineWidth=3;ctx.strokeStyle='#16202a';ctx.strokeText(child.short||child.name,x,y-14);
+   ctx.fillStyle='#fff2d7';ctx.fillText(child.short||child.name,x,y-14);
   }
-  ctx.restore();
- }
- // Authorized large-machine corridors are distinctly separated from ordinary halls.
- for(const gate of ring.passageways||[]){
-  const at=worldPoint((inR+outR)/2,gate.angleDeg),[x,y]=xy(...at);
-  ctx.save();ctx.translate(x,y);ctx.rotate((gate.angleDeg-90)*Math.PI/180);
-  const machine=gate.access==='large_machine_authorized';
-  ctx.strokeStyle=machine?'#e1b2ff':'#8ee4e0';
-  ctx.lineWidth=machine?3:2;
-  ctx.beginPath();ctx.moveTo(-gate.width*.2,-9);ctx.lineTo(-gate.width*.2,9);
-  ctx.moveTo(gate.width*.2,-9);ctx.lineTo(gate.width*.2,9);
-  ctx.stroke();
-  if(machine){
-   ctx.fillStyle='#e5c7ff';ctx.fillRect(-3,-3,6,6);
-  }
-  ctx.restore();
  }
  if(labels){
-  const [lx,ly]=xy(470,120);
-  ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.lineWidth=4;ctx.strokeStyle='#17242c';ctx.strokeText('レジストリンク・ドーム〈環状受付〉',lx,ly);
-  ctx.fillStyle='#fbe6b5';ctx.fillText('レジストリンク・ドーム〈環状受付〉',lx,ly);
-  if(zoom>=1.35){
-   const [tx,ty]=xy(-450,95);
-   ctx.font='11px system-ui';ctx.strokeText('8受付区＋各小作戦室／大型機専用開口2か所',tx,ty);
-   ctx.fillStyle='#f4deb0';ctx.fillText('8受付区＋各小作戦室／大型機専用開口2か所',tx,ty);
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+  ctx.strokeStyle='#122432';ctx.fillStyle='#f7f9fa';ctx.lineWidth=3;
+  ctx.font='bold 12px system-ui';ctx.strokeText('乗降ホール',cx,cy-6);ctx.fillText('乗降ホール',cx,cy-6);
+  ctx.font='10px system-ui';ctx.strokeText('一般・大型機',cx,cy+9);ctx.fillText('一般・大型機',cx,cy+9);
+  // The guild is located inside the tower, never at an external coordinate.
+  if(zoom>=1.25){
+   const [lx,ly]=xy(facility.x+225,facility.y+45);
+   ctx.font='bold 11px system-ui';ctx.strokeStyle='#12212d';ctx.fillStyle='#ffe5b2';ctx.lineWidth=3;
+   ctx.strokeText('レジストリンク・ドーム（ターミナル内部）',lx,ly);
+   ctx.fillText('レジストリンク・ドーム（ターミナル内部）',lx,ly);
   }
  }
  ctx.restore();
