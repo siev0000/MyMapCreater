@@ -388,7 +388,7 @@ function create(options){
   $("darkExport").addEventListener("click",exportJSON);
  }
  initEvents();
- return {load,draw,selectAt,reset,exportJSON,applyGridSize,get model(){return model},get selection(){return selection}};
+ return {load,draw,selectAt,reset,exportJSON,applyGridSize,updateGridUI,get model(){return model},get selection(){return selection}};
 }
 window.DarkWorldMap={create};
 })();
