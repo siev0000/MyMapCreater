@@ -65,7 +65,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <p class="note">GitHubで <strong>Only select repositories → siev0000/MyMapCreater → Contents: Read and write</strong> を選び、期限を短めに設定してください。トークンをチャットやJSON、GitHubのファイルに貼り付けないでください。</p>
 <label>保存時に使うGitHubトークン（保存後に入力欄を消去・端末に記憶しません）
 <input id="githubToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_..." inputmode="text"></label>
-<p class="note"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Fine-grained token を作成</a>　｜　保存先は <code>data/middle-draft.json</code> または <code>data/lower-draft.json</code> のみです。</p>
+<p class="note"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Fine-grained token を作成</a>　｜　保存先は <code>data/upper-layout-draft.json</code> など、各階層の配置案専用ファイルです。</p>
 </details>
 <div class="layout">
 <section class="mapwrap"><h2 id="floorText">中層</h2>
@@ -134,7 +134,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   function items(){const d=current();return !d?[]:kind==="facility"?d.facilities:d.roads}
   function selectedItem(){return selection?items().find(x=>x.id===selection.id)||null:null}
   function showStatus(msg,warning=false){$("message").textContent=msg;$("message").classList.toggle("warn",warning)}
-  const LOCAL_PREFIX="aa-my-map-creater-editor-v1-";
+  const LOCAL_PREFIX="aa-my-map-creater-editor-polygon-v2-";
   function readLocalDraft(f){
     try{
       const raw=localStorage.getItem(LOCAL_PREFIX+f);
@@ -185,8 +185,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         return valid(await res.json(),f);
       }));
       const drafts=await Promise.all(F.map(async f=>{
-        if(f==="upper")return null;
-        const res=await fetch("./data/"+f+"-draft.json",{cache:"no-cache"});
+        const res=await fetch("./data/"+f+"-layout-draft.json",{cache:"no-cache"});
         if(!res.ok)return null;
         const d=valid(await res.json(),f);
         if(d.editorMeta?.status!=="draft")throw Error(f+" の下書き状態が不正です");
@@ -203,7 +202,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       for(const f of F){const previous=active;active=f;baselineWarnings[f]=diagnostics();active=previous;}
       $("loading").hidden=true;
       $("workspace").hidden=false;
-      showStatus(savedLocal.size?"前回の作業データをこの端末から復元しました。GitHub・Notionには未反映です。":"中層・下層はGitHub上の配置案を読み込みました。編集するとこの端末に自動保存します。");
+      showStatus(savedLocal.size?"前回の作業データをこの端末から復元しました。GitHub・Notionには未反映です。":"上・中・下層の多角形配置案を読み込みました。編集するとこの端末に自動保存します。");
       render();
     }catch(e){$("loading").textContent="地図データの読み込みに失敗しました: "+e.message+"。GitHub Pagesで開いてください。";showStatus(e.message,true)}
   }
@@ -216,6 +215,26 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   function rect(f){
     const {px,py}=worldToPixel(f.x,f.y);
     return {left:px-f.h*SC/2,top:py-f.w*SC/2,right:px+f.h*SC/2,bottom:py+f.w*SC/2,cx:px,cy:py};
+  }
+  function facilityShape(f){
+    if(f.footprint?.length>=3)return f.footprint.map(([x,y])=>worldToPixel(f.x+x,f.y+y));
+    const b=rect(f);return [{px:b.left,py:b.top},{px:b.right,py:b.top},{px:b.right,py:b.bottom},{px:b.left,py:b.bottom}];
+  }
+  function traceShape(f){
+    const pts=facilityShape(f);ctx.beginPath();pts.forEach((v,i)=>i?ctx.lineTo(v.px,v.py):ctx.moveTo(v.px,v.py));ctx.closePath();
+  }
+  function withinShape(f,p){
+    const a=facilityShape(f);let hit=false;
+    for(let i=0,j=a.length-1;i<a.length;j=i++){const u=a[i],v=a[j];if((u.py>p.py)!==(v.py>p.py)&&p.px<(v.px-u.px)*(p.py-u.py)/(v.py-u.py)+u.px)hit=!hit}
+    return hit;
+  }
+  function createShape(f,kind){
+    if(kind==='rect'){delete f.footprint;f.draftShape='rect';return}
+    const w=f.w,h=f.h,x=w/2,y=h/2,c=Math.max(10,Math.round(Math.min(w,h)*.14/10)*10);
+    f.footprint=kind==='L'&&w>=80&&h>=80?
+      [[-x,-y],[x,-y],[x,y-c],[x-c,y-c],[x-c,y],[-x,y]]:
+      [[-x+c,-y],[x-c,-y],[x,-y+c],[x,y-c],[x-c,y],[-x+c,y],[-x,y-c],[-x,-y+c]];
+    f.draftShape=kind;
   }
   function drawAnnulus(f,color,alpha){
     const c=worldToPixel(f.x,f.y),outer=(f.outerRadius||Math.max(f.w,f.h)/2)*SC,inner=(f.innerRadius||0)*SC;
@@ -310,14 +329,12 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
       const b=rect(f),color=COLORS[f.type]||"#b3c6d2";
       ctx.save();
-      ctx.fillStyle=color+(f.zoneOutline?"19":"33");
-      ctx.fillRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
-      ctx.strokeStyle=color;ctx.lineWidth=f.zoneOutline?2.5:1.5;
-      if(f.zoneOutline)ctx.setLineDash([9,6]);
-      ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
+      if(f.draftRegion){
+        ctx.beginPath();ctx.arc(b.cx,b.cy,15,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle="#e7ded0";ctx.lineWidth=2;ctx.stroke();
+      }else{traceShape(f);ctx.fillStyle=color+"55";ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke()}
       ctx.restore();
     }
-    for(const r of current().roads)drawRoad(r,.78);
+    if(current().editorMeta?.revision!=='polygon-packed-10m-v2')for(const r of current().roads)drawRoad(r,.78);
     if(state.labels){
       ctx.save();ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
       for(const f of current().facilities){
@@ -366,7 +383,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   function diagnostics(){
     const d=current(),warn=[];
     if(!d)return warn;
-    const facilities=d.facilities.filter(f=>!f.ringDistrict);
+    const facilities=d.facilities.filter(f=>!f.ringDistrict&&!f.zoneOutline&&!f.areaFrame);
     for(const f of facilities){
       if(f.x-f.w/2< -2000||f.x+f.w/2>2000||f.y-f.h/2< -1250||f.y+f.h/2>1250)warn.push("範囲外: "+f.name);
       if(intersectsRestrictedFacility(f))warn.push("上層専用出撃区に侵入: "+f.name);
@@ -403,14 +420,15 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const common=`<div class="value-id">ID: ${esc(item.id)}</div>`;
     if(kind==="facility"){
       const isRing=item.ringDistrict===true;
+      const chosenShape=item.draftShape||(item.footprint?.length===6?"L":item.footprint?.length===8?"chamfer":"rect");
       e.innerHTML=`${common}<div class="fields">
         ${field("施設名","name",item.name)}
         <label>施設分類<select data-field="type">${typeOptions}</select></label>
-        ${field("X / 船首・船尾 (m)","x",item.x,"number",isRing?"disabled":"step='25'")}
-        ${field("Y / 左右舷 (m)","y",item.y,"number",isRing?"disabled":"step='25'")}
-        ${field("X方向の長さ (m)","w",item.w,"number",isRing?"disabled min='1'":"min='1' step='25'")}
-        ${field("Y方向の長さ (m)","h",item.h,"number",isRing?"disabled min='1'":"min='1' step='25'")}
-        </div><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
+        ${field("X / 船首・船尾 (m)","x",item.x,"number",isRing?"disabled":"step='10'")}
+        ${field("Y / 左右舷 (m)","y",item.y,"number",isRing?"disabled":"step='10'")}
+        ${field("X方向の長さ (m)","w",item.w,"number",isRing?"disabled min='1'":"min='1' step='10'")}
+        ${field("Y方向の長さ (m)","h",item.h,"number",isRing?"disabled min='1'":"min='1' step='10'")}
+        </div><label>施設の外形<select data-shape><option value="chamfer" ${chosenShape==="chamfer"?"selected":""}>角落ち（八角形）</option><option value="L" ${chosenShape==="L"?"selected":""}>L字型</option><option value="rect" ${chosenShape==="rect"?"selected":""}>長方形</option></select></label><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
         ${isRing?'<p class="hint">円環地区の形状・中心は既存設定で固定しています。通常の矩形施設とは別に扱います。</p>':`<button type="button" class="danger" id="delete">この施設を削除（下書き）</button>`}
         <p class="hint">既存の施設IDは維持。編集内容はJSON書き出しまで確定されません。</p>`;
     }else{
@@ -418,7 +436,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       e.innerHTML=`${common}<div class="fields">
         ${field("道路名","name",item.name)}
         ${field("道路幅 (m)","width",item.width,"number","min='1' step='1'")}
-        ${item.kind==="ring"?field("中心半径 (m)","r",item.r,"number","min='10' step='25'"):""}
+        ${item.kind==="ring"?field("中心半径 (m)","r",item.r,"number","min='10' step='10'"):""}
         </div><p class="hint">経路種別: ${esc(item.roadType||item.kind)}。${item.kind==="internal"?"位置がNotionで未指定のため描画していません。":"黄色い頂点はドラッグできます。"}</p>
         ${item.kind==="line"?`<h4>道路の頂点</h4><div class="points">${pts.map((p,i)=>`<div class="point"><strong>${i+1}</strong><input aria-label="頂点${i+1} X" type="number" data-vertex="${i}" data-axis="0" value="${p[0]}"><input aria-label="頂点${i+1} Y" type="number" data-vertex="${i}" data-axis="1" value="${p[1]}"><button data-delete-point="${i}" title="頂点削除" ${pts.length<=2?"disabled":""}>×</button></div>`).join("")}</div><button type="button" id="addPoint">頂点を追加</button>`:""}
         <button type="button" class="danger" id="delete">この道路を削除（下書き）</button>`;
@@ -430,7 +448,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     document.querySelectorAll("[data-kind]").forEach(b=>b.classList.toggle("active",b.dataset.kind===kind));
     $("floorText").textContent=floorName()+(dirty.has(active)?" — 編集中":draftFloors.has(active)?" — 配置案を読み込み":" — Notion現行を読み込み");
     $("overlay").disabled=active==="upper";
-    $("saveGithub").disabled=active==="upper";
+    $("saveGithub").disabled=false;
     for(const [id,enabled] of [["overlay",state.overlay],["snap",state.snap],["grid",state.grid],["labels",state.labels]])$(id).classList.toggle("active",enabled);
     $("undo").disabled=history[active].length===0;$("redo").disabled=future[active].length===0;
     if(unsavedLocal.has(active))saveLocal(active);
@@ -456,7 +474,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     for(const f of [...items()].reverse()){
       if(f.ringDistrict)continue;
       const b=rect(f);
-      if(p.px>=b.left&&p.px<=b.right&&p.py>=b.top&&p.py<=b.bottom)return {item:f,mode:"move"};
+      if(withinShape(f,p))return {item:f,mode:"move"};
     }
     return null;
   }
@@ -508,8 +526,9 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         obj.y=snap(drag.initial.y+w.y-drag.world.y);
       }else if(drag.mode==="resize"){
         const c=worldToPixel(obj.x,obj.y);
-        obj.w=Math.max(25,snap(Math.max(25,(p.py-c.py)*5)));
-        obj.h=Math.max(25,snap(Math.max(25,(p.px-c.px)*5)));
+        obj.w=Math.max(30,snap(Math.max(30,(p.py-c.py)*5)));
+        obj.h=Math.max(30,snap(Math.max(30,(p.px-c.px)*5)));
+        if(obj.footprint)createShape(obj,obj.draftShape||(obj.footprint.length===6?"L":"chamfer"));
       }
       if(intersectsRestrictedFacility(obj)){
         Object.assign(obj,previous);
@@ -535,6 +554,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   }
   function detailChange(e){
     const item=selectedItem(),target=e.target;if(!item||!target)return;
+    if(target.dataset.shape){if(kind!=="facility")return;saveSnapshot();createShape(item,target.value);render();return}
     if(target.dataset.field){
       const key=target.dataset.field,value=target.type==="number"?Number(target.value):target.value;
       if(target.type==="number"&&!Number.isFinite(value)){renderDetail();return}
@@ -542,7 +562,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(item[key]===value)return;
       if(kind==="facility"&&intersectsRestrictedFacility({...item,[key]:value})){showStatus("下層の施設は上層専用出撃区へ配置できません。",true);renderDetail();return}
       if(kind==="road"&&key==="r"&&active==="lower"&&(current().restrictedZones||[]).length&&value>current().restrictedZones[0].bounds.xMin){showStatus("環状路を出撃区へ通せません。",true);renderDetail();return}
-      saveSnapshot();item[key]=value;render();
+      saveSnapshot();item[key]=value;if(kind==="facility"&&["w","h"].includes(key)&&item.footprint)createShape(item,item.draftShape||(item.footprint.length===6?"L":"chamfer"));render();
     }else if(target.dataset.vertex!==undefined){
       const idx=Number(target.dataset.vertex),axis=Number(target.dataset.axis),v=Number(target.value);
       if(!Number.isFinite(v))return;
@@ -595,7 +615,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   }
   async function saveGithub(){
     const floor=active;
-    if(!["middle","lower"].includes(floor)){
+    if(!["upper","middle","lower"].includes(floor)){
       showStatus("GitHubへの直接保存は中層・下層の下書きファイルだけに対応しています。",true);return;
     }
     const tokenInput=$("githubToken");
@@ -606,7 +626,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       showStatus("GitHubへの保存にはFine-grained tokenが必要です。認証設定を開きました。",true);
       return;
     }
-    if(!confirm(floorName()+"の編集内容をGitHubの data/"+floor+"-draft.json に保存しますか？\nNotionや確定JSONは変更しません。"))return;
+    if(!confirm(floorName()+"の編集内容をGitHubの data/"+floor+"-layout-draft.json に保存しますか？\nNotionや確定JSONは変更しません。"))return;
     tokenInput.value="";
     $("saveGithub").disabled=true;
     const output=clone(floors[floor]);
