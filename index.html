@@ -396,15 +396,25 @@ function renderPropulsionList(){
  ).join('');
  document.getElementById('propulsionFloorName').textContent=mapSets[currentMap]?.name||'';
 }
-function selectPropulsionArea(id){
+function selectPropulsionArea(id,fromList=false){
  if(activeWorldId!=='apocrypha_archive'||shipView!=='map')return;
  const area=PROPULSION_AREAS.find(x=>x.id===id);if(!area)return;
  chosen=null;selectedPropulsionAreaId=area.id;
- switchMenuTab('facilities');openDrawer();
- document.getElementById('selectedDetail').innerHTML=propulsionAreaDetails(area);
- document.getElementById('selectedPanel').hidden=false;
  renderPropulsionList();draw();
- document.getElementById('selectedPanel').scrollIntoView?.({block:'nearest'});
+ if(fromList){
+  // Clicking an existing list stays inside that menu; map clicks never open it.
+  document.getElementById('selectedDetail').innerHTML=propulsionAreaDetails(area);
+  document.getElementById('selectedPanel').hidden=false;
+  document.getElementById('selectedPanel').scrollIntoView?.({block:'nearest'});
+ }else{
+  // Same local detail popup already used by ordinary map facilities.
+  closeDrawer();
+  document.getElementById('selectedPanel').hidden=true;
+  document.getElementById('info').innerHTML=propulsionAreaDetails(area);
+  const mask=document.getElementById('popupMask');
+  mask.classList.add('show');
+  mask.setAttribute('aria-hidden','false');
+ }
 }
 function drawRestrictedThrusterAccess(){
  if(!state.hull)return;
@@ -1343,7 +1353,7 @@ document.getElementById('selectedDetail').addEventListener('click',e=>{
  const b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place);
 });
 document.getElementById('propulsionList').addEventListener('click',e=>{
- const btn=e.target.closest('[data-propulsion]');if(btn)selectPropulsionArea(btn.dataset.propulsion);
+ const btn=e.target.closest('[data-propulsion]');if(btn)selectPropulsionArea(btn.dataset.propulsion,true);
 });
 document.getElementById('shipPartsList').addEventListener('click',e=>{
  const button=e.target.closest('[data-part]');
