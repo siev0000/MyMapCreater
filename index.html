@@ -153,7 +153,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <div class="mapbox"><canvas id="map" width="1000" height="1600" aria-label="施設・道路をタップして概要を表示するマップ"></canvas></div>
  <section id="worldEmpty" class="worldEmpty" hidden aria-live="polite"><div class="worldEmptyInner"><h2 id="emptyWorldTitle">ダークワールド</h2><p>このマップのデータはまだ登録されていません。追加後にここから切り替えられます。</p></div></section>
  <details id="shipPartsLegend" class="shipPartsLegend" hidden><summary>船体の部位を確認 <span id="shipPartsCount"></span></summary><p class="shipPartsHint">図の番号または一覧を押すと部位名と用途が表示されます。外装の細部は仮デザインです。</p><div id="shipPartsList" class="shipPartsList"></div><div id="shipPartDetail" class="shipPartDetail" aria-live="polite">部位を選択してください。</div></details>
- <div class="mapchips"><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span></div>
+ <div class="mapchips"><span class="chip" id="shipOrientationChip">▲ 船首 +X</span><span class="chip" id="gridReadout">100m / 25×40</span><span class="chip" id="layoutNotice">配置案</span><span class="chip" id="thrusterAccessChip">× 推進機関区（仮位置）：一般ルートから進入不可</span></div>
  <div class="mapfooter"><span class="scale">中央塔 φ500m ・ コンコース 外径660m</span></div>
  <div class="zoomControls" aria-label="地図の拡大縮小">
   <button id="zoomOut" type="button" aria-label="縮小">−</button>
@@ -426,6 +426,7 @@ function setShipView(mode,persist=true){
    const on=mode==='map'&&b.dataset.map===preferredFloor;
    b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));
   });
+  document.getElementById('thrusterAccessChip').hidden=mode!=='map';
   document.getElementById('map').setAttribute('aria-label',mode==='map'?'施設・道路をタップして概要を表示するマップ':'船体'+(mode==='top'?'上面':'側面')+'の外形模式図');
   document.title=mode==='map'?'AA '+(mapSets[preferredFloor]?.name||'階層マップ'):'AA 船体'+(mode==='top'?'上面':'側面')+'形状';
  }
@@ -659,6 +660,7 @@ function switchWorld(id,persist=true){
   canvas.style.aspectRatio='1/1';
   document.getElementById('shipViewControls').hidden=true;
   document.getElementById('shipPartsLegend').hidden=true;
+  document.getElementById('thrusterAccessChip').hidden=true;
   fitCanvasToViewport();
   chosen=null;resetView();
   document.getElementById('selectedPanel').hidden=true;
