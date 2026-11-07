@@ -251,11 +251,11 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
     <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
     <section class="panel"><h2>マス数の設定（現在の階層）</h2>
      <div class="mapGridInputs">
-      <label for="aaGridCols">横マス数<input type="number" id="aaGridCols" min="4" max="200" step="1" value="25"></label>
-      <label for="aaGridRows">縦マス数<input type="number" id="aaGridRows" min="4" max="200" step="1" value="40"></label>
+      <label for="aaGridCols">横マス数<input type="number" id="aaGridCols" min="4" max="500" step="1" value="250"></label>
+      <label for="aaGridRows">縦マス数<input type="number" id="aaGridRows" min="4" max="500" step="1" value="400"></label>
      </div>
      <button id="aaGridApply" type="button" class="mapGridApply">この階層に適用</button>
-     <p id="aaGridStatus" class="mapGridHint">現在：25×40</p>
+     <p id="aaGridStatus" class="mapGridHint">現在：250×400</p>
      <p class="mapGridHint">施設の座標と船の実寸（横2,500m×縦4,000m）は変更しません。自由指定ではマスの縦横の実寸が異なる場合があります。階層ごとにブラウザへ保存します。</p>
     </section>
     <section class="panel"><h2>船体外形（コード描画）</h2><div class="controls"><button id="hullToggle" class="on" type="button" aria-pressed="true">船体外壁：ON</button></div><p>上面図・側面図を切り替えできます。4,000m×最大幅2,500mを基準とし、外形の細部と各階層の高さは仮案です。施設座標は変更しません。</p></section>
@@ -263,7 +263,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
      <div class="controls">
       <button class="on" data-layer="labels">施設名</button>
       <button class="on" data-layer="grid">グリッド</button>
-      <button id="gridSize">100m四方（50mに切替）</button>
+      <button id="gridSize">10m／50mの既定値に切替</button>
       <button id="gridOnTop" type="button" aria-pressed="false">グリッド最前面</button>
       <button class="on" data-layer="districts">地区境界</button>
       <button class="on" data-layer="roads">道路</button>
@@ -297,11 +297,11 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  </div>
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
-const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=50;
+const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=10;
 const MAP_INSET_X=.70,MAP_INSET_Y=.80; // exterior margin; ship dimensions and canonical source unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
-const aaGrids={upper:{cols:50,rows:80},middle:{cols:50,rows:80},lower:{cols:50,rows:80}};
-const validAA=n=>Number.isInteger(n)&&n>=4&&n<=200;
+const aaGrids={upper:{cols:250,rows:400},middle:{cols:250,rows:400},lower:{cols:250,rows:400}};
+const validAA=n=>Number.isInteger(n)&&n>=4&&n<=500;
 function gridSpec(id=preferredFloor){
  const shape=aaGrids[id]||aaGrids.middle,cols=shape.cols,rows=shape.rows;
  return {cols,rows,cw:W/cols,ch:H/rows,cellY:2500/cols,cellX:4000/rows};
@@ -331,7 +331,7 @@ function updateAAGridInfo(){
 }
 function applyAAGridSize(cols,rows){
  if(!validAA(cols)||!validAA(rows)){
-  document.getElementById('aaGridStatus').textContent='横・縦とも4〜200の整数で指定してください。';
+  document.getElementById('aaGridStatus').textContent='横・縦とも4〜500の整数で指定してください。';
   return false;
  }
  aaGrids[preferredFloor]={cols,rows};
@@ -798,7 +798,7 @@ function updateDisplaySettingsButtons(){
  const top=document.getElementById('gridOnTop');
  top.classList.toggle('on',state.gridOnTop);
  top.setAttribute('aria-pressed',String(state.gridOnTop));
- document.getElementById('gridSize').textContent='50m／100mの既定値に切替';
+ document.getElementById('gridSize').textContent='10m／50mの既定値に切替';
  updateAAGridInfo();
 }
 function restoreDisplaySettings(){
@@ -808,7 +808,7 @@ function restoreDisplaySettings(){
    const saved=JSON.parse(raw);
    if(saved&&saved.version===1){
     for(const key of DISPLAY_LAYER_KEYS)if(typeof saved.layers?.[key]==='boolean')state[key]=saved.layers[key];
-    if(saved.gridMeters===50||saved.gridMeters===100)gridMeters=saved.gridMeters;
+    if([10,50,100].includes(saved.gridMeters))gridMeters=saved.gridMeters;
     if(typeof saved.hull==='boolean')state.hull=saved.hull;
     if(saved.shipView==='side'||saved.shipView==='top')shipView=saved.shipView;
     else if(saved.shipView==='map')shipView='map';
@@ -816,12 +816,12 @@ function restoreDisplaySettings(){
      for(const id of GRID_FLOOR_IDS){
       const v=saved.aaGrids[id];
       if(v&&validAA(v.cols)&&validAA(v.rows)){
-       if(v.cols===25&&v.rows===40){aaGrids[id]={cols:50,rows:80};gridMeters=50}
+       if((v.cols===25&&v.rows===40)||(v.cols===50&&v.rows===80)){aaGrids[id]={cols:250,rows:400};gridMeters=10}
        else aaGrids[id]={cols:v.cols,rows:v.rows};
       }
      }
-    }else if(gridMeters===50){
-     for(const id of GRID_FLOOR_IDS)aaGrids[id]={cols:50,rows:80};
+    }else {
+     for(const id of GRID_FLOOR_IDS)aaGrids[id]={cols:250,rows:400};gridMeters=10;
     }
     if(typeof saved.gridOnTop==='boolean')state.gridOnTop=saved.gridOnTop;
     if(typeof saved.showProposal==='boolean')showProposal=saved.showProposal;
@@ -1145,10 +1145,10 @@ function drawExclusiveSortieZones(){
 }
 function drawEngineeringOuterGrid(){
  if(!state.grid)return;
- ctx.save();ctx.strokeStyle='rgba(92,165,186,.22)';ctx.lineWidth=.8;
+ ctx.save();ctx.strokeStyle='rgba(92,165,186,.13)';ctx.lineWidth=.55;
  // Logical px 20 = 50m. This is a margin OUTSIDE the canonical ship.
- for(let x=-200;x<=W+200;x+=20){ctx.beginPath();ctx.moveTo(x,-220);ctx.lineTo(x,H+220);ctx.stroke()}
- for(let y=-220;y<=H+220;y+=20){ctx.beginPath();ctx.moveTo(-200,y);ctx.lineTo(W+200,y);ctx.stroke()}
+ for(let x=-200;x<=W+200;x+=4){ctx.beginPath();ctx.moveTo(x,-220);ctx.lineTo(x,H+220);ctx.stroke()}
+ for(let y=-220;y<=H+220;y+=4){ctx.beginPath();ctx.moveTo(-200,y);ctx.lineTo(W+200,y);ctx.stroke()}
  ctx.strokeStyle='rgba(87,178,208,.66)';ctx.lineWidth=2;ctx.setLineDash([12,8]);
  ctx.strokeRect(-190,-190,W+380,H+380);ctx.setLineDash([]);
  ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillStyle='#afdeec';
@@ -1212,8 +1212,8 @@ function drawGridLayer(){
  if(!state.grid)return;
  const q=gridSpec();
  ctx.save();
- ctx.strokeStyle=state.gridOnTop?'rgba(199,238,248,.46)':'rgba(173,210,218,.16)';
- ctx.lineWidth=state.gridOnTop?1.2:1;
+ ctx.strokeStyle=state.gridOnTop?'rgba(199,238,248,.23)':'rgba(173,210,218,.12)';
+ ctx.lineWidth=.6;
  for(let c=0;c<=q.cols;c++){const gx=c*q.cw;ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke()}
  for(let r=0;r<=q.rows;r++){const gy=r*q.ch;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke()}
  ctx.restore();
@@ -1451,7 +1451,7 @@ document.getElementById('darkGridToggle').onclick=()=>{state.grid=!state.grid;up
 document.getElementById('darkGridTop').onclick=()=>{state.gridOnTop=!state.gridOnTop;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
 document.getElementById('reset').onclick=clearSelected;
 document.getElementById('gridSize').onclick=()=>{
- gridMeters=gridMeters===100?50:100;
+ gridMeters=gridMeters===10?50:10;
  applyAAGridSize(2500/gridMeters,4000/gridMeters);
  updateDisplaySettingsButtons();
 };
