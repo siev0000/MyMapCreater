@@ -8,7 +8,7 @@
     "section": "5.3-5.6",
     "status": "現行の初期配置（未承認の再設計案は含まない）"
   },
-  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 独立施設の多角形形状重複0件（配置案、道路の再調整は別途必要）。",
+  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 独立施設の多角形形状重複0件（配置案、道路の再調整は別途必要）。 upper層中央ターミナル内部を中層と同じ概念で区画化（GitHub検討表示、Notion未反映）。研究区認証門や貨物経路などの外部接続は別途検証。",
   "facilities": [
     {
       "id": "upper_terminal",
@@ -18,7 +18,7 @@
       "w": 500,
       "h": 500,
       "type": "terminal",
-      "detail": "一般リフト群と外征用直通リフトの出発点。",
+      "detail": "上層の中央交通拠点。直径500mの共通ターミナル塔内に一般・大型機乗降区、認証・待機帯、案内・保安・応急設備を配置。研究区の認証門・上層専用外征直通リフトとは別設備として接続を検討する。研究施設そのものを内包しない。",
       "short": "中央ターミナル",
       "sourceSection": "5.3-5.5",
       "sourcePosition": [
@@ -29,7 +29,69 @@
         500,
         500
       ],
-      "draftRepositioned": true
+      "draftRepositioned": true,
+      "terminalInterior": {
+        "status": "draft_shared_terminal_v1",
+        "terminalRadius": 250,
+        "centralTransportRadius": 100,
+        "waitingSecurityOuterRadius": 130,
+        "supportBandOuterRadius": 210,
+        "exitBandOuterRadius": 250,
+        "sections": [
+          {
+            "id": "upper_general_info",
+            "name": "案内・共同受付",
+            "angleDeg": 45
+          },
+          {
+            "id": "upper_security",
+            "name": "認証・保安検査",
+            "angleDeg": 135
+          },
+          {
+            "id": "upper_emergency",
+            "name": "応急・避難支援",
+            "angleDeg": 225
+          },
+          {
+            "id": "upper_expedition_link",
+            "name": "外征リフト連絡案内",
+            "angleDeg": 315
+          }
+        ],
+        "passageways": [
+          {
+            "id": "upper_large_bow",
+            "angleDeg": 0,
+            "halfAngleDeg": 11,
+            "width": 48,
+            "access": "large_machine_authorized"
+          },
+          {
+            "id": "upper_public_starboard",
+            "angleDeg": 90,
+            "halfAngleDeg": 6,
+            "width": 24,
+            "access": "public"
+          },
+          {
+            "id": "upper_large_stern",
+            "angleDeg": 180,
+            "halfAngleDeg": 11,
+            "width": 48,
+            "access": "large_machine_authorized"
+          },
+          {
+            "id": "upper_public_port",
+            "angleDeg": 270,
+            "halfAngleDeg": 6,
+            "width": 24,
+            "access": "public"
+          }
+        ],
+        "internalConnectionStatus": "draft_not_road_graph",
+        "note": "外征リフトの実際の乗降位置は未確定。上層研究区との認証門はターミナル外部に維持し、マギテックとエイドロンの立入権限を混在させない。"
+      }
     },
     {
       "id": "upper_main_control",
@@ -2136,6 +2198,7 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/upper.json",
-    "review": "polygon_collision_checked"
+    "review": "polygon_collision_checked; central terminal interior is visual-only; roads and gate routing unchanged",
+    "terminalInteriorLayout": "draft_shared_terminal_v1_upper"
   }
 }
