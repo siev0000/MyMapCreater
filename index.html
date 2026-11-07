@@ -266,12 +266,14 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  </section>
  <section class="panel" id="otherTerminalLayout" hidden>
  <h2>中央ターミナルの内部構成（上層・下層／仮表示）</h2>
+ <p class="mapGridHint">ターミナルを選択したときだけ内部区画の説明を表示します。</p>
  <p id="otherTerminalLayoutText" class="mapGridHint">中央塔は直径500mのまま。乗降・認証・支援機能を、各階層の役割に合わせて区画配置します。</p>
  <p class="mapGridHint">紫色の縦動線＝大型機専用48m、青緑の横動線＝一般24m。上層研究区の認証門、下層の危険物・貨物通路とは無条件に連絡しません。地図上の円弧は施設配置の検討用表示で、Notionの確定間取りではありません。</p>
  <p><a href="./docs/aa-three-floor-terminal-and-middle-space-review-v1.md" target="_blank" rel="noopener noreferrer">3階層ターミナルと中層空間の整理メモを開く</a></p>
  </section>
  <section class="panel" id="middleCentralLayout" hidden>
  <h2>中層中央生活圏（再配置案）</h2>
+ <p class="mapGridHint">リンクターミナルを選択すると内部構成、ドームを選択すると8受付・小作戦室の詳細を表示します。</p>
  <p class="mapGridHint">リンクターミナル直径500mの内部に、レジストリンク・ドームを配置しました。中央の一般・大型機乗降区（半径100m）、待機・認証帯（100～130m）、環状の任務受付・小作戦室（130～210m）、外周の出口区（210～250m）の構成です。</p>
  <p class="mapGridHint">青＝8か所の任務受付／紫色の小部屋＝各受付に隣接した作戦室／紫の太い通路＝大型機専用（船首・船尾）／青緑＝一般通路（左右舷）。専用シャッターと隔壁で動線を区別します。</p>
  <p class="mapGridHint">ドームはターミナル内部の施設であり、外部の独立建築ではありません。タウン・工房街・アルキメリアラボはターミナル外周の生活圏へ集約。中央通路は仮配線、外周道路は未確認。Notionは未変更です。</p>
@@ -1124,6 +1126,16 @@ function renderPlaces(){
    (expanded?'<div class="placeGroupChildren">'+f.internalFacilities.map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">'+escHTML(c.name)+'</button>').join('')+'</div>':'')+'</div>';
  }).join('');
 }
+function updateInteriorPanels(){
+ const selected=chosen?.id||'';
+ const isMiddle=Boolean(currentMap==='middle'&&showProposal&&(
+  selected==='middle_terminal'||selected==='resist_link_dome'||chosen?.parentId==='resist_link_dome'
+ ));
+ const isOther=Boolean(currentMap!=='middle'&&showProposal&&
+  chosen?.type==='terminal'&&chosen.id===facilities[0]?.id);
+ document.getElementById('middleCentralLayout').hidden=!isMiddle;
+ document.getElementById('otherTerminalLayout').hidden=!isOther;
+}
 function validateFloorJSON(id,data){
  if(!data||data.schemaVersion!==1||data.floor!==id||!Array.isArray(data.facilities)||!Array.isArray(data.roads)||data.facilities.length===0)throw Error(id+' のJSON形式が不正です');
  if(data.facilities[0].type!=='terminal')throw Error(id+' の中央ターミナルが見つかりません');
@@ -1200,7 +1212,7 @@ function switchMap(id){
  document.getElementById('layoutNotice').textContent=preview?'多重船殻・再配置案／未確定':'Notion現行座標（緩衝区未反映）';
 
  document.getElementById('upperAccessAudit').hidden=!(id==='upper'&&preview);
- document.getElementById('middleCentralLayout').hidden=!(id==='middle'&&preview);
+ document.getElementById('middleCentralLayout').hidden=true;
  if(id==='middle'&&preview){
   const review=layoutDrafts.middle?.centralUrbanPlan?.spaceReview;
   const el=document.getElementById('middleSpaceReviewSummary');
@@ -1209,7 +1221,7 @@ function switchMap(id){
     '<ul>'+review.classification.map(c=>'<li><strong>'+escHTML(c.name)+'</strong>：'+escHTML(c.rule)+'</li>').join('')+'</ul>';
   }
  }
- document.getElementById('otherTerminalLayout').hidden=!(id!=='middle'&&preview);
+ document.getElementById('otherTerminalLayout').hidden=true;
  document.getElementById('otherTerminalLayoutText').textContent=id==='upper'?
  '上層：一般・大型機乗降、共同案内、認証・保安検査、応急・避難案内。研究区の認証門は別施設、外征直通リフトは専用接続。':
  '下層：一般・大型機乗降、簡易検査、応急修理・充電、避難誘導。ラストハブ生活区と連絡し、危険物・貨物搬送は別系統。';
@@ -1634,13 +1646,13 @@ function openDrawer(){
  document.getElementById('menuBtn').textContent='×';
  document.getElementById('drawer').setAttribute('aria-hidden','false');
 }
-function clearSelected(){chosen=null;document.getElementById('selectedPanel').hidden=true;renderInfo();draw()}
+function clearSelected(){chosen=null;document.getElementById('selectedPanel').hidden=true;renderPlaces();updateInteriorPanels();renderInfo();draw()}
 function selectPlace(id){
  if(shipView!=='map'&&activeWorldId==='apocrypha_archive')setShipView('map',false);
  switchMenuTab('facilities');
  const f=findFacility(id);
  if(!f)return;
- chosen=f;selectedPropulsionAreaId=null;renderPropulsionList();
+ chosen=f;selectedPropulsionAreaId=null;renderPropulsionList();renderPlaces();updateInteriorPanels();
  closePopup();
  const selectedPanel=document.getElementById('selectedPanel');
  const detail=document.getElementById('selectedDetail');
@@ -1745,7 +1757,7 @@ canvas.addEventListener('click',e=>{
  if(!near&&!restricted&&radius<=250&&tower)near=tower;
  chosen=near||compoundParent||zoneParent||(restricted?{kind:'reserved',...restricted}:radius<=330&&radius>250?{kind:'concourse'}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});
  document.getElementById('selectedPanel').hidden=true;
- renderInfo();draw();
+ renderPlaces();updateInteriorPanels();renderInfo();draw();
 });
 document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{
  const n=b.dataset.layer;state[n]=!state[n];updateDisplaySettingsButtons();saveDisplaySettings();draw();
