@@ -327,7 +327,7 @@ function create(options){
  }
  function reset(){
   if(!model||!confirm("ダークワールドのこのブラウザの編集を破棄し、GitHubの仮配置へ戻しますか？"))return;
-  model=clone(base);selection=null;routeStart=null;
+  model=resizeModel(base,DEFAULT_FINE_GRID.cols,DEFAULT_FINE_GRID.rows);selection=null;routeStart=null;
   try{localStorage.removeItem(STORAGE_KEY)}catch(e){console.warn(e)}
   $("darkStatus").textContent="GitHubの仮配置へ戻しました";
   renderPalette();renderLists();updateSelected();updateGridUI();redraw();
