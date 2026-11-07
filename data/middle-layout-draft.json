@@ -8,7 +8,7 @@
     "section": "6.2-6.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。",
+  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。",
   "facilities": [
     {
       "id": "middle_terminal",
@@ -2116,14 +2116,14 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "central_visual_geometry_checked__outer_transport_network_unverified",
+    "review": "middle_terminal_internal_130_210; middle_open_space_classification_added; peripheral_routes_not_verified",
     "layoutModel": "middle-terminal-internal-guild-v2"
   },
   "centralUrbanPlan": {
-    "status": "draft_relayout_user_requested",
+    "status": "draft_integrated_hub_and_space_review",
     "terminalRadiusM": 250,
-    "guildRadiusInnerM": 335,
-    "guildRadiusOuterM": 425,
+    "guildRadiusInnerM": 130,
+    "guildRadiusOuterM": 210,
     "urbanBlocks": [
       {
         "id": "town_market",
@@ -2191,6 +2191,69 @@
     ],
     "largeMachineSeparated": true,
     "sizeInterpretation": "街区300～600mは複数建物・道路・柱を含む都市空間。タウン・バレーは単独の巨大建築ではない。",
-    "connectionStatus": "中央部のみ再敷設検討。外周道路・貨物・アルボラへの全区間接続は未確認。"
+    "connectionStatus": "中央ターミナルの内部ドームは半径130-210mに内包。中央外周道路と農業・貨物系統との接続は未確定。未登録領域は用地確定不可。",
+    "spaceReview": {
+      "status": "planning_inventory_unconfirmed",
+      "auditScope": "中層中心生活圏および中央から周辺施設への未敷設区画",
+      "note": "『空き』は建物がJSONに表示されていない領域を意味するだけ。未定義の建物、支柱、空調、壁内整備区、将来拡張、非常路などがあり得る。実際の空き地や自由建築用地として確定しない。",
+      "classification": [
+        {
+          "id": "daily_life",
+          "name": "生活・商業・工房の連続街区",
+          "reference": [
+            "core_shell_town",
+            "refine_valley",
+            "alchimeria_lab"
+          ],
+          "rule": "既存の生活・工房・ラボを同じ動線に保持。広げる前に街路と搬入経路の安全分離を確定。"
+        },
+        {
+          "id": "public_circulation",
+          "name": "公共交通・大型機移動帯",
+          "reference": [
+            "middle_terminal",
+            "middle_public_ring",
+            "middle_pod_loop",
+            "middle_mission_avenue"
+          ],
+          "rule": "一般・大型機・ポッドを無条件に横断可能とせず、専用ゲートと隔壁を前提に交通動線を確定。"
+        },
+        {
+          "id": "arbora_environment",
+          "name": "アルボラ・環境・栽培管理",
+          "reference": [
+            "arbora_sector",
+            "ecosystem_greenhouses",
+            "water_soil_cycle"
+          ],
+          "rule": "栽培環境・天井の降雨/空調・水循環・隔離のための空間を確保。街区と混在させない。"
+        },
+        {
+          "id": "industrial_logistics",
+          "name": "燃料加工・貨物動線",
+          "reference": [
+            "standard_fuel_factory",
+            "plant_oil_processing",
+            "fiber_resin_processing",
+            "middle_material_processing",
+            "middle_cargo_inspection"
+          ],
+          "rule": "重貨物・一般通行・危険物や有機物の流れを分離。"
+        },
+        {
+          "id": "engineering_buffer",
+          "name": "構造柱・空調・避難・未割当",
+          "reference": [],
+          "rule": "現在建物が描かれていない場所。需要・壁や道路の確定後に用途を決め、安易に施設を追加しない。"
+        }
+      ],
+      "policy": "用途を明示していない箇所は『未割当・要確認』と表示する。これを空き地・建設可能面積の確定とはみなさない。",
+      "useOnMap": "status_panel_only_no_new_physical_shapes",
+      "nextSteps": [
+        "中央から外周道路へ通る実際のアクセスを接続",
+        "中央区とアルボラ・工業路の用途境界の再監査",
+        "重複と緩衝幅を計測し、残りの領域を再分類"
+      ]
+    }
   }
 }
