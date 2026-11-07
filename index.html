@@ -150,6 +150,10 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .shipHullLayersLegend span{display:inline-flex;align-items:center;gap:5px}
 .shipHullLayersLegend i{display:inline-block;width:13px;height:13px;border:1px solid #a9b7bf;border-radius:2px;flex:none}
 .shipHullLayersLegend .shipLayerDraft{color:#d8be83;font-size:10px}
+.aaCollisionItem{display:flex;gap:5px;align-items:center;flex-wrap:wrap;padding:5px 0;border-bottom:1px solid #324452;font-size:11px}
+.aaCollisionItem button{font-size:11px;color:#ffd0c4;border:1px solid #915e5b;background:#332a30;border-radius:5px;padding:5px;cursor:pointer}
+.aaCollisionItem small{color:#d4c3b4;font-size:10px}
+#aaCollisionCount{color:#ffafa5}
 </style></head>
 <body><div class="app" id="appRoot" data-world="apocrypha_archive">
 <header class="topbar">
@@ -245,7 +249,12 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
     <section class="panel propulsionPanel" id="propulsionPanel"><h2>推進機関区・専用保守設備</h2>
     <p class="propulsionHelp"><span id="propulsionFloorName"></span>｜外周の青色区画（上層）、緑色（中層）、橙色（下層）は船外側の専用設備の仮配置です。<strong>一般ルートから進入不可</strong>。番号か一覧で説明を確認できます。</p>
     <div id="propulsionList" class="propulsionList"></div><p class="propulsionHint">※外装甲・機関整備区・独立した防振緩衝区・内部生活区の多重構造を表示。装置数と専用整備路は未確定です。</p></section>
-    <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>選択してもメニューは閉じません。該当する場所にズームします。</p></section>
+    <section class="panel" id="aaCollisionAudit" hidden>
+ <h2>施設の重複確認 <span id="aaCollisionCount"></span></h2>
+ <p class="mapGridHint">赤色枠は再配置案で重なっている独立施設です。地区全体の枠とその内部施設など、完全に包含される組み合わせは除外しています。重複項目を押すと該当施設へ移動します。</p>
+ <div id="aaCollisionList"></div>
+ </section>
+ <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>選択してもメニューは閉じません。該当する場所にズームします。</p></section>
    </div>
    <div id="panelDisplay" class="drawerSection" role="tabpanel" data-menu-panel="display" hidden>
     <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
@@ -1064,7 +1073,7 @@ function switchMap(id){
  updateAAGridInfo();
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
  document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=true; // 古い6区画の暫定用途案は混乱を防ぐため非表示
- selectedPropulsionAreaId=null;document.getElementById('shipHullLayersLegend').hidden=!preview;renderPlaces();renderPropulsionList();renderInfo();draw();
+ selectedPropulsionAreaId=null;document.getElementById('shipHullLayersLegend').hidden=!preview;renderPlaces();renderPropulsionList();renderCollisionAudit();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>{
  if(activeWorldId!=='apocrypha_archive')return;
@@ -1208,6 +1217,45 @@ function drawHullStructuralLabels(){
  ctx.fillText('多重船殻：3系統の隔離帯（配置案）',W/2,80);
  ctx.restore();
 }
+// Collision audit is for the planning layout only. Parent regions and intended
+// fully-contained subareas are not independent overlapping buildings.
+function draftCollisionPairs(){
+ if(!(showProposal&&layoutDrafts[currentMap]))return [];
+ const items=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&!f.zoneOutline&&f.type!=='terminal');
+ const collisions=[];
+ for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){
+  const a=items[i],b=items[j];
+  const left=Math.max(a.y-a.h/2,b.y-b.h/2),right=Math.min(a.y+a.h/2,b.y+b.h/2);
+  const bottom=Math.max(a.x-a.w/2,b.x-b.w/2),top=Math.min(a.x+a.w/2,b.x+b.w/2);
+  if(right-left<=10||top-bottom<=10)continue;
+  const contained=(p,q)=>p.x-p.w/2>=q.x-q.w/2&&p.x+p.w/2<=q.x+q.w/2&&
+   p.y-p.h/2>=q.y-q.h/2&&p.y+p.h/2<=q.y+q.h/2;
+  if(contained(a,b)||contained(b,a))continue;
+  collisions.push({a,b,width:right-left,height:top-bottom});
+ }
+ return collisions;
+}
+function renderCollisionAudit(){
+ const el=document.getElementById('aaCollisionAudit');if(!el)return;
+ const pairs=draftCollisionPairs();
+ el.hidden=!(showProposal&&layoutDrafts[currentMap]);
+ document.getElementById('aaCollisionCount').textContent=pairs.length+'組';
+ document.getElementById('aaCollisionList').innerHTML=pairs.length?
+  pairs.slice(0,35).map(({a,b,width,height})=>
+  '<div class="aaCollisionItem"><button type="button" data-collision-place="'+escHTML(a.id)+'">'+escHTML(a.name)+'</button>'+
+  '<span>×</span><button type="button" data-collision-place="'+escHTML(b.id)+'">'+escHTML(b.name)+'</button>'+
+  '<small>重複 '+Math.round(width)+'×'+Math.round(height)+'m</small></div>').join(''):
+  '<p>独立施設間の矩形重複は検出されませんでした。</p>';
+ if(pairs.length>35)document.getElementById('aaCollisionList').insertAdjacentHTML('beforeend','<p>ほか '+(pairs.length-35)+'組。配置エディターで調整できます。</p>');
+}
+function drawCollisionWarnings(){
+ if(!showProposal||!layoutDrafts[currentMap])return;
+ const pairs=draftCollisionPairs(),highlight=new Set();
+ for(const pair of pairs){highlight.add(pair.a);highlight.add(pair.b)}
+ ctx.save();ctx.lineWidth=3;ctx.strokeStyle='#f36d65';ctx.setLineDash([8,5]);
+ for(const f of highlight){const [cx,cy]=xy(f.x,f.y);ctx.strokeRect(cx-f.h*.2,cy-f.w*.2,f.h*.4,f.w*.4)}
+ ctx.restore();
+}
 function drawGridLayer(){
  if(!state.grid)return;
  const q=gridSpec();
@@ -1257,6 +1305,7 @@ for(const f of facilities){
 }
 for(let r of roads)drawRoad(r);
 drawCompoundFacilities();
+drawCollisionWarnings();
 // Terminal tower after roads, explicit center footprint
 const term=facilities[0];
 ctx.save();
@@ -1461,6 +1510,9 @@ document.getElementById('aaGridApply').onclick=()=>applyAAGridSize(
 );
 renderPlaces();
 document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});
+document.getElementById('aaCollisionList').addEventListener('click',e=>{
+ const b=e.target.closest('[data-collision-place]');if(b)selectPlace(b.dataset.collisionPlace);
+});
 document.getElementById('selectedDetail').addEventListener('click',e=>{
  const b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place);
 });
