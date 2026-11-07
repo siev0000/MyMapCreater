@@ -489,6 +489,7 @@ function setShipView(mode,persist=true){
    b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));
   });
   document.getElementById('thrusterAccessChip').hidden=mode!=='map';
+  document.getElementById('propulsionPanel').hidden=mode!=='map';
   document.getElementById('map').setAttribute('aria-label',mode==='map'?'施設・道路をタップして概要を表示するマップ':'船体'+(mode==='top'?'上面':'側面')+'の外形模式図');
   document.title=mode==='map'?'AA '+(mapSets[preferredFloor]?.name||'階層マップ'):'AA 船体'+(mode==='top'?'上面':'側面')+'形状';
  }
@@ -709,6 +710,7 @@ function switchWorld(id,persist=true){
   canvas.style.aspectRatio=shipView==='side'?'25/14':'5/8';
   fitCanvasToViewport();
   document.getElementById('shipViewControls').hidden=false;
+  document.getElementById('propulsionPanel').hidden=shipView!=='map';
   document.getElementById('shipOrientationChip').textContent=shipView==='side'?'◀ 船首 +X':'▲ 船首 +X';
   document.getElementById('darkWorldControls').hidden=true;
   document.getElementById('shipOrientationChip').hidden=false;
@@ -723,6 +725,7 @@ function switchWorld(id,persist=true){
   document.getElementById('shipViewControls').hidden=true;
   document.getElementById('shipPartsLegend').hidden=true;
   document.getElementById('thrusterAccessChip').hidden=true;
+  document.getElementById('propulsionPanel').hidden=true;
   fitCanvasToViewport();
   chosen=null;resetView();
   document.getElementById('selectedPanel').hidden=true;
@@ -812,15 +815,17 @@ function updateZoomUI(){
 function mapCoordinateFromClient(clientX,clientY){
  const r=canvas.getBoundingClientRect(),h=canvas.height;
  const sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*h;
- return {x:W/2+(sx-W/2-view.offsetX)/(view.zoom*MAP_INSET_X),y:h/2+(sy-h/2-view.offsetY)/(view.zoom*MAP_INSET_Y)};
+ const inset=activeWorldId==='apocrypha_archive'&&shipView==='map';
+ return {x:W/2+(sx-W/2-view.offsetX)/(view.zoom*(inset?MAP_INSET_X:1)),y:h/2+(sy-h/2-view.offsetY)/(view.zoom*(inset?MAP_INSET_Y:1))};
 }
 function zoomAround(next,clientX,clientY){
  const r=canvas.getBoundingClientRect();
  if(!r.width||!r.height)return;
  const h=canvas.height,sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*h;
- const bx=(sx-W/2-view.offsetX)/(view.zoom*MAP_INSET_X),by=(sy-h/2-view.offsetY)/(view.zoom*MAP_INSET_Y);
+ const inset=activeWorldId==='apocrypha_archive'&&shipView==='map',mx=inset?MAP_INSET_X:1,my=inset?MAP_INSET_Y:1;
+ const bx=(sx-W/2-view.offsetX)/(view.zoom*mx),by=(sy-h/2-view.offsetY)/(view.zoom*my);
  view.zoom=clamp(next,1,4);
- view.offsetX=sx-W/2-bx*view.zoom*MAP_INSET_X;view.offsetY=sy-h/2-by*view.zoom*MAP_INSET_Y;
+ view.offsetX=sx-W/2-bx*view.zoom*mx;view.offsetY=sy-h/2-by*view.zoom*my;
  updateZoomUI();draw();
 }
 function zoomCenter(factor){
@@ -1272,7 +1277,7 @@ canvas.addEventListener('wheel',e=>{
  zoomAround(view.zoom*(e.deltaY<0?1.15:1/1.15),e.clientX,e.clientY);
 },{passive:false});
 canvas.addEventListener('click',e=>{
- if(activeWorldId==='apocrypha_archive'&&shipView==='map'&&Date.now()>=ignoreClickUntil){
+ if(activeWorldId==='apocrypha_archive'&&shipView==='map'&&state.hull&&Date.now()>=ignoreClickUntil){
   const p=mapCoordinateFromClient(e.clientX,e.clientY);
   const near=PROPULSION_AREAS.map(a=>({area:a,d:Math.hypot(p.x-propulsionAreaPosition(a).x,p.y-propulsionAreaPosition(a).y)})).sort((a,b)=>a.d-b.d)[0];
   if(near&&near.d<32/view.zoom){selectPropulsionArea(near.area.id);return}
