@@ -231,7 +231,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
     </section>
     <section class="panel propulsionPanel" id="propulsionPanel"><h2>推進機関区・専用保守設備</h2>
     <p class="propulsionHelp"><span id="propulsionFloorName"></span>｜外周の青色区画（上層）、緑色（中層）、橙色（下層）は船外側の専用設備の仮配置です。<strong>一般ルートから進入不可</strong>。番号か一覧で説明を確認できます。</p>
-    <div id="propulsionList" class="propulsionList"></div><p class="propulsionHint">※外側に整備余白、内側に緩衝帯を仮表示。実際の位置・寸法は未確定で、道路網に接続していません。</p></section>
+    <div id="propulsionList" class="propulsionList"></div><p class="propulsionHint">※外装甲・機関整備区・独立した防振緩衝区・内部生活区の多重構造を表示。装置数と専用整備路は未確定です。</p></section>
     <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>選択してもメニューは閉じません。該当する場所にズームします。</p></section>
    </div>
    <div id="panelDisplay" class="drawerSection" role="tabpanel" data-menu-panel="display" hidden>
@@ -285,7 +285,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=50;
-const MAP_INSET_X=.70,MAP_INSET_Y=.80; // extra exterior engineering perimeter; physical hull dimensions remain unchanged
+const MAP_INSET_X=.70,MAP_INSET_Y=.80; // exterior margin; ship dimensions and canonical source unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
 const aaGrids={upper:{cols:50,rows:80},middle:{cols:50,rows:80},lower:{cols:50,rows:80}};
 const validAA=n=>Number.isInteger(n)&&n>=4&&n<=200;
@@ -1140,15 +1140,56 @@ function drawEngineeringOuterGrid(){
  ctx.fillText('船体本体の寸法・既存施設の座標は維持',W/2,H+144);
  ctx.restore();
 }
-function drawInnerEngineeringBuffer(){
+// Protected interior is bounded on ALL four sides, including bow and stern.
+// Four physical functional zones: armor / engines & service / damping bulkheads / occupied core.
+// Widths are drawing-stage draft values, not official engineering dimensions.
+const PROTECTED_SHELL={armor:18,mechanical:78,interior:136};
+function hullProtectedPath(inset){
+ const start=Math.max(0,inset),end=H-start;
+ ctx.beginPath();
+ for(let i=0;i<=110;i++){
+  const y=start+(end-start)*i/110,half=Math.max(3,(W-28)*hullWidth(y/H)/2-inset);
+  i===0?ctx.moveTo(W/2-half,y):ctx.lineTo(W/2-half,y);
+ }
+ for(let i=110;i>=0;i--){
+  const y=start+(end-start)*i/110,half=Math.max(3,(W-28)*hullWidth(y/H)/2-inset);
+  ctx.lineTo(W/2+half,y);
+ }
+ ctx.closePath();
+}
+function drawHullStructuralLayers(){
  if(!state.hull)return;
  ctx.save();
- // Clear conceptual separation: hull / protected engineering strip / habitable interior.
- // The band is only a draft; existing canonical coordinates are not changed.
- hullTopPath(60);ctx.strokeStyle='rgba(110,178,196,.20)';ctx.lineWidth=115;ctx.stroke();
- hullTopPath(118);ctx.strokeStyle='rgba(243,204,126,.78)';ctx.lineWidth=3;ctx.setLineDash([14,10]);ctx.stroke();ctx.setLineDash([]);
- ctx.font='bold 14px system-ui';ctx.fillStyle='#f1d495';ctx.textAlign='center';
- ctx.fillText('外壁機関・緩衝帯（配置案）',W/2,108);
+ for(const [inset,color] of [
+  [0,'#667484'], // armored exterior
+  [PROTECTED_SHELL.armor,'#223d50'], // machinery + maintenance
+  [PROTECTED_SHELL.mechanical,'#52514b'], // isolated shock/noise bulkheads
+  [PROTECTED_SHELL.interior,'#1b343c'] // habitable / research interior
+ ]){
+  hullProtectedPath(inset);ctx.fillStyle=color;ctx.fill();
+ }
+ const boundaries=[
+  [PROTECTED_SHELL.armor,'rgba(168,199,219,.86)',3],
+  [PROTECTED_SHELL.mechanical,'rgba(117,204,232,.90)',3],
+  [PROTECTED_SHELL.interior,'rgba(255,214,146,.95)',4]
+ ];
+ for(const [depth,color,width] of boundaries){
+  hullProtectedPath(depth);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+ }
+ ctx.restore();
+}
+function clipToProtectedInterior(){
+ if(!state.hull)return;
+ hullProtectedPath(PROTECTED_SHELL.interior);ctx.clip();
+}
+function drawHullStructuralLabels(){
+ if(!state.hull)return;
+ ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.font='bold 14px system-ui';
+ ctx.fillStyle='#e2f1fa';
+ ctx.save();ctx.translate(61,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('外装甲｜機関・整備｜防振・緩衝｜居住・研究',0,0);ctx.restore();
+ ctx.fillStyle='#f1d79b';ctx.font='bold 12px system-ui';
+ ctx.fillText('多重船殻：3系統の隔離帯（配置案）',W/2,80);
  ctx.restore();
 }
 function drawGridLayer(){
@@ -1174,6 +1215,8 @@ ctx.scale(view.zoom*MAP_INSET_X,view.zoom*MAP_INSET_Y);
 ctx.translate(-W/2,-H/2);
 drawEngineeringOuterGrid();
 drawHullTop();
+drawHullStructuralLayers();
+ctx.save();clipToProtectedInterior();
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
 if(currentMap==='middle'){/* Decorative terrain ellipses removed: not a Notion-defined landform. */}
@@ -1182,7 +1225,6 @@ else if(currentMap==='lower'){ctx.fillStyle='#46372d';ctx.fillRect(0,H*.68,W,H*.
 ctx.restore();
 drawExclusiveSortieZones();
 drawMiddleDistrictAndDrafts();
-drawInnerEngineeringBuffer();
 if(!state.gridOnTop)drawGridLayer();
 // Real facilities and district region footprint; compound interiors are drawn separately.
 for(const f of facilities){
@@ -1209,7 +1251,8 @@ ctx.restore();
 for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
-ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(state.gridOnTop)drawGridLayer();drawRestrictedThrusterAccess();ctx.restore();}
+ctx.restore(); // exit the protected interior clipping region
+ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();drawHullStructuralLabels();drawRestrictedThrusterAccess();ctx.restore();}
 function fitCanvasToViewport(){
  const host=canvas.parentElement;
  if(!host||!host.getBoundingClientRect)return;
