@@ -134,7 +134,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <button class="floor-tab on" type="button" role="tab" aria-selected="true" data-map="middle">中層</button>
   <button class="floor-tab" type="button" role="tab" aria-selected="false" data-map="lower">下層</button>
  </nav>
- <div class="shapeHeader" id="shipViewControls" aria-label="船体形状の独立表示"><span class="shapeHeaderLabel">船体形状</span><span class="shipViews"><button id="shipTopView" type="button" aria-pressed="false">上面</button><button id="shipSideView" type="button" aria-pressed="false">側面</button></span></div>
+ <div class="shapeHeader" id="shipViewControls" aria-label="船体の外観（上面・側面）"><span class="shapeHeaderLabel">船体形状</span><span class="shipViews"><button id="shipTopView" type="button" aria-pressed="false">上面</button><button id="shipSideView" type="button" aria-pressed="false">側面</button></span></div>
  <div class="worldNav"><label for="worldSelect">マップ</label><select id="worldSelect" class="worldSelect" aria-label="表示するマップを選択"></select></div>
  <button id="menuBtn" class="iconbtn" type="button" aria-label="表示メニューを開く" aria-controls="drawer" aria-expanded="false">☰</button>
 </header>
@@ -330,7 +330,7 @@ function setShipView(mode,persist=true){
    orientation.textContent='▲ 船首 +X';
   }else{
    title.textContent=mode==='top'?'アポクリファ＝アーカイブ｜船体上面形状':'アポクリファ＝アーカイブ｜船体側面形状';
-   subtitle.textContent='船体外形の模式図・詳細形状は未確定';
+   subtitle.textContent='船体の外観図・外装の細部は仮案';
    readout.textContent=mode==='top'?'全長4,000m｜最大幅2,500m':'全長4,000m｜船体高さ未確定';
    notice.textContent='船体形状・仮案';
    orientation.textContent=mode==='top'?'▲ 船首 +X':'◀ 船首 +X';
@@ -450,43 +450,87 @@ function drawHullTop(){
  ctx.restore();
 }
 function drawHullSide(){
+ // Exterior orthographic concept only: not a cutaway, no visible floors.
  ctx.setTransform(1,0,0,1,0,0);
- ctx.clearRect(0,0,1000,560);ctx.fillStyle='#0a151e';ctx.fillRect(0,0,1000,560);
- const left=32,right=966,top=103,bottom=467;
- const hull=()=>{
-  ctx.beginPath();ctx.moveTo(left,282);
-  ctx.lineTo(95,222);ctx.lineTo(180,169);ctx.lineTo(350,145);
-  ctx.lineTo(470,125);ctx.lineTo(740,141);ctx.lineTo(889,151);
-  ctx.lineTo(right,181);ctx.lineTo(right,415);ctx.lineTo(900,443);
-  ctx.lineTo(725,459);ctx.lineTo(470,461);ctx.lineTo(255,438);
-  ctx.lineTo(125,392);ctx.closePath();
+ ctx.clearRect(0,0,1000,560);
+ ctx.fillStyle='#0a151e';ctx.fillRect(0,0,1000,560);
+ ctx.save();
+ const exterior=()=>{
+  ctx.beginPath();
+  ctx.moveTo(24,293);
+  ctx.lineTo(84,250);ctx.lineTo(143,226);ctx.lineTo(215,216);
+  ctx.lineTo(282,208);ctx.lineTo(355,205);
+  ctx.lineTo(405,193);ctx.lineTo(448,180);
+  ctx.lineTo(540,177);ctx.lineTo(590,194);
+  ctx.lineTo(705,197);ctx.lineTo(775,189);ctx.lineTo(862,199);
+  ctx.lineTo(939,212);ctx.lineTo(966,239);
+  ctx.lineTo(966,384);ctx.lineTo(930,423);
+  ctx.lineTo(784,430);ctx.lineTo(590,431);ctx.lineTo(406,430);
+  ctx.lineTo(232,419);ctx.lineTo(144,405);ctx.lineTo(79,366);
+  ctx.closePath();
  };
- hull();ctx.fillStyle='#223440';ctx.fill();ctx.strokeStyle='#84949d';ctx.lineWidth=11;ctx.stroke();
- ctx.save();hull();ctx.clip();
- // Vertical structure and *three* formal levels (not 5).
- const strata=[
-  {name:'上層《セントラルコア》',y:185,fill:'#2c4964'},
-  {name:'中層《アームドヴェイン》',y:281,fill:'#38545a'},
-  {name:'下層《ジェネレートシェル》',y:377,fill:'#51463a'}
- ];
- for(const level of strata){
-  ctx.fillStyle=level.fill;ctx.globalAlpha=.77;
-  ctx.fillRect(70,level.y-42,900,89);
-  ctx.globalAlpha=1;
-  ctx.strokeStyle='rgba(207,222,227,.46)';ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(65,level.y+47);ctx.lineTo(970,level.y+47);ctx.stroke();
-  ctx.fillStyle='#f5e8cf';ctx.font='bold 22px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.strokeStyle='#16232c';ctx.lineWidth=5;ctx.strokeText(level.name,525,level.y,600);ctx.fillText(level.name,525,level.y,600);
+ exterior();ctx.fillStyle='#283847';ctx.fill();ctx.strokeStyle='#a1aeb7';ctx.lineWidth=8;ctx.stroke();
+ ctx.save();exterior();ctx.clip();
+ // Independent armor plate seams, not internal floor divisions.
+ for(const [x,w] of [[129,112],[262,118],[406,116],[560,128],[705,100],[822,115]]){
+  ctx.fillStyle='rgba(155,177,189,.09)';
+  ctx.fillRect(x,232,w,160);
+  ctx.strokeStyle='rgba(137,169,186,.34)';ctx.lineWidth=2;
+  ctx.strokeRect(x,232,w,160);
  }
- // Shared central terminal, schematic only; exact height is not defined in canon.
- ctx.fillStyle='rgba(136,208,227,.15)';ctx.fillRect(467,135,85,292);
- ctx.strokeStyle='#98d3e4';ctx.lineWidth=2;ctx.setLineDash([10,7]);ctx.strokeRect(467,135,85,292);ctx.setLineDash([]);
+ // Lower external hull reinforcing members.
+ ctx.strokeStyle='#677d89';ctx.lineWidth=12;
+ ctx.beginPath();ctx.moveTo(100,369);ctx.lineTo(265,396);ctx.lineTo(625,405);ctx.lineTo(922,398);ctx.stroke();
+ ctx.strokeStyle='#bba27c';ctx.lineWidth=3;
+ ctx.beginPath();ctx.moveTo(133,231);ctx.lineTo(212,222);ctx.moveTo(738,207);ctx.lineTo(837,215);ctx.stroke();
+ // Side armored hatches and inspection bays.
+ for(const x of [245,685]){
+  ctx.fillStyle='#192934';ctx.fillRect(x,283,112,77);
+  ctx.strokeStyle='#c0a57c';ctx.lineWidth=3;ctx.strokeRect(x,283,112,77);
+  ctx.strokeStyle='#59778a';ctx.lineWidth=2;ctx.strokeRect(x+9,294,94,55);
+ }
+ // Exterior observation and status light slit.
+ for(const x of [177,382,600,797]){
+  ctx.fillStyle='#3b91b4';ctx.fillRect(x,257,52,5);
+ }
  ctx.restore();
- ctx.save();hull();ctx.strokeStyle='#c0a77e';ctx.lineWidth=2.3;ctx.stroke();ctx.restore();
- ctx.fillStyle='#dbe6ec';ctx.font='bold 18px system-ui';ctx.textAlign='left';
- ctx.fillText('◀ 船首 (+X)',30,56);ctx.textAlign='right';ctx.fillText('船尾 (-X) ▶',971,56);
- ctx.textAlign='center';ctx.fillStyle='#afc3d0';ctx.font='16px system-ui';
- ctx.fillText('船体側面模式図｜全長4,000m｜縦方向の厚み・外殻輪郭は未確定',500,528);
+ // Dorsal external structures: central mast cluster, sensors and raised outer shell.
+ ctx.fillStyle='#3a4b5a';ctx.strokeStyle='#90a1ad';ctx.lineWidth=4;
+ ctx.beginPath();ctx.moveTo(372,204);ctx.lineTo(402,158);ctx.lineTo(441,151);
+ ctx.lineTo(460,119);ctx.lineTo(484,82);ctx.lineTo(498,119);
+ ctx.lineTo(516,149);ctx.lineTo(558,159);ctx.lineTo(602,197);
+ ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.strokeStyle='#c3ae88';ctx.lineWidth=3;
+ ctx.beginPath();ctx.moveTo(484,82);ctx.lineTo(484,198);ctx.stroke();
+ for(const x of [214,335,641,834]){
+  ctx.strokeStyle='#91a8b4';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(x,211);ctx.lineTo(x,176);ctx.stroke();
+  ctx.fillStyle='#435b6b';ctx.beginPath();ctx.arc(x,176,7,0,Math.PI*2);ctx.fill();
+ }
+ // Enclosed botanical roof as an exterior dome behind the central structure.
+ ctx.beginPath();ctx.moveTo(706,199);ctx.bezierCurveTo(715,142,749,123,800,125);
+ ctx.bezierCurveTo(849,125,882,150,891,207);ctx.closePath();
+ ctx.fillStyle='#385b54';ctx.fill();ctx.strokeStyle='#90a99c';ctx.lineWidth=5;ctx.stroke();
+ ctx.strokeStyle='rgba(179,209,190,.62)';ctx.lineWidth=2;
+ for(const x of [735,768,801,834,863]){
+  ctx.beginPath();ctx.moveTo(x,194);ctx.lineTo(x+(801-x)*.25,133+Math.abs(801-x)*.18);ctx.stroke();
+ }
+ // Stacked stern engine shells visible behind the armored hull.
+ for(const [y,w] of [[253,38],[313,46],[371,39]]){
+  ctx.fillStyle='#2c414e';ctx.fillRect(959,y,w,36);
+  ctx.strokeStyle='#8c9fa8';ctx.lineWidth=3;ctx.strokeRect(959,y,w,36);
+  ctx.fillStyle='#50b6e4';ctx.fillRect(986,y+7,9,22);
+ }
+ // External large plate over joints, reinforcing hull silhouette.
+ ctx.strokeStyle='#d0b58a';ctx.lineWidth=4;
+ ctx.beginPath();ctx.moveTo(405,193);ctx.lineTo(385,251);ctx.lineTo(415,279);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(903,208);ctx.lineTo(880,249);ctx.lineTo(911,276);ctx.stroke();
+ ctx.textAlign='left';ctx.fillStyle='#e7f2fa';ctx.font='bold 17px system-ui';
+ ctx.fillText('◀ 船首 (+X)',31,47);
+ ctx.textAlign='right';ctx.fillText('船尾 (-X) ▶',970,47);
+ ctx.textAlign='center';ctx.fillStyle='#b5c9d7';ctx.font='15px system-ui';
+ ctx.fillText('船体外観・側面図（仮形状）｜全長4,000m',500,522);
+ ctx.restore();
 }
 /* Add new maps to this catalog. Planned maps show an honest empty state until their data is available. */
 const WORLD_CATALOG={
