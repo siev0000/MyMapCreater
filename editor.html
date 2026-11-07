@@ -83,6 +83,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <div id="saveState" role="status" style="color:#b9e1ce;padding:6px 4px;font-size:12px">保存状態：読み込み中</div><div id="message" role="status">準備中…</div>
 <footer>編集内容はこのブラウザに自動保存され、同じ端末・ブラウザから再開できます。GitHubへは「GitHubに下書きを保存」を押したときだけ更新されます。Notionや確定JSONは変更しません。別端末へ移す・GitHubへ反映する場合はJSONを書き出してください。ブラウザのデータ削除・プライベートモードでは保存が失われる場合があります。世界設定の正本はNotionです。</footer>
 </div>
+<script src="./middle-central-ring.js"></script>
 <script>(function editorApp(){
   "use strict";
   const F=["upper","middle","lower"], LABEL={upper:"上層",middle:"中層",lower:"下層"};
@@ -273,39 +274,8 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     ctx.restore();
   }
   function drawCompound(f){
-    if(f.ringComplex){
-      const ring=f.ringComplex;
-      const toWorld=(r,deg)=>[f.x+r*Math.cos(deg*Math.PI/180),f.y+r*Math.sin(deg*Math.PI/180)];
-      ctx.save();
-      for(let quadrant=0;quadrant<4;quadrant++){
-        const start=5+90*quadrant,end=85+90*quadrant,steps=40;
-        ctx.beginPath();
-        for(let i=0;i<=steps;i++){
-          const q=worldToPixel(...toWorld(ring.outerRadius,start+(end-start)*i/steps));
-          if(i===0)ctx.moveTo(q.px,q.py);else ctx.lineTo(q.px,q.py);
-        }
-        for(let i=steps;i>=0;i--){
-          const q=worldToPixel(...toWorld(ring.innerRadius,start+(end-start)*i/steps));
-          ctx.lineTo(q.px,q.py);
-        }
-        ctx.closePath();ctx.fillStyle="rgba(165,132,83,.84)";ctx.strokeStyle="#f1d9a3";ctx.lineWidth=2;ctx.fill();ctx.stroke();
-      }
-      for(const deg of ring.receptionAnglesDeg||[]){
-        const r=worldToPixel(...toWorld(ring.receptionRadius||355,deg));
-        ctx.fillStyle="#98d8f5";ctx.strokeStyle="#e6fcff";ctx.lineWidth=1.1;
-        ctx.fillRect(r.px-4,r.py-4,8,8);ctx.strokeRect(r.px-4,r.py-4,8,8);
-        for(const d of [-4.6,4.6]){
-          const m=worldToPixel(...toWorld(ring.briefingRadius||393,deg+d));
-          ctx.fillStyle="#786783";ctx.strokeStyle="#f1dba7";
-          ctx.fillRect(m.px-4,m.py-4,8,8);ctx.strokeRect(m.px-4,m.py-4,8,8);
-        }
-      }
-      for(const gate of ring.passageways||[]){
-        const p=worldToPixel(...toWorld((ring.outerRadius+ring.innerRadius)/2,gate.angleDeg));
-        ctx.fillStyle=gate.access==="large_machine_authorized"?"#e3aefa":"#a4ecdb";
-        ctx.beginPath();ctx.arc(p.px,p.py,5,0,Math.PI*2);ctx.fill();
-      }
-      ctx.restore();
+    if(f.ringComplex&&window.AAMiddleCentral){
+      window.AAMiddleCentral.drawGuild(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},f,{labels:state.labels,roads:true,zoom:1.8,chosen:selectedItem()});
       return;
     }
     const box=rect(f),color=COLORS[f.type]||"#f6d08e";
@@ -388,9 +358,18 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       }
     }
     for(const f of current().facilities.filter(f=>f.ringDistrict))drawAnnulus(f,"#63a5a1",.22);
+    if(active==="middle"&&window.AAMiddleCentral&&current().centralUrbanPlan){
+      window.AAMiddleCentral.drawUrbanBlocks(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},current().centralUrbanPlan,{labels:state.labels,zoom:1.35});
+    }
     for(const f of current().facilities){
       if(f.ringDistrict)continue;
       if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
+      if(active==="middle"&&f.type==="terminal"&&current().editorMeta?.layoutModel==="middle-terminal-internal-guild-v2"){
+        const c=worldToPixel(f.x,f.y),r=250*SC;
+        ctx.save();ctx.beginPath();ctx.arc(c.px,c.py,r,0,Math.PI*2);
+        ctx.fillStyle="rgba(52,110,135,.78)";ctx.strokeStyle="#9adbef";ctx.lineWidth=3;
+        ctx.fill();ctx.stroke();ctx.restore();continue;
+      }
       const b=rect(f),color=COLORS[f.type]||"#b3c6d2";
       ctx.save();
       if(f.draftRegion||f.zoneOutline){
@@ -406,6 +385,13 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       for(const f of current().facilities){
         if(f.showLabel===false||f.ringDistrict)continue;
         if(f.areaFrame&&Array.isArray(f.internalFacilities)){
+          if(f.ringComplex&&f.containedIn==="middle_terminal"){
+            const at=worldToPixel(f.x+228,f.y+40);
+            ctx.lineJoin="round";ctx.lineWidth=3;ctx.strokeStyle="#101e29";
+            ctx.strokeText("レジストリンク・ドーム〈ターミナル内〉",at.px,at.py-8,240);
+            ctx.fillStyle="#f9dfad";ctx.fillText("レジストリンク・ドーム〈ターミナル内〉",at.px,at.py-8,240);
+            continue;
+          }
           const bounds=rect(f),center=worldToPixel(f.x,f.y);
           ctx.strokeStyle="#0e202a";ctx.lineWidth=4;
           ctx.strokeText(f.name+"〈複合区〉",center.px,bounds.top-13,270);
@@ -419,6 +405,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
           ctx.font="bold 14px system-ui,sans-serif";
           continue;
         }
+        if(active==="middle"&&f.type==="terminal"&&current().editorMeta?.layoutModel==="middle-terminal-internal-guild-v2")continue;
         const c=worldToPixel(f.x,f.y),label=f.short||f.name;
         ctx.strokeStyle="#0e202a";ctx.lineWidth=4;ctx.strokeText(label,c.px,c.py-12,230);
         ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
