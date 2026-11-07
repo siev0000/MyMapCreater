@@ -7,6 +7,44 @@ const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 function create(options){
  const {canvas,ctx,getView,redraw,isDrawerOpen}=options;
  let base=null,model=null,selection=null,mode="inspect",selectedTerrain="plain",selectedOwner="vampire",routeStart=null;
+ const DEFAULT_FINE_GRID={cols:64,rows:64}, GRID_LIMIT=128;
+ const validSize=n=>Number.isInteger(n)&&n>=4&&n<=GRID_LIMIT;
+ const remapCell=(i,from,to)=>Math.min(to-1,Math.max(0,Math.floor((i+.5)*to/from)));
+ function resizeModel(original,cols,rows){
+  if(!validSize(cols)||!validSize(rows))throw Error("マス数は4〜"+GRID_LIMIT+"の整数で入力してください。");
+  const oldCols=original.grid.cols,oldRows=original.grid.rows;
+  if(oldCols===cols&&oldRows===rows)return clone(original);
+  const out=clone(original);
+  out.grid={...out.grid,cols,rows};
+  out.tiles=Array.from({length:cols*rows},(_,i)=>{
+   const c=i%cols,r=Math.floor(i/cols);
+   return clone(original.tiles[remapCell(r,rows,oldRows)*oldCols+remapCell(c,cols,oldCols)]);
+  });
+  out.settlements=(out.settlements||[]).map(p=>({...p,col:remapCell(p.col,oldCols,cols),row:remapCell(p.row,oldRows,rows)}));
+  out.routes=(out.routes||[]).map(route=>({...route,points:route.points.map(([x,y])=>[remapCell(x,oldCols,cols),remapCell(y,oldRows,rows)])}));
+  out.metadata={...out.metadata,gridUserSelected:true,gridLastResizeFrom:{cols:oldCols,rows:oldRows}};
+  return out;
+ }
+ function updateGridUI(){
+  if(!model)return;
+  const {cols,rows}=model.grid;
+  $("darkGridCols").value=String(cols);$("darkGridRows").value=String(rows);
+  $("darkGridCurrent").textContent="現在："+cols+"×"+rows+"（"+(cols*rows).toLocaleString("ja-JP")+"マス）";
+  $("gridReadout").textContent=cols+"×"+rows+"｜距離未設定";
+ }
+ function applyGridSize(cols,rows){
+  if(!model)return false;
+  if(!validSize(cols)||!validSize(rows)){
+   $("darkStatus").textContent="マス数は横・縦とも4〜"+GRID_LIMIT+"の整数にしてください。";
+   updateGridUI();return false;
+  }
+  if(model.grid.cols===cols&&model.grid.rows===rows){updateGridUI();return true}
+  if((cols<model.grid.cols||rows<model.grid.rows)&&
+     !confirm("細かな地形の編集が統合されることがあります。変更前のJSON書き出しをおすすめします。"+model.grid.cols+"×"+model.grid.rows+" → "+cols+"×"+rows+"に変更しますか？"))return false;
+  model=resizeModel(model,cols,rows);selection=null;routeStart=null;
+  model.metadata={...model.metadata,ownerLayoutRevision:base.metadata?.ownerLayoutRevision};
+  save();renderLists();updateSelected();updateGridUI();redraw();return true;
+ }
  const display={borders:true,routes:true,sites:true,reference:true,tiles:false};
  function saveDisplay(){
   try{localStorage.setItem(DISPLAY_KEY,JSON.stringify(display))}
@@ -49,9 +87,10 @@ function create(options){
    const raw=localStorage.getItem(STORAGE_KEY);
    if(!raw)return null;
    const saved=validate(JSON.parse(raw));
-   if(saved.grid.cols!==base.grid.cols||saved.grid.rows!==base.grid.rows)return null;
+   if(!validSize(saved.grid.cols)||!validSize(saved.grid.rows))return null;
    // Apply the updated provisional territory layout without losing previous browser edits.
-   if(saved.metadata?.ownerLayoutRevision!==base.metadata?.ownerLayoutRevision){
+   if(saved.metadata?.ownerLayoutRevision!==base.metadata?.ownerLayoutRevision &&
+      saved.grid.cols===base.grid.cols&&saved.grid.rows===base.grid.rows){
     const revision=String(saved.metadata?.ownerLayoutRevision??2);
     const oldOwners=base.metadata?.ownerMigrationBaselines?.[revision]||base.metadata?.previousPrototypeOwnerBaseline;
     if(Array.isArray(oldOwners)&&oldOwners.length===base.tiles.length){
@@ -90,6 +129,14 @@ function create(options){
   base=clone(validate(data));
   const stored=readLocal();
   model=stored||clone(base);
+  // Upscale legacy 12×20 prototypes once; keep any explicitly chosen grid intact.
+  if(!model.metadata?.gridUserSelected &&
+     model.grid.cols===base.grid.cols&&model.grid.rows===base.grid.rows){
+   model=resizeModel(model,DEFAULT_FINE_GRID.cols,DEFAULT_FINE_GRID.rows);
+   model.metadata={...model.metadata,gridUserSelected:true,ownerLayoutRevision:base.metadata?.ownerLayoutRevision};
+   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(model))}
+   catch(err){console.warn("詳細グリッドの保存に失敗しました",err)}
+  }
   // Preserve previously edited terrain tiles while adding new demo overlays.
   if(!Array.isArray(model.routes))model.routes=clone(base.routes||[]);
   if(!Array.isArray(model.settlements))model.settlements=clone(base.settlements||[]);
@@ -97,7 +144,7 @@ function create(options){
   restoreDisplay();
   renderPalette();renderLists();
   $("darkStatus").textContent=stored?"ブラウザの保存データを読み込みました":"GitHubの仮配置を読み込みました";
-  updateToolButtons();updateSelected();redraw();
+  updateToolButtons();updateSelected();updateGridUI();redraw();
  }
  function colors(){
   const terrains=Object.fromEntries(model.terrains.map(x=>[x.id,x]));
@@ -132,7 +179,9 @@ function create(options){
   for(let r=0;r<model.grid.rows;r++)for(let c=0;c<model.grid.cols;c++){
    const idx=r*model.grid.cols+c,tile=model.tiles[idx];
    const terrain=terrains[tile.terrain],owner=owners[tile.owner],x=c*w,y=r*h;
-   const changed=tile.terrain!==base.tiles[idx]?.terrain;
+   const baseC=remapCell(c,model.grid.cols,base.grid.cols);
+   const baseR=remapCell(r,model.grid.rows,base.grid.rows);
+   const changed=tile.terrain!==base.tiles[baseR*base.grid.cols+baseC]?.terrain;
    if(display.tiles || (display.reference && changed)){
     ctx.save();
     ctx.globalAlpha=display.reference?((display.tiles?0.49:0.72)):1;
@@ -281,7 +330,7 @@ function create(options){
   model=clone(base);selection=null;routeStart=null;
   try{localStorage.removeItem(STORAGE_KEY)}catch(e){console.warn(e)}
   $("darkStatus").textContent="GitHubの仮配置へ戻しました";
-  renderPalette();renderLists();updateSelected();redraw();
+  renderPalette();renderLists();updateSelected();updateGridUI();redraw();
  }
  function exportJSON(){
   if(!model)return;
@@ -331,11 +380,15 @@ function create(options){
    const b=e.target.closest("[data-dark-owner]");if(!b)return;
    selectedOwner=b.dataset.darkOwner;mode="territory";updateToolButtons();
   });
+  $("darkGridApply").addEventListener("click",()=>applyGridSize(Number($("darkGridCols").value),Number($("darkGridRows").value)));
+  document.querySelectorAll("[data-dark-grid-preset]").forEach(btn=>btn.addEventListener("click",()=>{
+   const size=Number(btn.dataset.darkGridPreset);applyGridSize(size,size);
+  }));
   $("darkReset").addEventListener("click",reset);
   $("darkExport").addEventListener("click",exportJSON);
  }
  initEvents();
- return {load,draw,selectAt,reset,exportJSON,get model(){return model},get selection(){return selection}};
+ return {load,draw,selectAt,reset,exportJSON,applyGridSize,get model(){return model},get selection(){return selection}};
 }
 window.DarkWorldMap={create};
 })();
