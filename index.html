@@ -274,6 +274,9 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <p class="mapGridHint">リンクターミナル直径500mの内部に、レジストリンク・ドームを配置しました。中央の一般・大型機乗降区（半径100m）、待機・認証帯（100～130m）、環状の任務受付・小作戦室（130～210m）、外周の出口区（210～250m）の構成です。</p>
  <p class="mapGridHint">青＝8か所の任務受付／紫色の小部屋＝各受付に隣接した作戦室／紫の太い通路＝大型機専用（船首・船尾）／青緑＝一般通路（左右舷）。専用シャッターと隔壁で動線を区別します。</p>
  <p class="mapGridHint">ドームはターミナル内部の施設であり、外部の独立建築ではありません。タウン・工房街・アルキメリアラボはターミナル外周の生活圏へ集約。中央通路は仮配線、外周道路は未確認。Notionは未変更です。</p>
+ <details><summary>中層の未割当領域・用途別整理を確認</summary>
+  <div id="middleSpaceReviewSummary" class="mapGridHint"></div>
+ </details>
  <p><a href="./docs/aa-middle-terminal-integrated-guild-v2.md" target="_blank" rel="noopener noreferrer">ターミナル内ドーム・通路構成案を確認する</a></p>
  </section>
  <section class="panel" id="aaCollisionAudit" hidden>
@@ -1193,6 +1196,14 @@ function switchMap(id){
 
  document.getElementById('upperAccessAudit').hidden=!(id==='upper'&&preview);
  document.getElementById('middleCentralLayout').hidden=!(id==='middle'&&preview);
+ if(id==='middle'&&preview){
+  const review=layoutDrafts.middle?.centralUrbanPlan?.spaceReview;
+  const el=document.getElementById('middleSpaceReviewSummary');
+  if(review&&el){
+   el.innerHTML='<p>'+escHTML(review.note)+'</p>'+
+    '<ul>'+review.classification.map(c=>'<li><strong>'+escHTML(c.name)+'</strong>：'+escHTML(c.rule)+'</li>').join('')+'</ul>';
+  }
+ }
  document.getElementById('otherTerminalLayout').hidden=!(id!=='middle'&&preview);
  document.getElementById('otherTerminalLayoutText').textContent=id==='upper'?
  '上層：一般・大型機乗降、共同案内、認証・保安検査、応急・避難案内。研究区の認証門は別施設、外征直通リフトは専用接続。':
