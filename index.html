@@ -286,10 +286,12 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
       <button class="on" data-layer="roads">道路</button>
       <button class="on" data-layer="pods">輸送ポッド</button>
       <button class="on" data-layer="freight">貨物・整備路</button>
+       <button class="on" data-layer="structures" type="button">構造柱・隔壁（仮）</button>
       <button data-layer="drafts" hidden>旧区画案</button>
       <button id="reset">選択解除</button>
      </div>
-     <p>表示設定はこのブラウザに自動保存されます。再読み込み後も反映されます。</p>
+     <p>構造柱・隔壁はGitHub配置案専用です。水色の四角＝柱候補、橙の破線＝未承認の境界候補、黄色の「!」＝上層認証門と通路の位置ずれ。既存施設・道路・通行判定は変更しません。</p>
+      <p>表示設定はこのブラウザに自動保存されます。再読み込み後も反映されます。</p>
     </section>
    </div>
    <div id="panelInfo" class="drawerSection" role="tabpanel" data-menu-panel="info" hidden>
@@ -313,7 +315,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の概要"><div id="info"></div><div class="popHint">このポップアップのどこをタップしても閉じます</div></div>
  </div>
 </main>
-</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
+</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=10;
 const MAP_INSET_X=.70,MAP_INSET_Y=.80; // exterior margin; ship dimensions and canonical source unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
@@ -361,7 +363,7 @@ function applyAAGridSize(cols,rows){
 }
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
-const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:true,drafts:false,gridOnTop:false,hull:true};let chosen=null;
+const state={labels:true,grid:true,roads:true,pods:true,freight:true,structures:true,districts:true,drafts:false,gridOnTop:false,hull:true};let chosen=null;
 let shipView='map';
 let selectedShipPart=null;
 const SHIP_PARTS={"top":[{"id":"bow","name":"船首外装","x":500,"y":159,"detail":"船首側の外装輪郭。船首の絞り込み形状は仮案。","num":1},{"id":"armor","name":"主船殻・外装甲","x":174,"y":444,"detail":"外周の船殻と厚い外壁。装甲分割は仮案。","num":2},{"id":"ribs","name":"装甲補強フレーム","x":274,"y":625,"detail":"外装の継ぎ目と船体の長手方向の補強ライン。","num":3},{"id":"core","name":"中央上部構造物","x":500,"y":753,"detail":"甲板上の大型構造物。中央ターミナルが船外露出していると確定したものではない。","num":4},{"id":"seams","name":"外装セクションの境界","x":734,"y":558,"detail":"区画別の外装パネル境界。内部階層の区切りではない。","num":5},{"id":"dome","name":"後部覆蓋ドーム","x":500,"y":1169,"detail":"栽培区をイメージした仮の覆蓋構造。外部ドームの存在は未確定。","num":6},{"id":"stern","name":"船尾外殻","x":495,"y":1510,"detail":"船尾の外側を包む装甲。推進設備の配置は未確定。","num":7}],"side":[{"id":"bow","name":"船首装甲","x":110,"y":297,"detail":"前方の尖った船首外殻。詳細な外形は仮案。","num":1},{"id":"armor","name":"主船殻・側面装甲","x":394,"y":333,"detail":"船の内部を保護する側面外装。装甲パネルは模式的な区切り。","num":2},{"id":"hatches","name":"外装ハッチ","x":300,"y":318,"detail":"側面の四角い開口部。整備・物資搬入向けを想定した仮案。","num":3},{"id":"lights","name":"青色表示ライン","x":605,"y":259,"detail":"船体の状態表示灯・誘導灯の仮イメージ。","num":4},{"id":"tower","name":"中央上部構造物","x":483,"y":122,"detail":"船体上面から張り出す構造物。センサー・管制系などの想定で、用途未確定。","num":5},{"id":"sensors","name":"外部アンテナ","x":645,"y":174,"detail":"外部の観測・通信設備を想定。位置と機能は未確定。","num":6},{"id":"dome","name":"後部覆蓋ドーム","x":795,"y":155,"detail":"船尾寄りのドーム型外装。内部栽培区の位置と一致するとは限らない。","num":7},{"id":"engines","name":"船尾推進器","x":973,"y":336,"detail":"後部の発光する推進部。推進方式と数は未確定。","num":8},{"id":"keel","name":"船底補強帯","x":558,"y":405,"detail":"船底側に通した外殻補強部材。形状は仮案。","num":9}]};
@@ -791,7 +793,7 @@ function switchWorld(id,persist=true){
  if(persist)saveDisplaySettings();
 }
 const DISPLAY_SETTINGS_KEY='aa-map-viewer-display-v1';
-const DISPLAY_LAYER_KEYS=['labels','grid','roads','pods','freight','districts','drafts'];
+const DISPLAY_LAYER_KEYS=['labels','grid','roads','pods','freight','structures','districts','drafts'];
 function saveDisplaySettings(){
  try{
   const layers={};
@@ -1478,6 +1480,9 @@ for(const f of facilities){
 if(!isProtectedDraft||(currentMap==='lower'&&roads.some(r=>r.geometryStatus==='draft_10m_routed')))for(let r of roads)drawRoad(r);
 drawCompoundFacilities();
 drawCollisionWarnings();
+if(isProtectedDraft&&state.structures&&window.AAStructureOverlay){
+ window.AAStructureOverlay.draw(ctx,xy,{floor:currentMap,facilities,roads});
+}
 // Terminal tower after roads, explicit center footprint
 const term=facilities[0];
 ctx.save();
