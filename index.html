@@ -136,6 +136,14 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .shipPartDetail strong{display:block;margin-bottom:4px}
 .shipPartStatus{font-size:10px;color:#edd4a0}
 @media(max-width:420px){.shipPartsLegend{max-height:49vh;width:min(290px,calc(100% - 16px))}.shipPartsList button{font-size:10px}}
+
+.propulsionPanel{border-left:3px solid #8bd1e4}
+.propulsionHelp{color:#cde0ea;font-size:12px;line-height:1.7}
+.propulsionList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.propulsionListButton{font-size:11px!important;padding:8px 7px!important;text-align:left}
+.propulsionListButton span{font-size:10px;color:#e2ce9e}
+.propulsionListButton.on{background:#514d36;border-color:#ead9a4}
+.propulsionHint{color:#c4d5df;font-size:11px;line-height:1.6}
 </style></head>
 <body><div class="app" id="appRoot" data-world="apocrypha_archive">
 <header class="topbar">
@@ -221,6 +229,9 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
     <section class="panel" id="selectedPanel" hidden aria-live="polite">
      <h2>選択施設の概要</h2><div class="selectedDetail" id="selectedDetail"></div>
     </section>
+    <section class="panel propulsionPanel" id="propulsionPanel"><h2>推進機関区・専用保守設備</h2>
+    <p class="propulsionHelp"><span id="propulsionFloorName"></span>｜青色の外周区画（上層）、緑色（中層）、橙色（下層）は専用設備の仮配置です。<strong>一般ルートから進入不可</strong>。番号か一覧で説明を確認できます。</p>
+    <div id="propulsionList" class="propulsionList"></div><p class="propulsionHint">※区画数・場所・寸法と整備通路の接続位置は未確定。道路網には接続していません。</p></section>
     <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>選択してもメニューは閉じません。該当する場所にズームします。</p></section>
    </div>
    <div id="panelDisplay" class="drawerSection" role="tabpanel" data-menu-panel="display" hidden>
@@ -274,6 +285,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;
+const MAP_INSET_X=.86,MAP_INSET_Y=.92; // margins for external propulsion maintenance equipment; source coordinates unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
 const aaGrids={upper:{cols:25,rows:40},middle:{cols:25,rows:40},lower:{cols:25,rows:40}};
 const validAA=n=>Number.isInteger(n)&&n>=4&&n<=200;
@@ -352,16 +364,66 @@ function drawSideThrusters(){
  for(const [x,y,a] of [[150,377,Math.PI/2],[355,412,Math.PI/2],[650,415,Math.PI/2],[872,408,Math.PI/2],[159,225,-Math.PI/2],[695,194,-Math.PI/2]])
   drawVectorThruster(x,y,a,.9);
 }
+// Exterior engine-service envelopes are provisional map decorations, never route-graph nodes.
+// Each band corresponds to bow, central hull, or stern; all three formal floors show service access.
+// The side is a display convention, NOT a confirmed physical coordinate.
+const PROPULSION_AREAS=[
+ {id:'bow_port',short:'船首・左舷',section:'船首側',side:-1,t:.23,desc:'方向可変スラスターの船首側保守区画。減速と姿勢変更に用いる外部装置を想定。'},
+ {id:'bow_starboard',short:'船首・右舷',section:'船首側',side:1,t:.23,desc:'船首側の方向可変スラスターに対応する保守区画。'},
+ {id:'mid_port',short:'中央・左舷',section:'船体中央',side:-1,t:.50,desc:'横移動・姿勢保持に用いる補助スラスターの整備区画。'},
+ {id:'mid_starboard',short:'中央・右舷',section:'船体中央',side:1,t:.50,desc:'船体中央の方向可変スラスターに対応する保守区画。'},
+ {id:'stern_port',short:'船尾・左舷',section:'船尾側',side:-1,t:.77,desc:'船尾側の補助スラスター保守区画。後部の旋回制御などを想定。'},
+ {id:'stern_starboard',short:'船尾・右舷',section:'船尾側',side:1,t:.77,desc:'船尾側の方向可変スラスターに対応する保守区画。'}
+];
+let selectedPropulsionAreaId=null;
+function propulsionAreaPosition(area){
+ const y=H*area.t,half=(W-28)*hullWidth(area.t)/2;
+ return {x:W/2+area.side*(half+17),y};
+}
+function propulsionAreaDetails(area){
+ const floor=mapSets[currentMap]?.name||'現在の階層';
+ return '<h3>'+escHTML(floor)+'｜'+escHTML(area.short)+' 推進機関区</h3>'
+  +'<div class="meta"><span class="pill">専用保守設備</span><span class="pill">仮配置／座標未確定</span></div>'
+  +'<p>'+escHTML(area.desc)+'</p>'
+  +'<p><strong>立入制限：</strong>一般道路・通常リフト・ターミナルから直接進入不可。専用整備通路および認証ゲートを経由する。経路の詳細は未確定。</p>'
+  +'<p>船体に固定された方向可変スラスターで、可動円環ではない。機関区の形状・数・正確な座標は未確定。<strong>図中の点は通行可能な出入口ではありません。</strong></p>';
+}
+function renderPropulsionList(){
+ const box=document.getElementById('propulsionList');if(!box)return;
+ box.innerHTML=PROPULSION_AREAS.map((area,i)=>
+  '<button type="button" class="listbtn propulsionListButton'+(selectedPropulsionAreaId===area.id?' on':'')+'" data-propulsion="'+area.id+'">'
+  +(i+1)+'. '+escHTML(area.short)+' <span>仮配置</span></button>'
+ ).join('');
+ document.getElementById('propulsionFloorName').textContent=mapSets[currentMap]?.name||'';
+}
+function selectPropulsionArea(id){
+ if(activeWorldId!=='apocrypha_archive'||shipView!=='map')return;
+ const area=PROPULSION_AREAS.find(x=>x.id===id);if(!area)return;
+ chosen=null;selectedPropulsionAreaId=area.id;
+ switchMenuTab('facilities');openDrawer();
+ document.getElementById('selectedDetail').innerHTML=propulsionAreaDetails(area);
+ document.getElementById('selectedPanel').hidden=false;
+ renderPropulsionList();draw();
+ document.getElementById('selectedPanel').scrollIntoView?.({block:'nearest'});
+}
 function drawRestrictedThrusterAccess(){
  if(!state.hull)return;
  ctx.save();
- for(const y of [365,822,1265]){
-  const half=(W-28)*hullWidth(y/H)/2;
-  for(const side of [-1,1]){
-   const x=W/2+side*(half-17);
-   ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.fillStyle='#163747';ctx.fill();ctx.strokeStyle='#88cfeb';ctx.lineWidth=2;ctx.stroke();
-   ctx.beginPath();ctx.moveTo(x-4,y-4);ctx.lineTo(x+4,y+4);ctx.moveTo(x+4,y-4);ctx.lineTo(x-4,y+4);ctx.strokeStyle='#f8d28a';ctx.stroke();
-  }
+ const tint=currentMap==='upper'?'#95bbed':currentMap==='middle'?'#86dac8':'#f1c68c';
+ // Inner hull = service zone; outer plate = accessible only to certified maintenance.
+ for(const area of PROPULSION_AREAS){
+  const {x,y}=propulsionAreaPosition(area),selected=area.id===selectedPropulsionAreaId;
+  const innerX=x-area.side*34,outerX=x+area.side*28;
+  ctx.fillStyle=selected?'rgba(233,197,110,.26)':'rgba(93,154,178,.16)';
+  ctx.strokeStyle=selected?'#ffe9a8':tint;
+  ctx.lineWidth=selected?4:2;ctx.setLineDash([7,4]);
+  ctx.beginPath();ctx.roundRect(Math.min(innerX,outerX)-12,y-29,Math.abs(outerX-innerX)+24,58,10);ctx.fill();ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(x-area.side*31,y);ctx.lineTo(x+area.side*31,y);
+  ctx.strokeStyle=tint;ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(x,y,17,0,Math.PI*2);
+  ctx.fillStyle=selected?'#f7d78d':'#19384a';ctx.fill();ctx.strokeStyle=selected?'#fff3bd':tint;ctx.lineWidth=3;ctx.stroke();
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=selected?'#172737':'#f0f8ff';ctx.font='bold 17px system-ui';
+  ctx.fillText(String(PROPULSION_AREAS.indexOf(area)+1),x,y+1);
  }
  ctx.restore();
 }
@@ -750,15 +812,15 @@ function updateZoomUI(){
 function mapCoordinateFromClient(clientX,clientY){
  const r=canvas.getBoundingClientRect(),h=canvas.height;
  const sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*h;
- return {x:W/2+(sx-W/2-view.offsetX)/view.zoom,y:h/2+(sy-h/2-view.offsetY)/view.zoom};
+ return {x:W/2+(sx-W/2-view.offsetX)/(view.zoom*MAP_INSET_X),y:h/2+(sy-h/2-view.offsetY)/(view.zoom*MAP_INSET_Y)};
 }
 function zoomAround(next,clientX,clientY){
  const r=canvas.getBoundingClientRect();
  if(!r.width||!r.height)return;
  const h=canvas.height,sx=(clientX-r.left)/r.width*W,sy=(clientY-r.top)/r.height*h;
- const bx=(sx-W/2-view.offsetX)/view.zoom,by=(sy-h/2-view.offsetY)/view.zoom;
+ const bx=(sx-W/2-view.offsetX)/(view.zoom*MAP_INSET_X),by=(sy-h/2-view.offsetY)/(view.zoom*MAP_INSET_Y);
  view.zoom=clamp(next,1,4);
- view.offsetX=sx-W/2-bx*view.zoom;view.offsetY=sy-h/2-by*view.zoom;
+ view.offsetX=sx-W/2-bx*view.zoom*MAP_INSET_X;view.offsetY=sy-h/2-by*view.zoom*MAP_INSET_Y;
  updateZoomUI();draw();
 }
 function zoomCenter(factor){
@@ -774,8 +836,8 @@ function focusOnFacility(f){
   targetX=visibleRight>r.left+12?clamp((visibleRight-r.left)/(2*r.width)*W,W*.11,W*.50):W*.12;
  }
  view.zoom=f.compoundChild?2.9:1.85;
- view.offsetX=targetX-W/2-view.zoom*(px-W/2);
- view.offsetY=-view.zoom*(py-H/2);
+ view.offsetX=targetX-W/2-view.zoom*MAP_INSET_X*(px-W/2);
+ view.offsetY=-view.zoom*MAP_INSET_Y*(py-H/2);
  updateZoomUI();draw();
 }
 const middleFacilities=[];
@@ -945,7 +1007,7 @@ function switchMap(id){
  updateAAGridInfo();
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
  document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=true; // 古い6区画の暫定用途案は混乱を防ぐため非表示
- renderPlaces();renderInfo();draw();
+ selectedPropulsionAreaId=null;renderPlaces();renderPropulsionList();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>{
  if(activeWorldId!=='apocrypha_archive')return;
@@ -1043,7 +1105,7 @@ ctx.clearRect(0,0,W,H);
 ctx.fillStyle='#172c30';ctx.fillRect(0,0,W,H);
 ctx.save();
 ctx.translate(W/2+view.offsetX,H/2+view.offsetY);
-ctx.scale(view.zoom,view.zoom);
+ctx.scale(view.zoom*MAP_INSET_X,view.zoom*MAP_INSET_Y);
 ctx.translate(-W/2,-H/2);
 drawHullTop();
 // fixed environmental patches for district presentation, not exact borders
@@ -1152,7 +1214,7 @@ function selectPlace(id){
  switchMenuTab('facilities');
  const f=findFacility(id);
  if(!f)return;
- chosen=f;
+ chosen=f;selectedPropulsionAreaId=null;renderPropulsionList();
  closePopup();
  const selectedPanel=document.getElementById('selectedPanel');
  const detail=document.getElementById('selectedDetail');
@@ -1210,6 +1272,11 @@ canvas.addEventListener('wheel',e=>{
  zoomAround(view.zoom*(e.deltaY<0?1.15:1/1.15),e.clientX,e.clientY);
 },{passive:false});
 canvas.addEventListener('click',e=>{
+ if(activeWorldId==='apocrypha_archive'&&shipView==='map'&&Date.now()>=ignoreClickUntil){
+  const p=mapCoordinateFromClient(e.clientX,e.clientY);
+  const near=PROPULSION_AREAS.map(a=>({area:a,d:Math.hypot(p.x-propulsionAreaPosition(a).x,p.y-propulsionAreaPosition(a).y)})).sort((a,b)=>a.d-b.d)[0];
+  if(near&&near.d<32/view.zoom){selectPropulsionArea(near.area.id);return}
+ }
  if(activeWorldId==='apocrypha_archive'&&shipView!=='map'){
   if(Date.now()<ignoreClickUntil)return;
   const rect=canvas.getBoundingClientRect();
@@ -1269,6 +1336,9 @@ renderPlaces();
 document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});
 document.getElementById('selectedDetail').addEventListener('click',e=>{
  const b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place);
+});
+document.getElementById('propulsionList').addEventListener('click',e=>{
+ const btn=e.target.closest('[data-propulsion]');if(btn)selectPropulsionArea(btn.dataset.propulsion);
 });
 document.getElementById('shipPartsList').addEventListener('click',e=>{
  const button=e.target.closest('[data-part]');
