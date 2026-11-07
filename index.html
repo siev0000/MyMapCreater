@@ -323,6 +323,48 @@ const state={labels:true,grid:true,roads:true,pods:true,freight:true,districts:t
 let shipView='map';
 let selectedShipPart=null;
 const SHIP_PARTS={"top":[{"id":"bow","name":"船首外装","x":500,"y":159,"detail":"船首側の外装輪郭。船首の絞り込み形状は仮案。","num":1},{"id":"armor","name":"主船殻・外装甲","x":174,"y":444,"detail":"外周の船殻と厚い外壁。装甲分割は仮案。","num":2},{"id":"ribs","name":"装甲補強フレーム","x":274,"y":625,"detail":"外装の継ぎ目と船体の長手方向の補強ライン。","num":3},{"id":"core","name":"中央上部構造物","x":500,"y":753,"detail":"甲板上の大型構造物。中央ターミナルが船外露出していると確定したものではない。","num":4},{"id":"seams","name":"外装セクションの境界","x":734,"y":558,"detail":"区画別の外装パネル境界。内部階層の区切りではない。","num":5},{"id":"dome","name":"後部覆蓋ドーム","x":500,"y":1169,"detail":"栽培区をイメージした仮の覆蓋構造。外部ドームの存在は未確定。","num":6},{"id":"stern","name":"船尾外殻","x":495,"y":1510,"detail":"船尾の外側を包む装甲。推進設備の配置は未確定。","num":7}],"side":[{"id":"bow","name":"船首装甲","x":110,"y":297,"detail":"前方の尖った船首外殻。詳細な外形は仮案。","num":1},{"id":"armor","name":"主船殻・側面装甲","x":394,"y":333,"detail":"船の内部を保護する側面外装。装甲パネルは模式的な区切り。","num":2},{"id":"hatches","name":"外装ハッチ","x":300,"y":318,"detail":"側面の四角い開口部。整備・物資搬入向けを想定した仮案。","num":3},{"id":"lights","name":"青色表示ライン","x":605,"y":259,"detail":"船体の状態表示灯・誘導灯の仮イメージ。","num":4},{"id":"tower","name":"中央上部構造物","x":483,"y":122,"detail":"船体上面から張り出す構造物。センサー・管制系などの想定で、用途未確定。","num":5},{"id":"sensors","name":"外部アンテナ","x":645,"y":174,"detail":"外部の観測・通信設備を想定。位置と機能は未確定。","num":6},{"id":"dome","name":"後部覆蓋ドーム","x":795,"y":155,"detail":"船尾寄りのドーム型外装。内部栽培区の位置と一致するとは限らない。","num":7},{"id":"engines","name":"船尾推進器","x":973,"y":336,"detail":"後部の発光する推進部。推進方式と数は未確定。","num":8},{"id":"keel","name":"船底補強帯","x":558,"y":405,"detail":"船底側に通した外殻補強部材。形状は仮案。","num":9}]};
+SHIP_PARTS.top.push(
+ {id:'gravity',name:'重力軽減機構（内部）',x:500,y:953,detail:'船体にかかる重力を軽減する。船体の慣性は残る。これは説明マーカーで、位置は未確定。'},
+ {id:'vector',name:'分散可動スラスター',x:876,y:507,detail:'船首・中央・船尾付近に固定配置する方向可変の補助推進器。船体を周回する円環は採用しない。位置と基数は仮案。'},
+ {id:'engine',name:'船尾主推進器',x:500,y:1513,detail:'通常航行・前進用。慣性が残るため減速には逆推力が必要。配置・基数は未確定。'}
+);
+SHIP_PARTS.side.push(
+ {id:'vectors',name:'分散可動スラスター',x:655,y:410,detail:'固定マウントに可動ノズルを取り付けて方向を調整する。船首・中央・船尾の各所に配置する仮案。'},
+ {id:'gravity',name:'重力軽減機構（内部）',x:529,y:352,detail:'重力軽減で浮遊するが慣性は残る。説明上のマーカーで、機器座標は未確定。'}
+);
+SHIP_PARTS.side.find(p=>p.id==='engines').detail='船尾の主推進器。巡航と前進を担当。配置・基数は未確定。';
+for(const arr of Object.values(SHIP_PARTS))arr.forEach((p,i)=>p.num=i+1);
+function drawVectorThruster(x,y,rotation,size=1){
+ ctx.save();ctx.translate(x,y);ctx.rotate(rotation);ctx.scale(size,size);
+ ctx.beginPath();ctx.moveTo(-10,-9);ctx.lineTo(10,-9);ctx.lineTo(18,0);ctx.lineTo(10,9);ctx.lineTo(-10,9);ctx.closePath();
+ ctx.fillStyle='#325464';ctx.fill();ctx.strokeStyle='#9cbfcf';ctx.lineWidth=3;ctx.stroke();
+ ctx.fillStyle='#4cbee7';ctx.fillRect(10,-5,7,10);ctx.restore();
+}
+function drawTopThrusters(){
+ for(const y of [390,830,1250]){
+  const half=(W-28)*hullWidth(y/H)/2;
+  drawVectorThruster(W/2-half+8,y,Math.PI,1);
+  drawVectorThruster(W/2+half-8,y,0,1);
+ }
+ for(const x of [444,500,556])drawVectorThruster(x,1561,Math.PI/2,.8);
+}
+function drawSideThrusters(){
+ for(const [x,y,a] of [[150,377,Math.PI/2],[355,412,Math.PI/2],[650,415,Math.PI/2],[872,408,Math.PI/2],[159,225,-Math.PI/2],[695,194,-Math.PI/2]])
+  drawVectorThruster(x,y,a,.9);
+}
+function drawRestrictedThrusterAccess(){
+ if(!state.hull)return;
+ ctx.save();
+ for(const y of [365,822,1265]){
+  const half=(W-28)*hullWidth(y/H)/2;
+  for(const side of [-1,1]){
+   const x=W/2+side*(half-17);
+   ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.fillStyle='#163747';ctx.fill();ctx.strokeStyle='#88cfeb';ctx.lineWidth=2;ctx.stroke();
+   ctx.beginPath();ctx.moveTo(x-4,y-4);ctx.lineTo(x+4,y+4);ctx.moveTo(x+4,y-4);ctx.lineTo(x-4,y+4);ctx.strokeStyle='#f8d28a';ctx.stroke();
+  }
+ }
+ ctx.restore();
+}
 function currentShipParts(){return SHIP_PARTS[shipView]||[]}
 function renderShipPartPanel(){
  const panel=document.getElementById('shipPartsLegend');
@@ -442,6 +484,7 @@ function drawHullTopStandalone(){
  ctx.fillStyle='#ecf5f9';ctx.textAlign='center';ctx.font='bold 24px system-ui';
  ctx.fillText('船首 +X',500,57);
  ctx.font='19px system-ui';ctx.fillStyle='#aebfcb';ctx.fillText('船尾 −X',500,1565);
+ drawTopThrusters();
  drawShipPartMarkers();
  ctx.restore();
 }
@@ -576,6 +619,7 @@ function drawHullSide(){
  ctx.textAlign='right';ctx.fillText('船尾 (-X) ▶',970,47);
  ctx.textAlign='center';ctx.fillStyle='#b5c9d7';ctx.font='15px system-ui';
  ctx.fillText('船体外観・側面図（仮形状）｜全長4,000m',500,522);
+ drawSideThrusters();
  drawShipPartMarkers();
  ctx.restore();
 }
@@ -1034,7 +1078,7 @@ ctx.restore();
 for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
-ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(state.gridOnTop)drawGridLayer();ctx.restore();}
+ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(state.gridOnTop)drawGridLayer();drawRestrictedThrusterAccess();ctx.restore();}
 function fitCanvasToViewport(){
  const host=canvas.parentElement;
  if(!host||!host.getBoundingClientRect)return;
