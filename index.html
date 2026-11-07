@@ -154,6 +154,8 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .aaCollisionItem button{font-size:11px;color:#ffd0c4;border:1px solid #915e5b;background:#332a30;border-radius:5px;padding:5px;cursor:pointer}
 .aaCollisionItem small{color:#d4c3b4;font-size:10px}
 #aaCollisionCount{color:#ffafa5}
+.lowerRouteLegend{display:flex;flex-wrap:wrap;gap:5px 13px;font-size:11px;padding:8px;border:1px solid #425462;border-radius:8px;color:#e5d8b9}
+#lowerRoutingPanel[hidden]{display:none}
 </style></head>
 <body><div class="app" id="appRoot" data-world="apocrypha_archive">
 <header class="topbar">
@@ -249,7 +251,13 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
     <section class="panel propulsionPanel" id="propulsionPanel"><h2>推進機関区・専用保守設備</h2>
     <p class="propulsionHelp"><span id="propulsionFloorName"></span>｜外周の青色区画（上層）、緑色（中層）、橙色（下層）は船外側の専用設備の仮配置です。<strong>一般ルートから進入不可</strong>。番号か一覧で説明を確認できます。</p>
     <div id="propulsionList" class="propulsionList"></div><p class="propulsionHint">※外装甲・機関整備区・独立した防振緩衝区・内部生活区の多重構造を表示。装置数と専用整備路は未確定です。</p></section>
-    <section class="panel" id="aaCollisionAudit" hidden>
+    <section class="panel" id="lowerRoutingPanel" hidden>
+ <h2>下層の道路・通路 <span id="lowerRouteCount"></span></h2>
+ <p id="lowerRouteAccessInfo" class="mapGridHint"></p>
+ <div class="lowerRouteLegend"><span>━━ 一般連絡</span><span style="color:#a8c2dd">┄ 貨物・整備</span><span style="color:#85dbc0">┄ 有機物密閉</span><span style="color:#ef9a72">┄ 危険物専用</span><span style="color:#ffa5b4">━ 封鎖隔壁</span><span>◆ 認証ゲート</span></div>
+ <p class="mapGridHint">経路は10m単位の配置検討案。危険物・密閉路と一般通路の交差は、自由に乗り換えできる交差点を意味しません。道路幅・個別ゲート位置は未確定です。</p>
+ </section>
+ <section class="panel" id="aaCollisionAudit" hidden>
  <h2>施設の重複確認 <span id="aaCollisionCount"></span></h2>
  <p class="mapGridHint">赤色枠は再配置案で重なっている独立施設です。地区全体の枠とその内部施設など、完全に包含される組み合わせは除外しています。重複項目を押すと該当施設へ移動します。</p>
  <div id="aaCollisionList"></div>
@@ -1153,13 +1161,13 @@ function switchMap(id){
 
  document.getElementById('mapTitle').textContent=map.name;
  document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
- document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。道路は旧座標のままのため、配置案では非表示です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
+ document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。下層は専用通路と封鎖隔壁を仮配置済み。上中層の道路は未調整のため配置案では非表示です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  updateAAGridInfo();
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
  document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=true; // 古い6区画の暫定用途案は混乱を防ぐため非表示
- selectedPropulsionAreaId=null;document.getElementById('shipHullLayersLegend').hidden=!preview;renderPlaces();renderPropulsionList();renderCollisionAudit();renderInfo();draw();
+ selectedPropulsionAreaId=null;document.getElementById('shipHullLayersLegend').hidden=!preview;renderPlaces();renderPropulsionList();renderCollisionAudit();renderLowerRoutingInfo();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>{
  if(activeWorldId!=='apocrypha_archive')return;
@@ -1172,7 +1180,7 @@ document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()
 document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(e.target.value));
 document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;shipView='map';canvas.height=1600;canvas.style.aspectRatio='5/8';fitCanvasToViewport();switchMap(currentMap);setShipView('map',false);saveDisplaySettings()};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
-function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.access==='hazard_authorized'?'#ef9a72':road.access==='bio_authorized'?'#85dbc0':road.access==='freight_authorized'?'#a8c2dd':road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(3,road.width*.4);ctx.setLineDash(road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function facilityPolygonVertices(f){
  if(Array.isArray(f.footprint)&&f.footprint.length>=3)return f.footprint.map(([dx,dy])=>[f.x+dx,f.y+dy]);
  return [[f.x-f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y+f.h/2],[f.x-f.w/2,f.y+f.h/2]];
@@ -1356,6 +1364,36 @@ function renderCollisionAudit(){
   '<p>独立施設間の多角形重複は検出されませんでした。</p>';
  if(pairs.length>35)document.getElementById('aaCollisionList').insertAdjacentHTML('beforeend','<p>ほか '+(pairs.length-35)+'組。配置エディターで調整できます。</p>');
 }
+function drawLowerAccessGatesAndBulkheads(){
+ if(!(currentMap==='lower'&&showProposal&&layoutDrafts.lower?.routePolicy))return;
+ ctx.save();
+ // The foredeck belongs to the upper-floor sortie system, not lower public circulation.
+ const boundary=xy(700,0),left=xy(700,-1250),right=xy(700,1250);
+ const span=(W-28)*hullWidth(boundary[1]/H)/2-PROTECTED_SHELL.interior+5;
+ ctx.strokeStyle='#ff9aaf';ctx.lineWidth=9;ctx.setLineDash([]);
+ ctx.beginPath();ctx.moveTo(W/2-span,boundary[1]);ctx.lineTo(W/2+span,boundary[1]);ctx.stroke();
+ ctx.strokeStyle='#2a2435';ctx.lineWidth=2;
+ for(let x=W/2-span;x<W/2+span;x+=24){ctx.beginPath();ctx.moveTo(x,boundary[1]-5);ctx.lineTo(x+11,boundary[1]+5);ctx.stroke();}
+ ctx.textAlign='center';ctx.font='bold 16px system-ui';ctx.fillStyle='#ffe8ed';
+ ctx.fillText('封鎖隔壁　X +700m／下層通行不可',W/2,boundary[1]+29);
+ // Facility-specific access control: an isolated route is not an unrestricted public door.
+ for(const road of roads){
+  if(!road.gate?.point)continue;
+  const [x,y]=xy(...road.gate.point);
+  ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);
+  ctx.fillStyle=road.access==='hazard_authorized'?'#ec9869':road.access==='bio_authorized'?'#8edcc4':'#9ebbe4';
+  ctx.fillRect(-5,-5,10,10);ctx.strokeStyle='#172330';ctx.lineWidth=2;ctx.strokeRect(-5,-5,10,10);ctx.restore();
+ }
+ ctx.restore();
+}
+function renderLowerRoutingInfo(){
+ const elem=document.getElementById('lowerRoutingPanel');if(!elem)return;
+ const active=activeWorldId==='apocrypha_archive'&&shipView==='map'&&currentMap==='lower'&&showProposal&&layoutDrafts.lower?.routePolicy;
+ elem.hidden=!active;if(!active)return;
+ const r=layoutDrafts.lower.roads.filter(x=>x.connectsFacility),tot=layoutDrafts.lower.facilities.filter(x=>!x.ringDistrict&&!x.zoneOutline&&!x.areaFrame&&x.type!=='terminal').length;
+ document.getElementById('lowerRouteCount').textContent=r.length+' / '+tot+'施設に取付経路';
+ document.getElementById('lowerRouteAccessInfo').textContent='船首X+700mの隔壁で下層を封鎖。貨物・危険物・有機物の専用路は認証・隔離扉を必要とします。登録通路がない場所は通行できるとみなしませんが、それだけで壁の存在は確定しません。';
+}
 function drawCollisionWarnings(){
  if(!showProposal||!layoutDrafts[currentMap])return;
  const pairs=draftCollisionPairs(),highlight=new Set();
@@ -1423,7 +1461,7 @@ for(const f of facilities){
  }
  ctx.restore();
 }
-if(!isProtectedDraft)for(let r of roads)drawRoad(r); // draft roads do not align after facility movement
+if(!isProtectedDraft||(currentMap==='lower'&&roads.some(r=>r.geometryStatus==='draft_10m_routed')))for(let r of roads)drawRoad(r);
 drawCompoundFacilities();
 drawCollisionWarnings();
 // Terminal tower after roads, explicit center footprint
@@ -1438,7 +1476,7 @@ for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=x
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.restore(); // exit the protected interior clipping region
-ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(isProtectedDraft)drawHullStructuralLabels();drawRestrictedThrusterAccess();ctx.restore();}
+ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(isProtectedDraft)drawHullStructuralLabels();drawLowerAccessGatesAndBulkheads();drawRestrictedThrusterAccess();ctx.restore();}
 function fitCanvasToViewport(){
  const host=canvas.parentElement;
  if(!host||!host.getBoundingClientRect)return;
