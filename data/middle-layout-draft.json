@@ -8,7 +8,7 @@
     "section": "6.2-6.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub表示用の中層再配置案。Notionが正本。中央ターミナルφ500mを一時維持し、レジストリンク・ドームは半径335–425mの環状ギルド受付、小作戦室群と大型機独立通路。タウン・工房街・ラボは同一生活圏。外周道路と接続判定は未検証。Notion未反映。",
+  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。",
   "facilities": [
     {
       "id": "middle_terminal",
@@ -18,7 +18,7 @@
       "w": 500,
       "h": 500,
       "type": "terminal",
-      "detail": "上層・下層を結ぶ中央交通拠点。一般リフトと大型機用リフトを運用。",
+      "detail": "上層・下層と結ぶ直径500mの中央交通拠点。中心に一般・大型機リフトと乗降ホール、外側に待機・認証・検査、内部環状施設レジストリンク・ドームと外周出口を設ける（配置検討案）。",
       "sourceSection": "6.2",
       "short": "リンクターミナル",
       "sourcePosition": [
@@ -29,7 +29,27 @@
         500,
         500
       ],
-      "draftRepositioned": true
+      "draftRepositioned": true,
+      "terminalInterior": {
+        "status": "draft_guild_integrated",
+        "buildingRadius": 250,
+        "centralTransportRadius": 100,
+        "centralCirculationOuterRadius": 130,
+        "guildInterior": {
+          "facilityId": "resist_link_dome",
+          "innerRadius": 130,
+          "outerRadius": 210
+        },
+        "outerExitBand": {
+          "innerRadius": 210,
+          "outerRadius": 250
+        },
+        "internalPassageWidth": {
+          "largeMachine": 48,
+          "public": 24
+        },
+        "note": "リンクターミナル内に環状のレジストリンクドームを収める。上層・下層のターミナル構造は変更しない。"
+      }
     },
     {
       "id": "core_shell_refine",
@@ -40,9 +60,9 @@
       "h": 1560,
       "type": "town",
       "ringDistrict": true,
-      "innerRadius": 430,
+      "innerRadius": 330,
       "outerRadius": 780,
-      "detail": "リンクターミナルと環状ギルド受付の外側に、住宅・市場・整備・個人工房が共通街路で連なる都市生活圏。円環範囲は地区を示すもので建物一棟を意味しない。",
+      "detail": "リンクターミナルの外側、コンコース外縁（半径330m）から住宅・市場・工房街が連続する生活・技術地区。タウンとバレーは単一の巨大建築ではない。",
       "showLabel": false,
       "sourceSection": "6.2",
       "sourcePosition": [
@@ -162,26 +182,26 @@
       "name": "レジストリンク・ドーム",
       "x": 0,
       "y": 0,
-      "w": 860,
-      "h": 860,
+      "w": 500,
+      "h": 500,
       "type": "guild",
-      "detail": "リンクターミナル外周を囲む環状ギルド施設。8方向に分散した任務受付を備え、各受付に小作戦室を併設。中央の一般・大型機乗降ホールから外へ抜ける区分通路があり、大型機通路は認証扉・隔壁で一般受付帯と分離する。ドーム全体を単一の650×600m建物とは扱わない。",
+      "detail": "リンクターミナルの直径500m内に収まる環状ギルド施設。中央の一般・大型機乗降区から円周の8受付にアクセスでき、各受付の直近に小作戦室を併設。船首・船尾に大型機専用の隔離通路、左右舷に一般出入口を確保する。ドームはターミナル内部の複合区であり、独立した外部建物ではない。",
       "sourceSection": "6.2",
       "areaFrame": true,
-      "internalLayoutStatus": "draft_circular_reception_complex",
+      "internalLayoutStatus": "draft_terminal_integrated_guild",
       "internalEntrance": {
         "id": "entrance",
-        "name": "環状受付・生活街入口",
+        "name": "右舷一般出入口",
         "dx": 0,
-        "dy": 350
+        "dy": 235
       },
       "internalFacilities": [
         {
           "id": "dome_common_reception",
           "name": "共通任務受付・情報処理中枢",
           "short": "受付管理",
-          "dx": 325,
-          "dy": 188,
+          "dx": 130,
+          "dy": 105,
           "w": 30,
           "h": 24,
           "detail": "環状施設各所の任務受付端末を管理し、受注・完了報告・報酬処理を統合する。個々の受付は環状の8区画に分散する。",
@@ -196,10 +216,10 @@
           "id": "dome_operations",
           "name": "作戦会議区",
           "short": "作戦会議",
-          "dx": 304,
-          "dy": 229,
-          "w": 38,
-          "h": 28,
+          "dx": 117,
+          "dy": 130,
+          "w": 32,
+          "h": 24,
           "detail": "受付と隣接した作戦会議区。環状の各受付には小作戦室を複数設け、大会議・分隊本部は連結する区画に集約する。",
           "functions": [
             "簡易作戦ブース",
@@ -213,10 +233,10 @@
           "id": "dome_storage",
           "name": "ストレージゾーン",
           "short": "倉庫",
-          "dx": -299,
-          "dy": -251,
-          "w": 42,
-          "h": 34,
+          "dx": -130,
+          "dy": -113,
+          "w": 35,
+          "h": 30,
           "detail": "素材・回収品・報酬物資保管。危険物は環状の一般通路と分離した密閉区へ搬送する。",
           "functions": [
             "素材・回収品倉庫",
@@ -229,10 +249,10 @@
           "id": "dome_alchimeria",
           "name": "アルキメリア相談窓口",
           "short": "アルキメリア受付",
-          "dx": -261,
-          "dy": 290,
-          "w": 32,
-          "h": 30,
+          "dx": -100,
+          "dy": 142,
+          "w": 30,
+          "h": 26,
           "detail": "装備・素材鑑定、修理相談・リファインバレー内の装備開発ラボへの案内。",
           "functions": [
             "装備・素材鑑定",
@@ -245,10 +265,10 @@
           "id": "dome_bionome",
           "name": "バイオノーム相談窓口",
           "short": "バイオノーム受付",
-          "dx": 251,
-          "dy": -299,
+          "dx": 110,
+          "dy": -135,
           "w": 32,
-          "h": 30,
+          "h": 26,
           "detail": "栽培・採取・生物捕獲任務を受け付け、アルボラセクターへ連絡する。",
           "functions": [
             "栽培・採取任務",
@@ -294,55 +314,59 @@
           0,
           0
         ],
-        "innerRadius": 335,
-        "outerRadius": 425,
-        "status": "draft_circular_reception_complex",
+        "innerRadius": 130,
+        "outerRadius": 210,
+        "status": "draft_guild_inside_terminal",
         "receptionAnglesDeg": [
-          22.5,
-          67.5,
-          112.5,
-          157.5,
-          202.5,
-          247.5,
-          292.5,
-          337.5
+          25,
+          65,
+          115,
+          155,
+          205,
+          245,
+          295,
+          335
         ],
-        "receptionRadius": 355,
-        "briefingRadius": 393,
+        "receptionRadius": 150,
+        "briefingRadius": 180,
         "briefingRoomsPerStation": 2,
         "passageways": [
           {
             "id": "large_bow",
             "angleDeg": 0,
-            "halfAngleDeg": 5,
+            "halfAngleDeg": 11,
             "width": 48,
             "access": "large_machine_authorized",
-            "gate": "専用シャッター・一般受付と隔離"
+            "gate": "大型機専用隔壁・シャッター"
           },
           {
             "id": "pedestrian_starboard",
             "angleDeg": 90,
-            "halfAngleDeg": 5,
+            "halfAngleDeg": 6,
             "width": 24,
             "access": "public"
           },
           {
             "id": "large_stern",
             "angleDeg": 180,
-            "halfAngleDeg": 5,
+            "halfAngleDeg": 11,
             "width": 48,
             "access": "large_machine_authorized",
-            "gate": "専用シャッター・一般受付と隔離"
+            "gate": "大型機専用隔壁・シャッター"
           },
           {
             "id": "pedestrian_port",
             "angleDeg": 270,
-            "halfAngleDeg": 5,
+            "halfAngleDeg": 6,
             "width": 24,
             "access": "public"
           }
-        ]
-      }
+        ],
+        "terminalOuterRadius": 250,
+        "entrancePolicy": "環状区画の一部を大型機専用通路と一般出口に分割し、扉・シャッターで動線を分離する。"
+      },
+      "containedIn": "middle_terminal",
+      "showAsTerminalInterior": true
     },
     {
       "id": "arbora_sector",
@@ -1212,12 +1236,24 @@
     },
     {
       "id": "middle_mission_avenue",
-      "name": "任務大通り・船首側大型機通路（仮）",
+      "name": "ターミナル船首側大型機通路（仮）",
       "roadType": "大型機用主要通路",
       "width": 48,
       "color": "#a8b5bd",
       "kind": "line",
       "points": [
+        [
+          100,
+          0
+        ],
+        [
+          130,
+          0
+        ],
+        [
+          210,
+          0
+        ],
         [
           250,
           0
@@ -1243,7 +1279,7 @@
           0
         ]
       ],
-      "connection": "リンクターミナル大型機ホール→環状ギルド施設の隔離ゲート→船首側任務大通り。別の道路への接続は未確認。",
+      "connection": "大型機乗降区→ドーム内の専用隔離開口→ターミナル外部→船首の任務大通り。48m専用動線。",
       "notionshape": "Notionの任務大通り [650,0]→[1,050,0] を、複合区内を通り抜ける接続幹線に再構成した未確定案",
       "geometryStatus": "draft_central_access",
       "status": "draft_route_requires_review",
@@ -1257,7 +1293,7 @@
       "color": "#69b9e5",
       "kind": "internal",
       "geometryStatus": "draft_central_access",
-      "connection": "8つの分散受付・小作戦室・管理区を環状歩行通路で結ぶ。専用大型機通路の交差は認証ゲートで区分。",
+      "connection": "ターミナル内部、半径130〜210mの環状受付区を連絡する内部歩行通路。大型機通路の横断は閉鎖隔壁・専用ゲートで分離。",
       "notionshape": "ドーム内部",
       "status": "draft_route_requires_review"
     },
@@ -1929,6 +1965,18 @@
       "color": "#d3b4ee",
       "points": [
         [
+          -100,
+          0
+        ],
+        [
+          -130,
+          0
+        ],
+        [
+          -210,
+          0
+        ],
+        [
           -250,
           0
         ],
@@ -1948,7 +1996,7 @@
       "access": "large_machine_authorized",
       "status": "draft_route_requires_review",
       "geometryStatus": "draft_central_access",
-      "connection": "ターミナル大型機乗降口→ギルド環状施設の隔離開口→船尾側地区（貨物トンネルとは非接続）。"
+      "connection": "大型機乗降区→ギルド環状施設の専用隔離開口→船尾の管理動線。貨物トンネルと直接接続しない。"
     },
     {
       "id": "draft_middle_city_starboard_access",
@@ -1958,6 +2006,22 @@
       "width": 24,
       "color": "#88cde6",
       "points": [
+        [
+          0,
+          100
+        ],
+        [
+          0,
+          130
+        ],
+        [
+          0,
+          210
+        ],
+        [
+          0,
+          250
+        ],
         [
           0,
           330
@@ -1978,7 +2042,7 @@
       "access": "public",
       "status": "draft_route_requires_review",
       "geometryStatus": "draft_central_access",
-      "connection": "リンクターミナル→環状受付の歩行開口→コアシェルタウン・工房街連絡路。"
+      "connection": "リンクターミナル中心→右舷の一般専用開口→コンコース→タウン・工房街。"
     },
     {
       "id": "draft_middle_city_port_access",
@@ -1988,6 +2052,22 @@
       "width": 24,
       "color": "#88cde6",
       "points": [
+        [
+          0,
+          -100
+        ],
+        [
+          0,
+          -130
+        ],
+        [
+          0,
+          -210
+        ],
+        [
+          0,
+          -250
+        ],
         [
           0,
           -330
@@ -2004,7 +2084,7 @@
       "access": "public",
       "status": "draft_route_requires_review",
       "geometryStatus": "draft_central_access",
-      "connection": "リンクターミナル→環状受付の歩行開口→左舷側市街地。周辺市街路は未確定。"
+      "connection": "リンクターミナル中心→左舷の一般専用開口→コンコース→左舷街路。"
     },
     {
       "id": "draft_middle_alchimeria_service",
@@ -2032,12 +2112,12 @@
   "editorMeta": {
     "status": "draft",
     "scenario": "船尾中央栽培・真下に有機再生",
-    "note": "ユーザー指定：リンクターミナル外周をレジストリンク・ドームの環状受付に変更。円周8か所に受付と小作戦室、船首・船尾側に大型機専用通路を確保。コアシェルタウンとリファインバレーを連続した街区にし、アルキメリアラボをバレー内部に配置。個別建物と全街区を区別。外周道路・施設入口は未承認。Notion未反映。",
+    "note": "HTML配置確認用：レジストリンク・ドームをリンクターミナル内部（半径130～210m）へ移設。中央乗降区0～100m、待機・認証100～130m、ギルド環状受付130～210m、外周出口210～250m。大型機48m通路2方向、一般24m通路2方向。Notionは未変更。",
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "independent_overlap_and_central_lane_clearances_checked",
-    "layoutModel": "middle-compact-city-ring-v1"
+    "review": "central_visual_geometry_checked__outer_transport_network_unverified",
+    "layoutModel": "middle-terminal-internal-guild-v2"
   },
   "centralUrbanPlan": {
     "status": "draft_relayout_user_requested",
