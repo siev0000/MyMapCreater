@@ -238,6 +238,28 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(roadPath(r)){ctx.strokeStyle=r.color||"#a5b8c8";ctx.lineWidth=Math.max(2,r.width*SC);ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(r.dash||[]);ctx.stroke()}
     ctx.restore();
   }
+  function drawCompound(f){
+    const box=rect(f),color=COLORS[f.type]||"#f6d08e";
+    ctx.save();
+    ctx.fillStyle="rgba(220,179,102,.05)";
+    ctx.fillRect(box.left,box.top,box.right-box.left,box.bottom-box.top);
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.setLineDash([10,6]);
+    ctx.strokeRect(box.left,box.top,box.right-box.left,box.bottom-box.top);ctx.setLineDash([]);
+    const entries=new Map((f.internalFacilities||[]).map(c=>[c.id,worldToPixel(f.x+c.dx,f.y+c.dy)]));
+    if(f.internalEntrance)entries.set(f.internalEntrance.id,worldToPixel(f.x+f.internalEntrance.dx,f.y+f.internalEntrance.dy));
+    ctx.strokeStyle="#e2d1b0";ctx.lineWidth=2;ctx.setLineDash([5,5]);
+    for(const [source,dest] of f.internalConnections||[]){
+      const p=entries.get(source),q=entries.get(dest);if(!p||!q)continue;
+      ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(q.px,q.py);ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    for(const c of f.internalFacilities||[]){
+      const inner=rect({x:f.x+c.dx,y:f.y+c.dy,w:c.w,h:c.h});
+      ctx.fillStyle="rgba(137,107,64,.67)";ctx.fillRect(inner.left,inner.top,inner.right-inner.left,inner.bottom-inner.top);
+      ctx.strokeStyle="#f7dab0";ctx.lineWidth=1.6;ctx.strokeRect(inner.left,inner.top,inner.right-inner.left,inner.bottom-inner.top);
+    }
+    ctx.restore();
+  }
   function intersectsRestrictedFacility(f){
     if(active!=="lower"||f.ringDistrict)return false;
     return (current().restrictedZones||[]).some(z=>{
@@ -285,6 +307,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     for(const f of current().facilities.filter(f=>f.ringDistrict))drawAnnulus(f,"#63a5a1",.22);
     for(const f of current().facilities){
       if(f.ringDistrict)continue;
+      if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
       const b=rect(f),color=COLORS[f.type]||"#b3c6d2";
       ctx.fillStyle=color+"33";ctx.fillRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
       ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
@@ -294,6 +317,20 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       ctx.save();ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
       for(const f of current().facilities){
         if(f.showLabel===false||f.ringDistrict)continue;
+        if(f.areaFrame&&Array.isArray(f.internalFacilities)){
+          const bounds=rect(f),center=worldToPixel(f.x,f.y);
+          ctx.strokeStyle="#0e202a";ctx.lineWidth=4;
+          ctx.strokeText(f.name+"〈複合区〉",center.px,bounds.top-13,270);
+          ctx.fillStyle="#f3daa9";ctx.fillText(f.name+"〈複合区〉",center.px,bounds.top-13,270);
+          for(const child of f.internalFacilities){
+            const p=worldToPixel(f.x+child.dx,f.y+child.dy);
+            ctx.font="bold 10px system-ui,sans-serif";ctx.strokeStyle="#0e202a";ctx.lineWidth=3;
+            ctx.strokeText(child.short||child.name,p.px,p.py,95);
+            ctx.fillStyle="#fff4e0";ctx.fillText(child.short||child.name,p.px,p.py,95);
+          }
+          ctx.font="bold 14px system-ui,sans-serif";
+          continue;
+        }
         const c=worldToPixel(f.x,f.y),label=f.short||f.name;
         ctx.strokeStyle="#0e202a";ctx.lineWidth=4;ctx.strokeText(label,c.px,c.py-12,230);
         ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
