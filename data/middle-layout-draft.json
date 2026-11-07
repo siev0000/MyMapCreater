@@ -8,7 +8,7 @@
     "section": "6.2-6.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。",
+  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。",
   "facilities": [
     {
       "id": "middle_terminal",
@@ -371,12 +371,12 @@
     {
       "id": "arbora_sector",
       "name": "アルボラセクター",
-      "x": -1040,
+      "x": -1010,
       "y": 0,
-      "w": 1050,
-      "h": 1300,
+      "w": 1250,
+      "h": 740,
       "type": "nature",
-      "detail": "人工自然・植物育成・生態系管理の地区。",
+      "detail": "船尾中央の人工自然・栽培・生物管理地区（大枠検討案）。温室、水循環、生物管理を内包する。左右舷側の燃料・素材加工施設との区画重なりを解消した検討用矩形。空調・生態隔壁・排水設備と搬送ゲートの寸法は未確定。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -390,17 +390,19 @@
       ],
       "draftRepositioned": true,
       "zoneOutline": true,
-      "draftRegion": true
+      "draftRegion": true,
+      "draftScale": "district_locator",
+      "districtBoundaryStatus": "draft_bbox_does_not_define_single_building"
     },
     {
       "id": "standard_fuel_factory",
       "name": "標準燃料生産施設",
-      "x": -1320,
-      "y": 540,
+      "x": -1150,
+      "y": 590,
       "w": 500,
       "h": 400,
       "type": "industrial",
-      "detail": "一般燃料を大量生産する施設。",
+      "detail": "一般燃料を大量生産する施設。 【大枠仮配置】アルボラ環境区の外側、右舷側の加工帯へ配置。環境隔壁・搬送動線は未確定。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -447,17 +449,18 @@
           -250,
           -140
         ]
-      ]
+      ],
+      "outerDistrict": "middle_processing_starboard"
     },
     {
       "id": "plant_oil_processing",
       "name": "植物油加工区",
-      "x": -800,
+      "x": -650,
       "y": 540,
       "w": 400,
       "h": 300,
       "type": "industrial",
-      "detail": "植物性油の加工。",
+      "detail": "植物性油の加工。 【大枠仮配置】アルボラ環境区の外側の右舷側加工帯へ移動。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -496,7 +499,8 @@
           -200,
           150
         ]
-      ]
+      ],
+      "outerDistrict": "middle_processing_starboard"
     },
     {
       "id": "fiber_resin_processing",
@@ -506,7 +510,7 @@
       "w": 400,
       "h": 300,
       "type": "industrial",
-      "detail": "植物繊維・樹脂の加工。",
+      "detail": "植物繊維・樹脂の加工。 【大枠仮配置】アルボラ環境区の外側、左舷側加工帯。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -545,7 +549,8 @@
           -200,
           150
         ]
-      ]
+      ],
+      "outerDistrict": "middle_processing_port"
     },
     {
       "id": "middle_material_processing",
@@ -555,7 +560,7 @@
       "w": 450,
       "h": 300,
       "type": "industrial",
-      "detail": "栽培植物資源の加工。",
+      "detail": "栽培植物資源の加工。 【大枠仮配置】アルボラ環境区の外側、左舷側加工帯。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -594,7 +599,8 @@
           -225,
           150
         ]
-      ]
+      ],
+      "outerDistrict": "middle_processing_port"
     },
     {
       "id": "ecosystem_greenhouses",
@@ -811,12 +817,12 @@
     {
       "id": "middle_cargo_inspection",
       "name": "中層貨物検査区",
-      "x": -500,
-      "y": 280,
+      "x": -420,
+      "y": -470,
       "w": 220,
       "h": 150,
       "type": "industrial",
-      "detail": "貨物検査と貨物リフト接続。 中央ギルド受付リングと干渉しない位置に再配置（検討案）。貨物・一般動線は非接続。",
+      "detail": "中層貨物検査と貨物リフトへの接続を扱う検査区。アルボラ自然区の外側の左舷寄りに再配置した大枠案。貨物トンネルの旧中心線とは未接続であり、工程③で道路引き直しが必要。",
       "sourceSection": "6.2",
       "sourcePosition": [
         -450,
@@ -861,7 +867,8 @@
           -110,
           60
         ]
-      ]
+      ],
+      "outerDistrict": "middle_logistics_buffer"
     },
     {
       "id": "middle_weapon_operation_field",
@@ -2112,11 +2119,11 @@
   "editorMeta": {
     "status": "draft",
     "scenario": "船尾中央栽培・真下に有機再生",
-    "note": "HTML配置確認用：レジストリンク・ドームをリンクターミナル内部（半径130～210m）へ移設。中央乗降区0～100m、待機・認証100～130m、ギルド環状受付130～210m、外周出口210～250m。大型機48m通路2方向、一般24m通路2方向。Notionは未変更。",
+    "note": "HTML配置確認用：レジストリンク・ドームをリンクターミナル内部（半径130～210m）へ移設。中央乗降区0～100m、待機・認証100～130m、ギルド環状受付130～210m、外周出口210～250m。大型機48m通路2方向、一般24m通路2方向。Notionは未変更。 中層アルボラ(1250×740m)と燃料・素材加工帯の一次重複を解消。工業幹線・貨物トンネル・生活圏境界は再検討中。",
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "middle_terminal_internal_130_210; middle_open_space_classification_added; peripheral_routes_not_verified",
+    "review": "stage1_arbora_processing_bbox_separation_verified; internal_and_outer_road_clearances_pending",
     "layoutModel": "middle-terminal-internal-guild-v2"
   },
   "centralUrbanPlan": {
@@ -2255,5 +2262,69 @@
         "重複と緩衝幅を計測し、残りの領域を再分類"
       ]
     }
+  },
+  "stage1Skeleton": {
+    "status": "revised_for_review_not_approved",
+    "arboraAndProcessing": {
+      "naturalAreaId": "arbora_sector",
+      "naturalChildren": [
+        "ecosystem_greenhouses",
+        "water_soil_cycle",
+        "biological_management",
+        "bio_material_greenhouse"
+      ],
+      "industrialGroups": [
+        {
+          "id": "processing_starboard",
+          "name": "右舷・燃料／油加工帯",
+          "sector": "industrial",
+          "factoryIds": [
+            "standard_fuel_factory",
+            "plant_oil_processing"
+          ],
+          "status": "draft_functional_group_not_single_building",
+          "bounds": {
+            "xMin": -1400,
+            "xMax": -450,
+            "yMin": 390,
+            "yMax": 790
+          }
+        },
+        {
+          "id": "processing_port",
+          "name": "左舷・繊維／素材加工帯",
+          "sector": "industrial",
+          "factoryIds": [
+            "fiber_resin_processing",
+            "middle_material_processing"
+          ],
+          "status": "draft_functional_group_not_single_building",
+          "bounds": {
+            "xMin": -1480,
+            "xMax": -575,
+            "yMin": -690,
+            "yMax": -390
+          }
+        }
+      ],
+      "cargoInspectionId": "middle_cargo_inspection",
+      "nonOverlapVerified": [
+        "standard_fuel_factory",
+        "plant_oil_processing",
+        "fiber_resin_processing",
+        "middle_material_processing",
+        "middle_cargo_inspection"
+      ],
+      "natureGapsProvisionalM": 20,
+      "openIssues": [
+        "アルボラ区とコアシェル生活圏の詳細な境界",
+        "工業加工帯と自然区の環境・防火・搬送隔壁",
+        "旧工業幹線・貨物トンネル・アルボラ大通りの経路引直し",
+        "船殻保守区・構造柱との詳細な実寸離隔"
+      ],
+      "note": "現行GitHub配置案の簡易矩形で自然区と加工施設4件の重複を解消。施設内の温室・受付・作戦室は変更なし。通行可能な道路は今の段階では確定しない。"
+    },
+    "revisedAt": "2026-11-08",
+    "phase": 1
   }
 }
