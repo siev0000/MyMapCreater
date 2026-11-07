@@ -284,7 +284,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  </div>
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script>
-const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=100;
+const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=50;
 const MAP_INSET_X=.70,MAP_INSET_Y=.80; // extra exterior engineering perimeter; physical hull dimensions remain unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
 const aaGrids={upper:{cols:50,rows:80},middle:{cols:50,rows:80},lower:{cols:50,rows:80}};
@@ -799,7 +799,10 @@ function restoreDisplaySettings(){
     if(saved.aaGrids && typeof saved.aaGrids==='object'){
      for(const id of GRID_FLOOR_IDS){
       const v=saved.aaGrids[id];
-      if(v&&validAA(v.cols)&&validAA(v.rows))aaGrids[id]=(v.cols===25&&v.rows===40)?{cols:50,rows:80}:{cols:v.cols,rows:v.rows};
+      if(v&&validAA(v.cols)&&validAA(v.rows)){
+       if(v.cols===25&&v.rows===40){aaGrids[id]={cols:50,rows:80};gridMeters=50}
+       else aaGrids[id]={cols:v.cols,rows:v.rows};
+      }
      }
     }else if(gridMeters===50){
      for(const id of GRID_FLOOR_IDS)aaGrids[id]={cols:50,rows:80};
@@ -1148,7 +1151,6 @@ ctx.scale(view.zoom*MAP_INSET_X,view.zoom*MAP_INSET_Y);
 ctx.translate(-W/2,-H/2);
 drawEngineeringOuterGrid();
 drawHullTop();
-drawInnerEngineeringBuffer();
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
 if(currentMap==='middle'){/* Decorative terrain ellipses removed: not a Notion-defined landform. */}
@@ -1157,6 +1159,7 @@ else if(currentMap==='lower'){ctx.fillStyle='#46372d';ctx.fillRect(0,H*.68,W,H*.
 ctx.restore();
 drawExclusiveSortieZones();
 drawMiddleDistrictAndDrafts();
+drawInnerEngineeringBuffer();
 if(!state.gridOnTop)drawGridLayer();
 // Real facilities and district region footprint; compound interiors are drawn separately.
 for(const f of facilities){
