@@ -52,8 +52,8 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <nav aria-label="階層選択"><button data-floor="upper">上層</button><button data-floor="middle" class="active">中層</button><button data-floor="lower">下層</button></nav>
 <div class="toolbar">
 <button id="overlay" class="active">中層⇄下層 重ね表示</button>
-<button id="snap" class="active">25mスナップ</button>
-<button id="grid" class="active">グリッド</button><button id="gridSize">100m四方（50mへ切替）</button>
+<button id="snap" class="active">10mスナップ</button>
+<button id="grid" class="active">グリッド</button><button id="gridSize">10m四方（50mへ切替）</button>
 <button id="labels" class="active">施設名</button>
 <button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
 <button id="saveLocal" style="background:#28664b;border-color:#83c5a1;font-weight:700">この端末に保存</button><button id="saveGithub" style="background:#24597b;border-color:#91c9e3;font-weight:700">GitHubに下書きを保存</button><button id="export">JSONを書き出す</button><button id="clearLocal">端末の保存を破棄</button><button id="resetFloor">Notion現行配置を読み込む</button><button id="import">JSONを読み込む</button>
@@ -93,10 +93,10 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   const clone=x=>JSON.parse(JSON.stringify(x));
   const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
   const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
-  const snap=n=>state.snap?Math.round(n/25)*25:Math.round(n);
+  const snap=n=>state.snap?Math.round(n/10)*10:Math.round(n);
   let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
   const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
-  const state={snap:true,grid:true,overlay:true,labels:true};let gridMeters=100;
+  const state={snap:true,grid:true,overlay:true,labels:true};let gridMeters=10;
   function current(){return floors[active]}
   function valid(d,floor){
     if(!d||d.schemaVersion!==1||d.floor!==floor||!Array.isArray(d.facilities)||!Array.isArray(d.roads)||!d.facilities.length)throw Error(floor+" の形式が不正です");
@@ -294,7 +294,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   function draw(){
     ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
     drawSortieRestrictions();
-    if(state.grid){const cols=2500/gridMeters,rows=4000/gridMeters;ctx.save();ctx.strokeStyle="#6b91a533";ctx.lineWidth=1;for(let col=0;col<=cols;col++){ctx.beginPath();ctx.moveTo(col*W/cols,0);ctx.lineTo(col*W/cols,H);ctx.stroke()}for(let row=0;row<=rows;row++){ctx.beginPath();ctx.moveTo(0,row*H/rows);ctx.lineTo(W,row*H/rows);ctx.stroke()}ctx.restore()}
+    if(state.grid){const cols=2500/gridMeters,rows=4000/gridMeters;ctx.save();ctx.strokeStyle="#6b91a525";ctx.lineWidth=.6;for(let col=0;col<=cols;col++){ctx.beginPath();ctx.moveTo(col*W/cols,0);ctx.lineTo(col*W/cols,H);ctx.stroke()}for(let row=0;row<=rows;row++){ctx.beginPath();ctx.moveTo(0,row*H/rows);ctx.lineTo(W,row*H/rows);ctx.stroke()}ctx.restore()}
     if(state.overlay&&active!=="upper"){
       const other=floors[active==="middle"?"lower":"middle"];
       if(other){
@@ -691,7 +691,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>{kind=b.dataset.kind;selection=null;render()}));
   $("overlay").onclick=()=>{state.overlay=!state.overlay;render()};
   $("snap").onclick=()=>{state.snap=!state.snap;render()};
-  $("grid").onclick=()=>{state.grid=!state.grid;render()};$("gridSize").onclick=()=>{gridMeters=gridMeters===100?50:100;$("gridSize").textContent=gridMeters+"m四方（"+(gridMeters===100?"50":"100")+"mへ切替）";draw()};
+  $("grid").onclick=()=>{state.grid=!state.grid;render()};$("gridSize").onclick=()=>{gridMeters=gridMeters===10?50:10;$("gridSize").textContent=gridMeters+"m四方（"+(gridMeters===10?"50":"10")+"mへ切替）";draw()};
   $("labels").onclick=()=>{state.labels=!state.labels;render()};
   $("undo").onclick=()=>restore("undo");$("redo").onclick=()=>restore("redo");
   $("addFacility").onclick=newFacility;$("addRoad").onclick=newRoad;
