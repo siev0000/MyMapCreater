@@ -1186,7 +1186,7 @@
     {
       "id": "external_resource_intake",
       "name": "外部資源吸収設備",
-      "x": 580,
+      "x": 460,
       "y": 50,
       "w": 200,
       "h": 200,
@@ -1236,7 +1236,7 @@
     {
       "id": "resource_temporary_storage",
       "name": "大型資源仮置場",
-      "x": 550,
+      "x": 440,
       "y": 270,
       "w": 260,
       "h": 200,
@@ -1401,6 +1401,1096 @@
     }
   ],
   "roads": [
+    {
+      "id": "lower_terminal_concourse",
+      "name": "下層ターミナルコンコース",
+      "kind": "ring",
+      "r": 290,
+      "width": 40,
+      "color": "#e6cd99",
+      "roadType": "一般通路・乗換",
+      "access": "public",
+      "connection": "中央ターミナル／下層歩行連絡"
+    },
+    {
+      "id": "lower_access_junk_rebuild_tank",
+      "name": "ジャンク・リビルド槽取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          280,
+          0
+        ],
+        [
+          280,
+          -40
+        ],
+        [
+          350,
+          -40
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        350,
+        -40
+      ],
+      "connectsFacility": "junk_rebuild_tank",
+      "connection": "中央ターミナル連絡網→ジャンク・リビルド槽",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          350,
+          -40
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_external_resource_intake",
+      "name": "外部資源吸収設備取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          340,
+          -40
+        ],
+        [
+          340,
+          0
+        ]
+      ],
+      "width": 12,
+      "color": "#a9b8d8",
+      "roadType": "貨物・機材専用道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        340,
+        0
+      ],
+      "connectsFacility": "external_resource_intake",
+      "connection": "中央ターミナル連絡網→外部資源吸収設備",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          340,
+          0
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_resource_temporary_storage",
+      "name": "大型資源仮置場取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          280,
+          0
+        ],
+        [
+          280,
+          220
+        ]
+      ],
+      "width": 12,
+      "color": "#a9b8d8",
+      "roadType": "貨物・機材専用道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        280,
+        220
+      ],
+      "connectsFacility": "resource_temporary_storage",
+      "connection": "中央ターミナル連絡網→大型資源仮置場",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          280,
+          220
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_discard_registration",
+      "name": "廃棄物搬入登録区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          0,
+          -280
+        ],
+        [
+          0,
+          -310
+        ],
+        [
+          -70,
+          -310
+        ],
+        [
+          -70,
+          -320
+        ],
+        [
+          -280,
+          -320
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -280,
+        -320
+      ],
+      "connectsFacility": "discard_registration",
+      "connection": "中央ターミナル連絡網→廃棄物搬入登録区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -280,
+          -320
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_heavy_machinery_maintenance",
+      "name": "重機整備区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          280,
+          220
+        ],
+        [
+          280,
+          390
+        ],
+        [
+          290,
+          390
+        ]
+      ],
+      "width": 12,
+      "color": "#a9b8d8",
+      "roadType": "貨物・機材専用道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        290,
+        390
+      ],
+      "connectsFacility": "heavy_machinery_maintenance",
+      "connection": "中央ターミナル連絡網→重機整備区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          290,
+          390
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_material_hollow",
+      "name": "マテリアル・ホロー取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          0,
+          -290
+        ],
+        [
+          90,
+          -290
+        ]
+      ],
+      "width": 12,
+      "color": "#a9b8d8",
+      "roadType": "貨物・機材専用道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        90,
+        -290
+      ],
+      "connectsFacility": "material_hollow",
+      "connection": "中央ターミナル連絡網→マテリアル・ホロー",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          90,
+          -290
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_foreign_object_inspection",
+      "name": "異物検査区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -210,
+          -320
+        ],
+        [
+          -210,
+          -430
+        ]
+      ],
+      "width": 12,
+      "color": "#a9b8d8",
+      "roadType": "貨物・機材専用道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -210,
+        -430
+      ],
+      "connectsFacility": "foreign_object_inspection",
+      "connection": "中央ターミナル連絡網→異物検査区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -210,
+          -430
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_organic_waste_intake",
+      "name": "有機廃棄物搬入口取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -280,
+          0
+        ],
+        [
+          -280,
+          20
+        ],
+        [
+          -510,
+          20
+        ]
+      ],
+      "width": 10,
+      "color": "#87d6ab",
+      "roadType": "有機・汚染物密閉通路",
+      "access": "bio_authorized",
+      "layer": "freight",
+      "entrance": [
+        -510,
+        20
+      ],
+      "connectsFacility": "organic_waste_intake",
+      "connection": "中央ターミナル連絡網→有機廃棄物搬入口",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -510,
+          20
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_lower_general_processing",
+      "name": "一般処理区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -440,
+          20
+        ],
+        [
+          -440,
+          380
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -440,
+        380
+      ],
+      "connectsFacility": "lower_general_processing",
+      "connection": "中央ターミナル連絡網→一般処理区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -440,
+          380
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_lower_managed_processing",
+      "name": "管理処理区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -440,
+          280
+        ],
+        [
+          -490,
+          280
+        ]
+      ],
+      "width": 10,
+      "color": "#e4a56e",
+      "roadType": "危険物専用密閉通路",
+      "access": "hazard_authorized",
+      "layer": "freight",
+      "entrance": [
+        -490,
+        280
+      ],
+      "connectsFacility": "lower_managed_processing",
+      "connection": "中央ターミナル連絡網→管理処理区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -490,
+          280
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_waste_inspection_classification",
+      "name": "廃棄物検査・分類区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -210,
+          -430
+        ],
+        [
+          -210,
+          -440
+        ],
+        [
+          -500,
+          -440
+        ],
+        [
+          -500,
+          -430
+        ],
+        [
+          -520,
+          -430
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -520,
+        -430
+      ],
+      "connectsFacility": "waste_inspection_classification",
+      "connection": "中央ターミナル連絡網→廃棄物検査・分類区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -520,
+          -430
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_fuel_discharge_neutralization",
+      "name": "燃料・電池放電中和施設取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -440,
+          380
+        ],
+        [
+          -440,
+          400
+        ],
+        [
+          -590,
+          400
+        ],
+        [
+          -590,
+          710
+        ]
+      ],
+      "width": 10,
+      "color": "#e4a56e",
+      "roadType": "危険物専用密閉通路",
+      "access": "hazard_authorized",
+      "layer": "freight",
+      "entrance": [
+        -590,
+        710
+      ],
+      "connectsFacility": "fuel_discharge_neutralization",
+      "connection": "中央ターミナル連絡網→燃料・電池放電中和施設",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -590,
+          710
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_lower_emergency_isolation",
+      "name": "緊急隔離施設取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -590,
+          690
+        ],
+        [
+          -580,
+          690
+        ]
+      ],
+      "width": 10,
+      "color": "#e4a56e",
+      "roadType": "危険物専用密閉通路",
+      "access": "hazard_authorized",
+      "layer": "freight",
+      "entrance": [
+        -580,
+        690
+      ],
+      "connectsFacility": "lower_emergency_isolation",
+      "connection": "中央ターミナル連絡網→緊急隔離施設",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -580,
+          690
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_reusable_component_recovery",
+      "name": "再利用成分回収区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -440,
+          160
+        ],
+        [
+          -800,
+          160
+        ],
+        [
+          -800,
+          130
+        ]
+      ],
+      "width": 10,
+      "color": "#87d6ab",
+      "roadType": "有機・汚染物密閉通路",
+      "access": "bio_authorized",
+      "layer": "freight",
+      "entrance": [
+        -800,
+        130
+      ],
+      "connectsFacility": "reusable_component_recovery",
+      "connection": "中央ターミナル連絡網→再利用成分回収区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -800,
+          130
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_parts_recovery_area",
+      "name": "部品回収区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -520,
+          -430
+        ],
+        [
+          -520,
+          -370
+        ],
+        [
+          -800,
+          -370
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -800,
+        -370
+      ],
+      "connectsFacility": "parts_recovery_area",
+      "connection": "中央ターミナル連絡網→部品回収区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -800,
+          -370
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_biological_treatment_tanks",
+      "name": "バイオ処理槽取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -800,
+          130
+        ],
+        [
+          -800,
+          -30
+        ],
+        [
+          -830,
+          -30
+        ]
+      ],
+      "width": 10,
+      "color": "#87d6ab",
+      "roadType": "有機・汚染物密閉通路",
+      "access": "bio_authorized",
+      "layer": "freight",
+      "entrance": [
+        -830,
+        -30
+      ],
+      "connectsFacility": "biological_treatment_tanks",
+      "connection": "中央ターミナル連絡網→バイオ処理槽",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -830,
+          -30
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_discarded_machine_inspection",
+      "name": "廃機体事前検査区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -800,
+          -370
+        ],
+        [
+          -800,
+          -450
+        ],
+        [
+          -830,
+          -450
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -830,
+        -450
+      ],
+      "connectsFacility": "discarded_machine_inspection",
+      "connection": "中央ターミナル連絡網→廃機体事前検査区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -830,
+          -450
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_lower_hazardous_processing",
+      "name": "危険処理区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -590,
+          480
+        ],
+        [
+          -790,
+          480
+        ]
+      ],
+      "width": 10,
+      "color": "#e4a56e",
+      "roadType": "危険物専用密閉通路",
+      "access": "hazard_authorized",
+      "layer": "freight",
+      "entrance": [
+        -790,
+        480
+      ],
+      "connectsFacility": "lower_hazardous_processing",
+      "connection": "中央ターミナル連絡網→危険処理区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -790,
+          480
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_waste_heat_recovery",
+      "name": "廃熱回収区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -800,
+          70
+        ],
+        [
+          -1130,
+          70
+        ],
+        [
+          -1130,
+          150
+        ],
+        [
+          -1150,
+          150
+        ]
+      ],
+      "width": 12,
+      "color": "#a9b8d8",
+      "roadType": "貨物・機材専用道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -1150,
+        150
+      ],
+      "connectsFacility": "waste_heat_recovery",
+      "connection": "中央ターミナル連絡網→廃熱回収区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -1150,
+          150
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_metal_re_refining_area",
+      "name": "金属再精錬区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -830,
+          -450
+        ],
+        [
+          -830,
+          -480
+        ],
+        [
+          -1070,
+          -480
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -1070,
+        -480
+      ],
+      "connectsFacility": "metal_re_refining_area",
+      "connection": "中央ターミナル連絡網→金属再精錬区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -1070,
+          -480
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_sludge_treatment_area",
+      "name": "汚泥処理区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -1130,
+          70
+        ],
+        [
+          -1130,
+          40
+        ],
+        [
+          -1220,
+          40
+        ],
+        [
+          -1220,
+          20
+        ]
+      ],
+      "width": 10,
+      "color": "#87d6ab",
+      "roadType": "有機・汚染物密閉通路",
+      "access": "bio_authorized",
+      "layer": "freight",
+      "entrance": [
+        -1220,
+        20
+      ],
+      "connectsFacility": "sludge_treatment_area",
+      "connection": "中央ターミナル連絡網→汚泥処理区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -1220,
+          20
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_recycled_resource_storage",
+      "name": "再生資源倉庫取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -1220,
+          20
+        ],
+        [
+          -1220,
+          -210
+        ]
+      ],
+      "width": 12,
+      "color": "#b2c4cf",
+      "roadType": "再生区貨物・作業道路",
+      "access": "freight_authorized",
+      "layer": "freight",
+      "entrance": [
+        -1220,
+        -210
+      ],
+      "connectsFacility": "recycled_resource_storage",
+      "connection": "中央ターミナル連絡網→再生資源倉庫",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -1220,
+          -210
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    },
+    {
+      "id": "lower_access_lower_special_isolation",
+      "name": "特別隔離区取付通路（配置案）",
+      "kind": "line",
+      "points": [
+        [
+          -1220,
+          40
+        ],
+        [
+          -1220,
+          80
+        ],
+        [
+          -1390,
+          80
+        ],
+        [
+          -1390,
+          160
+        ],
+        [
+          -1450,
+          160
+        ]
+      ],
+      "width": 10,
+      "color": "#e4a56e",
+      "roadType": "危険物専用密閉通路",
+      "access": "hazard_authorized",
+      "layer": "freight",
+      "entrance": [
+        -1450,
+        160
+      ],
+      "connectsFacility": "lower_special_isolation",
+      "connection": "中央ターミナル連絡網→特別隔離区",
+      "geometryStatus": "draft_10m_routed",
+      "status": "draft_route_needs_access_review",
+      "gate": {
+        "point": [
+          -1450,
+          160
+        ],
+        "type": "認証ゲート／隔離扉",
+        "status": "draft",
+        "closedToPublic": true
+      },
+      "dash": [
+        7,
+        5
+      ]
+    }
+  ],
+  "editorMeta": {
+    "status": "draft",
+    "scenario": "船尾中央栽培・上層専用の船首左右出撃区",
+    "revision": "polygon-packed-10m-v2",
+    "note": "ユーザー指定：下層船首側約1/3は上層専用・左右2系統の出撃区で、船外に接続する。中央ターミナルとは別系統。区画の境界X=+700mは約1/3の作業用仮値。上層・中層・下層一般移動の中央ターミナルは維持。出撃区に下層の通常施設と道路を置かない。Notion正本には未反映。",
+    "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
+    "sourceFile": "data/lower-draft.json",
+    "review": "polygon_collision_and_lower_restricted_zone_checked",
+    "restrictionChecked": true,
+    "routingRevision": "lower-bow-10m-gated-network-v1",
+    "roadAccessChecked": true
+  },
+  "restrictedZones": [
+    {
+      "id": "upper_expedition_port",
+      "name": "上層専用・左舷出撃区",
+      "owner": "upper",
+      "purpose": "sortie",
+      "status": "draft",
+      "access": "上層側の専用系統からアクセス。下層の一般経路からは接続しない。外部へ出撃。",
+      "bounds": {
+        "xMin": 700,
+        "xMax": 2000,
+        "yMin": -1250,
+        "yMax": 0
+      }
+    },
+    {
+      "id": "upper_expedition_starboard",
+      "name": "上層専用・右舷出撃区",
+      "owner": "upper",
+      "purpose": "sortie",
+      "status": "draft",
+      "access": "上層側の専用系統からアクセス。下層の一般経路からは接続しない。外部へ出撃。",
+      "bounds": {
+        "xMin": 700,
+        "xMax": 2000,
+        "yMin": 0,
+        "yMax": 1250
+      }
+    }
+  ],
+  "legacyRoads": [
     {
       "id": "lower_terminal_concourse",
       "name": "下層ターミナルコンコース",
@@ -1769,44 +2859,32 @@
       "status": "draft_route_requires_review"
     }
   ],
-  "editorMeta": {
+  "routePolicy": {
     "status": "draft",
-    "scenario": "船尾中央栽培・上層専用の船首左右出撃区",
-    "revision": "polygon-packed-10m-v2",
-    "note": "ユーザー指定：下層船首側約1/3は上層専用・左右2系統の出撃区で、船外に接続する。中央ターミナルとは別系統。区画の境界X=+700mは約1/3の作業用仮値。上層・中層・下層一般移動の中央ターミナルは維持。出撃区に下層の通常施設と道路を置かない。Notion正本には未反映。",
-    "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
-    "sourceFile": "data/lower-draft.json",
-    "review": "polygon_collision_and_lower_restricted_zone_checked",
-    "restrictionChecked": true
-  },
-  "restrictedZones": [
-    {
-      "id": "upper_expedition_port",
-      "name": "上層専用・左舷出撃区",
-      "owner": "upper",
-      "purpose": "sortie",
-      "status": "draft",
-      "access": "上層側の専用系統からアクセス。下層の一般経路からは接続しない。外部へ出撃。",
-      "bounds": {
-        "xMin": 700,
-        "xMax": 2000,
-        "yMin": -1250,
-        "yMax": 0
+    "noRouteMeaning": "道路・通路が未登録の場所は通行可能と判定しない。ただし通路がないことだけで隔壁の存在を確定しない。",
+    "barriers": [
+      {
+        "id": "bow_x700_seal",
+        "type": "closed_bulkhead",
+        "boundary": {
+          "x": 700
+        },
+        "description": "下層一般区と上層専用出撃区の隔壁。下層側に出入口なし。上層の専用系統を利用。"
+      },
+      {
+        "id": "sortie_port_starboard",
+        "type": "separated_sortie_channels",
+        "description": "船首の左舷・右舷出撃系統は互いに独立し、下層の一般通行経路と接続しない。"
       }
-    },
-    {
-      "id": "upper_expedition_starboard",
-      "name": "上層専用・右舷出撃区",
-      "owner": "upper",
-      "purpose": "sortie",
-      "status": "draft",
-      "access": "上層側の専用系統からアクセス。下層の一般経路からは接続しない。外部へ出撃。",
-      "bounds": {
-        "xMin": 700,
-        "xMax": 2000,
-        "yMin": 0,
-        "yMax": 1250
-      }
-    }
-  ]
+    ],
+    "roadAccess": "貨物・危険物・有機物の専用路は認証ゲート／隔離扉を介し、一般通路と自由に相互通行できない。",
+    "routesNeedReview": true,
+    "pathClassifications": [
+      "public",
+      "freight_authorized",
+      "bio_authorized",
+      "hazard_authorized",
+      "upper_only_sortie"
+    ]
+  }
 }
