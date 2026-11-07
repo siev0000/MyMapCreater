@@ -266,9 +266,9 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  </section>
  <section class="panel" id="middleCentralLayout" hidden>
  <h2>中層中央生活圏（再配置案）</h2>
- <p class="mapGridHint">リンクターミナルφ500m（暫定）の外周に、レジストリンク・ドームの環状受付を配置。半径335～425mの4分割環状施設に8つの受付、各受付に小作戦室を併設しています。</p>
- <p class="mapGridHint">青＝分散受付窓口／紫系の小部屋＝作戦室／紫ゲート＝大型機専用の隔離開口／青緑ゲート＝一般歩行通路。大型機用通路は船首・船尾の2か所で一般の受付帯と区分します。</p>
- <p class="mapGridHint">街区の住宅・商店・個人工房とアルキメリアラボは同じ都市生活圏に隣接。中央部の道路のみ検討線を表示し、外周道路・貨物路の接続は未確定です。Notionには反映していません。</p>
+ <p class="mapGridHint">リンクターミナル直径500mの内部に、レジストリンク・ドームを配置しました。中央の一般・大型機乗降区（半径100m）、待機・認証帯（100～130m）、環状の任務受付・小作戦室（130～210m）、外周の出口区（210～250m）の構成です。</p>
+ <p class="mapGridHint">青＝8か所の任務受付／紫色の小部屋＝各受付に隣接した作戦室／紫の太い通路＝大型機専用（船首・船尾）／青緑＝一般通路（左右舷）。専用シャッターと隔壁で動線を区別します。</p>
+ <p class="mapGridHint">ドームはターミナル内部の施設であり、外部の独立建築ではありません。タウン・工房街・アルキメリアラボはターミナル外周の生活圏へ集約。中央通路は仮配線、外周道路は未確認。Notionは未変更です。</p>
  <p><a href="./docs/aa-middle-central-replan-v1.md" target="_blank" rel="noopener noreferrer">中央生活圏の座標・通路・残課題を確認する</a></p>
  </section>
  <section class="panel" id="aaCollisionAudit" hidden>
@@ -1087,17 +1087,24 @@ function internalLinksHTML(f){
   +'<p class="compoundNote">内部区画の相対位置と連絡通路は配置案です。正式な館内構造は未確定。</p>';
 }
 function facilityInfoHTML(f){
- const children=internalLinksHTML(f);
- const parentNote=f.compoundChild?'<p class="compoundNote">レジストリンク・ドーム内部の施設。館内位置・寸法は仮配置です。</p>':'';
+ const children=internalLinksHTML(f)+(currentMap==='middle'&&showProposal&&f.id==='middle_terminal'?'<div class="compoundBranches"><button type="button" data-place="resist_link_dome">内部：レジストリンク・ドーム</button></div>':'');
+ const parentNote=f.compoundChild?'<p class="compoundNote">リンクターミナル内、レジストリンク・ドームの内部施設。館内位置・寸法は仮配置です。</p>':'';
  const functions=Array.isArray(f.functions)&&f.functions.length?
   '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
  const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
- const sizeLabel=f.ringComplex?'環状受付｜半径'+f.ringComplex.innerRadius+'～'+f.ringComplex.outerRadius+'m':f.w+'×'+f.h+'m '+dimensions;
+ const sizeLabel=f.ringComplex?'リンクターミナル内・環状受付｜半径'+f.ringComplex.innerRadius+'～'+f.ringComplex.outerRadius+'m':f.w+'×'+f.h+'m '+dimensions;
  const draftNote=f.sourcePosition?'<p class="compoundNote">10m単位の再配置案。Notion元座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m、元寸法：'+escHTML(f.sourceSize?.[0])+'×'+escHTML(f.sourceSize?.[1])+'m。形状・寸法は仮調整。'+(currentMap==='middle'&&showProposal?'中央部の道路のみ再配置案として表示。外周道路は未検証。':'道路は再敷設前のため配置案では非表示です。')+'</p>':'';
  return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${escHTML(sizeLabel)}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
 }
 function renderPlaces(){
  document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>{
+  if(currentMap==='middle'&&showProposal&&f.id==='resist_link_dome'&&f.containedIn==='middle_terminal')return '';
+  if(currentMap==='middle'&&showProposal&&f.id==='middle_terminal'&&facilities.some(g=>g.id==='resist_link_dome'&&g.containedIn==='middle_terminal')){
+   const guild=facilities.find(g=>g.id==='resist_link_dome');
+   return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="middle_terminal">'+escHTML(f.name)+'</button><div class="placeGroupChildren">'+
+    '<button class="listbtn" type="button" data-place="resist_link_dome">内包施設：レジストリンク・ドーム</button>'+
+    (guild.internalFacilities||[]).map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">　'+escHTML(c.name)+'</button>').join('')+'</div></div>';
+  }
   if(!f.areaFrame||!Array.isArray(f.internalFacilities))return `<button class="listbtn" type="button" data-place="${escHTML(f.id)}">${escHTML(f.name)}</button>`;
   return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="'+escHTML(f.id)+'">'+escHTML(f.name)+'（複合区）</button><div class="placeGroupChildren">'
    +f.internalFacilities.map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">'+escHTML(c.name)+'</button>').join('')
@@ -1449,6 +1456,14 @@ function drawGridLayer(){
  for(let r=0;r<=q.rows;r++){const gy=r*q.ch;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke()}
  ctx.restore();
 }
+function drawTerminalTowerBase(){
+ ctx.save();ctx.strokeStyle='#ead29f';ctx.lineWidth=2.5;ctx.setLineDash([]);
+ circle(0,0,330);ctx.stroke();
+ ctx.strokeStyle='#99cfe1';ctx.lineWidth=2;circle(0,0,250);ctx.stroke();
+ ctx.fillStyle=groups.terminal.fill;circle(0,0,250);ctx.fill();
+ ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
+ ctx.restore();
+}
 function draw(){
 if(activeWorldId==='dark_world'){darkWorld.draw();return}
 if(shipView==='side'){drawHullSide();return}
@@ -1501,23 +1516,19 @@ for(const f of facilities){
 if(isProtectedDraft&&currentMap==='middle'&&window.AAMiddleCentral){
  window.AAMiddleCentral.drawUrbanBlocks(ctx,xy,layoutDrafts.middle?.centralUrbanPlan,{zoom:view.zoom,labels:state.labels});
 }
+if(isProtectedDraft&&currentMap==='middle')drawTerminalTowerBase();
 if(!isProtectedDraft||(currentMap==='lower'&&roads.some(r=>r.geometryStatus==='draft_10m_routed')))for(let r of roads)drawRoad(r);
 else if(isProtectedDraft&&currentMap==='middle')for(const r of roads.filter(r=>r.geometryStatus==='draft_central_access'&&r.kind==='line'))drawRoad(r);
-drawCompoundFacilities();
+if(!(isProtectedDraft&&currentMap==='middle'))drawCompoundFacilities();
 drawCollisionWarnings();
 if(isProtectedDraft&&state.structures&&window.AAStructureOverlay){
  window.AAStructureOverlay.draw(ctx,xy,{floor:currentMap,facilities,roads});
 }
-// Terminal tower after roads, explicit center footprint
-const term=facilities[0];
-ctx.save();
-ctx.strokeStyle='#ead29f';ctx.lineWidth=2.5;ctx.setLineDash([]);
-circle(0,0,330);ctx.stroke();
-ctx.strokeStyle='#99cfe1';ctx.lineWidth=2;circle(0,0,250);ctx.stroke();
-ctx.fillStyle=groups.terminal.fill;circle(0,0,250);ctx.fill();ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
-ctx.restore();
+// The guild sits *inside* the Link Terminal in the middle draft.
+if(!(isProtectedDraft&&currentMap==='middle'))drawTerminalTowerBase();
+if(isProtectedDraft&&currentMap==='middle')drawCompoundFacilities();
 for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
-if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft&&currentMap==='middle')continue;let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.restore(); // exit the protected interior clipping region
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(isProtectedDraft)drawHullStructuralLabels();drawLowerAccessGatesAndBulkheads();drawRestrictedThrusterAccess();ctx.restore();}
