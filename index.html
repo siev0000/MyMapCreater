@@ -84,6 +84,14 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 #gridSize{font-size:11px}
 #places{display:flex;flex-wrap:wrap;gap:6px;max-height:240px;overflow-y:auto}
 .listbtn{padding:7px 9px;font-size:12px}.listbtn.on{background:#276380;border-color:#b8e3f3}
+.placeGroup{display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:10px;border:1px solid #547183;background:#0f2634;width:100%}
+.placeGroupTitle{font-weight:750;background:#3b3c35;border-color:#b99c62}
+.placeGroupChildren{display:flex;flex-wrap:wrap;gap:5px}
+.placeGroupChildren .listbtn{font-size:11px;padding:7px 8px}
+.compoundBranches{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
+.compoundBranches button{font-size:12px;padding:8px 9px}
+.compoundNote{font-size:11px;color:#b7c8d4}
+.compoundFunctions{margin:8px 0 0;padding-left:18px;color:#d9e7ef;font-size:12px;line-height:1.6}
 .legend{display:grid;grid-template-columns:18px 1fr;gap:7px 9px;font-size:12px;align-items:center;line-height:1.35}
 .swatch{height:9px;border-radius:4px}
 .layoutButton{width:100%;text-align:center;background:#64492e;border-color:#bd9460;font-weight:650}
@@ -422,7 +430,7 @@ function focusOnFacility(f){
   const mr=menu.getBoundingClientRect(),visibleRight=Math.min(r.right,mr.left);
   targetX=visibleRight>r.left+12?clamp((visibleRight-r.left)/(2*r.width)*W,W*.11,W*.50):W*.12;
  }
- view.zoom=1.85;
+ view.zoom=f.compoundChild?2.9:1.85;
  view.offsetX=targetX-W/2-view.zoom*(px-W/2);
  view.offsetY=-view.zoom*(py-H/2);
  updateZoomUI();draw();
@@ -477,8 +485,39 @@ lower:{name:'下層《ジェネレートシェル階層》',status:'Notion初期
 const layoutDrafts={};let showProposal=true;
 let facilities=middleFacilities,roads=middleRoads,currentMap='middle';
 function escHTML(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function virtualChild(parent,c){
+ return {...c,x:parent.x+c.dx,y:parent.y+c.dy,type:parent.type,compoundChild:true,parentId:parent.id,parentName:parent.name,internalLayoutStatus:parent.internalLayoutStatus};
+}
+function findFacility(id){
+ const direct=facilities.find(f=>f.id===id);
+ if(direct)return direct;
+ for(const parent of facilities){
+  const child=parent.internalFacilities?.find(c=>c.id===id);
+  if(child)return virtualChild(parent,child);
+ }
+ return null;
+}
+function internalLinksHTML(f){
+ if(!f.areaFrame||!Array.isArray(f.internalFacilities))return '';
+ return '<div class="compoundBranches">'+f.internalFacilities.map(c=>
+  `<button type="button" data-place="${escHTML(c.id)}">${escHTML(c.name)}</button>`).join('')+'</div>'
+  +'<p class="compoundNote">内部区画の相対位置と連絡通路は配置案です。正式な館内構造は未確定。</p>';
+}
+function facilityInfoHTML(f){
+ const children=internalLinksHTML(f);
+ const parentNote=f.compoundChild?'<p class="compoundNote">レジストリンク・ドーム内部の施設。館内位置・寸法は仮配置です。</p>':'';
+ const functions=Array.isArray(f.functions)&&f.functions.length?
+  '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
+ const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
+ return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${f.w}×${f.h}m ${dimensions}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}`;
+}
 function renderPlaces(){
- document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>`<button class="listbtn" type="button" data-place="${escHTML(f.id)}">${escHTML(f.name)}</button>`).join('');
+ document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>{
+  if(!f.areaFrame||!Array.isArray(f.internalFacilities))return `<button class="listbtn" type="button" data-place="${escHTML(f.id)}">${escHTML(f.name)}</button>`;
+  return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="'+escHTML(f.id)+'">'+escHTML(f.name)+'（複合区）</button><div class="placeGroupChildren">'
+   +f.internalFacilities.map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">'+escHTML(c.name)+'</button>').join('')
+   +'</div></div>';
+ }).join('');
 }
 function validateFloorJSON(id,data){
  if(!data||data.schemaVersion!==1||data.floor!==id||!Array.isArray(data.facilities)||!Array.isArray(data.roads)||data.facilities.length===0)throw Error(id+' のJSON形式が不正です');
@@ -487,6 +526,17 @@ function validateFloorJSON(id,data){
  for(const f of data.facilities){
   if(!f||typeof f.id!=='string'||!f.id||seen.has(f.id)||typeof f.name!=='string'||!groups[f.type]||![f.x,f.y,f.w,f.h].every(Number.isFinite)||f.w<=0||f.h<=0)throw Error(id+' の施設データが不正です');
   seen.add(f.id);
+  if(f.internalFacilities!==undefined){
+   if(!f.areaFrame||!Array.isArray(f.internalFacilities)||!f.internalFacilities.length)throw Error('内部施設の定義が不正: '+f.id);
+   const internals=new Set();
+   for(const c of f.internalFacilities){
+    if(!c||typeof c.id!=='string'||internals.has(c.id)||seen.has(c.id)||typeof c.name!=='string'||![c.dx,c.dy,c.w,c.h].every(Number.isFinite)||c.w<=0||c.h<=0)throw Error('内部施設の形式が不正: '+f.id);
+    if(Math.abs(c.dx)+c.w/2>f.w/2||Math.abs(c.dy)+c.h/2>f.h/2)throw Error('内部施設が外枠を超過: '+c.id);
+    internals.add(c.id);
+   }
+   const possible=new Set([...internals,f.internalEntrance?.id]);
+   if(!Array.isArray(f.internalConnections)||f.internalConnections.some(edge=>!Array.isArray(edge)||edge.length!==2||edge.some(id=>!possible.has(id))))throw Error('内部連絡の形式が不正: '+f.id);
+  }
  }
  for(const road of data.roads){
   if(!road||typeof road.id!=='string'||!['ring','line','internal'].includes(road.kind)||!Number.isFinite(road.width)||road.width<=0)throw Error(id+' の道路データが不正です');
@@ -563,6 +613,48 @@ document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(
 document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;saveDisplaySettings();switchMap(currentMap)};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function drawCompoundFacilities(){
+ for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
+  const [cx,cy]=xy(parent.x,parent.y),pw=parent.h*.4,ph=parent.w*.4;
+  ctx.save();
+  ctx.fillStyle='rgba(208,180,122,.055)';ctx.fillRect(cx-pw/2,cy-ph/2,pw,ph);
+  ctx.strokeStyle=chosen?.id===parent.id?'#fff3b7':'#e5c990';
+  ctx.lineWidth=chosen?.id===parent.id?3.2:2.4;ctx.setLineDash([11,6]);ctx.strokeRect(cx-pw/2,cy-ph/2,pw,ph);ctx.setLineDash([]);
+  const nodes=new Map(parent.internalFacilities.map(c=>[c.id,{x:parent.x+c.dx,y:parent.y+c.dy}]));
+  if(parent.internalEntrance)nodes.set(parent.internalEntrance.id,{x:parent.x+parent.internalEntrance.dx,y:parent.y+parent.internalEntrance.dy});
+  // Only visual paths: internal corridor geometry is not fixed in Notion.
+  if(state.roads){
+   ctx.lineWidth=2.3;ctx.strokeStyle='rgba(250,225,175,.8)';ctx.setLineDash([5,5]);
+   for(const [a,b] of parent.internalConnections||[]){
+    const from=nodes.get(a),to=nodes.get(b);if(!from||!to)continue;
+    const [sx,sy]=xy(from.x,from.y),[ex,ey]=xy(to.x,to.y);
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();
+   }
+   ctx.setLineDash([]);
+  }
+  for(const child of parent.internalFacilities){
+   const v=virtualChild(parent,child),[nx,ny]=xy(v.x,v.y),w=v.h*.4,h=v.w*.4;
+   ctx.fillStyle='rgba(129,104,67,.78)';ctx.fillRect(nx-w/2,ny-h/2,w,h);
+   ctx.strokeStyle=chosen?.id===v.id?'#fff5a2':'#f1d6a6';ctx.lineWidth=chosen?.id===v.id?3:1.8;
+   ctx.strokeRect(nx-w/2,ny-h/2,w,h);
+   if(state.labels&&view.zoom>=1.25){
+    ctx.font='bold 10px system-ui';ctx.textBaseline='middle';ctx.textAlign='center';
+    ctx.lineWidth=3.3;ctx.strokeStyle='#121e29';ctx.strokeText(child.short||child.name,nx,ny,w-5);
+    ctx.fillStyle='#fff7e7';ctx.fillText(child.short||child.name,nx,ny,w-5);
+   }
+  }
+  if(parent.internalEntrance){
+   const [ix,iy]=xy(parent.x+parent.internalEntrance.dx,parent.y+parent.internalEntrance.dy);
+   ctx.fillStyle='#f5e6c3';ctx.beginPath();ctx.arc(ix,iy,5,0,Math.PI*2);ctx.fill();
+  }
+  if(state.labels){
+   ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.lineWidth=4;ctx.strokeStyle='#14202a';ctx.strokeText(parent.name+'〈複合区〉',cx,cy-ph/2-13);
+   ctx.fillStyle='#f8dfab';ctx.fillText(parent.name+'〈複合区〉',cx,cy-ph/2-13);
+  }
+  ctx.restore();
+ }
+}
 function drawExclusiveSortieZones(){
  const zones=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones:[];
  if(!zones?.length)return;
@@ -614,9 +706,10 @@ ctx.restore();
 drawExclusiveSortieZones();
 drawMiddleDistrictAndDrafts();
 if(!state.gridOnTop)drawGridLayer();
-// Real facilities and district region footprint, mark area before roads
-for(let f of facilities){if(f.type==='terminal'||f.ringDistrict)continue;const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4;const g=groups[f.type];ctx.fillStyle=g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);ctx.strokeStyle=g.line+'aa';ctx.lineWidth=1.6;ctx.strokeRect(cx-w/2,cy-h/2,w,h)}
+// Real facilities and district region footprint; compound interiors are drawn separately.
+for(let f of facilities){if(f.type==='terminal'||f.ringDistrict||f.areaFrame)continue;const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4;const g=groups[f.type];ctx.fillStyle=g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);ctx.strokeStyle=g.line+'aa';ctx.lineWidth=1.6;ctx.strokeRect(cx-w/2,cy-h/2,w,h)}
 for(let r of roads)drawRoad(r);
+drawCompoundFacilities();
 // Terminal tower after roads, explicit center footprint
 const term=facilities[0];
 ctx.save();
@@ -625,8 +718,8 @@ circle(0,0,330);ctx.stroke();
 ctx.strokeStyle='#99cfe1';ctx.lineWidth=2;circle(0,0,250);ctx.stroke();
 ctx.fillStyle=groups.terminal.fill;circle(0,0,250);ctx.fill();ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
 ctx.restore();
-for(const f of facilities){if(f.ringDistrict)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
-if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
+if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(state.gridOnTop)drawGridLayer();ctx.restore();}
 function fitCanvasToViewport(){
@@ -662,7 +755,7 @@ function renderInfo(){
   info.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><div class="meta"><span class="pill">X ${fmt(x0)}〜${fmt(x1)}m</span><span class="pill">Y ${fmt(y0)}〜${fmt(y1)}m</span></div><p>通行可否は道路・通路などの接続設定に従います。</p>`;
  }else{
   const f=chosen;
-  info.innerHTML=`<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">占有 ${f.w}×${f.h}m</span></div><p>${escHTML(f.detail||'説明未登録')}</p>${f.type==='terminal'?'<p class="extra">中央ターミナル本体は直径500m。周囲に外径660mのコンコース、その外側に生活・整備地区があります。</p>':''}`;
+  info.innerHTML=facilityInfoHTML(f)+(f.type==='terminal'?'<p class="extra">中央ターミナル本体は直径500m。周囲に外径660mのコンコース、その外側に生活・整備地区があります。</p>':'');
  }
  const mask=document.getElementById('popupMask');mask.classList.add('show');mask.setAttribute('aria-hidden','false');
 }
@@ -697,13 +790,13 @@ function openDrawer(){
 function clearSelected(){chosen=null;document.getElementById('selectedPanel').hidden=true;renderInfo();draw()}
 function selectPlace(id){
  switchMenuTab('facilities');
- const f=facilities.find(x=>x.id===id);
+ const f=findFacility(id);
  if(!f)return;
  chosen=f;
  closePopup();
  const selectedPanel=document.getElementById('selectedPanel');
  const detail=document.getElementById('selectedDetail');
- detail.innerHTML=`<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${f.w}×${f.h}m</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>`;
+ detail.innerHTML=facilityInfoHTML(f);
  selectedPanel.hidden=false;
  document.querySelectorAll('#places [data-place]').forEach(b=>b.classList.toggle('on',b.dataset.place===id));
  focusOnFacility(f);
@@ -761,17 +854,29 @@ canvas.addEventListener('click',e=>{
  const p=mapCoordinateFromClient(e.clientX,e.clientY),x=p.x,y=p.y;
  if(x<0||x>W||y<0||y>canvas.height)return;
  if(activeWorldId==='dark_world'){darkWorld.selectAt(x,y);return}
- let near=null,dist=35/view.zoom;
- for(const f of facilities){
-  if(f.ringDistrict)continue;
+ let near=null,dist=35/view.zoom,compoundParent=null;
+ const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
+ for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
+  if(Math.abs(wx-parent.x)<=parent.w/2&&Math.abs(wy-parent.y)<=parent.h/2){
+   compoundParent=parent;
+   if(view.zoom>=1.25){
+    for(const child of parent.internalFacilities){
+     const v=virtualChild(parent,child);
+     if(Math.abs(wx-v.x)<=v.w/2&&Math.abs(wy-v.y)<=v.h/2){near=v;break}
+    }
+   }
+   if(near)break;
+  }
+ }
+ if(!near)for(const f of facilities){
+  if(f.ringDistrict||f.areaFrame)continue;
   const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);
   if(d<dist){near=f;dist=d}
  }
- const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
  const restricted=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones?.find(z=>wx>=z.bounds.xMin&&wx<=z.bounds.xMax&&wy>=z.bounds.yMin&&wy<=z.bounds.yMax):null;
  const radius=Math.hypot(wx,wy),tower=facilities.find(f=>f.type==='terminal');
  if(!near&&!restricted&&radius<=250&&tower)near=tower;
- chosen=near||(restricted?{kind:'reserved',...restricted}:radius<=330&&radius>250?{kind:'concourse'}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});
+ chosen=near||compoundParent||(restricted?{kind:'reserved',...restricted}:radius<=330&&radius>250?{kind:'concourse'}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});
  document.getElementById('selectedPanel').hidden=true;
  renderInfo();draw();
 });
@@ -793,6 +898,9 @@ document.getElementById('aaGridApply').onclick=()=>applyAAGridSize(
 );
 renderPlaces();
 document.getElementById('places').addEventListener('click',e=>{let b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place)});
+document.getElementById('selectedDetail').addEventListener('click',e=>{
+ const b=e.target.closest('[data-place]');if(b)selectPlace(b.dataset.place);
+});
 document.getElementById('zoomIn').onclick=()=>zoomCenter(1.25);
 document.getElementById('zoomOut').onclick=()=>zoomCenter(1/1.25);
 document.getElementById('zoomReset').onclick=()=>{resetView();draw()};
