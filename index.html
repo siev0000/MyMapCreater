@@ -257,6 +257,13 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <div class="lowerRouteLegend"><span style="color:#d7acf2">┄ 上層専用出撃路</span><span>━━ 一般連絡</span><span style="color:#a8c2dd">┄ 貨物・整備</span><span style="color:#85dbc0">┄ 有機物密閉</span><span style="color:#ef9a72">┄ 危険物専用</span><span style="color:#ffa5b4">━ 封鎖隔壁</span><span>◆ 認証ゲート</span></div>
  <p class="mapGridHint">経路は10m単位の配置検討案。危険物・密閉路と一般通路の交差は、自由に乗り換えできる交差点を意味しません。道路幅・個別ゲート位置は未確定です。</p>
  </section>
+ <section class="panel" id="upperAccessAudit" hidden>
+ <h2>上層の認証門・通路接続（未確定）</h2>
+ <p class="mapGridHint">GitHub再配置案では認証門が既存の認証通路から離れています。黄色の「!」は位置ずれ警告で、破線は通行可能な経路ではありません。</p>
+ <p class="mapGridHint">M認証門：(0,-750)／通路：(0,-190)～(0,-250)<br>E認証門：(-400,180)／通路：(0,190)～(0,250)</p>
+ <p class="mapGridHint">再配置後の施設と道路の交差が残るため、認証門への新規道路は未登録です。</p>
+ <p><a href="./docs/aa-upper-access-audit-v1.md" target="_blank" rel="noopener noreferrer">接続監査メモ（GitHub配置案）を開く</a></p>
+ </section>
  <section class="panel" id="aaCollisionAudit" hidden>
  <h2>施設の重複確認 <span id="aaCollisionCount"></span></h2>
  <p class="mapGridHint">赤色枠は再配置案で重なっている独立施設です。地区全体の枠とその内部施設など、完全に包含される組み合わせは除外しています。重複項目を押すと該当施設へ移動します。</p>
@@ -1164,6 +1171,7 @@ function switchMap(id){
  toggle.textContent=preview?'外壁・緩衝区の再配置案｜Notion現行へ':'Notion現行の配置｜緩衝区を確保した案へ';
  document.getElementById('layoutNotice').textContent=preview?'多重船殻・再配置案／未確定':'Notion現行座標（緩衝区未反映）';
 
+ document.getElementById('upperAccessAudit').hidden=!(id==='upper'&&preview);
  document.getElementById('mapTitle').textContent=map.name;
  document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
  document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。下層は専用通路と封鎖隔壁を仮配置済み。上中層の道路は未調整のため配置案では非表示です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
