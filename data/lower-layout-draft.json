@@ -8,7 +8,7 @@
     "section": "7.2-7.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 本ファイルは配置検討用の下書き。未承認の地理設定として扱う。 独立施設の多角形形状重複0件（配置案、道路の再調整は別途必要）。",
+  "note": "GitHub表示用データ。世界設定の正本はNotion。近接施設でも通行経路が登録されなければ通行可能とはしない。 本ファイルは配置検討用の下書き。未承認の地理設定として扱う。 独立施設の多角形形状重複0件（配置案、道路の再調整は別途必要）。 lower層中央ターミナル内部を中層と同じ概念で区画化（GitHub検討表示、Notion未反映）。研究区認証門や貨物経路などの外部接続は別途検証。",
   "facilities": [
     {
       "id": "lower_terminal",
@@ -18,7 +18,7 @@
       "w": 500,
       "h": 500,
       "type": "terminal",
-      "detail": "上層・中層から一般リフトで接続する下層の交通拠点。",
+      "detail": "下層の直径500m中央ターミナル。一般・大型機の交通、案内、検査、応急修理・充電、避難誘導を集約。貨物・危険物処理はターミナル内部に持ち込まず、専用物流経路を経由。ラストハブ生活区と直接連絡する。",
       "short": "中央ターミナル",
       "sourceSection": "7.2",
       "sourcePosition": [
@@ -29,7 +29,69 @@
         500,
         500
       ],
-      "draftRepositioned": true
+      "draftRepositioned": true,
+      "terminalInterior": {
+        "status": "draft_shared_terminal_v1",
+        "terminalRadius": 250,
+        "centralTransportRadius": 100,
+        "waitingSecurityOuterRadius": 130,
+        "supportBandOuterRadius": 210,
+        "exitBandOuterRadius": 250,
+        "sections": [
+          {
+            "id": "lower_entry_info",
+            "name": "一般案内・受付",
+            "angleDeg": 45
+          },
+          {
+            "id": "lower_inspection",
+            "name": "認証・簡易検査",
+            "angleDeg": 135
+          },
+          {
+            "id": "lower_emergency",
+            "name": "応急修理・充電",
+            "angleDeg": 225
+          },
+          {
+            "id": "lower_evacuation",
+            "name": "避難・緊急対応",
+            "angleDeg": 315
+          }
+        ],
+        "passageways": [
+          {
+            "id": "lower_large_bow",
+            "angleDeg": 0,
+            "halfAngleDeg": 11,
+            "width": 48,
+            "access": "large_machine_authorized"
+          },
+          {
+            "id": "lower_public_starboard",
+            "angleDeg": 90,
+            "halfAngleDeg": 6,
+            "width": 24,
+            "access": "public"
+          },
+          {
+            "id": "lower_large_stern",
+            "angleDeg": 180,
+            "halfAngleDeg": 11,
+            "width": 48,
+            "access": "large_machine_authorized"
+          },
+          {
+            "id": "lower_public_port",
+            "angleDeg": 270,
+            "halfAngleDeg": 6,
+            "width": 24,
+            "access": "public"
+          }
+        ],
+        "internalConnectionStatus": "draft_not_road_graph",
+        "note": "アシッドゾーンS9・特別隔離区・リクレイムベルト・マテリアルホローの作業用・貨物専用動線は一般通路と無条件に接続しない。下層船首の上層専用出撃区（X+700m以上）は通行禁止のまま。"
+      }
     },
     {
       "id": "last_hub",
@@ -2455,10 +2517,11 @@
     "note": "ユーザー指定：下層船首側約1/3は上層専用・左右2系統の出撃区で、船外に接続する。中央ターミナルとは別系統。区画の境界X=+700mは約1/3の作業用仮値。上層・中層・下層一般移動の中央ターミナルは維持。出撃区に下層の通常施設と道路を置かない。Notion正本には未反映。",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/lower-draft.json",
-    "review": "polygon_collision_and_lower_restricted_zone_checked",
+    "review": "polygon_collision_and_lower_restricted_zone_checked; central terminal interior is visual-only; roads and gate routing unchanged",
     "restrictionChecked": true,
     "routingRevision": "lower-bow-10m-gated-network-v2",
-    "roadAccessChecked": true
+    "roadAccessChecked": true,
+    "terminalInteriorLayout": "draft_shared_terminal_v1_lower"
   },
   "restrictedZones": [
     {
