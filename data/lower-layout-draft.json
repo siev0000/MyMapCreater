@@ -1186,8 +1186,8 @@
     {
       "id": "external_resource_intake",
       "name": "外部資源吸収設備",
-      "x": 690,
-      "y": -320,
+      "x": 580,
+      "y": 50,
       "w": 200,
       "h": 200,
       "type": "industrial",
@@ -1236,8 +1236,8 @@
     {
       "id": "resource_temporary_storage",
       "name": "大型資源仮置場",
-      "x": 690,
-      "y": -540,
+      "x": 550,
+      "y": 270,
       "w": 260,
       "h": 200,
       "type": "industrial",
@@ -1776,7 +1776,8 @@
     "note": "ユーザー指定：下層船首側約1/3は上層専用・左右2系統の出撃区で、船外に接続する。中央ターミナルとは別系統。区画の境界X=+700mは約1/3の作業用仮値。上層・中層・下層一般移動の中央ターミナルは維持。出撃区に下層の通常施設と道路を置かない。Notion正本には未反映。",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/lower-draft.json",
-    "review": "polygon_collision_checked"
+    "review": "polygon_collision_and_lower_restricted_zone_checked",
+    "restrictionChecked": true
   },
   "restrictedZones": [
     {
