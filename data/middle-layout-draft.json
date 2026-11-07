@@ -2005,7 +2005,7 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "central_block_geometric_and_route_validation_pending",
+    "review": "independent_overlap_and_central_lane_clearances_checked",
     "layoutModel": "middle-compact-city-ring-v1"
   },
   "centralUrbanPlan": {
@@ -2071,7 +2071,7 @@
       {
         "id": "refine_maintenance",
         "name": "修理工房",
-        "x": -260,
+        "x": -330,
         "y": 625,
         "w": 55,
         "h": 45,
