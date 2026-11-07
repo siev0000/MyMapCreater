@@ -266,6 +266,11 @@ function updateAAGridInfo(){
   document.getElementById('gridReadout').textContent=q.cols+'×'+q.rows+'｜'+aaCellLabel();
   const subtitle=document.getElementById('mapSubtitle');
   if(subtitle&&subtitle.textContent)subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':mapSets[preferredFloor]?.status||'');
+  const notice=document.getElementById('mapNotice');
+  if(notice?.textContent?.startsWith('X=±2,000m、Y=±1,250mを横')){
+   const prefix='X=±2,000m、Y=±1,250mを横'+q.cols+'×縦'+q.rows+'マス（1マス'+aaCellLabel()+'）で表示。';
+   notice.textContent=notice.textContent.replace(/^X=±2,000m、Y=±1,250mを横.*?で表示。/,prefix);
+  }
  }
 }
 function applyAAGridSize(cols,rows){
@@ -321,7 +326,8 @@ function switchWorld(id,persist=true){
   document.getElementById('shipOrientationChip').hidden=true;
   document.getElementById('mapTitle').textContent='ダークワールド';
   document.getElementById('mapSubtitle').textContent='参考画像の輪郭＋12×20編集マス／仮配置';
-  document.getElementById('gridReadout').textContent='12×20｜距離未設定';
+  document.getElementById('gridReadout').textContent='距離未設定';
+  if(darkWorld.model)darkWorld.updateGridUI();
   document.getElementById('layoutNotice').textContent='仮配置・Notion未反映';
   document.getElementById('emptyWorldTitle').textContent='ダークワールド';
   document.title='ダークワールド｜仮の領地・地形マップ';
