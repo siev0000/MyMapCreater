@@ -707,7 +707,17 @@ drawExclusiveSortieZones();
 drawMiddleDistrictAndDrafts();
 if(!state.gridOnTop)drawGridLayer();
 // Real facilities and district region footprint; compound interiors are drawn separately.
-for(let f of facilities){if(f.type==='terminal'||f.ringDistrict||f.areaFrame)continue;const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4;const g=groups[f.type];ctx.fillStyle=g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);ctx.strokeStyle=g.line+'aa';ctx.lineWidth=1.6;ctx.strokeRect(cx-w/2,cy-h/2,w,h)}
+for(const f of facilities){
+ if(f.type==='terminal'||f.ringDistrict||f.areaFrame)continue;
+ const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4,g=groups[f.type];
+ ctx.save();
+ ctx.fillStyle=f.zoneOutline?g.fill+'27':g.fill+'77';
+ ctx.fillRect(cx-w/2,cy-h/2,w,h);
+ ctx.strokeStyle=g.line+'cc';ctx.lineWidth=f.zoneOutline?2.7:1.6;
+ if(f.zoneOutline)ctx.setLineDash([9,6]);
+ ctx.strokeRect(cx-w/2,cy-h/2,w,h);
+ ctx.restore();
+}
 for(let r of roads)drawRoad(r);
 drawCompoundFacilities();
 // Terminal tower after roads, explicit center footprint
@@ -854,7 +864,7 @@ canvas.addEventListener('click',e=>{
  const p=mapCoordinateFromClient(e.clientX,e.clientY),x=p.x,y=p.y;
  if(x<0||x>W||y<0||y>canvas.height)return;
  if(activeWorldId==='dark_world'){darkWorld.selectAt(x,y);return}
- let near=null,dist=35/view.zoom,compoundParent=null;
+ let near=null,dist=35/view.zoom,compoundParent=null,zoneParent=null;
  const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
  for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
   if(Math.abs(wx-parent.x)<=parent.w/2&&Math.abs(wy-parent.y)<=parent.h/2){
@@ -870,13 +880,14 @@ canvas.addEventListener('click',e=>{
  }
  if(!near)for(const f of facilities){
   if(f.ringDistrict||f.areaFrame)continue;
+  if(f.zoneOutline&&Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2)zoneParent=f;
   const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);
   if(d<dist){near=f;dist=d}
  }
  const restricted=currentMap==='lower'&&showProposal?layoutDrafts.lower?.restrictedZones?.find(z=>wx>=z.bounds.xMin&&wx<=z.bounds.xMax&&wy>=z.bounds.yMin&&wy<=z.bounds.yMax):null;
  const radius=Math.hypot(wx,wy),tower=facilities.find(f=>f.type==='terminal');
  if(!near&&!restricted&&radius<=250&&tower)near=tower;
- chosen=near||compoundParent||(restricted?{kind:'reserved',...restricted}:radius<=330&&radius>250?{kind:'concourse'}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});
+ chosen=near||compoundParent||zoneParent||(restricted?{kind:'reserved',...restricted}:radius<=330&&radius>250?{kind:'concourse'}:{kind:'cell',col:Math.min(gridSpec().cols-1,Math.max(0,Math.floor(x/gridSpec().cw))),row:Math.min(gridSpec().rows-1,Math.max(0,Math.floor(y/gridSpec().ch)))});
  document.getElementById('selectedPanel').hidden=true;
  renderInfo();draw();
 });
