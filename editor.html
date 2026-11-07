@@ -309,8 +309,13 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(f.ringDistrict)continue;
       if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
       const b=rect(f),color=COLORS[f.type]||"#b3c6d2";
-      ctx.fillStyle=color+"33";ctx.fillRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
-      ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
+      ctx.save();
+      ctx.fillStyle=color+(f.zoneOutline?"19":"33");
+      ctx.fillRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
+      ctx.strokeStyle=color;ctx.lineWidth=f.zoneOutline?2.5:1.5;
+      if(f.zoneOutline)ctx.setLineDash([9,6]);
+      ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
+      ctx.restore();
     }
     for(const r of current().roads)drawRoad(r,.78);
     if(state.labels){
