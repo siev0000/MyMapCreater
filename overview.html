@@ -79,7 +79,7 @@ const areas={
  upper:{title:'上層｜研究区の左右分離と共通交通',summary:'中央共有区を挟み、左舷マギテック／右舷エイドロン。研究側には別々の認証門を経由する。',
   issues:['上層GitHub案の認証門と認証通路は未接続。修正は工程③で行う。','中央共有区・左右研究区の初期境界はNotionにあるが、実際の隔壁位置は未確定。','船殻外周の推進・整備設備は専用認証経路のみ。']},
  middle:{title:'中層｜一体の生活圏と自然・工業の区分',summary:'リンクターミナルを生活・整備の核とし、内部にレジストリンク・ドームを含む。アルボラ自然区と燃料・植物加工は生活区から分離。',
-  issues:['GitHub案ではアルボラセクターが船尾中央へ移動。Notion初期配置と異なるため未承認。','アルボラの表示枠と燃料・植物加工施設群の配置が重なる可能性がある。工程①②で区分を決め直す。','船首の武装運用区はGitHubにだけある提案で、Notionの確定施設とは扱わない。','生活圏とアルボラ・工業区の主要交通は工程③で検証する。']},
+  issues:['GitHub案ではアルボラセクターを船尾中央へ再配置し、加工施設4件とは簡易矩形上の重複を解消しました。Notion初期配置とは異なり未承認です。','自然区と左右舷加工帯の間は最小20mの仮の間隔であり、安全な防火・環境隔壁幅はまだ確定していません。','中層貨物検査区も自然区から移しましたが、既存の貨物トンネル・工業幹線の旧ルートは再接続が必要です。','船首の武装運用区はGitHubにだけある未承認候補です。生活圏とアルボラ・工業区の道路は工程③で確認します。']},
  lower:{title:'下層｜生活区・再処理・隔離・搬入の分離',summary:'ラストハブが中央交通の周囲を占め、再処理・腐食危険区・バイオ再生・資源搬入の役割を分ける。',
   issues:['マテリアル・ホローなどの配置はNotion初期座標とGitHub案で大きく異なる。工程①の検討対象。','船首 X=+700m以降の上層専用出撃区はGitHub下書きの境界案。下層通常通路と接続しない。','危険区・有機物処理・貨物輸送・ラストハブ生活動線の分離を維持する。']}
 };
@@ -128,11 +128,22 @@ function draw(){
    const out=ring.outerRadius||720;
    addZone('core_shell_refine','生活・整備圏',{tag:'circle',props:circle(out),label:pos(-400,380),fontSize:17,opacity:.16},colors.shared,'リンクターミナル周囲のコアシェルタウンとリファインバレーは一体の街。アルキメリアラボは工房街の内部。大円は単一建築物ではない。');insertToClip();
   }
-  majorFacility('arbora_sector','アルボラ自然区',colors.nature,'栽培・人工自然・水循環・温室等の管理地区。現GitHub配置は船尾中央だが、工業施設群との重なりとNotion初期案との差を確認する。',source==='draft'?'現行Notionと異なる':'');insertToClip();
-  const plants=['standard_fuel_factory','plant_oil_processing','fiber_resin_processing','middle_material_processing'].map(get).filter(Boolean);
-  if(plants.length){
-   const xa=plants.map(f=>f.x),ya=plants.map(f=>f.y),p=pos(xa.reduce((a,b)=>a+b,0)/plants.length,ya.reduce((a,b)=>a+b,0)/plants.length);
-   addZone('industry_group','燃料・素材加工群',{tag:'circle',props:{cx:p[0],cy:p[1],r:32},label:[p[0],p[1]+54],fontSize:17,opacity:.66},colors.industry,'位置マーカーは既存の燃料・植物油・繊維樹脂・資源加工施設の平均中心。図形の円は工業区全体の面積ではない。アルボラとの重なりや搬送路を要調整。','');insertToClip();
+  majorFacility('arbora_sector','アルボラ自然区',colors.nature,'栽培・人工自然・水循環・温室等の管理地区。GitHub案では船尾中央の幅1250×740mの検討用矩形に調整し、加工施設4件との簡易矩形重なりを解消。内部の温室等4施設を包含。ただしNotion初期位置とは異なり、環境隔壁幅と道路接続は未確定。',source==='draft'?'現行Notionと異なる':'');insertToClip();
+  const groups=source==='draft'?dataset.stage1Skeleton?.arboraAndProcessing?.industrialGroups:null;
+  if(groups?.length){
+   for(const g of groups){
+    const b=g.bounds,cx=(b.xMin+b.xMax)/2,cy=(b.yMin+b.yMax)/2;
+    const name=g.id==='processing_starboard'?'右舷・燃料／油加工帯':'左舷・繊維／素材加工帯';
+    const desc='GitHub大枠検討案：'+g.factoryIds.map(id=>get(id)?.name||id).join('・')+'をまとめた加工施設群。矩形は複数施設の占有範囲の集合を示す概略枠で、1棟の建物ではありません。自然区との境界・輸送路は要調整。';
+    addZone(g.id,name,{tag:'rect',props:rectBounds(b.xMin,b.xMax,b.yMin,b.yMax),label:pos(cx,cy),fontSize:15,opacity:.20},colors.industry,desc,'');insertToClip();
+   }
+   majorFacility('middle_cargo_inspection','貨物検査区（仮）',colors.industry,'アルボラの外側へ移動したGitHub配置案。貨物トンネルとの正式な接続は工程③で再検証。','',true);insertToClip();
+  }else{
+   const plants=['standard_fuel_factory','plant_oil_processing','fiber_resin_processing','middle_material_processing'].map(get).filter(Boolean);
+   if(plants.length){
+    const xa=plants.map(f=>f.x),ya=plants.map(f=>f.y),p=pos(xa.reduce((a,b)=>a+b,0)/plants.length,ya.reduce((a,b)=>a+b,0)/plants.length);
+    addZone('industry_group','燃料・素材加工群',{tag:'circle',props:{cx:p[0],cy:p[1],r:32},label:[p[0],p[1]+54],fontSize:17,opacity:.66},colors.industry,'Notion初期配置の加工施設4件の平均中心を示す位置マーカー。円は加工区の外形・実際の占有面積ではありません。','');insertToClip();
+   }
   }
   if(source==='draft')majorFacility('middle_weapon_operation_field','武装運用区案',colors.research,'GitHub配置案だけにある未承認候補。Notionの確定施設ではない。','GitHub案のみ');insertToClip();
  }else{
