@@ -49,6 +49,8 @@ function drawUrbanBlocks(ctx,xy,model,options={}){
 function drawGuild(ctx,xy,facility,options={}){
  const ring=facility?.ringComplex;if(!ring)return;
  const {zoom=1,labels=true,chosen=null,roads=true}=options;
+ const revealGuild=chosen?.id===facility.id||chosen?.parentId===facility.id;
+ const revealTerminal=chosen?.id===facility.containedIn||revealGuild;
  const inR=ring.innerRadius,outR=ring.outerRadius,terminalR=ring.terminalOuterRadius||250;
  const passage=ring.passageways||[];
  const getGate=a=>passage.find(g=>g.angleDeg===a);
@@ -98,6 +100,7 @@ function drawGuild(ctx,xy,facility,options={}){
   }
   ctx.restore();
  }
+ if(revealGuild){
  // Eight identical task counters and two adjoining briefing cubicles per station.
  const angles=ring.receptionAnglesDeg||[];
  for(let i=0;i<angles.length;i++){
@@ -129,13 +132,20 @@ function drawGuild(ctx,xy,facility,options={}){
    ctx.fillStyle='#fff2d7';ctx.fillText(child.short||child.name,x,y-14);
   }
  }
- if(labels){
+ }
+ if(labels&&revealTerminal){
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
   ctx.strokeStyle='#122432';ctx.fillStyle='#f7f9fa';ctx.lineWidth=3;
   ctx.font='bold 12px system-ui';ctx.strokeText('乗降ホール',cx,cy-6);ctx.fillText('乗降ホール',cx,cy-6);
   ctx.font='10px system-ui';ctx.strokeText('一般・大型機',cx,cy+9);ctx.fillText('一般・大型機',cx,cy+9);
+  if(chosen?.id===facility.containedIn){
+   const p=xy(facility.x+210,facility.y+42);
+   ctx.font='bold 11px system-ui';ctx.strokeStyle='#172a33';ctx.fillStyle='#ffe6b7';
+   ctx.strokeText('レジストリンク・ドーム',p[0],p[1]);
+   ctx.fillText('レジストリンク・ドーム',p[0],p[1]);
+  }
   // The guild is located inside the tower, never at an external coordinate.
-  if(zoom>=1.25){
+  if(revealGuild&&zoom>=1.25){
    const [lx,ly]=xy(facility.x+225,facility.y+45);
    ctx.font='bold 11px system-ui';ctx.strokeStyle='#12212d';ctx.fillStyle='#ffe5b2';ctx.lineWidth=3;
    ctx.strokeText('レジストリンク・ドーム（ターミナル内部）',lx,ly);
