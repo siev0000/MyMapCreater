@@ -910,7 +910,12 @@ document.getElementById('menuBtn').addEventListener('click',()=>{
 });
 document.querySelectorAll('[data-menu-tab]').forEach(b=>b.addEventListener('click',()=>switchMenuTab(b.dataset.menuTab)));
 document.getElementById('drawerShade').addEventListener('click',closeDrawer);
-document.getElementById('popupMask').addEventListener('click',clearSelected);
+document.getElementById('popupMask').addEventListener('click',e=>{
+ const child=e.target.closest?.('[data-place]');
+ if(child){
+  closePopup();openDrawer();selectPlace(child.dataset.place);
+ }else clearSelected();
+});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){clearSelected();closeDrawer()}});
 const darkWorld=window.DarkWorldMap.create({
  canvas,ctx,getView:()=>view,redraw:()=>draw(),
