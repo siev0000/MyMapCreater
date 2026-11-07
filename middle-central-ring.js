@@ -90,6 +90,20 @@ function drawGuild(ctx,xy,facility,options={}){
    ctx.fillStyle='#f3fbff';ctx.fillText(String(i+1),sx,sy-8);
   }
  }
+ // Major functional rooms are real selectable nodes; the little rooms above are
+ // illustrative distributed reception-and-briefing pods rather than separate cities.
+ for(const child of facility.internalFacilities||[]){
+  const [mx,my]=xy(facility.x+child.dx,facility.y+child.dy);
+  const isSelected=chosen?.id===child.id;
+  ctx.save();ctx.fillStyle=isSelected?'#fff4a9':'#ceb29a';ctx.strokeStyle='#fff0d6';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.arc(mx,my,isSelected?6:4.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+  if(labels&&zoom>=2){
+   ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 9px system-ui';
+   ctx.strokeStyle='#16202a';ctx.lineWidth=3;ctx.strokeText(child.short||child.name,mx,my-11);
+   ctx.fillStyle='#fff3dc';ctx.fillText(child.short||child.name,mx,my-11);
+  }
+  ctx.restore();
+ }
  // Authorized large-machine corridors are distinctly separated from ordinary halls.
  for(const gate of ring.passageways||[]){
   const at=worldPoint((inR+outR)/2,gate.angleDeg),[x,y]=xy(...at);
