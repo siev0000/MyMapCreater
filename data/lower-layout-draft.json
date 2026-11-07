@@ -2457,7 +2457,7 @@
     "sourceFile": "data/lower-draft.json",
     "review": "polygon_collision_and_lower_restricted_zone_checked",
     "restrictionChecked": true,
-    "routingRevision": "lower-bow-10m-gated-network-v1",
+    "routingRevision": "lower-bow-10m-gated-network-v2",
     "roadAccessChecked": true
   },
   "restrictedZones": [
@@ -2875,6 +2875,11 @@
         "id": "sortie_port_starboard",
         "type": "separated_sortie_channels",
         "description": "船首の左舷・右舷出撃系統は互いに独立し、下層の一般通行経路と接続しない。"
+      },
+      {
+        "id": "starboard_port_sortie_divider",
+        "type": "restricted_internal_divider",
+        "description": "上層専用の左舷・右舷出撃搬送系統は互いに独立している。相互乗り入れ・下層からの通行は認めない。"
       }
     ],
     "roadAccess": "貨物・危険物・有機物の専用路は認証ゲート／隔離扉を介し、一般通路と自由に相互通行できない。",
@@ -2886,5 +2891,87 @@
       "hazard_authorized",
       "upper_only_sortie"
     ]
-  }
+  },
+  "upperOnlyRoutes": [
+    {
+      "id": "sortie_upper_port",
+      "name": "上層直通リフト→左舷出撃区・専用搬送路（仮）",
+      "owner": "upper",
+      "access": "upper_only_sortie",
+      "entry": "上層側専用リフト。下層からの接続なし。",
+      "kind": "line",
+      "width": 14,
+      "color": "#dbb6ff",
+      "points": [
+        [
+          820,
+          -340
+        ],
+        [
+          1160,
+          -340
+        ],
+        [
+          1510,
+          -340
+        ],
+        [
+          1840,
+          -340
+        ]
+      ],
+      "gates": [
+        {
+          "x": 820,
+          "y": -340,
+          "type": "上層専用搬入ゲート"
+        },
+        {
+          "x": 1840,
+          "y": -340,
+          "type": "出撃区外部接続ゲート"
+        }
+      ]
+    },
+    {
+      "id": "sortie_upper_starboard",
+      "name": "上層直通リフト→右舷出撃区・専用搬送路（仮）",
+      "owner": "upper",
+      "access": "upper_only_sortie",
+      "entry": "上層側専用リフト。下層からの接続なし。",
+      "kind": "line",
+      "width": 14,
+      "color": "#dbb6ff",
+      "points": [
+        [
+          820,
+          340
+        ],
+        [
+          1160,
+          340
+        ],
+        [
+          1510,
+          340
+        ],
+        [
+          1840,
+          340
+        ]
+      ],
+      "gates": [
+        {
+          "x": 820,
+          "y": 340,
+          "type": "上層専用搬入ゲート"
+        },
+        {
+          "x": 1840,
+          "y": 340,
+          "type": "出撃区外部接続ゲート"
+        }
+      ]
+    }
+  ]
 }
