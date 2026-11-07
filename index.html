@@ -1065,7 +1065,7 @@ function facilityInfoHTML(f){
  const functions=Array.isArray(f.functions)&&f.functions.length?
   '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
  const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
- const draftNote=f.sourcePosition?'<p class="compoundNote">船内緩衝区を確保するための再配置案。元のNotion座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m。施設の寸法は変更していません。正式経路は再検証が必要です。</p>':'';
+ const draftNote=f.sourcePosition?'<p class="compoundNote">10m単位の再配置案。Notion元座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m、元寸法：'+escHTML(f.sourceSize?.[0])+'×'+escHTML(f.sourceSize?.[1])+'m。形状・寸法は仮調整。道路は再敷設前のため配置案では非表示です。</p>':'';
  return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${f.w}×${f.h}m ${dimensions}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
 }
 function renderPlaces(){
@@ -1154,7 +1154,7 @@ function switchMap(id){
 
  document.getElementById('mapTitle').textContent=map.name;
  document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
- document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。既存施設の寸法は維持し、中心位置を内側へ移動しました。道路接続・施設間の重複は今後の検証対象。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
+ document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。道路は旧座標のままのため、配置案では非表示です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  updateAAGridInfo();
@@ -1174,6 +1174,32 @@ document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(
 document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;shipView='map';canvas.height=1600;canvas.style.aspectRatio='5/8';fitCanvasToViewport();switchMap(currentMap);setShipView('map',false);saveDisplaySettings()};
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(2,road.width*.4);ctx.setLineDash(road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function facilityPolygonVertices(f){
+ if(Array.isArray(f.footprint)&&f.footprint.length>=3)return f.footprint.map(([dx,dy])=>[f.x+dx,f.y+dy]);
+ return [[f.x-f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y+f.h/2],[f.x-f.w/2,f.y+f.h/2]];
+}
+function traceFacilityPolygon(f){
+ const pts=facilityPolygonVertices(f);ctx.beginPath();
+ pts.forEach(([x,y],i)=>{const [px,py]=xy(x,y);i?ctx.lineTo(px,py):ctx.moveTo(px,py)});
+ ctx.closePath();
+}
+function pointInsideFacility(f,x,y){
+ const pts=facilityPolygonVertices(f);let inside=false;
+ for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+  const a=pts[i],b=pts[j];
+  if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;
+ }return inside;
+}
+function polygonsOverlap(f,g){
+ const a=facilityPolygonVertices(f),b=facilityPolygonVertices(g);
+ const orient=(p,q,r)=>(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);
+ const cross=(p,q,r,t)=>orient(p,q,r)*orient(p,q,t)<0&&orient(r,t,p)*orient(r,t,q)<0;
+ for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++)if(cross(a[i],a[(i+1)%a.length],b[j],b[(j+1)%b.length]))return true;
+ const inside=(p,poly)=>{let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+  const q=poly[i],r=poly[j];if((q[1]>p[1])!==(r[1]>p[1])&&p[0]<(r[0]-q[0])*(p[1]-q[1])/(r[1]-q[1])+q[0])hit=!hit;
+ }return hit;};
+ return inside(a[0],b)||inside(b[0],a);
+}
 function drawCompoundFacilities(){
  for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
   const [cx,cy]=xy(parent.x,parent.y),pw=parent.h*.4,ph=parent.w*.4;
@@ -1312,15 +1338,11 @@ function draftCollisionPairs(){
  const collisions=[];
  for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){
   const a=items[i],b=items[j];
-  const left=Math.max(a.y-a.h/2,b.y-b.h/2),right=Math.min(a.y+a.h/2,b.y+b.h/2);
-  const bottom=Math.max(a.x-a.w/2,b.x-b.w/2),top=Math.min(a.x+a.w/2,b.x+b.w/2);
-  if(right-left<=10||top-bottom<=10)continue;
-  const contained=(p,q)=>p.x-p.w/2>=q.x-q.w/2&&p.x+p.w/2<=q.x+q.w/2&&
-   p.y-p.h/2>=q.y-q.h/2&&p.y+p.h/2<=q.y+q.h/2;
-  if(contained(a,b)||contained(b,a))continue;
-  collisions.push({a,b,width:right-left,height:top-bottom});
- }
- return collisions;
+  const width=Math.min(a.y+a.h/2,b.y+b.h/2)-Math.max(a.y-a.h/2,b.y-b.h/2);
+  const height=Math.min(a.x+a.w/2,b.x+b.w/2)-Math.max(a.x-a.w/2,b.x-b.w/2);
+  if(width<=0||height<=0)continue;
+  if(polygonsOverlap(a,b))collisions.push({a,b,width,height});
+ }return collisions;
 }
 function renderCollisionAudit(){
  const el=document.getElementById('aaCollisionAudit');if(!el)return;
@@ -1332,7 +1354,7 @@ function renderCollisionAudit(){
   '<div class="aaCollisionItem"><button type="button" data-collision-place="'+escHTML(a.id)+'">'+escHTML(a.name)+'</button>'+
   '<span>×</span><button type="button" data-collision-place="'+escHTML(b.id)+'">'+escHTML(b.name)+'</button>'+
   '<small>重複 '+Math.round(width)+'×'+Math.round(height)+'m</small></div>').join(''):
-  '<p>独立施設間の矩形重複は検出されませんでした。</p>';
+  '<p>独立施設間の多角形重複は検出されませんでした。</p>';
  if(pairs.length>35)document.getElementById('aaCollisionList').insertAdjacentHTML('beforeend','<p>ほか '+(pairs.length-35)+'組。配置エディターで調整できます。</p>');
 }
 function drawCollisionWarnings(){
@@ -1340,7 +1362,7 @@ function drawCollisionWarnings(){
  const pairs=draftCollisionPairs(),highlight=new Set();
  for(const pair of pairs){highlight.add(pair.a);highlight.add(pair.b)}
  ctx.save();ctx.lineWidth=3;ctx.strokeStyle='#f36d65';ctx.setLineDash([8,5]);
- for(const f of highlight){const [cx,cy]=xy(f.x,f.y);ctx.strokeRect(cx-f.h*.2,cy-f.w*.2,f.h*.4,f.w*.4)}
+ for(const f of highlight){const [cx,cy]=xy(f.x,f.y);traceFacilityPolygon(f);ctx.stroke()}
  ctx.restore();
 }
 function drawGridLayer(){
@@ -1381,16 +1403,28 @@ if(!state.gridOnTop)drawGridLayer();
 // Real facilities and district region footprint; compound interiors are drawn separately.
 for(const f of facilities){
  if(f.type==='terminal'||f.ringDistrict||f.areaFrame)continue;
- const [cx,cy]=xy(f.x,f.y),w=f.h*.4,h=f.w*.4,g=groups[f.type];
+ const [cx,cy]=xy(f.x,f.y),g=groups[f.type];
  ctx.save();
- ctx.fillStyle=f.zoneOutline?g.fill+'27':g.fill+'77';
- ctx.fillRect(cx-w/2,cy-h/2,w,h);
- ctx.strokeStyle=g.line+'cc';ctx.lineWidth=f.zoneOutline?2.7:1.6;
- if(f.zoneOutline)ctx.setLineDash([9,6]);
- ctx.strokeRect(cx-w/2,cy-h/2,w,h);
+ if(isProtectedDraft&&f.zoneOutline){
+  // Large functional districts are shown as category locators, NOT independent
+  // filled rectangles that conceal their contained workshops.
+  ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);
+  ctx.fillStyle=g.fill;ctx.fill();ctx.strokeStyle=g.line;ctx.lineWidth=2.5;ctx.stroke();
+  ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#f7f5d7';ctx.fillText('区',cx,cy+4);
+ }else if(isProtectedDraft&&f.footprint){
+  traceFacilityPolygon(f);
+  ctx.fillStyle=g.fill+'ac';ctx.fill();ctx.strokeStyle=g.line;ctx.lineWidth=2.2;ctx.stroke();
+  if(chosen?.id===f.id){ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.stroke()}
+ }else{
+  const w=f.h*.4,h=f.w*.4;
+  ctx.fillStyle=f.zoneOutline?g.fill+'27':g.fill+'77';ctx.fillRect(cx-w/2,cy-h/2,w,h);
+  ctx.strokeStyle=g.line+'cc';ctx.lineWidth=f.zoneOutline?2.7:1.6;
+  if(f.zoneOutline)ctx.setLineDash([9,6]);
+  ctx.strokeRect(cx-w/2,cy-h/2,w,h);
+ }
  ctx.restore();
 }
-for(let r of roads)drawRoad(r);
+if(!isProtectedDraft)for(let r of roads)drawRoad(r); // draft roads do not align after facility movement
 drawCompoundFacilities();
 drawCollisionWarnings();
 // Terminal tower after roads, explicit center footprint
