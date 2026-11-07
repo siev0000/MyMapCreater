@@ -1064,7 +1064,7 @@ function switchMap(id){
  updateAAGridInfo();
  const podBtn=document.querySelector('[data-layer="pods"]');podBtn.hidden=!roads.some(r=>r.layer==='pods');
  document.querySelector('[data-layer="districts"]').hidden=id==='upper';document.querySelector('[data-layer="drafts"]').hidden=true; // 古い6区画の暫定用途案は混乱を防ぐため非表示
- selectedPropulsionAreaId=null;renderPlaces();renderPropulsionList();renderInfo();draw();
+ selectedPropulsionAreaId=null;document.getElementById('shipHullLayersLegend').hidden=!preview;renderPlaces();renderPropulsionList();renderInfo();draw();
 }
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>{
  if(activeWorldId!=='apocrypha_archive')return;
@@ -1231,8 +1231,9 @@ ctx.scale(view.zoom*MAP_INSET_X,view.zoom*MAP_INSET_Y);
 ctx.translate(-W/2,-H/2);
 drawEngineeringOuterGrid();
 drawHullTop();
-drawHullStructuralLayers();
-ctx.save();clipToProtectedInterior();
+const isProtectedDraft=Boolean(showProposal&&layoutDrafts[currentMap]);
+if(isProtectedDraft)drawHullStructuralLayers();
+ctx.save();if(isProtectedDraft)clipToProtectedInterior();
 // fixed environmental patches for district presentation, not exact borders
 ctx.save();ctx.globalAlpha=.6;
 if(currentMap==='middle'){/* Decorative terrain ellipses removed: not a Notion-defined landform. */}
@@ -1268,7 +1269,7 @@ for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=x
 if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){let [cx,cy]=xy(f.x,f.y);let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(chosen&&chosen.kind==='cell'){const q=gridSpec();ctx.lineWidth=3;ctx.strokeStyle='#fff1a7';ctx.strokeRect(chosen.col*q.cw+1,chosen.row*q.ch+1,q.cw-2,q.ch-2)}
 ctx.restore(); // exit the protected interior clipping region
-ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();drawHullStructuralLabels();drawRestrictedThrusterAccess();ctx.restore();}
+ctx.fillStyle='#e9f4f9';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText('▲ 船首 +X',500,20);ctx.fillText('船尾 -X ▼',500,H-18);ctx.save();ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('左舷 −Y',0,0);ctx.restore();ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('右舷 +Y',0,0);ctx.restore();if(isProtectedDraft)drawHullStructuralLabels();drawRestrictedThrusterAccess();ctx.restore();}
 function fitCanvasToViewport(){
  const host=canvas.parentElement;
  if(!host||!host.getBoundingClientRect)return;
