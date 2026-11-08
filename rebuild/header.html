@@ -213,6 +213,14 @@ main{max-width:none;padding:0}
 }
 
 .map-info-footer .detail-top h2{min-width:0;flex:1;overflow-wrap:anywhere;word-break:normal}
+
+/* Single title in the same footer row as the Lv and physical floors. */
+.map-info-footer .detail-context{align-items:center}
+.map-info-footer .detail-path-title{min-width:0;flex:1 1 190px;margin:0;font-size:12px;line-height:1.4;font-weight:700;overflow-wrap:anywhere}
+.map-info-footer .detail-top{justify-content:flex-end;min-height:0;margin:0}
+.map-info-footer .detail-top .detail-actions{margin-left:auto}
+.map-info-footer .detail-top:has(.detail-actions [hidden]){min-height:0}
+@media(max-width:500px){.map-info-footer .detail-path-title{flex-basis:150px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -268,9 +276,10 @@ main{max-width:none;padding:0}
    <aside class="map-detail" id="detail-panel" aria-label="選択した区画の説明" hidden>
     <div class="detail-context">
      <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
+     <h2 id="detail-title" class="detail-path-title"></h2>
      <nav id="floor-switch" class="floor-switch" aria-label="選択した区画の階切替" hidden></nav>
     </div>
-    <div class="detail-top"><h2 id="detail-title"></h2>
+    <div class="detail-top">
      <div class="detail-actions">
       <button type="button" id="go-parent" class="detail-action" hidden>← 親へ戻る</button>
       
