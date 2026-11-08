@@ -58,6 +58,10 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
    <span><i style="background:#e0ba72"></i>研究・工業</span>
    <span><i style="background:#87a1cf"></i>環境・資源</span>
    <span><i style="background:#cf8cab"></i>隔離・立入制限</span>
+   <span><i style="background:#d3b4ee"></i>大型機専用</span>
+   <span><i style="background:#e4ac6a"></i>貨物専用</span>
+   <span><i style="background:#9ed7ee"></i>船首上位区</span>
+   <span><i style="background:#c5a079"></i>船尾下位区</span>
   </div>
   <div id="detail" aria-live="polite"><h3>施設・地区を選択</h3><p>選択した施設・地区の説明を表示します。</p></div>
  </section>
@@ -89,17 +93,17 @@ const candidates={
   belts:[{id:'processing_starboard',name:'燃料・油加工',x:-1070,y:660,w:900,h:220},{id:'processing_port',name:'繊維・樹脂加工',x:-1080,y:-660,w:900,h:220}],
   issues:['栽培区から加工施設まで近い一方、湿度や排熱の分離が必要です。','船体の左右幅に加工施設と搬送路が本当に収まるかを確認します。']},
  B:{
-    "title": "B｜効率重視：アルボラ→加工→貨物リフト",
-    "summary": "船尾中央に広い自然区を確保し、その船首側の左右に加工施設4件を配置。貨物検査へまとめて、専用搬送路からターミナル船尾側へ送る構成です。",
+    "title": "B｜紫の通路沿線に加工施設・船首上位／船尾下位",
+    "summary": "大型機用の紫通路に沿って加工施設を集約し、貨物は橙の専用路で貨物リフトへ。ターミナルの船首側・船尾側に、それぞれタウンとラボ区を配置します。",
     "arbora": {
       "polygon": [
         [
           -660,
-          -360
+          -380
         ],
         [
           -1250,
-          -360
+          -380
         ],
         [
           -1250,
@@ -124,164 +128,272 @@ const candidates={
         [
           -660,
           360
+        ],
+        [
+          -660,
+          115
+        ],
+        [
+          -1000,
+          115
+        ],
+        [
+          -1000,
+          -115
+        ],
+        [
+          -660,
+          -115
         ]
       ],
-      "areaSqM": 979600
+      "areaSqM": 913200
     },
     "belts": [
       {
         "id": "processing_starboard",
-        "name": "燃料・油加工帯",
-        "x": -760,
-        "y": 590,
-        "w": 950,
+        "name": "燃料・油加工",
+        "x": -685,
+        "y": 600,
+        "w": 990,
         "h": 400
       },
       {
         "id": "processing_port",
-        "name": "繊維・樹脂加工帯",
-        "x": -767.5,
-        "y": -565,
-        "w": 925,
-        "h": 310
+        "name": "繊維・素材加工",
+        "x": -707.5,
+        "y": -607.5,
+        "w": 935,
+        "h": 365
       }
     ],
     "relay": {
-      "x": -440,
-      "y": -75,
+      "x": -405,
+      "y": 0,
       "w": 220,
-      "h": 150
+      "h": 240
     },
     "cargoFlow": [
       [
         [
-          -985,
-          590
+          -740,
+          400
         ],
         [
-          -745,
-          590
+          -740,
+          425
         ],
         [
-          -485,
-          600
+          -600,
+          425
         ],
         [
-          -485,
-          420
+          -600,
+          80
         ],
         [
-          -500,
-          300
-        ],
-        [
-          -450,
-          100
-        ],
-        [
-          -440,
-          -75
+          -405,
+          80
         ]
       ],
       [
         [
-          -1030,
-          -560
+          -805,
+          -425
         ],
         [
-          -800,
-          -560
+          -805,
+          -445
         ],
         [
-          -530,
-          -570
+          -600,
+          -445
         ],
         [
-          -530,
-          -420
+          -600,
+          -80
         ],
         [
-          -500,
-          -300
-        ],
-        [
-          -440,
-          -185
-        ],
-        [
-          -440,
-          -75
+          -405,
+          -80
         ]
       ],
       [
         [
-          -440,
-          -75
+          -580,
+          500
         ],
         [
-          -355,
-          -75
+          -600,
+          500
         ],
         [
-          -270,
-          -75
+          -600,
+          425
+        ]
+      ],
+      [
+        [
+          -600,
+          -490
+        ],
+        [
+          -600,
+          -445
+        ]
+      ],
+      [
+        [
+          -405,
+          80
+        ],
+        [
+          -295,
+          80
+        ],
+        [
+          -230,
+          80
         ]
       ]
+    ],
+    "purplePassage": [
+      [
+        -100,
+        0
+      ],
+      [
+        -130,
+        0
+      ],
+      [
+        -210,
+        0
+      ],
+      [
+        -250,
+        0
+      ],
+      [
+        -330,
+        0
+      ],
+      [
+        -425,
+        0
+      ],
+      [
+        -520,
+        0
+      ],
+      [
+        -600,
+        0
+      ],
+      [
+        -660,
+        0
+      ],
+      [
+        -800,
+        0
+      ],
+      [
+        -990,
+        0
+      ]
+    ],
+    "towns": [
+      {
+        "id": "core_shell_town",
+        "name": "船首上位タウン",
+        "tier": "upper",
+        "x": 430,
+        "y": 350,
+        "w": 270,
+        "h": 190
+      },
+      {
+        "id": "refine_valley",
+        "name": "船首上位ラボ区",
+        "tier": "upper",
+        "x": 430,
+        "y": -350,
+        "w": 270,
+        "h": 190
+      },
+      {
+        "id": "stern_core_shell_town",
+        "name": "船尾下位タウン",
+        "tier": "lower",
+        "x": -360,
+        "y": 350,
+        "w": 180,
+        "h": 180
+      },
+      {
+        "id": "stern_refine_lab_district",
+        "name": "船尾下位ラボ区",
+        "tier": "lower",
+        "x": -360,
+        "y": -350,
+        "w": 180,
+        "h": 180
+      }
     ],
     "interior": [
       {
         "id": "arbora_forest",
         "name": "森林・樹木区",
-        "x": -990,
-        "y": -105,
-        "w": 620,
-        "h": 460
+        "x": -1330,
+        "y": 0,
+        "w": 580,
+        "h": 450
+      },
+      {
+        "id": "arbora_wetland",
+        "name": "湿地・水循環区",
+        "x": -1460,
+        "y": 480,
+        "w": 280,
+        "h": 310
+      },
+      {
+        "id": "arbora_dry",
+        "name": "乾燥・高温区",
+        "x": -1450,
+        "y": -510,
+        "w": 290,
+        "h": 300
       },
       {
         "id": "arbora_nursery",
         "name": "育苗・栽培区",
-        "x": -1160,
-        "y": 250,
-        "w": 250,
-        "h": 180
+        "x": -1110,
+        "y": 290,
+        "w": 200,
+        "h": 120
+      },
+      {
+        "id": "arbora_research",
+        "name": "調査・培養区",
+        "x": -840,
+        "y": -245,
+        "w": 320,
+        "h": 240
       },
       {
         "id": "arbora_watch",
         "name": "監視・生物管理区",
         "x": -850,
         "y": 245,
-        "w": 280,
-        "h": 200
-      },
-      {
-        "id": "arbora_wetland",
-        "name": "湿地・水循環区",
-        "x": -1460,
-        "y": 465,
-        "w": 300,
-        "h": 380
-      },
-      {
-        "id": "arbora_research",
-        "name": "調査・培養区",
-        "x": -1450,
-        "y": -235,
-        "w": 320,
-        "h": 310
-      },
-      {
-        "id": "arbora_dry",
-        "name": "乾燥・高温区",
-        "x": -1460,
-        "y": -565,
-        "w": 300,
-        "h": 260
+        "w": 270,
+        "h": 190
       }
     ],
     "issues": [
-      "B案を通常の中層マップにも反映済み。アルボラは約0.98km²、左右の加工施設は寸法を維持して配置しています。",
-      "専用貨物路は点線の下書きです。ゲート・リフト接続、転回幅、生活区との立体分離は未確認です。",
-      "監視施設・調査施設の個別棟は、アルボラ大区画の詳細設計で追加します。"
+      "船首側に上位タウン・上位ラボ区、船尾側に下位タウン・下位ラボ区を配置。上位・下位の待遇・通行制限は未設定です。",
+      "紫は大型機専用通路、橙は一般旅客と分離する貨物路。貨物検査区では立体交差を想定しますが、ゲート・防火・構造は未検証です。",
+      "アルボラは輸送切欠きを除いて約0.91km²を確保。森林・湿地・調査・監視等の内部区画は選択時に表示します。"
     ]
   },
  C:{title:'C｜外周加工＋中央貨物中継',summary:'アルボラ外周で加工し、ターミナル船尾側には貨物検査・仕分けの中継施設だけ置く案。',
@@ -308,6 +420,11 @@ const placeDescriptions={
  processing_port:'植物繊維・樹脂と植物由来素材を加工する施設群。',
  industry_group:'植物性燃料や植物油、繊維、樹脂などを生産・加工する施設群。',
  middle_cargo_inspection:'中層の貨物を検査・仕分けし、工業区や他階層への輸送を取り次ぐ施設。',
+ core_shell_town:'リンクターミナル船首側の上位タウン。休止・充電・市場・交流を担う。',
+ refine_valley:'船首側の上位整備・研究区。装備開発や精密改修を行う。',
+ stern_core_shell_town:'リンクターミナル船尾側の下位タウン。休止・充電・市場・現場作業者の生活を支える。',
+ stern_refine_lab_district:'船尾側の下位工房・技術区。修理、素材試験、装備改良を担う。',
+
  arbora_nursery:'苗木・挿し木・草本植物を育成する栽培区。',
  arbora_forest:'樹木・燃料植物などを育て、樹皮や繊維を生産する自然区。',
  arbora_research:'植物素材や生態環境を調べ、培養・試験を行う研究区。',
@@ -381,13 +498,24 @@ function draw(){
   for(const b of plan.belts){
    addZone(b.id,b.name,{tag:'rect',props:rectBounds(b.x-b.w/2,b.x+b.w/2,b.y-b.h/2,b.y+b.h/2),label:pos(b.x,b.y),fontSize:15,opacity:.34},colors.industry,placeDescriptions[b.id]);insertToClip();
   }
+  if(Array.isArray(plan.towns))for(const t of plan.towns){
+   const upper=t.tier==='upper';
+   const title=(upper?'上位 ':'下位 ')+(t.id.includes('town')?'タウン':'ラボ区');
+   addZone(t.id,title,{tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:13,opacity:.44},
+    upper?'#9ed7ee':'#c5a079',placeDescriptions[t.id]);insertToClip();
+  }
+
   if(plan.relay){
    const t=plan.relay;
    addZone('middle_cargo_inspection','貨物中継',{tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:14,opacity:.65},colors.hub,placeDescriptions.middle_cargo_inspection);insertToClip();
   }
+  if(Array.isArray(plan.purplePassage)){
+   const d='M'+plan.purplePassage.map(([x,y])=>pos(x,y).map(n=>n.toFixed(1)).join(',')).join('L');
+   svg.append(E('path',{d,fill:'none',stroke:'#d3b4ee','stroke-width':5,'stroke-dasharray':'10 5','pointer-events':'none',opacity:.96}));insertToClip();
+  }
   if(Array.isArray(plan.cargoFlow))for(const flow of plan.cargoFlow){
    const d='M'+flow.map(([x,y])=>pos(x,y).map(n=>n.toFixed(1)).join(',')).join('L');
-   svg.append(E('path',{d,fill:'none',stroke:'#a0eddb','stroke-width':3,'stroke-dasharray':'8 6','pointer-events':'none',opacity:.8}));insertToClip();
+   svg.append(E('path',{d,fill:'none',stroke:plan.purplePassage?'#e4ac6a':'#a0eddb','stroke-width':3.5,'stroke-dasharray':'8 5','pointer-events':'none',opacity:.9}));insertToClip();
   }
   // Major environmental units, not small rooms: show only when Arbora is selected.
   if(expandedArbora&&Array.isArray(plan.interior))for(const z of plan.interior){
