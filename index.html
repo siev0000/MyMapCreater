@@ -1116,6 +1116,12 @@ function renderPlaces(){
  const selectedId=chosen?.id;
  const selectedParent=chosen?.parentId;
  document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>{
+  if(currentMap==='middle'&&showProposal&&f.id==='arbora_sector'&&f.macroZones?.length){
+   const expanded=selectedId===f.id||selectedParent===f.id;
+   return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="'+escHTML(f.id)+'">'+escHTML(f.name)+'</button>'+
+    (expanded?'<div class="placeGroupChildren">'+f.macroZones.map(z=>
+     '<button class="listbtn" type="button" data-place="'+escHTML(z.id)+'">'+escHTML(z.name)+'</button>').join('')+'</div>':'')+'</div>';
+  }
   if(currentMap==='middle'&&showProposal&&f.id==='resist_link_dome'&&f.containedIn==='middle_terminal')return '';
   if(currentMap==='middle'&&showProposal&&f.id==='middle_terminal'&&facilities.some(g=>g.id==='resist_link_dome'&&g.containedIn==='middle_terminal')){
    const guild=facilities.find(g=>g.id==='resist_link_dome');
@@ -1506,6 +1512,25 @@ function drawTerminalTowerBase(){
  ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
  ctx.restore();
 }
+function drawArboraMacroZones(){
+ if(currentMap!=='middle'||!showProposal)return;
+ const a=facilities.find(f=>f.id==='arbora_sector');
+ if(!a?.macroZones?.length||!(chosen?.id===a.id||chosen?.parentId===a.id))return;
+ ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+ for(const z of a.macroZones){
+  const [px,py]=xy(z.x,z.y),w=z.h*.4,h=z.w*.4;
+  ctx.fillStyle=chosen?.id===z.id?'rgba(174,226,150,.48)':'rgba(106,191,143,.22)';
+  ctx.fillRect(px-w/2,py-h/2,w,h);
+  ctx.lineWidth=chosen?.id===z.id?3:1.6;ctx.strokeStyle=chosen?.id===z.id?'#fff5a3':'#a9e6a7';
+  ctx.strokeRect(px-w/2,py-h/2,w,h);
+  if(state.labels){
+   ctx.font='bold 11px system-ui';ctx.lineWidth=3;ctx.strokeStyle='#152d28';
+   ctx.strokeText(z.name,px,py,Math.min(w+9,130));
+   ctx.fillStyle='#e7fbe7';ctx.fillText(z.name,px,py,Math.min(w+9,130));
+  }
+ }
+ ctx.restore();
+}
 function draw(){
 if(activeWorldId==='dark_world'){darkWorld.draw();return}
 if(shipView==='side'){drawHullSide();return}
@@ -1537,11 +1562,17 @@ for(const f of facilities){
  const [cx,cy]=xy(f.x,f.y),g=groups[f.type];
  ctx.save();
  if(isProtectedDraft&&f.zoneOutline){
-  // Large functional districts are shown as category locators, NOT independent
-  // filled rectangles that conceal their contained workshops.
-  ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);
-  ctx.fillStyle=g.fill;ctx.fill();ctx.strokeStyle=g.line;ctx.lineWidth=2.5;ctx.stroke();
-  ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#f7f5d7';ctx.fillText('区',cx,cy+4);
+  if(currentMap==='middle'&&f.id==='arbora_sector'&&f.footprint?.length>=3&&state.districts){
+   traceFacilityPolygon(f);
+   ctx.fillStyle='rgba(61,140,102,.25)';ctx.fill();
+   ctx.strokeStyle=chosen?.id===f.id||chosen?.parentId===f.id?'#f6edb5':'#73c99c';
+   ctx.lineWidth=chosen?.id===f.id?4:2.5;ctx.setLineDash([9,6]);ctx.stroke();ctx.setLineDash([]);
+  }else{
+   // Other large districts remain symbolic until their boundaries are decided.
+   ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);
+   ctx.fillStyle=g.fill;ctx.fill();ctx.strokeStyle=g.line;ctx.lineWidth=2.5;ctx.stroke();
+   ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#f7f5d7';ctx.fillText('区',cx,cy+4);
+  }
  }else if(isProtectedDraft&&f.footprint){
   traceFacilityPolygon(f);
   ctx.fillStyle=g.fill+'ac';ctx.fill();ctx.strokeStyle=g.line;ctx.lineWidth=2.2;ctx.stroke();
@@ -1558,9 +1589,10 @@ for(const f of facilities){
 if(isProtectedDraft&&currentMap==='middle'&&window.AAMiddleCentral){
  window.AAMiddleCentral.drawUrbanBlocks(ctx,xy,layoutDrafts.middle?.centralUrbanPlan,{zoom:view.zoom,labels:state.labels});
 }
+if(isProtectedDraft&&currentMap==='middle')drawArboraMacroZones();
 if(isProtectedDraft&&currentMap==='middle')drawTerminalTowerBase();
 if(!isProtectedDraft||(currentMap==='lower'&&roads.some(r=>r.geometryStatus==='draft_10m_routed')))for(let r of roads)drawRoad(r);
-else if(isProtectedDraft&&currentMap==='middle')for(const r of roads.filter(r=>r.geometryStatus==='draft_central_access'&&r.kind==='line'))drawRoad(r);
+else if(isProtectedDraft&&currentMap==='middle')for(const r of roads.filter(r=>r.kind==='line'&&(r.geometryStatus==='draft_central_access'||r.geometryStatus==='draft_middle_freight_B'||r.geometryStatus==='draft_arbora_B_access')))drawRoad(r);
 if(!(isProtectedDraft&&currentMap==='middle'))drawCompoundFacilities();
 drawCollisionWarnings();
 if(isProtectedDraft&&state.structures&&window.AAStructureOverlay){
@@ -1754,6 +1786,16 @@ canvas.addEventListener('click',e=>{
  if(activeWorldId==='dark_world'){darkWorld.selectAt(x,y);return}
  let near=null,dist=35/view.zoom,compoundParent=null,zoneParent=null;
  const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
+ // While Arbora is expanded, its major environmental zones can be selected.
+ const arbora=facilities.find(f=>f.id==='arbora_sector');
+ const canPickArbora=arbora?.macroZones?.length&&(chosen?.id===arbora.id||chosen?.parentId===arbora.id);
+ const arboraMacro=canPickArbora?arbora.macroZones.find(z=>
+    Math.abs(wx-z.x)<=z.w/2&&Math.abs(wy-z.y)<=z.h/2):null;
+ if(arboraMacro){
+  chosen={...arboraMacro,type:'nature',parentId:'arbora_sector',compoundChild:true};
+  document.getElementById('selectedPanel').hidden=true;
+  renderPlaces();renderInfo();draw();return;
+ }
  for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
   const rd=Math.hypot(wx-parent.x,wy-parent.y);
   const insideParent=parent.ringComplex
@@ -1772,7 +1814,7 @@ canvas.addEventListener('click',e=>{
  }
  if(!near)for(const f of facilities){
   if(f.ringDistrict||f.areaFrame)continue;
-  if(f.zoneOutline&&!f.draftRegion&&Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2)zoneParent=f;
+  if(f.zoneOutline&&!f.draftRegion&&(f.footprint?.length>=3?pointInsideFacility(f,wx,wy):Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2))zoneParent=f;
   if(f.footprint&&pointInsideFacility(f,wx,wy)){near=f;break}
   const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);
   if(d<dist){near=f;dist=d}
