@@ -338,7 +338,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   </div>
  </aside>
  <div class="popupMask" id="popupMask" aria-hidden="true">
-  <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の概要"><div id="info"></div><div class="popHint">このポップアップのどこをタップしても閉じます</div></div>
+  <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の説明"><div id="info"></div></div>
  </div>
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script src="./middle-central-ring.js"></script><script src="./aa-terminal-interior.js"></script><script>
@@ -1629,7 +1629,10 @@ function renderInfo(){
  }else if(chosen.kind==='concourse'){
   info.innerHTML='<h3>ターミナルコンコース</h3><p>中央ターミナルを囲み、乗降・案内と各地区への移動を支える連絡区画です。</p>';
  }else if(chosen.kind==='cell'){
-  info.innerHTML='<h3>マス</h3><p>施設が配置されていない領域です。</p>';
+  // The grid is a measuring aid, not a facility: no facility popup.
+  info.innerHTML='';
+  closePopup();
+  return;
  }else{
   const f=chosen;
   info.innerHTML=popupFacilityHTML(f);
