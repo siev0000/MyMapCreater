@@ -117,7 +117,7 @@ main{max-width:none;padding:0}
  </div>
 </header>
 <main>
- <section class="viewport" id="viewport" aria-label="船体と階層マップ">
+ <section class="viewport" id="viewport" aria-label="マップ描画領域">
   <canvas id="map-canvas" aria-label="地図をドラッグで移動、ホイールやボタンで拡大縮小。タップして区画情報を選択"></canvas>
   <div class="map-title-chip" id="current-map-title" aria-live="polite">マップを読み込み中…</div>
   <div class="map-hint" id="map-hint" role="status" hidden></div>
@@ -170,7 +170,6 @@ const viewer=window.AAMapViewer.create({
   // When the user taps an object directly on the map, open its parents next
   // time the tree is viewed. Do not override manual collapse while menu is open.
   if(item&&$('map-menu-popover').hidden){
-   treeExpanded.add('floor:'+mapId);
    const h=floorStructures.get(mapId);
    const parent=h?.large.find(f=>f.id===item.id||f.children.some(c=>c.id===item.id));
    if(parent)treeExpanded.add('large:'+mapId+':'+parent.id);
@@ -180,6 +179,7 @@ const viewer=window.AAMapViewer.create({
 });
 let nodes=new Map(),roots=[],selected=null,viewId='top',selectedObjectId=null,pendingFocus=null;
 const treeExpanded=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
+let defaultMapId=null;
 function validate(data){
  if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップの設定形式が不正です');
  const map=new Map();
@@ -210,9 +210,15 @@ function lineage(id){
 function children(id){return [...nodes.values()].filter(n=>n.parentId===id)}
 function activeRoot(){return lineage(selected)[0]||roots[0]}
 function availableViews(root){
- const views=(root.views||[{id:'top',name:'上面'},{id:'side',name:'側面'}]).map(v=>({
+ const views=(root.views||[]).map(v=>({
   key:root.id+'::'+v.id,name:v.name,displayName:v.displayName||v.name,mapId:root.id,viewId:v.id}));
- return [...views,...children(root.id).map(n=>({key:n.id,name:n.shortName||n.name,displayName:n.name,mapId:n.id,viewId:null}))];
+ const descendants=children(root.id).map(n=>({
+  key:n.id,name:n.shortName||n.name,displayName:n.name,mapId:n.id,viewId:null
+ }));
+ if(!views.length&&!descendants.length)return [{
+  key:root.id+'::default',name:root.shortName||root.name,displayName:root.name,mapId:root.id,viewId:"default"
+ }];
+ return [...views,...descendants];
 }
 function selectedKey(){
  const trail=lineage(selected);
@@ -309,14 +315,12 @@ function render(){
  }
  viewPicker.value=key;
  const displayName=active.id===root.id?
-  (options.find(v=>v.key===root.id+'::'+viewId)?.displayName||'船体全体'):active.name;
+  (options.find(v=>v.key===root.id+'::'+viewId)?.displayName||root.name):active.name;
  $('current-map-title').textContent=displayName;
  $('current-map-title').title=displayName;
- $('view-kind').textContent=active.id===root.id?(viewId==='side'?'船体全域・側面':'船体全域・上面'):'階層マップ';
+ $('view-kind').textContent=active.kind||'map';
  $('view-name').textContent=active.id===root.id?root.name+'｜'+displayName:active.name;
- $('view-description').textContent=active.id===root.id?
-  '全長4,000m・最大幅2,500mの船体全域を扱います。上面・側面は表示方向であり、別の船体ではありません。':
-  active.name+'の配置を表示する予定です。現在はヘッダー操作のみ実装しています。';
+ $('view-description').textContent=active.description||'';
  document.title=$('view-name').textContent+'｜AA マップ';
  const sceneSource=active.id===root.id?
   (root.views||[]).find(v=>v.id===viewId)?.source||active.source||null:active.source||null;
@@ -327,7 +331,7 @@ function select(id,mode){
  selected=id;
  const root=activeRoot();
  viewId=mode&&availableViews(root).some(v=>v.mapId===root.id&&v.viewId===mode)?
-  mode:(root.views?.[0]?.id||'top');
+  mode:(root.views?.[0]?.id||'default');
  persist();render();
 }
 function choose(v){select(v.mapId,v.viewId)}
@@ -335,7 +339,7 @@ function restoreState(){
  const raw=decodeURIComponent(location.hash.slice(1));
  const split=raw.split('::');
  if(split.length===2&&nodes.has(split[0])){select(split[0],split[1]);return}
- select(nodes.has(raw)?raw:(nodes.has('middle')?'middle':roots[0].id),null);
+ select(nodes.has(raw)?raw:(nodes.has(defaultMapId)?defaultMapId:roots[0].id),null);
 }
 function closeMenu(){
  $('map-menu-popover').hidden=true;
@@ -354,7 +358,7 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Escape')closeMenu();
 });
 $('big-map-select').addEventListener('change',e=>{
- if(nodes.has(e.target.value))select(e.target.value,'top');
+ if(nodes.has(e.target.value))select(e.target.value,null);
  closeMenu();
 });
 $('view-select').addEventListener('change',e=>{
@@ -366,7 +370,9 @@ async function init(){
  try{
   const r=await fetch('./map-tree.json',{cache:'no-store'});
   if(!r.ok)throw Error('階層設定を取得できません (HTTP '+r.status+')');
-  const parsed=validate(await r.json());nodes=parsed.map;roots=parsed.roots;
+  const config=await r.json();
+  const parsed=validate(config);nodes=parsed.map;roots=parsed.roots;
+  defaultMapId=typeof config.defaultMapId==="string"?config.defaultMapId:null;
   restoreState();
  }catch(error){$('view-name').textContent='設定読込エラー';$('view-description').textContent='既存配置には変更を加えていません。';$('error').textContent=error.message}
 }
