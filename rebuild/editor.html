@@ -90,11 +90,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
      <option value="route">道路・経路</option><option value="wall">壁</option><option value="door">扉</option>
      <option value="annotation">注記</option>
     </select></label>
-    <label>階層<select id="new-level">
-     <option value="object">一般</option><option value="large">大枠</option><option value="medium">中枠</option>
-     <option value="small">小枠</option><option value="facility">施設</option><option value="route">経路</option>
-     <option value="wall">壁</option><option value="annotation">注記</option>
-    </select></label>
+
     <label>レイヤー<select id="new-layer"></select></label>
    </div>
    <div class="switches">
@@ -113,7 +109,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     <div class="col2">
      <label>ID<input id="obj-id" readonly></label>
      <label>名前<input id="obj-name"></label>
-     <label>表示Lv（数値）<input id="obj-display-level" type="number" min="1" step="1" placeholder="1"></label><label>旧区分（互換）<input id="obj-level" list="level-list"><datalist id="level-list"><option value="large"><option value="medium"><option value="small"><option value="facility"><option value="route"><option value="wall"><option value="annotation"></datalist></label>
+     <label>表示Lv（数値）<input id="obj-display-level" type="number" min="1" step="1" placeholder="1"></label>
      <label>種類<input id="obj-type" placeholder="region / facility / wall"></label>
      <label>親オブジェクト<select id="obj-parent"></select></label>
      <label>レイヤー<input id="obj-layer" list="layer-list"><datalist id="layer-list"></datalist></label>
@@ -166,6 +162,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </section>
  </aside>
 </main>
-<script src="./map-viewer.js?v=display-level-v1"></script>
-<script src="./map-editor.js?v=display-level-v1"></script>
+<script src="./map-viewer.js?v=display-level-v2"></script>
+<script src="./map-editor.js?v=display-level-v2"></script>
 </body></html>
