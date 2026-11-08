@@ -244,6 +244,13 @@ main{max-width:none;padding:0}
 .map-info-footer .detail-path-current{flex:0 0 auto;max-width:65%;color:#f1fbff;font-weight:750}
 .map-info-footer .detail-path-separator{flex:0 1 8px;min-width:0;overflow:hidden;white-space:nowrap;font-size:9px;color:#7898a5}
 @media(max-width:500px){.map-info-footer .detail-path-current{max-width:72%}}
+
+/* Current selection is ALWAYS first and visible; older levels shrink and clip. */
+.map-info-footer .detail-path-title{display:flex;align-items:center;flex:1 1 0;min-width:0;gap:5px;overflow:hidden;white-space:nowrap}
+.map-info-footer .detail-current-name{display:block;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:800;color:#ffffff}
+.map-info-footer .detail-ancestor-trail{display:flex;flex:1 10 0;min-width:0;align-items:baseline;overflow:hidden;white-space:nowrap;color:#96afbc;direction:ltr}
+.map-info-footer .detail-ancestor-segment{display:block;flex:0 1 auto;min-width:0;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
+@media(max-width:500px){.map-info-footer .detail-current-name{font-size:12px}.map-info-footer .detail-ancestor-trail{flex:1 20 0}}
 </style>
 </head>
 <body>
@@ -400,30 +407,31 @@ const viewer=window.AAMapViewer.create({
   }
   const navigation=viewer.getSelectionNavigation();
   $('detail-back').hidden=!navigation?.parents?.length;
-  // Use separate level-aware crumbs. Shrink ancestors first so the selected
-  // object (rightmost and most important) remains visible on narrow screens.
+  // Put the selected name first, full-size and never sacrificed to ancestor text.
+  // Older levels trail it in compact, progressively smaller text.
   const heading=$('detail-title');
   heading.replaceChildren();
   if(item&&navigation){
    const path=[...navigation.parents,navigation.current];
    heading.title=path.map(n=>n.name).join(' › ');
-   path.forEach((node,index)=>{
-    const isCurrent=index===path.length-1;
-    if(index){
-     const separator=document.createElement('span');
-     separator.className='detail-path-separator';
-     separator.textContent=' › ';
-     separator.setAttribute('aria-hidden','true');
-     heading.append(separator);
-    }
-    const crumb=document.createElement('span');
-    crumb.className='detail-path-crumb '+(isCurrent?'detail-path-current':'detail-path-ancestor');
-    const distance=path.length-index-1;
-    crumb.style.fontSize=isCurrent?'12px':(distance>=3?'8px':distance===2?'9px':'10px');
-    crumb.textContent=node.name;
-    crumb.title=node.name;
-    heading.append(crumb);
-   });
+   const current=document.createElement('strong');
+   current.className='detail-current-name';
+   current.textContent=navigation.current.name;
+   heading.append(current);
+   const ancestors=[...navigation.parents].reverse();
+   if(ancestors.length){
+    const trail=document.createElement('span');
+    trail.className='detail-ancestor-trail';
+    trail.title=ancestors.map(n=>n.name).join(' ‹ ');
+    ancestors.forEach((node,index)=>{
+     const segment=document.createElement('span');
+     segment.className='detail-ancestor-segment';
+     segment.style.fontSize=(index>=2?8:index===1?9:10)+'px';
+     segment.textContent=' ‹ '+node.name;
+     trail.append(segment);
+    });
+    heading.append(trail);
+   }
   }else heading.title='';
   $('current-map-title').hidden=false;
   $('detail-placeholder').hidden=Boolean(item);
