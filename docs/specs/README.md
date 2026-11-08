@@ -22,6 +22,12 @@
 | [04-walls-doors-and-connections.md](04-walls-doors-and-connections.md) | 壁、扉、開口、道路、接続 |
 | [05-data-and-validation.md](05-data-and-validation.md) | JSON形式、入出力、互換、検証 |
 | [06-roadmap-and-acceptance.md](06-roadmap-and-acceptance.md) | 施設内部までの必須機能・優先順位・受け入れ条件 |
+| [07-floors-and-interiors.md](07-floors-and-interiors.md) | 物理フロア、階段、施設内部 |
+| [08-placeable-objects.md](08-placeable-objects.md) | 大型設備・家具などの配置 |
+
+## 完成範囲の確定
+
+初期完成目標は **基本（部屋・壁・扉・階段・フロア）＋大型設備・家具などの設置**。小物・装飾・人物・3Dは初期範囲外。
 
 ## 目標範囲
 
