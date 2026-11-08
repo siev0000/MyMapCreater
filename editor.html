@@ -246,6 +246,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     return inside(A[0],B)||inside(B[0],A);
   }
   function createShape(f,kind){
+    if(kind==='custom'){f.draftShape='custom';return}
     if(kind==='rect'){delete f.footprint;f.draftShape='rect';return}
     const w=f.w,h=f.h,x=w/2,y=h/2,c=Math.max(10,Math.round(Math.min(w,h)*.14/10)*10);
     f.footprint=kind==='L'&&w>=80&&h>=80?
@@ -595,7 +596,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const common=`<div class="value-id">ID: ${esc(item.id)}</div>`;
     if(kind==="facility"){
       const isRing=item.ringDistrict===true;
-      const chosenShape=item.draftShape||(item.footprint?.length===6?"L":item.footprint?.length===8?"chamfer":"rect");
+      const chosenShape=item.draftShape||(item.footprint?.length===6?"L":item.footprint?.length===8?"chamfer":item.footprint?.length>=3?"custom":"rect");
       e.innerHTML=`${common}<div class="fields">
         ${field("施設名","name",item.name)}
         <label>施設分類<select data-field="type">${typeOptions}</select></label>
@@ -603,7 +604,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         ${field("Y / 左右舷 (m)","y",item.y,"number",isRing?"disabled":"step='10'")}
         ${field("X方向の長さ (m)","w",item.w,"number",isRing?"disabled min='1'":"min='1' step='10'")}
         ${field("Y方向の長さ (m)","h",item.h,"number",isRing?"disabled min='1'":"min='1' step='10'")}
-        </div><label>施設の外形<select data-shape><option value="chamfer" ${chosenShape==="chamfer"?"selected":""}>角落ち（八角形）</option><option value="L" ${chosenShape==="L"?"selected":""}>L字型</option><option value="rect" ${chosenShape==="rect"?"selected":""}>長方形</option></select></label><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
+        </div><label>施設の外形<select data-shape><option value="chamfer" ${chosenShape==="chamfer"?"selected":""}>角落ち（八角形）</option><option value="L" ${chosenShape==="L"?"selected":""}>L字型</option><option value="rect" ${chosenShape==="rect"?"selected":""}>長方形</option><option value="custom" ${chosenShape==="custom"?"selected":""}>自由多角形（現行外形を維持）</option></select></label><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
         ${isRing?'<p class="hint">円環地区の形状・中心は既存設定で固定しています。通常の矩形施設とは別に扱います。</p>':`<button type="button" class="danger" id="delete">この施設を削除（下書き）</button>`}
         <p class="hint">既存の施設IDは維持。編集内容はJSON書き出しまで確定されません。</p>`;
     }else{
@@ -716,7 +717,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<3&&!drag.saved)return;
     if(!drag.saved){saveSnapshot();drag.saved=true}
     const obj=items().find(x=>x.id===drag.itemId);if(!obj)return;
-    const previous=kind==="facility"?{x:obj.x,y:obj.y,w:obj.w,h:obj.h}:null;
+    const previous=kind==="facility"?{x:obj.x,y:obj.y,w:obj.w,h:obj.h,footprint:obj.footprint?clone(obj.footprint):undefined}:null;
     if(kind==="facility"){
       if(drag.mode==="move"){
         obj.x=snap(drag.initial.x+w.x-drag.world.x);
@@ -725,7 +726,13 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         const c=worldToPixel(obj.x,obj.y);
         obj.w=Math.max(30,snap(Math.max(30,(p.py-c.py)*5)));
         obj.h=Math.max(30,snap(Math.max(30,(p.px-c.px)*5)));
-        if(obj.footprint)createShape(obj,obj.draftShape||(obj.footprint.length===6?"L":"chamfer"));
+        if(obj.footprint){
+          if(obj.draftShape==='custom'||obj.autoShapeCorrection){
+            obj.footprint=drag.initial.footprint.map(([x,y])=>[
+              x*obj.w/drag.initial.w,y*obj.h/drag.initial.h]);
+            obj.draftShape='custom';
+          }else createShape(obj,obj.draftShape||(obj.footprint.length===6?"L":"chamfer"));
+        }
       }
       if(intersectsRestrictedFacility(obj)){
         Object.assign(obj,previous);
@@ -759,7 +766,13 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(item[key]===value)return;
       if(kind==="facility"&&intersectsRestrictedFacility({...item,[key]:value})){showStatus("下層の施設は上層専用出撃区へ配置できません。",true);renderDetail();return}
       if(kind==="road"&&key==="r"&&active==="lower"&&(current().restrictedZones||[]).length&&value>current().restrictedZones[0].bounds.xMin){showStatus("環状路を出撃区へ通せません。",true);renderDetail();return}
-      saveSnapshot();item[key]=value;if(kind==="facility"&&["w","h"].includes(key)&&item.footprint)createShape(item,item.draftShape||(item.footprint.length===6?"L":"chamfer"));render();
+      const before={w:item.w,h:item.h};saveSnapshot();item[key]=value;
+      if(kind==="facility"&&["w","h"].includes(key)&&item.footprint){
+        if(item.draftShape==='custom'||item.autoShapeCorrection||![6,8].includes(item.footprint.length)){
+          item.footprint=item.footprint.map(([x,y])=>[x*item.w/before.w,y*item.h/before.h]);
+          item.draftShape='custom';
+        }else createShape(item,item.draftShape||(item.footprint.length===6?"L":"chamfer"));
+      }render();
     }else if(target.dataset.vertex!==undefined){
       const idx=Number(target.dataset.vertex),axis=Number(target.dataset.axis),v=Number(target.value);
       if(!Number.isFinite(v))return;
