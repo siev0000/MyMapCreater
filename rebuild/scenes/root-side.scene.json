@@ -39,7 +39,6 @@
     {
       "id": "pending-side",
       "name": "側面図は未登録",
-      "level": "annotation",
       "selectable": false,
       "visible": true,
       "layer": "labels",
@@ -56,7 +55,8 @@
         ],
         "fontSize": 16,
         "color": "#aac6cf"
-      }
+      },
+      "displayLevel": 1
     }
   ]
 }
