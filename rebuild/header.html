@@ -236,6 +236,14 @@ main{max-width:none;padding:0}
 @media(max-width:500px){.map-info-footer .detail-context{gap:4px}.map-info-footer .detail-path-title{font-size:11px}.map-info-footer .floor-switch{max-width:75px;min-width:54px}}
 .map-info-footer .detail-close-inline{font-size:16px;line-height:1}
 .map-info-footer .detail-close-inline[hidden]{display:none!important}
+
+/* Ancestors progressively smaller; preserve selected name at the right edge. */
+.map-info-footer .detail-path-title{display:flex;flex:1 1 auto;flex-wrap:nowrap;align-items:baseline;gap:0;overflow:hidden;white-space:nowrap;min-width:0;max-width:100%;line-height:1.5}
+.map-info-footer .detail-path-crumb{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.map-info-footer .detail-path-ancestor{flex:0 1 auto;color:#9bb9c2;font-weight:400}
+.map-info-footer .detail-path-current{flex:0 0 auto;max-width:65%;color:#f1fbff;font-weight:750}
+.map-info-footer .detail-path-separator{flex:0 1 8px;min-width:0;overflow:hidden;white-space:nowrap;font-size:9px;color:#7898a5}
+@media(max-width:500px){.map-info-footer .detail-path-current{max-width:72%}}
 </style>
 </head>
 <body>
@@ -392,13 +400,31 @@ const viewer=window.AAMapViewer.create({
   }
   const navigation=viewer.getSelectionNavigation();
   $('detail-back').hidden=!navigation?.parents?.length;
-  // Display the full parent path in the existing title, not in a second row.
+  // Use separate level-aware crumbs. Shrink ancestors first so the selected
+  // object (rightmost and most important) remains visible on narrow screens.
+  const heading=$('detail-title');
+  heading.replaceChildren();
   if(item&&navigation){
-   const path=[...navigation.parents,navigation.current].map(n=>n.name);
-   const heading=$('detail-title');
-   heading.textContent=path.join(' › ');
-   heading.title=heading.textContent;
-  }
+   const path=[...navigation.parents,navigation.current];
+   heading.title=path.map(n=>n.name).join(' › ');
+   path.forEach((node,index)=>{
+    const isCurrent=index===path.length-1;
+    if(index){
+     const separator=document.createElement('span');
+     separator.className='detail-path-separator';
+     separator.textContent=' › ';
+     separator.setAttribute('aria-hidden','true');
+     heading.append(separator);
+    }
+    const crumb=document.createElement('span');
+    crumb.className='detail-path-crumb '+(isCurrent?'detail-path-current':'detail-path-ancestor');
+    const distance=path.length-index-1;
+    crumb.style.fontSize=isCurrent?'12px':(distance>=3?'8px':distance===2?'9px':'10px');
+    crumb.textContent=node.name;
+    crumb.title=node.name;
+    heading.append(crumb);
+   });
+  }else heading.title='';
   $('current-map-title').hidden=false;
   $('detail-placeholder').hidden=Boolean(item);
   renderMapTree();
