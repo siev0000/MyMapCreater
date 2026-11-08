@@ -20,6 +20,7 @@ function sceneCheck(scene){
   if(g.type==="circle"&&(!point(g.center)||!Number.isFinite(g.radius)||g.radius<=0))throw Error("円が不正です: "+obj.id);
   if(g.type==="ring"&&(!point(g.center)||![g.innerRadius,g.outerRadius].every(Number.isFinite)||g.innerRadius<0||g.outerRadius<=g.innerRadius))throw Error("環状図形が不正です: "+obj.id);
   if(obj.label?.position&&!point(obj.label.position))throw Error("文字位置が不正です: "+obj.id);
+  if(obj.displayLevel!==undefined&&(!Number.isSafeInteger(obj.displayLevel)||obj.displayLevel<1))throw Error("表示Lvは1以上の整数です: "+obj.id);
   if(obj.style?.opacity!==undefined&&(!Number.isFinite(obj.style.opacity)||obj.style.opacity<0||obj.style.opacity>1))throw Error("透過率が不正です: "+obj.id);
   if(obj.style?.strokeWidth!==undefined&&(!Number.isFinite(obj.style.strokeWidth)||obj.style.strokeWidth<0))throw Error("線幅が不正です: "+obj.id);
  }
@@ -231,7 +232,7 @@ function create(opts){
   if(panel)panel.hidden=!selected;
   if(selected){
    opts.infoTitle.textContent=selected.name||selected.id;
-   const meta=[selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean);
+   const meta=[selected.displayLevel!==undefined?"表示Lv "+selected.displayLevel:selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean);
    opts.infoMeta.textContent=meta.join(" ｜ ");
    opts.infoText.textContent=selected.detail||"説明は登録されていません。";
   }
