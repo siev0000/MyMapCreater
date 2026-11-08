@@ -22,7 +22,7 @@ const ROAD_GRAY="#929da5";
 // Only key transport routes appear on the first view. Other source routes remain intact.
 const PRIMARY_ROAD_TYPES=new Set(["主要幹線道路","大型機用主要通路","重貨物道路","貨物トンネル"]);
 const ROAD_DISPLAY_MODES=["main","all","off"];
-const RENDER_REVISION="中層描画 v6";
+const RENDER_REVISION="中層描画 v7";
 // Display hierarchy only. No mutation of data/middle-layout-draft.json.
 const DISPLAY_MEDIUM_CHILDREN=Object.freeze({
  arbora_sector:Object.freeze([
@@ -443,6 +443,7 @@ function create(opts){
  function showDetails(item){
   selected=item||null;
   info.hidden=!selected;
+  if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(floor,selected);
   if(!selected){draw();return}
   infoTitle.textContent=selected.name||selected.id;
   const parts=[];
@@ -488,12 +489,18 @@ function create(opts){
   legendContent.append(footnote);
  }
  async function show(mapId,viewId,source){
-  const next=floor===mapId&&projection===viewId&&
+  const next=floor===mapId&&projection===(viewId||"top")&&
     (data?.floor===mapId||!source);
   if(next)return;
   floor=mapId;projection=viewId||"top";data=null;selected=null;info.hidden=true;reset();
+  if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(mapId,null);
   const myToken=++token;
-  if(!source){setHint(projection==="side"?"船体側面の詳細描画は次の段階で追加します。":"船体全域の上面表示（外殻幅は現行図面の仮案）。");renderLegend();return}
+  if(!source){
+   setHint(projection==="side"?"船体側面の詳細描画は次の段階で追加します。":"船体全域の上面表示（外殻幅は現行図面の仮案）。");
+   renderLegend();
+   if(typeof opts.onLayoutLoaded==="function")opts.onLayoutLoaded(mapId,null);
+   return;
+  }
   setHint("配置データを読み込み中…");
   try{
    let loaded=cache.get(source);
@@ -507,9 +514,11 @@ function create(opts){
    if(myToken!==token)return;
    data=loaded;renderLegend();draw();
    setCurrentHint();
+   if(typeof opts.onLayoutLoaded==="function")opts.onLayoutLoaded(mapId,data);
   }catch(e){
    if(myToken!==token)return;
    setHint("マップ読み込みエラー："+e.message);renderLegend();draw();
+   if(typeof opts.onLayoutError==="function")opts.onLayoutError(mapId,e.message);
   }
  }
  function resize(){
@@ -558,7 +567,45 @@ function create(opts){
  opts.zoomIn.addEventListener("click",()=>zoomAt(1.3,width/2,height/2));
  opts.zoomOut.addEventListener("click",()=>zoomAt(1/1.3,width/2,height/2));
  opts.zoomReset.addEventListener("click",reset);
- return {show,reset,legendEntries:()=>data?[...data.facilities.filter(f=>f.mediumZones?.length),...data.roads]:[]};
+ // Expose a read-only map > district > facility tree based on named relationships.
+ function getHierarchy(){
+  if(!data)return {large:[],unassigned:[]};
+  const main=data.facilities.filter(f=>f.zoneOutline||f.ringDistrict||f.type==="terminal");
+  const assigned=new Set(main.map(f=>f.id));
+  const large=main.map(parent=>{
+   const children=[...(parent.mediumZones||[]),...presentationChildren(parent.id),
+    ...data.facilities.filter(f=>f.id!==parent.id&&(f.containedIn===parent.id||f.locatedInDistrict===parent.id))];
+   const uniques=[...new Map(children.map(f=>[f.id,f])).values()];
+   for(const f of uniques)assigned.add(f.id);
+   return {id:parent.id,name:parent.name,children:uniques.map(f=>({
+    id:f.id,name:f.name,parentId:parent.id
+   }))};
+  });
+  const unassigned=data.facilities.filter(f=>!assigned.has(f.id)).map(f=>({id:f.id,name:f.name}));
+  return {large,unassigned};
+ }
+ function findSelection(id){
+  if(!data)return null;
+  for(const f of data.facilities){
+   if(f.id===id)return f;
+   for(const m of f.mediumZones||[])if(m.id===id)return m;
+  }
+  return null;
+ }
+ function selectItemById(id,{focus=true}={}){
+  const item=findSelection(id);
+  if(!item)return false;
+  if(focus){
+   const isMedium=Boolean(item.level==="medium"||isArboraMedium(item)||item.containedIn||
+    item.districtParentId);
+   zoom=Math.max(zoom,isMedium?2.25:1.45);
+   const s=scale();
+   offsetX=-(item.y||0)*s;offsetY=(item.x||0)*s;
+  }
+  showDetails(item);
+  return true;
+ }
+ return {show,reset,getHierarchy,selectItemById,legendEntries:()=>data?[...data.facilities.filter(f=>f.mediumZones?.length),...data.roads]:[]};
 }
 global.AAMapViewer={create,shapeVertices,insidePolygon,roadColor};
 })(window);
