@@ -345,7 +345,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   <div class="popupCard" role="dialog" aria-modal="false" aria-label="施設・区画の説明"><button type="button" class="popupDismiss" id="popupDismiss" aria-label="説明を閉じる">×</button><div id="info"></div></div>
  </div>
 </main>
-</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script src="./middle-central-ring.js"></script><script src="./aa-terminal-interior.js"></script><script>
+</div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script src="./middle-central-ring.js"></script><script src="./aa-map-engine.js"></script><script src="./aa-terminal-interior.js"></script><script>
 const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');const W=1000,H=1600;let gridMeters=10;
 const MAP_INSET_X=.70,MAP_INSET_Y=.80; // exterior margin; ship dimensions and canonical source unchanged
 const GRID_FLOOR_IDS=['upper','middle','lower'];
@@ -1599,70 +1599,17 @@ function drawArboraMacroZones(){
 // Middle map hierarchy:
 // big = district (always outlined); medium = facility (always outlined);
 // small = facility interior (drawn only after its medium has been selected).
-function currentMiddleHierarchy(){
- if(currentMap!=='middle'||!showProposal)return {parent:null,medium:null};
- const parent=facilities.find(f=>f.mediumZones?.length&&chosen&&(
-  chosen.id===f.id||chosen.parentId===f.id||chosen.districtParentId===f.id))||null;
- const medium=parent?.mediumZones.find(m=>
-  chosen?.id===m.id||chosen?.parentId===m.id)||null;
- return {parent,medium};
+// One geometry and label model is used by the viewer, editor and comparison view.
+function middleCommonModel(){
+ return window.AAMapEngine.normalizeFloor({floor:'middle',unit:'m',facilities,roads});
 }
 function drawMiddleHierarchyFrames(){
  if(currentMap!=='middle'||!showProposal||!state.districts)return;
- const {parent,medium}=currentMiddleHierarchy();
- ctx.save();ctx.lineJoin='round';
- for(const district of facilities.filter(f=>f.mediumZones?.length)){
-  for(const z of district.mediumZones){
-   // The selected facility frame recedes while its interior is being inspected.
-   if(district.id===parent?.id&&z.id===medium?.id)continue;
-   const [px,py]=xy(z.x,z.y),w=z.h*.4,h=z.w*.4;
-   ctx.beginPath();ctx.rect(px-w/2,py-h/2,w,h);
-   ctx.fillStyle='rgba(223,230,236,.075)';ctx.fill();
-   ctx.lineWidth=1.6;ctx.strokeStyle='#d0d9de';
-   ctx.setLineDash([6,4]);ctx.stroke();
-  }
- }
- if(medium){
-  // Interior rooms are not final designs; their outlines and names appear only at this level.
-  for(const small of medium.smallZones||[]){
-   const [px,py]=xy(small.x,small.y),w=small.h*.4,h=small.w*.4;
-   ctx.beginPath();ctx.rect(px-w/2,py-h/2,w,h);
-   ctx.fillStyle=chosen?.id===small.id?'rgba(255,236,172,.31)':'rgba(231,232,225,.13)';
-   ctx.fill();ctx.lineWidth=chosen?.id===small.id?2.7:1.75;
-   ctx.strokeStyle=chosen?.id===small.id?'#fff0a3':'#d6d4cb';
-   ctx.setLineDash([]);ctx.stroke();
-  }
- }
- ctx.restore();
+ window.AAMapEngine.drawMiddleCanvas(ctx,xy,middleCommonModel(),chosen?.id,{framesOnly:true});
 }
 function drawMiddleDistrictLabels(){
  if(currentMap!=='middle'||!showProposal||!state.districts||!state.labels)return;
- const {parent,medium}=currentMiddleHierarchy();
- ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
- const label=(name,x,y,size,color)=>{
-  const [px,py]=xy(x,y);
-  ctx.font='bold '+size+'px system-ui';ctx.strokeStyle='#13212a';ctx.lineWidth=size>=15?4.5:3.1;
-  ctx.strokeText(name,px,py);ctx.fillStyle=color;ctx.fillText(name,px,py);
- };
- for(const district of facilities.filter(f=>f.mediumZones?.length)){
-  // All district names show initially. A selected district loses its title
-  // to make visual room for its facility names or interior labels.
-  if(district.id===parent?.id)continue;
-  const [x,y]=district.mapLabelPosition||[district.x,district.y];
-  label(district.districtMapLabel||district.short||district.name,x,y,17,'#fff4d5');
- }
- if(medium){
-  for(const small of medium.smallZones||[]){
-   label(small.name,small.x,small.y,10,chosen?.id===small.id?'#fff5a5':'#e9eef1');
-  }
- }else if(parent){
-  for(const zone of parent.mediumZones){
-   label(zone.name,zone.x,zone.y,12,'#f1f5f7');
-  }
- }
- // Other independent named buildings should not flood the overview with labels.
- // Their names and descriptions remain available in the popup.
- ctx.restore();
+ window.AAMapEngine.drawMiddleCanvas(ctx,xy,middleCommonModel(),chosen?.id,{labelsOnly:true,bigFont:17});
 }
 function draw(){
 if(activeWorldId==='dark_world'){darkWorld.draw();return}
@@ -1933,24 +1880,16 @@ canvas.addEventListener('click',e=>{
  if(activeWorldId==='dark_world'){darkWorld.selectAt(x,y);return}
  let near=null,dist=35/view.zoom,compoundParent=null,zoneParent=null;
  const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
- // Drill down: district(big) -> facility(functional medium) -> temporary interior(small).
+ // Child geometry uses the same parent-relative model as all three map screens.
  if(currentMap==='middle'&&showProposal&&chosen){
-  const p=facilities.find(f=>f.mediumZones?.length&&(
-   chosen.id===f.id||chosen.parentId===f.id||chosen.districtParentId===f.id));
-  if(p){
-   const active=p.mediumZones.find(z=>chosen.id===z.id||chosen.parentId===z.id);
-   let hit=null;
-   if(active)hit=active.smallZones?.find(z=>Math.abs(wx-z.x)<=z.w/2&&Math.abs(wy-z.y)<=z.h/2);
-   if(hit){
-    chosen={...hit,type:p.type,parentId:active.id,districtParentId:p.id,compoundChild:true};
-   }else{
-    hit=p.mediumZones.find(z=>Math.abs(wx-z.x)<=z.w/2&&Math.abs(wy-z.y)<=z.h/2);
-    if(hit)chosen={...hit,type:p.type,parentId:p.id,compoundChild:true};
-   }
-   if(hit){
-    document.getElementById('selectedPanel').hidden=true;
-    renderPlaces();updateInteriorPanels();renderInfo();draw();return;
-   }
+  const model=middleCommonModel();
+  const hit=window.AAMapEngine.hitMiddleChild(model,chosen.id,wx,wy);
+  if(hit){
+   const hierarchy=window.AAMapEngine.middleState(model,hit.id);
+   chosen={...hit.raw,type:hierarchy.district?.raw.type||'town',parentId:hit.parentId,
+    districtParentId:hierarchy.district?.id||null,compoundChild:true};
+   document.getElementById('selectedPanel').hidden=true;
+   renderPlaces();updateInteriorPanels();renderInfo();draw();return;
   }
  }
  // While Arbora is expanded, its major environmental zones can be selected.
