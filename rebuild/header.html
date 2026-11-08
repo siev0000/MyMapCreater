@@ -194,6 +194,9 @@ main{max-width:none;padding:0}
 .child-navigation button{font-size:12px;text-align:left;padding:8px 10px;border:1px solid #446b7b;border-radius:6px;color:#e5f8fa;background:#1d4655}
 .child-navigation button:hover{background:#2e6170}
 @media(max-width:500px){.child-navigation{left:8px;bottom:120px;width:min(300px,calc(100vw - 16px))}.map-info-footer .detail-top .detail-action{font-size:10px;padding:3px 5px}}
+.map-load-status{position:absolute;z-index:15;top:95px;left:88px;right:12px;background:#391f26;border:1px solid #e19c98;color:#ffe7e2;padding:12px;border-radius:8px;font-size:13px;line-height:1.6}
+.map-load-status[hidden]{display:none}
+@media(max-width:500px){.map-load-status{left:73px;top:90px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -235,6 +238,7 @@ main{max-width:none;padding:0}
   <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
   <nav id="floor-switch" class="floor-switch" aria-label="選択した区画の階切替" hidden></nav>
   <div class="map-hint" id="map-hint" role="status" hidden></div>
+  <div id="map-load-status" class="map-load-status" role="alert" hidden></div>
   <div class="map-zoom" aria-label="マップの拡大縮小">
    <button type="button" id="zoom-out" title="縮小">−</button>
    <span class="zoom-percent" id="zoom-label">100%</span>
@@ -288,6 +292,7 @@ const viewer=window.AAMapViewer.create({
  legendButton:$('legend-switch'),visibilityControls:$('visibility-controls'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
  zoomLabel:$('zoom-label'),hint:$('map-hint'),
  onLayoutLoaded:(mapId,data)=>{
+  $('map-load-status').hidden=true;
   if(data){floorStructures.set(mapId,viewer.getHierarchy());initializedTreeMaps.delete(mapId)}
   else{floorStructures.delete(mapId);initializedTreeMaps.delete(mapId)}
   floorLoadErrors.delete(mapId);
@@ -304,6 +309,9 @@ const viewer=window.AAMapViewer.create({
   renderMapTree();
  },
  onLayoutError:(mapId,message)=>{
+  const status=$('map-load-status');
+  status.textContent='マップの描画データを読み込めませんでした：'+message+'。ページを再読み込みしてください。';
+  status.hidden=false;
   floorLoadErrors.set(mapId,message);renderMapTree();
  },
  onSelectionChanged:(mapId,item)=>{
