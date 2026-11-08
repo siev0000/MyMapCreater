@@ -5,7 +5,7 @@
   "maps": [
     {
       "id": "automaton_ship",
-      "name": "オートマン船体",
+      "name": "アポクリファ＝アーカイブ",
       "shortName": "船全体",
       "kind": "root",
       "parentId": null,
@@ -18,35 +18,40 @@
         {
           "id": "top",
           "name": "上面",
-          "kind": "projection"
+          "kind": "projection",
+          "displayName": "船体上面形状"
         },
         {
           "id": "side",
           "name": "側面",
-          "kind": "projection"
+          "kind": "projection",
+          "displayName": "船体側面形状"
         }
       ]
     },
     {
       "id": "upper",
-      "name": "上層",
+      "name": "上層《セントラルコア階層》",
       "kind": "floor",
       "parentId": "automaton_ship",
-      "source": "../data/upper-layout-draft.json"
+      "source": "../data/upper-layout-draft.json",
+      "shortName": "上層"
     },
     {
       "id": "middle",
-      "name": "中層",
+      "name": "中層《アームドヴェイン階層》",
       "kind": "floor",
       "parentId": "automaton_ship",
-      "source": "../data/middle-layout-draft.json"
+      "source": "../data/middle-layout-draft.json",
+      "shortName": "中層"
     },
     {
       "id": "lower",
-      "name": "下層",
+      "name": "下層《ジェネレートシェル階層》",
       "kind": "floor",
       "parentId": "automaton_ship",
-      "source": "../data/lower-layout-draft.json"
+      "source": "../data/lower-layout-draft.json",
+      "shortName": "下層"
     }
   ]
 }
