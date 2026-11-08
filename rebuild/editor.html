@@ -113,7 +113,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     <div class="col2">
      <label>ID<input id="obj-id" readonly></label>
      <label>名前<input id="obj-name"></label>
-     <label>レベル<input id="obj-level" list="level-list"><datalist id="level-list"><option value="large"><option value="medium"><option value="small"><option value="facility"><option value="route"><option value="wall"><option value="annotation"></datalist></label>
+     <label>表示Lv（数値）<input id="obj-display-level" type="number" min="1" step="1" placeholder="1"></label><label>旧区分（互換）<input id="obj-level" list="level-list"><datalist id="level-list"><option value="large"><option value="medium"><option value="small"><option value="facility"><option value="route"><option value="wall"><option value="annotation"></datalist></label>
      <label>種類<input id="obj-type" placeholder="region / facility / wall"></label>
      <label>親オブジェクト<select id="obj-parent"></select></label>
      <label>レイヤー<input id="obj-layer" list="layer-list"><datalist id="layer-list"></datalist></label>
@@ -166,6 +166,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </section>
  </aside>
 </main>
-<script src="./map-viewer.js?v=generic-editor-v12"></script>
-<script src="./map-editor.js?v=generic-editor-v12"></script>
+<script src="./map-viewer.js?v=display-level-v1"></script>
+<script src="./map-editor.js?v=display-level-v1"></script>
 </body></html>
