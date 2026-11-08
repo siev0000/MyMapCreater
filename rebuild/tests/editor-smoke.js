@@ -28,12 +28,12 @@ const ids=[
 "legend-footer","legend-content","legend-switch","visibility-controls","zoom-in","zoom-out",
 "zoom-reset","zoom-label","map-hint","scene-select","scene-name","edit-hint","message",
 "undo","redo","clone-object","delete-object","selected-fields","select-empty",
-"objects","object-search","clear-search","obj-id","obj-name","obj-level","obj-type",
+"objects","object-search","clear-search","obj-id","obj-name","obj-display-level","obj-type",
 "obj-parent","layer-list","obj-layer","obj-z","obj-visible","obj-selectable",
 "obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
-"apply-json","new-shape","new-role","new-level","new-layer","new-parent-selected","new-when-parent-selected","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
+"apply-json","new-shape","new-role","new-layer","new-parent-selected","new-when-parent-selected","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
 ];
 const el=Object.fromEntries(ids.map(id=>[id,makeElement(id)]));
 el["new-shape"].value="rect";
@@ -93,15 +93,15 @@ async function main(){
  el.redo.click();assert.equal(el["obj-name"].value,"編集済み作業棟");
  el["obj-label-visible"].checked=false;el["obj-label-visible"].listeners.change();
  assert.equal(el["obj-label-visible"].checked,false);
- el["new-shape"].value="ring";el["new-role"].value="wall";el["new-level"].value="object";el["add-object"].click();
+ el["new-shape"].value="ring";el["new-role"].value="wall";el["add-object"].click();
  assert.equal(el["obj-type"].value,"wall","Role was incorrectly inferred from geometry");
- assert.equal(el["obj-level"].value,"object");
+ assert.equal(Number(el["obj-display-level"].value),1);
  assert.equal(el["obj-geometry"].value,"ring");
  const ringId=el["obj-id"].value;
  el["obj-parent"].value="town-area";el["obj-parent"].listeners.change();
  assert.equal(el["obj-parent"].value,"town-area");
- el["obj-level"].value="medium";el["obj-level"].listeners.change();
- assert.equal(el["obj-level"].value,"medium");
+ el["obj-display-level"].value="2";el["obj-display-level"].listeners.change();
+ assert.equal(Number(el["obj-display-level"].value),2);
  const beforeCount=el.objects.children.length;
  el["clone-object"].click();
  assert.equal(el.objects.children.length,beforeCount+1);
