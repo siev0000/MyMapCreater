@@ -232,7 +232,7 @@ function create(opts){
   if(panel)panel.hidden=!selected;
   if(selected){
    opts.infoTitle.textContent=selected.name||selected.id;
-   const meta=[selected.displayLevel!==undefined?"表示Lv "+selected.displayLevel:selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean);
+   const meta=[selected.metadata?.roadType,selected.metadata?.status].filter(Boolean);
    opts.infoMeta.textContent=meta.join(" ｜ ");
    opts.infoText.textContent=selected.detail||"説明は登録されていません。";
   }
@@ -291,7 +291,7 @@ function create(opts){
   if(opts.info)opts.info.hidden=!selected;
   if(selected&&opts.infoTitle){
    opts.infoTitle.textContent=selected.name||selected.id;
-   opts.infoMeta.textContent=[selected.displayLevel!==undefined?"表示Lv "+selected.displayLevel:selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean).join(" ｜ ");
+   opts.infoMeta.textContent=[selected.metadata?.roadType,selected.metadata?.status].filter(Boolean).join(" ｜ ");
    opts.infoText.textContent=selected.detail||"説明は登録されていません。";
   }
   renderLegend();draw();
