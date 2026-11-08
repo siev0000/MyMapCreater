@@ -8,7 +8,7 @@
     "section": "6.2-6.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。 計画線は貨物専用ルートの仮敷設であり、交通ゲートは未承認。 2026-11-08: 二階級地区配置と工業貨物路の効率化案を実配置に反映。Notion未変更。",
+  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。 計画線は貨物専用ルートの仮敷設であり、交通ゲートは未承認。 2026-11-08: 二階級地区配置と工業貨物路の効率化案を実配置に反映。Notion未変更。 2026-11-08: タウン・ラボ・加工施設をリンクターミナル船尾半周に混在配置。工場寸法は仮縮小、貨物路は暫定線。Notion未変更。",
   "facilities": [
     {
       "id": "middle_terminal",
@@ -522,12 +522,12 @@
     {
       "id": "standard_fuel_factory",
       "name": "標準燃料生産施設",
-      "x": -930,
-      "y": 600,
-      "w": 500,
-      "h": 400,
+      "x": -545,
+      "y": 245,
+      "w": 160,
+      "h": 120,
       "type": "industrial",
-      "detail": "右舷の船尾側加工帯。アルボラから受ける燃料素材を加工し、貨物専用路からターミナルへ出荷する。",
+      "detail": "リンクターミナル船尾側にある燃料加工施設。アルボラの植物系素材から一般燃料を製造し、専用貨物路で出荷する。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -543,51 +543,56 @@
       "draftScale": 1,
       "footprint": [
         [
-          -190,
-          -200
+          -60.8,
+          -60
         ],
         [
-          190,
-          -200
+          60.8,
+          -60
         ],
         [
-          250,
-          -140
+          80,
+          -42
         ],
         [
-          250,
-          140
+          80,
+          42
         ],
         [
-          190,
-          200
+          60.8,
+          60
         ],
         [
-          -190,
-          200
+          -60.8,
+          60
         ],
         [
-          -250,
-          140
+          -80,
+          42
         ],
         [
-          -250,
-          -140
+          -80,
+          -42
         ]
       ],
       "outerDistrict": "processing_starboard_B",
-      "stage1Layout": "efficiency_B_dual_town",
-      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
+      "stage1Layout": "stern_mixed_use_B",
+      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
+      "districtRole": "stern_lower_mixed_use",
+      "draftFacilitySize": "provisional_compact_auto_factory",
+      "layoutAccess": "freight_only_loading_vs_public_entrance_separate",
+      "productionCapacity": "unverified",
+      "sizeNote": "暫定縮小寸法。必要な生産能力と倉庫規模の確認後に再検討する。"
     },
     {
       "id": "plant_oil_processing",
       "name": "植物油加工区",
-      "x": -340,
-      "y": 650,
-      "w": 400,
-      "h": 300,
+      "x": -500,
+      "y": 410,
+      "w": 100,
+      "h": 80,
       "type": "industrial",
-      "detail": "リンクターミナルの船尾寄り、右舷側で植物油を抽出・加工する。",
+      "detail": "船尾側の混合街区にある植物油の抽出・精製施設。貨物専用の荷役口を備える。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -603,43 +608,48 @@
       "draftScale": 1,
       "footprint": [
         [
-          -200,
-          -150
+          -50,
+          -40
         ],
         [
-          200,
-          -150
+          50,
+          -40
         ],
         [
-          200,
-          110
+          50,
+          29.33
         ],
         [
-          160,
-          110
+          40,
+          29.33
         ],
         [
-          160,
-          150
+          40,
+          40
         ],
         [
-          -200,
-          150
+          -50,
+          40
         ]
       ],
       "outerDistrict": "processing_starboard_B",
-      "stage1Layout": "efficiency_B_dual_town",
-      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
+      "stage1Layout": "stern_mixed_use_B",
+      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
+      "districtRole": "stern_lower_mixed_use",
+      "draftFacilitySize": "provisional_compact_auto_factory",
+      "layoutAccess": "freight_only_loading_vs_public_entrance_separate",
+      "productionCapacity": "unverified",
+      "sizeNote": "暫定縮小寸法。必要な生産能力と倉庫規模の確認後に再検討する。"
     },
     {
       "id": "fiber_resin_processing",
       "name": "植物繊維・樹脂加工区",
-      "x": -975,
-      "y": -575,
-      "w": 400,
-      "h": 300,
+      "x": -545,
+      "y": -245,
+      "w": 120,
+      "h": 100,
       "type": "industrial",
-      "detail": "左舷の船尾側加工帯で植物繊維・樹脂を加工する。",
+      "detail": "船尾側の混合街区で植物繊維・樹脂を加工する施設。加工設備と貨物搬入口を備える。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -655,43 +665,48 @@
       "draftScale": 1,
       "footprint": [
         [
-          -200,
-          -150
+          -60,
+          -50
         ],
         [
-          200,
-          -150
+          60,
+          -50
         ],
         [
-          200,
-          110
+          60,
+          36.67
         ],
         [
-          160,
-          110
+          48,
+          36.67
         ],
         [
-          160,
-          150
+          48,
+          50
         ],
         [
-          -200,
-          150
+          -60,
+          50
         ]
       ],
       "outerDistrict": "processing_port_B",
-      "stage1Layout": "efficiency_B_dual_town",
-      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
+      "stage1Layout": "stern_mixed_use_B",
+      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
+      "districtRole": "stern_lower_mixed_use",
+      "draftFacilitySize": "provisional_compact_auto_factory",
+      "layoutAccess": "freight_only_loading_vs_public_entrance_separate",
+      "productionCapacity": "unverified",
+      "sizeNote": "暫定縮小寸法。必要な生産能力と倉庫規模の確認後に再検討する。"
     },
     {
       "id": "middle_material_processing",
       "name": "植物資源加工施設",
-      "x": -290,
-      "y": -640,
-      "w": 450,
-      "h": 300,
+      "x": -490,
+      "y": -400,
+      "w": 140,
+      "h": 100,
       "type": "industrial",
-      "detail": "リンクターミナル船尾寄り、左舷側で植物由来の素材を加工する。",
+      "detail": "船尾側の混合街区にある植物資源の加工施設。装甲用素材などを加工し、専用貨物路へ搬出する。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -707,33 +722,38 @@
       "draftScale": 1,
       "footprint": [
         [
-          -225,
-          -150
+          -70,
+          -50
         ],
         [
-          225,
-          -150
+          70,
+          -50
         ],
         [
-          225,
-          110
+          70,
+          36.67
         ],
         [
-          185,
-          110
+          57.56,
+          36.67
         ],
         [
-          185,
-          150
+          57.56,
+          50
         ],
         [
-          -225,
-          150
+          -70,
+          50
         ]
       ],
       "outerDistrict": "processing_port_B",
-      "stage1Layout": "efficiency_B_dual_town",
-      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
+      "stage1Layout": "stern_mixed_use_B",
+      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
+      "districtRole": "stern_lower_mixed_use",
+      "draftFacilitySize": "provisional_compact_auto_factory",
+      "layoutAccess": "freight_only_loading_vs_public_entrance_separate",
+      "productionCapacity": "unverified",
+      "sizeNote": "暫定縮小寸法。必要な生産能力と倉庫規模の確認後に再検討する。"
     },
     {
       "id": "ecosystem_greenhouses",
@@ -1044,46 +1064,52 @@
       "name": "船尾タウン〈下位区〉",
       "short": "船尾下位タウン",
       "type": "town",
-      "x": -360,
-      "y": 350,
+      "x": -270,
+      "y": 410,
       "w": 180,
-      "h": 180,
+      "h": 170,
       "zoneOutline": true,
       "socialTier": "lower",
       "districtSide": "stern",
-      "stage1Layout": "efficiency_B_dual_town",
-      "detail": "リンクターミナル船尾側の下位タウン。休止・充電・生活物資・市場・現場作業者の生活を支える。"
+      "stage1Layout": "stern_mixed_use_B",
+      "detail": "リンクターミナル船尾側の下位混合街区にある居住・休止・充電・市場施設。ラボや加工施設と同じ街区にあり、一般道路から出入りする。",
+      "districtRole": "stern_lower_mixed_use",
+      "draftRepositioned": true
     },
     {
       "id": "stern_refine_lab_district",
       "name": "船尾工房・ラボ区〈下位区〉",
       "short": "船尾下位ラボ区",
       "type": "workshop",
-      "x": -360,
-      "y": -350,
+      "x": -270,
+      "y": -410,
       "w": 180,
-      "h": 180,
+      "h": 170,
       "zoneOutline": true,
       "socialTier": "lower",
       "districtSide": "stern",
-      "stage1Layout": "efficiency_B_dual_town",
-      "detail": "リンクターミナル船尾側の下位技術地区。修理・素材試験・装備改良・小工房を担う。"
+      "stage1Layout": "stern_mixed_use_B",
+      "detail": "リンクターミナル船尾側の下位混合街区にある整備・試験・工房・ラボの地区。加工施設と近接しつつ、一般・貨物の出入口を分離する。",
+      "districtRole": "stern_lower_mixed_use",
+      "draftRepositioned": true
     },
     {
       "id": "stern_equipment_lab",
       "name": "船尾実用技術ラボ〈下位区〉",
       "short": "船尾実用ラボ",
       "type": "workshop",
-      "x": -365,
-      "y": -355,
+      "x": -270,
+      "y": -410,
       "w": 90,
       "h": 80,
       "containedIn": "stern_refine_lab_district",
       "showLabel": false,
       "socialTier": "lower",
       "districtSide": "stern",
-      "stage1Layout": "efficiency_B_dual_town",
-      "detail": "船尾工房・ラボ区にある実用研究室。機体部品の改良・修復試験を担う。"
+      "stage1Layout": "stern_mixed_use_B",
+      "detail": "船尾側の下位混合街区にある実用技術ラボ。機体部品の改良、試作品評価、現場向け修復試験を行う。",
+      "districtRole": "stern_lower_mixed_use",
+      "draftRepositioned": true
     }
   ],
   "roads": [
@@ -1568,7 +1594,7 @@
     },
     {
       "id": "middle_industrial_freight_road",
-      "name": "左舷加工・貨物専用幹線",
+      "name": "左舷側・独立貨物幹線",
       "roadType": "重貨物道路",
       "width": 32,
       "color": "#e4ac6a",
@@ -1576,27 +1602,23 @@
       "kind": "line",
       "points": [
         [
-          -775,
-          -575
-        ],
-        [
           -600,
-          -575
-        ],
-        [
-          -600,
-          -80
+          -145
         ],
         [
           -405,
-          -80
+          -145
+        ],
+        [
+          -405,
+          -120
         ]
       ],
-      "connection": "繊維樹脂加工区の荷役口候補から左舷の専用貨物路へ。大型機通路と分離。",
+      "connection": "紫の大型機専用通路と隔壁で分離した左舷側貨物幹線。工場2件からの貨物を検査区へ集める。",
       "notionshape": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
       "sourceNotionGeometry": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
       "geometryStatus": "draft_parallel_freight_B",
-      "reviewStatus": "pending_separate_gate_and_grade_check",
+      "reviewStatus": "pending_building_loading_gate_and_safety_inspection",
       "status": "draft_route_requires_review",
       "routeRole": "middle_freight_B",
       "access": "freight_authorized"
@@ -2127,7 +2149,7 @@
     },
     {
       "id": "draft_industrial_starboard",
-      "name": "右舷加工・貨物専用幹線",
+      "name": "右舷側・独立貨物幹線",
       "kind": "line",
       "roadType": "重貨物道路",
       "width": 32,
@@ -2135,30 +2157,22 @@
       "layer": "freight",
       "points": [
         [
-          -680,
-          600
-        ],
-        [
           -600,
-          600
-        ],
-        [
-          -600,
-          500
-        ],
-        [
-          -600,
-          80
+          145
         ],
         [
           -405,
-          80
+          145
+        ],
+        [
+          -405,
+          120
         ]
       ],
-      "reviewStatus": "pending_separate_gate_and_grade_check",
+      "reviewStatus": "pending_building_loading_gate_and_safety_inspection",
       "geometryStatus": "draft_parallel_freight_B",
       "status": "draft_route_requires_review",
-      "connection": "燃料工場荷役口候補から右舷の専用貨物路へ。紫の大型機通路は利用しない。",
+      "connection": "紫の大型機専用通路と隔壁で分離した右舷側貨物幹線。工場2件からの貨物を検査区へ集める。",
       "routeRole": "middle_freight_B",
       "access": "freight_authorized"
     },
@@ -2358,9 +2372,9 @@
     {
       "kind": "line",
       "status": "draft_route_requires_review",
-      "reviewStatus": "pending_gate_audit",
+      "reviewStatus": "pending_building_loading_gate_and_safety_inspection",
       "id": "draft_oil_industrial_feeder",
-      "name": "植物油加工区貨物取付路",
+      "name": "植物油加工施設・荷役接続",
       "roadType": "重貨物取付道路",
       "width": 24,
       "color": "#e4ac6a",
@@ -2369,22 +2383,26 @@
       "geometryStatus": "draft_parallel_freight_B",
       "points": [
         [
-          -540,
-          500
+          -450,
+          410
         ],
         [
-          -600,
-          500
+          -405,
+          410
+        ],
+        [
+          -405,
+          145
         ]
       ],
-      "connection": "植物油加工区から右舷貨物幹線へ"
+      "connection": "植物油加工施設の東側荷役口から右舷専用幹線へ。タウン側の一般出入口と分離する。"
     },
     {
       "kind": "line",
       "status": "draft_route_requires_review",
-      "reviewStatus": "pending_gate_audit",
+      "reviewStatus": "pending_building_loading_gate_and_safety_inspection",
       "id": "draft_material_industrial_feeder",
-      "name": "植物資源加工区貨物取付路",
+      "name": "植物資源加工施設・荷役接続",
       "roadType": "重貨物取付道路",
       "width": 24,
       "color": "#e4ac6a",
@@ -2393,19 +2411,19 @@
       "geometryStatus": "draft_parallel_freight_B",
       "points": [
         [
-          -515,
-          -640
+          -420,
+          -400
         ],
         [
-          -600,
-          -640
+          -405,
+          -400
         ],
         [
-          -600,
-          -575
+          -405,
+          -145
         ]
       ],
-      "connection": "植物資源加工施設から左舷貨物幹線へ"
+      "connection": "植物資源加工施設の東側荷役口から左舷専用幹線へ。タウン・工房の一般通路には接続しない。"
     },
     {
       "kind": "line",
@@ -2464,7 +2482,7 @@
     {
       "kind": "line",
       "status": "draft_route_requires_review",
-      "reviewStatus": "pending_gate_audit",
+      "reviewStatus": "pending_building_loading_gate_and_safety_inspection",
       "id": "draft_stern_town_access",
       "name": "船尾下位タウン入口",
       "roadType": "一般道路",
@@ -2478,20 +2496,20 @@
           205
         ],
         [
-          -260,
-          250
+          -245,
+          270
         ],
         [
-          -360,
-          260
+          -270,
+          325
         ]
       ],
-      "connection": "ターミナルコンコースから街区入口候補まで。通行ゲート未検証。"
+      "connection": "ターミナルコンコースから船尾タウンの一般出入口へ。貨物幹線には無条件接続しない。"
     },
     {
       "kind": "line",
       "status": "draft_route_requires_review",
-      "reviewStatus": "pending_gate_audit",
+      "reviewStatus": "pending_building_loading_gate_and_safety_inspection",
       "id": "draft_stern_lab_access",
       "name": "船尾下位ラボ区入口",
       "roadType": "一般道路",
@@ -2505,15 +2523,63 @@
           -205
         ],
         [
-          -260,
-          -250
+          -245,
+          -270
         ],
         [
-          -360,
-          -260
+          -270,
+          -325
         ]
       ],
-      "connection": "ターミナルコンコースから街区入口候補まで。通行ゲート未検証。"
+      "connection": "ターミナルコンコースから船尾工房・ラボ区の一般出入口へ。貨物幹線には無条件接続しない。"
+    },
+    {
+      "id": "draft_fuel_industrial_feeder",
+      "kind": "line",
+      "name": "燃料生産施設・荷役接続",
+      "roadType": "貨物施設取付路",
+      "points": [
+        [
+          -600,
+          185
+        ],
+        [
+          -600,
+          145
+        ]
+      ],
+      "width": 24,
+      "access": "freight_authorized",
+      "layer": "freight",
+      "color": "#e4ac6a",
+      "geometryStatus": "draft_parallel_freight_B",
+      "connection": "燃料施設の南側荷役口候補から右舷貨物幹線へ。",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_loading_door_and_building_buffer"
+    },
+    {
+      "id": "draft_resin_industrial_feeder",
+      "kind": "line",
+      "name": "繊維樹脂加工施設・荷役接続",
+      "roadType": "貨物施設取付路",
+      "points": [
+        [
+          -570,
+          -195
+        ],
+        [
+          -570,
+          -145
+        ]
+      ],
+      "width": 24,
+      "access": "freight_authorized",
+      "layer": "freight",
+      "color": "#e4ac6a",
+      "geometryStatus": "draft_parallel_freight_B",
+      "connection": "繊維樹脂加工施設の北側荷役口候補から左舷貨物幹線へ。",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_loading_door_and_building_buffer"
     }
   ],
   "editorMeta": {
@@ -2523,12 +2589,12 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "two_tier_B_layout_applied_pending_access_audit",
+    "review": "stern_mixed_use_small_factories_and_new_freight_feeders_applied_pending_traffic_and_capacity_check",
     "layoutModel": "middle-terminal-internal-guild-v2",
-    "stage1Focus": "紫大型機通路沿いに加工4件・貨物独立路・船首上位と船尾下位にそれぞれタウン/ラボ"
+    "stage1Focus": "船尾半周でタウン・ラボ・小型加工4施設が混在する生活生産街区。貨物と一般動線は分離"
   },
   "centralUrbanPlan": {
-    "status": "draft_two_social_tiers_with_separated_industry",
+    "status": "stern_lower_mixed_use_bow_upper_life_labs",
     "terminalRadiusM": 250,
     "guildRadiusInnerM": 130,
     "guildRadiusOuterM": 210,
@@ -2676,8 +2742,16 @@
         "tier": "lower",
         "town": "stern_core_shell_town",
         "labDistrict": "stern_refine_lab_district",
-        "lab": "stern_equipment_lab"
-      }
+        "lab": "stern_equipment_lab",
+        "mixedUseFactories": [
+          "standard_fuel_factory",
+          "plant_oil_processing",
+          "fiber_resin_processing",
+          "middle_material_processing"
+        ],
+        "mixedUse": true
+      },
+      "planningPrinciple": "船首の上位タウン・ラボは維持し、船尾半周の下位タウン・ラボ・加工施設を機能的に混在させる。厳密な用途分離ではなく、危険な荷役・熱・騒音の経路だけを確実に隔離する。"
     }
   },
   "stage1Skeleton": {
@@ -2693,34 +2767,34 @@
       "industrialGroups": [
         {
           "id": "processing_starboard",
-          "name": "右舷・燃料/油加工",
+          "name": "船尾混合街区（右舷側の加工施設）",
           "sector": "industrial",
           "factoryIds": [
             "standard_fuel_factory",
             "plant_oil_processing"
           ],
-          "status": "two_independent_factories",
+          "status": "intermixed_with_town_and_workshops_not_separate_factory_district",
           "bounds": {
-            "xMin": -1180,
-            "xMax": -140,
-            "yMin": 400,
-            "yMax": 800
+            "xMin": -625,
+            "xMax": -450,
+            "yMin": 185,
+            "yMax": 450
           }
         },
         {
           "id": "processing_port",
-          "name": "左舷・繊維/資源加工",
+          "name": "船尾混合街区（左舷側の加工施設）",
           "sector": "industrial",
           "factoryIds": [
             "fiber_resin_processing",
             "middle_material_processing"
           ],
-          "status": "two_independent_factories",
+          "status": "intermixed_with_town_and_workshops_not_separate_factory_district",
           "bounds": {
-            "xMin": -1175,
-            "xMax": -65,
-            "yMin": -790,
-            "yMax": -425
+            "xMin": -605,
+            "xMax": -420,
+            "yMin": -450,
+            "yMax": -195
           }
         }
       ],
@@ -2740,14 +2814,14 @@
         "船殻保守区・構造柱との詳細な実寸離隔"
       ],
       "note": "facilities、roads、stage1Skeleton.efficiencyFirstを参照",
-      "status": "superseded_by_B_two_tiers"
+      "status": "superseded_by_mixed_use_aft_2026_11_08"
     },
     "revisedAt": "2026-11-08",
     "phase": 1,
     "preferredOption": "B",
     "stage1Decision": "工業施設は紫の大型機専用通路沿線に集約し、貨物は並行の独立路へ。船首上位・船尾下位の生活/ラボ両セットを設ける。",
     "efficiencyFirst": {
-      "status": "B_social_tier_layout_applied_routes_and_gates_pending",
+      "status": "stern_lower_mixed_use_compact_factories_applied_in_GitHub",
       "designPriority": "貨物リフトへの実移動距離・積み替え・交差の少なさを優先。一般生活区と危険物の分離は必須。",
       "operationalChain": [
         "アルボラ栽培／育苗",
@@ -2816,19 +2890,21 @@
         "processingBelts": [
           {
             "id": "processing_starboard",
-            "name": "右舷・燃料/油加工",
+            "name": "船尾混合街区（右舷側の加工施設）",
             "factoryIds": [
               "standard_fuel_factory",
               "plant_oil_processing"
-            ]
+            ],
+            "status": "intermixed_with_town_and_workshops_not_separate_factory_district"
           },
           {
             "id": "processing_port",
-            "name": "左舷・繊維/資源加工",
+            "name": "船尾混合街区（左舷側の加工施設）",
             "factoryIds": [
               "fiber_resin_processing",
               "middle_material_processing"
-            ]
+            ],
+            "status": "intermixed_with_town_and_workshops_not_separate_factory_district"
           }
         ],
         "cargoInspection": {
@@ -2842,66 +2918,78 @@
         "cargoFlowIndicative": [
           [
             [
-              -680,
-              600
-            ],
-            [
               -600,
-              600
-            ],
-            [
-              -600,
-              500
-            ],
-            [
-              -600,
-              80
+              145
             ],
             [
               -405,
-              80
-            ]
-          ],
-          [
-            [
-              -775,
-              -575
-            ],
-            [
-              -600,
-              -575
-            ],
-            [
-              -600,
-              -80
+              145
             ],
             [
               -405,
-              -80
+              120
             ]
           ],
           [
             [
-              -540,
-              500
+              -600,
+              -145
             ],
             [
-              -600,
-              500
+              -405,
+              -145
+            ],
+            [
+              -405,
+              -120
             ]
           ],
           [
             [
-              -515,
-              -640
+              -600,
+              185
             ],
             [
               -600,
-              -640
+              145
+            ]
+          ],
+          [
+            [
+              -570,
+              -195
             ],
             [
-              -600,
-              -575
+              -570,
+              -145
+            ]
+          ],
+          [
+            [
+              -450,
+              410
+            ],
+            [
+              -405,
+              410
+            ],
+            [
+              -405,
+              145
+            ]
+          ],
+          [
+            [
+              -420,
+              -400
+            ],
+            [
+              -405,
+              -400
+            ],
+            [
+              -405,
+              -145
             ]
           ],
           [
@@ -2971,11 +3059,11 @@
         ]
       },
       "inspectionPending": [
-        "貨物検査区と紫通路の立体交差・防火隔壁・安全クリアランス",
-        "ターミナル貨物リフト入口と搬入可能なゲート",
-        "街区と加工帯の騒音・排熱・公共道路交差",
-        "旧中央環状路とポッド環状線の再接続",
-        "アルボラ環境区と密閉通路の換気・水循環分離"
+        "工場の暫定縮小寸法を燃料・素材の必要生産量と設備・倉庫容量で再検証",
+        "一般街路と産業貨物路の防火・騒音・排熱・防汚緩衝を設計",
+        "紫の大型機通路と貨物検査区との立体分離・認証ゲート",
+        "貨物リフト入口と左右の工場荷役口の実際の接続",
+        "旧環状路、輸送ポッド線、アルボラ区周辺道路と非常経路の引直し"
       ],
       "note": "A/C案と比較してB案を優先。ここでは施設の実際のx/y/w/h、既存道路points、Notionは変更しない。地図のマクロ区画だけの優先候補",
       "layoutPolicy": {
@@ -2991,7 +3079,21 @@
         ],
         "cargoLiftGate": "candidate_only",
         "status": "pending_structural_grade_separation",
-        "purpleEndClearance": "Purple passage terminates at X=-950, leaving 50m to Arbora transport-notch rear wall X=-1000 before 48m corridor half-width."
+        "purpleEndClearance": "Purple passage terminates at X=-950, leaving 50m to Arbora transport-notch rear wall X=-1000 before 48m corridor half-width.",
+        "mixedUseAftRing": {
+          "type": "stern_half_link_terminal_surround",
+          "townId": "stern_core_shell_town",
+          "labDistrictId": "stern_refine_lab_district",
+          "labId": "stern_equipment_lab",
+          "factoryIds": [
+            "standard_fuel_factory",
+            "plant_oil_processing",
+            "fiber_resin_processing",
+            "middle_material_processing"
+          ],
+          "requirement": "Town, workshop and processing buildings are interleaved within stern-side ring; industrial cargo access follows independent separated lanes, not public avenues."
+        },
+        "compactFactoryDimensionsStatus": "draft_proposal_pending_production_capacity_validation"
       }
     },
     "layoutReflection": "2026-11-08: 中層B新案を実施設座標・道路・タウンラボ2系統へ反映。Notion未変更。"
