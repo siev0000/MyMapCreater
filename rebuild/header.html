@@ -257,7 +257,7 @@ main{max-width:none;padding:0}
  </section>
 </div>
 <script src="./spec-viewer.js?v=5"></script>
-<script src="./map-viewer.js?v=floors-test-v1"></script>
+<script src="./map-viewer.js?v=initial-lv3-v1"></script>
 <script>
 (()=>{
 'use strict';
@@ -269,8 +269,8 @@ const viewer=window.AAMapViewer.create({
  legendButton:$('legend-switch'),visibilityControls:$('visibility-controls'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
  zoomLabel:$('zoom-label'),hint:$('map-hint'),
  onLayoutLoaded:(mapId,data)=>{
-  if(data)floorStructures.set(mapId,viewer.getHierarchy());
-  else floorStructures.delete(mapId);
+  if(data){floorStructures.set(mapId,viewer.getHierarchy());initializedTreeMaps.delete(mapId)}
+  else{floorStructures.delete(mapId);initializedTreeMaps.delete(mapId)}
   floorLoadErrors.delete(mapId);
   if(pendingFocus?.floorId===mapId){
    const pending=pendingFocus;pendingFocus=null;
@@ -320,7 +320,7 @@ const viewer=window.AAMapViewer.create({
  }
 });
 let nodes=new Map(),roots=[],selected=null,viewId='top',selectedObjectId=null,pendingFocus=null;
-const treeExpanded=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
+const treeExpanded=new Set(),initializedTreeMaps=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
 let defaultMapId=null;
 function validate(data){
  if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップの設定形式が不正です');
@@ -398,6 +398,17 @@ function renderMapTree(){
  }
  function toggle(key){if(treeExpanded.has(key))treeExpanded.delete(key);else treeExpanded.add(key)}
  const hierarchy=floorStructures.get(active.id);
+ if(hierarchy && !initializedTreeMaps.has(active.id)){
+  const init=viewer.initialDisplayLevel();
+  const seed=nodes=>{
+   for(const node of nodes){
+    if((node.displayLevel??1)<init)treeExpanded.add('node:'+active.id+':'+node.id);
+    seed(node.children||[]);
+   }
+  };
+  seed(hierarchy.roots||[]);
+  initializedTreeMaps.add(active.id);
+ }
  if(!hierarchy){
   message(floorLoadErrors.has(active.id)?
    '読み込み失敗：'+floorLoadErrors.get(active.id):
