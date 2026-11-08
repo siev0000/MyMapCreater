@@ -2306,7 +2306,13 @@ function addZone(id,name,geom,color,desc,flag=''){
  const shape=E(geom.tag,{...geom.props,class:'shape',fill:color,'fill-opacity':geom.opacity??.28,stroke:color,'stroke-width':2.2,'stroke-dasharray':flag?'9 7':'none'});
  g.append(shape);
  const [lx,ly]=geom.label||[450,720];
- if(selected===id){
+ const activeDistrict=floor==='middle'&&candidate==='B'?
+  dataset.facilities.find(p=>p.mediumZones?.length&&selected&&
+    (selected===p.id||p.mediumZones.some(m=>m.id===selected||(m.smallZones||[]).some(c=>c.id===selected)))):null;
+ const showName=geom.hierarchyLevel==='big'?activeDistrict?.id!==id:
+  geom.hierarchyLevel==='medium'?selected===geom.parentId:
+  geom.hierarchyLevel==='small'?true:selected===id;
+ if(showName){
   const txt=E('text',{x:lx,y:ly,'text-anchor':'middle','font-size':geom.fontSize||17});
   txt.textContent=name;g.append(txt);
  }
@@ -2320,7 +2326,12 @@ function addZone(id,name,geom,color,desc,flag=''){
  const text=document.createElement('p');text.textContent=placeDescriptions[id]||desc||'施設の説明はまだ登録されていません。';
  target.append(title,text);
 };
- g.addEventListener('click',choose);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}});svg.append(g);
+ if(geom.interactive===false)g.setAttribute('pointer-events','none');
+ else{
+  g.addEventListener('click',choose);
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}});
+ }
+ svg.append(g);
 }
 function rectBounds(x0,x1,y0,y1){const [a,b]=pos(x1,y0),[c,d]=pos(x0,y1);return {x:Math.min(a,c),y:Math.min(b,d),width:Math.abs(c-a),height:Math.abs(d-b),rx:6}}
 function facilityRect(f){return rectBounds(f.x-f.w/2,f.x+f.w/2,f.y-f.h/2,f.y+f.h/2)}
@@ -2367,19 +2378,33 @@ function draw(){
    const shape=t.polygon?.length>=3?
      {tag:'polygon',props:{points:t.polygon.map(([x,y])=>pos(x,y).join(',')).join(' ')},label:pos(...(t.labelPos||[t.x,t.y])),fontSize:14,opacity:.12}:
      {tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:13,opacity:.20};
+   if(candidate==='B')shape.hierarchyLevel='big';
    addZone(t.id,title,shape,upper?'#9ed7ee':'#c5a079',placeDescriptions[t.id]);insertToClip();
   }
 
-  if(candidate==='B'&&selected){
+  if(candidate==='B'){
    for(const parent of dataset.facilities.filter(f=>f.mediumZones?.length)){
-    const active=parent.id===selected||parent.mediumZones.some(m=>m.id===selected||(m.smallZones||[]).some(z=>z.id===selected));
-    if(!active)continue;
+    const active=parent.id===selected||parent.mediumZones.some(m=>
+      m.id===selected||(m.smallZones||[]).some(z=>z.id===selected));
+    const mediumSelected=active?parent.mediumZones.find(m=>
+      m.id===selected||(m.smallZones||[]).some(z=>z.id===selected)):null;
     for(const medium of parent.mediumZones){
-     addZone(medium.id,medium.name,{tag:'rect',props:rectBounds(medium.x-medium.w/2,medium.x+medium.w/2,medium.y-medium.h/2,medium.y+medium.h/2),label:pos(medium.x,medium.y),fontSize:12,opacity:.14},'#e0e7ea',medium.detail);insertToClip();
-     if(medium.id===selected||(medium.smallZones||[]).some(z=>z.id===selected)){
-      for(const small of medium.smallZones||[]){
-       addZone(small.id,small.name,{tag:'rect',props:rectBounds(small.x-small.w/2,small.x+small.w/2,small.y-small.h/2,small.y+small.h/2),label:pos(small.x,small.y),fontSize:11,opacity:.10},'#bdc6cd',small.detail);insertToClip();
-      }
+     // Facility outlines always remain on the map, except the selected
+     // medium whose interior is now being inspected.
+     if(mediumSelected?.id!==medium.id){
+      addZone(medium.id,medium.name,{
+       tag:'rect',props:rectBounds(medium.x-medium.w/2,medium.x+medium.w/2,medium.y-medium.h/2,medium.y+medium.h/2),
+       label:pos(medium.x,medium.y),fontSize:11,opacity:.12,
+       hierarchyLevel:'medium',parentId:parent.id,interactive:active
+      },'#d2dce1',medium.detail);insertToClip();
+     }
+    }
+    if(mediumSelected){
+     for(const small of mediumSelected.smallZones||[]){
+      addZone(small.id,small.name,{
+       tag:'rect',props:rectBounds(small.x-small.w/2,small.x+small.w/2,small.y-small.h/2,small.y+small.h/2),
+       label:pos(small.x,small.y),fontSize:10,opacity:.14,hierarchyLevel:'small'
+      },'#e5e2cf',small.detail);insertToClip();
      }
     }
    }
