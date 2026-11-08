@@ -359,7 +359,7 @@ const viewer=window.AAMapViewer.create({
   const navigation=viewer.getSelectionNavigation();
   const viewRoot=viewer.getViewRoot();
   $('current-map-title').hidden=Boolean(viewRoot);
-  const parentBtn=$('go-parent'),childBtn=$('open-children'),childNav=$('child-navigation');
+  const parentBtn=$('go-parent'),childBtn=$('open-children');
   parentBtn.hidden=!viewRoot;
   parentBtn.textContent='← 上の階層へ';
   parentBtn.onclick=()=>viewer.exitItem();
@@ -367,7 +367,8 @@ const viewer=window.AAMapViewer.create({
   childBtn.hidden=!hasChildren;
   childBtn.textContent=hasChildren?'内部へ入る →':'内部へ入る';
   childBtn.setAttribute('aria-expanded','false');
-  childNav.hidden=true;childNav.replaceChildren();
+
+
   const breadcrumb=$('interior-breadcrumb');
   breadcrumb.hidden=!viewRoot;
   if(viewRoot){
