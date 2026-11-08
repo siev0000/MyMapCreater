@@ -33,7 +33,8 @@
     }
   ],
   "settings": {
-    "legendGroups": []
+    "legendGroups": [],
+    "initialDisplayLevel": 3
   },
   "objects": [
     {
