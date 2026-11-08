@@ -1,11 +1,11 @@
 /* Generic JSON scene renderer. No world, character, facility, or map IDs in code. */
 (function(global){
 "use strict";
-const byId=id=>document.getElementById(id);
+
 const finite=(n,fallback=0)=>Number.isFinite(Number(n))?Number(n):fallback;
 const clamp=(x,min,max)=>Math.min(max,Math.max(min,x));
 const htmlColor=(s,defaultValue)=>typeof s==="string"&&s?s:defaultValue;
-const DEFAULT_GROUP_MODES=["main","all","off"];
+
 function sceneCheck(scene){
  if(scene?.schemaVersion!==2||!Array.isArray(scene.objects))throw Error("シーンJSONの形式が不正です（schemaVersion:2 が必要）");
  const ids=new Set();
@@ -87,7 +87,7 @@ function create(opts){
  let scene=null,selected=null,sceneKey="",request=0,projection=null;
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
  let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null;
- try{legendEnabled=localStorage.getItem("aa-map-legend")==="true"}catch(_){}
+ try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
  function getAxes(){
   return [scene?.coordinateSystem?.horizontal||[1,0],scene?.coordinateSystem?.vertical||[0,1]];
  }
@@ -146,7 +146,7 @@ function create(opts){
    if(!match&&selected.id!==obj.id)return false;
   }
   if(v.modeGroup&&Array.isArray(v.modes)){
-   const mode=groupModes[v.modeGroup]||scene?.settings?.[v.modeGroup+"Mode"]||"all";
+   const mode=groupModes[v.modeGroup]||modeConfig(v.modeGroup).default;
    if(!v.modes.includes(mode))return false;
   }
   return true;
@@ -319,32 +319,73 @@ function create(opts){
   return candidates[candidates.length-1];
  }
  function modeConfig(group){
-  const declared=scene?.settings?.visibilityGroups?.[group];
-  return declared||{default:"main",options:DEFAULT_GROUP_MODES.map(id=>({id,label:({main:"主要のみ",all:"全案を表示",off:"非表示"})[id]}))};
+  const declared=scene?.settings?.visibilityGroups?.[group]||{};
+  const values=[...new Set((scene?.objects||[])
+   .filter(o=>o.visibility?.modeGroup===group)
+   .flatMap(o=>o.visibility?.modes||[]))];
+  const options=Array.isArray(declared.options)&&declared.options.length?
+   declared.options.map(o=>({id:o.id,label:o.label||o.id})):
+   values.map(id=>({id,label:id}));
+  if(!options.length)options.push({id:"all",label:"すべて"});
+  const allowed=options.map(o=>o.id);
+  const initial=allowed.includes(declared.default)?declared.default:allowed[0];
+  return{label:declared.label||group,default:initial,options};
+ }
+ function groupIds(){
+  return [...new Set([
+   ...Object.keys(scene?.settings?.visibilityGroups||{}),
+   ...(scene?.objects||[]).map(o=>o.visibility?.modeGroup).filter(Boolean)
+  ])];
  }
  function setupModes(){
-  const groups=new Set(scene?.objects?.map(o=>o.visibility?.modeGroup).filter(Boolean));
-  for(const g of groups){
-   let persisted=null;try{persisted=localStorage.getItem("aa-map-mode-"+g)}catch(_){}
-   const conf=modeConfig(g),allowed=conf.options.map(o=>o.id);
-   groupModes[g]=allowed.includes(persisted)?persisted:conf.default;
+  groupModes={};
+  for(const group of groupIds()){
+   const conf=modeConfig(group),allowed=conf.options.map(o=>o.id);
+   let stored=null;
+   try{stored=localStorage.getItem("map-scene-mode:"+scene.id+":"+group)}catch(_){}
+   groupModes[group]=allowed.includes(stored)?stored:conf.default;
   }
-  syncModeButton();
+  renderModeControls();
  }
- function syncModeButton(){
-  if(!roadButton)return;
-  const conf=modeConfig("routes"),selectedMode=groupModes.routes||conf.default;
-  roadButton.disabled=!scene?.objects?.some(o=>o.visibility?.modeGroup==="routes");
-  roadButton.textContent="経路："+(conf.options.find(o=>o.id===selectedMode)?.label||selectedMode);
+ function renderModeControls(){
+  const groups=groupIds();
+  if(opts.visibilityControls){
+   const host=opts.visibilityControls;host.replaceChildren();
+   for(const group of groups){
+    const conf=modeConfig(group);
+    const mode=groupModes[group]||conf.default;
+    const button=document.createElement("button");button.type="button";
+    button.className="menu-settings-button";
+    button.textContent=conf.label+"："+(conf.options.find(o=>o.id===mode)?.label||mode);
+    button.setAttribute("aria-label",conf.label+"の表示切替");
+    button.addEventListener("click",()=>cycleMode(group));
+    host.append(button);
+   }
+  }
+  // Legacy hosts can provide a single button; it controls the first JSON group.
+  if(roadButton){
+   const group=groups[0],conf=group?modeConfig(group):null;
+   const mode=groupModes[group]||conf?.default;
+   roadButton.disabled=!group;
+   roadButton.textContent=conf?conf.label+"："+(conf.options.find(o=>o.id===mode)?.label||mode):"表示切替なし";
+  }
+ }
+ function setVisibilityMode(group,mode){
+  if(!groupIds().includes(group))return false;
+  const conf=modeConfig(group);
+  if(!conf.options.some(o=>o.id===mode))return false;
+  groupModes[group]=mode;
+  try{localStorage.setItem("map-scene-mode:"+scene.id+":"+group,mode)}catch(_){}
+  draw();renderLegend();renderModeControls();return true;
  }
  function cycleMode(group){
   const conf=modeConfig(group),options=conf.options.map(x=>x.id);
-  if(!options.length)return;
+  if(!options.length)return false;
   const current=groupModes[group]||conf.default;
-  const next=options[(Math.max(0,options.indexOf(current))+1)%options.length];
-  groupModes[group]=next;
-  try{localStorage.setItem("aa-map-mode-"+group,next)}catch(_){}
-  draw();renderLegend();syncModeButton();
+  return setVisibilityMode(group,options[(Math.max(0,options.indexOf(current))+1)%options.length]);
+ }
+ function getVisibilityGroups(){
+  return groupIds().map(id=>({id,...modeConfig(id),current:groupModes[id]}));
  }
  function renderLegend(){
   if(!opts.legendContent)return;
@@ -377,10 +418,10 @@ function create(opts){
   opts.legend.hidden=!legendEnabled;
   legendButton.setAttribute("aria-pressed",String(legendEnabled));
   legendButton.textContent="色の凡例："+(legendEnabled?"ON":"OFF");
-  try{localStorage.setItem("aa-map-legend",String(legendEnabled))}catch(_){}
+  try{localStorage.setItem("map-scene-legend",String(legendEnabled))}catch(_){}
  }
  if(legendButton)legendButton.addEventListener("click",()=>setLegend(!legendEnabled));
- if(roadButton)roadButton.addEventListener("click",()=>cycleMode("routes"));
+ if(roadButton)roadButton.addEventListener("click",()=>{const group=groupIds()[0];if(group)cycleMode(group)});
  if(opts.infoClose)opts.infoClose.addEventListener("click",()=>showDetails(null));
  if(opts.zoomIn)opts.zoomIn.addEventListener("click",()=>zoomAt(1.3,width/2,height/2));
  if(opts.zoomOut)opts.zoomOut.addEventListener("click",()=>zoomAt(1/1.3,width/2,height/2));
@@ -477,7 +518,7 @@ function create(opts){
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
  return{show,reset,getHierarchy,selectItemById,getScene,getSelected,replaceScene,setEditMode,
-  screenToWorld:worldAt,redraw:draw};
+  getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
 })(window);
