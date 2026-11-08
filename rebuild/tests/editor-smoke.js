@@ -33,7 +33,7 @@ const ids=[
 "obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
-"apply-json","new-shape","add-object","move-mode","open-json","file-input","download"
+"apply-json","new-shape","new-role","new-level","new-layer","add-object","move-mode","open-json","file-input","download"
 ];
 const el=Object.fromEntries(ids.map(id=>[id,makeElement(id)]));
 el["new-shape"].value="rect";
@@ -77,7 +77,9 @@ async function main(){
  el.redo.click();assert.equal(el["obj-name"].value,"編集済み作業棟");
  el["obj-label-visible"].checked=false;el["obj-label-visible"].listeners.change();
  assert.equal(el["obj-label-visible"].checked,false);
- el["new-shape"].value="ring";el["add-object"].click();
+ el["new-shape"].value="ring";el["new-role"].value="wall";el["new-level"].value="object";el["add-object"].click();
+ assert.equal(el["obj-type"].value,"wall","Role was incorrectly inferred from geometry");
+ assert.equal(el["obj-level"].value,"object");
  assert.equal(el["obj-geometry"].value,"ring");
  const ringId=el["obj-id"].value;
  el["obj-parent"].value="town-area";el["obj-parent"].listeners.change();
