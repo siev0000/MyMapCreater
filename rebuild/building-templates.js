@@ -91,6 +91,23 @@ const presets=[
     "description": "階ごとに部屋と階段"
   }
 ];
+// Two alternative floorplans for each original category; original IDs remain valid.
+const variants={
+ small_house:[["small_house_side","小型住宅・側面玄関",[12,16],1,"side","片側に玄関と通路を寄せた住宅","left"],["small_house_open","小型住宅・広間型",[16,14],1,"open","仕切りの少ないワンルーム住宅","right"]],
+ row_house:[["row_house_compact","連棟住宅・細長型",[12,18],2,"side","狭い間口と奥行きのある2階建て","left"],["row_house_large","連棟住宅・拡張型",[20,14],3,"cross","3階建ての連棟住宅","right"]],
+ shop:[["shop_corner","小型店舗・角地型",[18,18],1,"side","側面玄関とバックヤード","right"],["shop_two_floor","小型店舗・2階型",[20,16],2,"front","1階売場と2階バックヤード","center"]],
+ office:[["office_compact","事務所・小規模型",[18,14],1,"front","平屋の小型事務所","left"],["office_large","事務所・大型型",[28,22],3,"cross","複数室と廊下を持つ3階事務所","right"]],
+ warehouse:[["warehouse_narrow","倉庫・細長型",[22,34],1,"open","奥行き重視の倉庫","left"],["warehouse_multi","倉庫・管理棟付き",[36,26],2,"side","保管場所と2階管理区画","right"]],
+ workshop:[["workshop_compact","工房・小型",[18,14],1,"front","小型作業場と収納","left"],["workshop_large","工房・大型",[30,24],2,"cross","複数作業室と上階を持つ工房","right"]],
+ research:[["research_linear","研究施設・廊下型",[34,18],2,"side","長い廊下と実験室","left"],["research_campus","研究施設・複室型",[34,28],3,"cross","複数室を持つ3階研究施設","right"]],
+ apartment:[["apartment_compact","集合住宅・小型",[22,18],2,"side","2階建て集合住宅","left"],["apartment_tower","集合住宅・高層型",[30,26],4,"cross","4階建ての集合住宅","right"]]
+};
+for(const [category,arr] of Object.entries(variants)){
+ const base=presets.find(t=>t.id===category);
+ for(const [id,name,cells,floors,layout,description,entranceSide] of arr)
+  presets.push({id,name,cells,floors,layout,description,entranceSide,category});
+}
+for(const preset of presets)if(!preset.category)preset.category=preset.id;
 const copy=x=>JSON.parse(JSON.stringify(x));
 function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
@@ -126,7 +143,9 @@ function generate(templateId,options={}){
   opening:{kind:external?"entrance":"interior",width:2*spacing,external}
  });
  const nX=template.cells[0],nY=template.cells[1],mid=Math.round(nY*.54);
- const entranceWidth=template.id==="warehouse"?4:2,start=(nX-entranceWidth)/2;
+ const entranceWidth=template.category==="warehouse"?4:2;
+ const entranceSide=template.entranceSide||"center";
+ const start=entranceSide==="left"?2:entranceSide==="right"?nX-entranceWidth-2:(nX-entranceWidth)/2;
  const stair=template.floors>1;
  for(let i=0;i<template.floors;i++){
   const f=floorNames[i].id;
@@ -140,10 +159,18 @@ function generate(templateId,options={}){
    door("entrance_"+f,f,[[start,nY],[start+entranceWidth,nY]],true);
   }else wall("south_"+f,f,[[0,nY],[nX,nY]]);
   if(template.layout!=="open"){
-   const gapStart=(nX-2)/2;
-   wall("partition_l_"+f,f,[[0,mid],[gapStart,mid]]);
-   wall("partition_r_"+f,f,[[gapStart+2,mid],[nX,mid]]);
-   door("partition_door_"+f,f,[[gapStart,mid],[gapStart+2,mid]]);
+   // Internal wall with an actual opening, not a solid divider under a door.
+   const depth=template.layout==="front"?Math.round(nY*.67):mid;
+   const gapStart=template.layout==="side"?Math.round(nX*.28):(nX-2)/2;
+   wall("partition_l_"+f,f,[[0,depth],[gapStart,depth]]);
+   wall("partition_r_"+f,f,[[gapStart+2,depth],[nX,depth]]);
+   door("partition_door_"+f,f,[[gapStart,depth],[gapStart+2,depth]]);
+   if(template.layout==="cross"){
+    const split=Math.round(nX*.48),y1=Math.max(3,depth-4),y2=depth-2;
+    wall("cross_top_"+f,f,[[split,0],[split,y1]]);
+    wall("cross_bottom_"+f,f,[[split,y2],[split,depth]]);
+    door("cross_door_"+f,f,[[split,y1],[split,y2]]);
+   }
   }
   if(stair){
    const sx=nX-5,sy=nY-7;
@@ -153,16 +180,16 @@ function generate(templateId,options={}){
       toFloorId:floorNames[i+1]?.id||floorNames[i-1].id,
       fromAnchor:at(sx+2,sy+3),toAnchor:at(sx+2,sy+3),direction:i+1<template.floors?"up":"down"}});
   }
-  if(template.id==="warehouse"){
+  if(template.category==="warehouse"){
     base("storage_"+f,"収納区画","object",rect(1,1,5,4),f,
      {fill:"#2b4856",stroke:"#9ec5ca",strokeWidth:1}, {shapePresetId:"storage_container"});
-  }else if(template.id==="shop"){
+  }else if(template.category==="shop"){
     base("counter_"+f,"カウンター","object",rect(2,2,5,2),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"table"});
-  }else if(template.id==="workshop"){
+  }else if(template.category==="workshop"){
     base("workbench_"+f,"作業台","object",rect(2,2,6,3),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"workbench"});
-  }else if(template.id==="small_house"||template.id==="row_house"||template.id==="apartment"){
+  }else if(["small_house","row_house","apartment"].includes(template.category)){
     base("bed_"+f,"ベッド","object",rect(2,2,3,5),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"bed"});
   }
