@@ -1591,11 +1591,11 @@ function drawArboraMacroZones(){
  for(const z of a.macroZones){
   // The active zone recedes when looking at its specific interior structure.
   if(chosen?.id===z.id||chosen?.mapDisplayParentId===z.id)continue;
-  const [px,py]=xy(z.x,z.y),w=z.h*.4,h=z.w*.4;
-  ctx.fillStyle=chosen?.id===z.id?'rgba(174,226,150,.48)':'rgba(106,191,143,.22)';
-  ctx.fillRect(px-w/2,py-h/2,w,h);
-  ctx.lineWidth=chosen?.id===z.id?3:1.6;ctx.strokeStyle=chosen?.id===z.id?'#fff5a3':'#a9e6a7';
-  ctx.strokeRect(px-w/2,py-h/2,w,h);
+  const [px,py]=xy(z.x,z.y),w=z.h*.4;
+  // Draw the actual edited concave footprint, not the old rectangle bounds.
+  traceFacilityPolygon(z);
+  ctx.fillStyle='rgba(106,191,143,.22)';ctx.fill();
+  ctx.lineWidth=1.6;ctx.strokeStyle='#a9e6a7';ctx.stroke();
   if(state.labels&&chosen?.id===z.id){
    ctx.font='bold 11px system-ui';ctx.lineWidth=3;ctx.strokeStyle='#152d28';
    ctx.strokeText(z.name,px,py,Math.min(w+9,130));
@@ -1913,6 +1913,7 @@ canvas.addEventListener('click',e=>{
  const arbora=facilities.find(f=>f.id==='arbora_sector');
  const canPickArbora=arbora?.macroZones?.length&&(chosen?.id===arbora.id||chosen?.parentId===arbora.id||chosen?.containedIn===arbora.id||chosen?.mapDisplayParentId);
  const arboraMacro=canPickArbora?arbora.macroZones.find(z=>
+    z.footprint?.length>=3?pointInsideFacility(z,wx,wy):
     Math.abs(wx-z.x)<=z.w/2&&Math.abs(wy-z.y)<=z.h/2):null;
  if(arboraMacro){
   chosen={...arboraMacro,type:'nature',parentId:'arbora_sector',compoundChild:true};
