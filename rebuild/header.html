@@ -13,9 +13,10 @@ header{position:sticky;top:0;z-index:10;background:#0d202cee;border-bottom:1px s
 .header-row{display:flex;align-items:center;gap:6px;min-width:0}
 .logo{font-size:13px;font-weight:850;color:#c0eaf0;letter-spacing:1px;flex:none}
 .header-label{font-size:12px;font-weight:700;color:var(--muted);flex:none}
-.title-stack{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;justify-content:center;line-height:1.05}
-.map-name{font-size:9px;color:var(--muted);font-weight:650;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.floor-name{font-size:14px;font-weight:760;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.root-picker{flex:1;min-width:0;display:flex;align-items:center;gap:7px}
+.root-picker label{flex:none;font-size:11px;font-weight:700;color:#b6cbd2}
+.root-picker select{width:100%;max-width:400px;min-width:0;height:28px;background:rgba(24,53,68,.75);color:#e6f4f7;border:1px solid #54798a;border-radius:7px;padding:3px 7px;font-size:12px;font-weight:700}
+.root-picker select:focus-visible{outline:2px solid #8bd6d8;outline-offset:1px}
 .menu-wrap{position:relative;flex:none}
 .menu-trigger{min-width:76px;height:28px;background:#17333f;border:1px solid #567a8d;border-radius:7px;padding:3px 8px;font-size:12px;white-space:nowrap;font-weight:700}
 .menu-trigger[aria-expanded="true"]{border-color:var(--accent);background:#1a4654}
@@ -47,7 +48,7 @@ main{max-width:1240px;margin:0 auto;padding:5px clamp(10px,3vw,24px) 16px}
 .viewport .kind{font-size:12px;font-weight:700;letter-spacing:.08em;color:#8acbd0}
 .note{font-size:12px;color:var(--muted);line-height:1.5}
 #error{color:#ffc1ba}
-@media(max-width:500px){.header-label{font-size:11px}.shell{grid-template-rows:31px 29px;gap:2px}.segment-scroll{display:none}.view-select{display:block}.logo{font-size:12px}.floor-name{font-size:13px}.menu-trigger{min-width:68px;padding:3px 6px}.map-name{font-size:9px}}
+@media(max-width:500px){.header-label{font-size:11px}.shell{grid-template-rows:31px 29px;gap:2px}.segment-scroll{display:none}.view-select{display:block}.logo{font-size:12px}.root-picker{gap:5px}.root-picker label{font-size:10px}.root-picker select{height:27px;font-size:11px}.menu-trigger{min-width:68px;padding:3px 6px}}
 
 /* Full-height read-only map area; header stays exactly two rows. */
 main{max-width:none;padding:0}
@@ -57,8 +58,10 @@ main{max-width:none;padding:0}
 .map-zoom{position:absolute;top:10px;right:10px;z-index:3;display:flex;gap:4px;background:rgba(6,21,30,.83);border:1px solid #4a7382;border-radius:9px;padding:4px;align-items:center}
 .map-zoom button{background:#1a3a49;border:1px solid #476a77;border-radius:6px;min-width:29px;height:29px;font-size:16px;color:#eaf7fa;padding:2px 6px}
 .map-zoom .zoom-percent{font-size:11px;color:#c9dce2;min-width:38px;text-align:center}
-.map-hint{position:absolute;top:11px;left:11px;max-width:calc(100% - 190px);z-index:2;color:#9cc6d0;background:rgba(7,22,31,.7);border-radius:7px;padding:5px 8px;font-size:11px;pointer-events:none}
-.map-detail{position:absolute;top:43px;left:10px;width:min(300px,72vw);max-height:min(55vh,500px);z-index:4;overflow-y:auto;border:1px solid rgba(135,186,199,.61);border-radius:10px;background:rgba(10,28,39,.82);padding:12px;box-shadow:0 10px 30px #0007;backdrop-filter:blur(4px)}
+.map-title-chip{position:absolute;top:9px;left:10px;max-width:calc(100% - 155px);z-index:3;background:rgba(8,29,40,.53);border:1px solid rgba(117,171,186,.46);color:#f0f8f9;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none;text-shadow:0 1px 3px #000a}
+.map-hint{position:absolute;top:44px;left:11px;max-width:calc(100% - 190px);z-index:2;color:#c1dbe2;background:rgba(7,22,31,.72);border-radius:7px;padding:5px 8px;font-size:11px;pointer-events:none}
+.map-hint[hidden]{display:none}
+.map-detail{position:absolute;top:44px;left:10px;width:min(300px,72vw);max-height:min(55vh,500px);z-index:4;overflow-y:auto;border:1px solid rgba(135,186,199,.61);border-radius:10px;background:rgba(10,28,39,.82);padding:12px;box-shadow:0 10px 30px #0007;backdrop-filter:blur(4px)}
 .map-detail[hidden],.legend-footer[hidden]{display:none}
 .detail-top{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
 .detail-top h2{font-size:15px;line-height:1.4;margin:0;font-weight:750}
@@ -78,7 +81,8 @@ main{max-width:none;padding:0}
 @media(max-width:500px){
  .viewport{height:calc(100dvh - 65px)}
  .map-detail{width:min(272px,75vw);max-height:48vh;top:41px;padding:10px}
- .map-hint{font-size:10px;max-width:calc(100% - 168px);top:8px;left:7px}
+ .map-title-chip{font-size:11px;top:7px;left:7px;max-width:calc(100% - 143px);padding:5px 8px}
+ .map-hint{font-size:10px;max-width:calc(100% - 168px);top:39px;left:7px}
  .map-zoom{top:7px;right:6px;padding:3px}
  .map-zoom button{width:26px;min-width:26px;height:28px}
  .legend-footer{max-height:111px;padding:4px 7px}
@@ -88,16 +92,16 @@ main{max-width:none;padding:0}
 <body>
 <header>
  <div class="shell">
-  <div class="header-row" aria-label="マップ名と現在の階層">
+  <div class="header-row" aria-label="大マップ選択とマップメニュー">
    <span class="logo" aria-hidden="true">AA</span>
-   <div class="title-stack" aria-live="polite">
-    <div id="map-name" class="map-name">マップ名</div>
-    <div id="floor-name" class="floor-name">階層を読み込み中</div>
+   <div class="root-picker">
+    <label for="big-map-select">大マップ</label>
+    <select id="big-map-select" aria-label="大マップを選択"></select>
    </div>
    <div class="menu-wrap" id="map-menu">
     <button type="button" id="map-menu-button" class="menu-trigger" aria-haspopup="true" aria-controls="map-menu-popover" aria-expanded="false">☰ マップ</button>
     <div id="map-menu-popover" class="menu-popover" hidden>
-     <div class="menu-heading">マップ → 大枠 → 中枠（選択・展開）</div>
+     <div class="menu-heading">表示中のマップ：大枠 → 中枠</div>
      <div id="map-menu-list" class="menu-list" role="group" aria-label="マップ階層一覧"></div>
      <div class="menu-heading">表示設定</div>
      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
@@ -105,8 +109,8 @@ main{max-width:none;padding:0}
     </div>
    </div>
   </div>
-  <nav class="header-row" aria-label="表示方向と階層の切替">
-   <span class="header-label" aria-hidden="true">表示</span>
+  <nav class="header-row" aria-label="大マップ内のマップを選択">
+   <span class="header-label" aria-hidden="true">マップ</span>
    <div class="segment-scroll"><div id="view-tabs" class="segments"></div></div>
    <select id="view-select" class="view-select" aria-label="表示方向・階層を選択"></select>
   </nav>
@@ -115,7 +119,8 @@ main{max-width:none;padding:0}
 <main>
  <section class="viewport" id="viewport" aria-label="船体と階層マップ">
   <canvas id="map-canvas" aria-label="地図をドラッグで移動、ホイールやボタンで拡大縮小。タップして区画情報を選択"></canvas>
-  <div class="map-hint" id="map-hint" role="status">表示対象を読み込み中…</div>
+  <div class="map-title-chip" id="current-map-title" aria-live="polite">マップを読み込み中…</div>
+  <div class="map-hint" id="map-hint" role="status" hidden></div>
   <div class="map-zoom" aria-label="マップの拡大縮小">
    <button type="button" id="zoom-out" title="縮小">−</button>
    <span class="zoom-percent" id="zoom-label">100%</span>
@@ -136,7 +141,7 @@ main{max-width:none;padding:0}
  </section>
 </main>
 
-<script src="./map-viewer.js?v=map-tree-v7"></script>
+<script src="./map-viewer.js?v=map-layout-v8"></script>
 <script>
 (()=>{
 'use strict';
@@ -224,8 +229,9 @@ function renderMapTree(){
  const container=$('map-menu-list');
  if(!container)return;
  container.replaceChildren();
- if(!roots.length)return;
- function item({key,label,category,depth=0,expanded,hasChildren=false,active=false,onClick}){
+ const active=nodes.get(selected);
+ if(!active)return;
+ function item({label,category,depth=0,expanded,hasChildren=false,active=false,onClick}){
   const button=document.createElement('button');button.type='button';button.className='map-tree-row';
   button.style.paddingLeft=(8+depth*14)+'px';
   button.setAttribute('aria-current',String(active));
@@ -238,63 +244,40 @@ function renderMapTree(){
   if(active)button.classList.add('map-tree-active');
   button.addEventListener('click',onClick);
   container.append(button);
-  return button;
+ }
+ function message(msg){
+  const e=document.createElement('div');e.className='map-tree-status';
+  e.textContent=msg;container.append(e);
  }
  function toggle(key){if(treeExpanded.has(key))treeExpanded.delete(key);else treeExpanded.add(key)}
- function message(text){const e=document.createElement('div');e.className='map-tree-status';e.textContent=text;container.append(e)}
- for(const root of roots){
-  // The root is data context (ship, town, world, etc.), not a fixed UI category.
-  // Start selectable hierarchy from "マップ"; projection switches stay in header.
-  const nestedMaps=children(root.id);
-  const mapChoices=nestedMaps.length?(root.source?[root,...nestedMaps]:nestedMaps):[root];
-  for(const floor of mapChoices){
-   const key='floor:'+floor.id,opened=treeExpanded.has(key);
-   item({key,label:floor.name,category:'マップ',depth:0,expanded:opened,hasChildren:true,
-    active:selected===floor.id&&!selectedObjectId,
-    onClick:()=>{
-     toggle(key);
-     if(selected!==floor.id)select(floor.id,null);
-     else renderMapTree();
+ const hierarchy=floorStructures.get(active.id);
+ if(!hierarchy){
+  message(floorLoadErrors.has(active.id)?
+   '読み込み失敗：'+floorLoadErrors.get(active.id):
+   active.source?'配置データを読み込み中…':'このマップには区画データがありません');
+  return;
+ }
+ if(!hierarchy.large.length){
+  message('このマップの大枠は未登録です');return;
+ }
+ // Menu scope is the ACTIVE map only: no root entry and no floor/map entries.
+ for(const large of hierarchy.large){
+  const key='large:'+active.id+':'+large.id;
+  const opened=treeExpanded.has(key);
+  item({label:large.name,category:'大枠',depth:0,expanded:opened,
+   hasChildren:large.children.length>0,active:selectedObjectId===large.id,onClick:()=>{
+    if(large.children.length)toggle(key);
+    focusMapItem(active.id,large.id);
+   }});
+  if(!opened)continue;
+  for(const mid of large.children){
+   item({label:mid.name,category:'中枠',depth:1,
+    active:selectedObjectId===mid.id,onClick:()=>{
+     focusMapItem(active.id,mid.id);closeMenu();
     }});
-   if(!opened)continue;
-   const hierarchy=floorStructures.get(floor.id);
-   if(!hierarchy){
-    message(floorLoadErrors.has(floor.id)?
-     '読み込み失敗：'+floorLoadErrors.get(floor.id):
-     selected===floor.id?'配置データを読み込み中…':'階層を選択すると大枠が表示されます');
-    continue;
-   }
-   if(!hierarchy.large.length&&!hierarchy.unassigned.length){message('区画は未登録です');continue}
-   for(const large of hierarchy.large){
-    const groupKey='large:'+floor.id+':'+large.id,groupOpen=treeExpanded.has(groupKey);
-    const hasChildren=large.children.length>0;
-    item({key:groupKey,label:large.name,category:'大枠',depth:1,
-     expanded:groupOpen,hasChildren,active:selected===floor.id&&selectedObjectId===large.id,
-     onClick:()=>{
-      if(hasChildren)toggle(groupKey);
-      focusMapItem(floor.id,large.id);
-      if(!hasChildren)closeMenu();
-     }});
-    if(!groupOpen||!hasChildren)continue;
-    for(const mid of large.children){
-     item({key:'medium:'+floor.id+':'+mid.id,label:mid.name,category:'中枠',depth:2,
-      active:selected===floor.id&&selectedObjectId===mid.id,
-      onClick:()=>{focusMapItem(floor.id,mid.id);closeMenu()}});
-    }
-   }
-   // Unknown memberships are clearly separated, never guessed from proximity.
-   if(hierarchy.unassigned.length){
-    const key='unassigned:'+floor.id,opened=treeExpanded.has(key);
-    item({key,label:'所属未設定の施設 ('+hierarchy.unassigned.length+')',
-     category:'未分類',depth:1,hasChildren:true,expanded:opened,onClick:()=>{toggle(key);renderMapTree()}});
-    if(opened)for(const f of hierarchy.unassigned){
-     item({key:'loose:'+floor.id+':'+f.id,label:f.name,category:'施設',depth:2,
-      active:selected===floor.id&&selectedObjectId===f.id,
-      onClick:()=>{focusMapItem(floor.id,f.id);closeMenu()}});
-    }
-   }
   }
  }
+
 }
 function focusMapItem(floorId,id){
  if(selected!==floorId){
@@ -308,6 +291,12 @@ function focusMapItem(floorId,id){
 function render(){
  const root=activeRoot(),active=nodes.get(selected);
  if(!root||!active)return;
+ const rootSelect=$('big-map-select');rootSelect.replaceChildren();
+ for(const r of roots){
+  const option=document.createElement('option');option.value=r.id;option.textContent=r.name;
+  rootSelect.append(option);
+ }
+ rootSelect.value=root.id;
  renderMapTree();
  const options=availableViews(root),key=selectedKey(),tabs=$('view-tabs'),viewPicker=$('view-select');
  tabs.replaceChildren();viewPicker.replaceChildren();
@@ -319,11 +308,10 @@ function render(){
   const o=document.createElement('option');o.value=v.key;o.textContent=v.name;viewPicker.append(o);
  }
  viewPicker.value=key;
- $('map-name').textContent=root.name;
  const displayName=active.id===root.id?
   (options.find(v=>v.key===root.id+'::'+viewId)?.displayName||'船体全体'):active.name;
- $('floor-name').textContent=displayName;
- $('floor-name').title=displayName;
+ $('current-map-title').textContent=displayName;
+ $('current-map-title').title=displayName;
  $('view-kind').textContent=active.id===root.id?(viewId==='side'?'船体全域・側面':'船体全域・上面'):'階層マップ';
  $('view-name').textContent=active.id===root.id?root.name+'｜'+displayName:active.name;
  $('view-description').textContent=active.id===root.id?
@@ -362,6 +350,10 @@ document.addEventListener('pointerdown',e=>{
 });
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape')closeMenu();
+});
+$('big-map-select').addEventListener('change',e=>{
+ if(nodes.has(e.target.value))select(e.target.value,'top');
+ closeMenu();
 });
 $('view-select').addEventListener('change',e=>{
  const v=availableViews(activeRoot()).find(item=>item.key===e.target.value);
