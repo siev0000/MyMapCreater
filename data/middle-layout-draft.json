@@ -2232,7 +2232,7 @@
           0
         ],
         [
-          -990,
+          -950,
           0
         ]
       ],
@@ -2990,7 +2990,8 @@
           "middle_cargo_tunnel"
         ],
         "cargoLiftGate": "candidate_only",
-        "status": "pending_structural_grade_separation"
+        "status": "pending_structural_grade_separation",
+        "purpleEndClearance": "Purple passage terminates at X=-950, leaving 50m to Arbora transport-notch rear wall X=-1000 before 48m corridor half-width."
       }
     },
     "layoutReflection": "2026-11-08: 中層B新案を実施設座標・道路・タウンラボ2系統へ反映。Notion未変更。"
