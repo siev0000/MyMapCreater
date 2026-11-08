@@ -8,7 +8,7 @@
     "section": "6.2-6.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。",
+  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。 計画線は貨物専用ルートの仮敷設であり、交通ゲートは未承認。",
   "facilities": [
     {
       "id": "middle_terminal",
@@ -2434,13 +2434,13 @@
             "standard_fuel_factory",
             "plant_oil_processing"
           ],
-          "status": "draft_functional_group_not_single_building",
           "bounds": {
-            "xMin": -1400,
-            "xMax": -450,
+            "xMin": -1235,
+            "xMax": -285,
             "yMin": 390,
             "yMax": 790
-          }
+          },
+          "status": "B_layout_factory_group_geometry_not_one_building"
         },
         {
           "id": "processing_port",
@@ -2450,13 +2450,13 @@
             "fiber_resin_processing",
             "middle_material_processing"
           ],
-          "status": "draft_functional_group_not_single_building",
           "bounds": {
-            "xMin": -1480,
-            "xMax": -575,
-            "yMin": -690,
-            "yMax": -390
-          }
+            "xMin": -1230,
+            "xMax": -305,
+            "yMin": -720,
+            "yMax": -410
+          },
+          "status": "B_layout_factory_group_geometry_not_one_building"
         }
       ],
       "cargoInspectionId": "middle_cargo_inspection",
@@ -2467,14 +2467,15 @@
         "middle_material_processing",
         "middle_cargo_inspection"
       ],
-      "natureGapsProvisionalM": 20,
+      "natureGapsProvisionalM": null,
       "openIssues": [
         "アルボラ区とコアシェル生活圏の詳細な境界",
         "工業加工帯と自然区の環境・防火・搬送隔壁",
         "旧工業幹線・貨物トンネル・アルボラ大通りの経路引直し",
         "船殻保守区・構造柱との詳細な実寸離隔"
       ],
-      "note": "現行GitHub配置案の簡易矩形で自然区と加工施設4件の重複を解消。施設内の温室・受付・作戦室は変更なし。通行可能な道路は今の段階では確定しない。"
+      "note": "中層B案の正式な検討用座標は facilities、arbora_sector.footprint と stage1Skeleton.efficiencyFirst を参照。",
+      "status": "superseded_by_actual_B_macro_geometry"
     },
     "revisedAt": "2026-11-08",
     "phase": 1,
@@ -2560,56 +2561,76 @@
         "cargoFlowIndicative": [
           [
             [
-              -760,
-              0
+              -985,
+              590
             ],
             [
-              -520,
-              0
+              -745,
+              590
             ],
             [
-              -375,
-              0
+              -485,
+              600
             ],
             [
-              -250,
-              0
+              -485,
+              420
+            ],
+            [
+              -500,
+              300
+            ],
+            [
+              -450,
+              100
+            ],
+            [
+              -440,
+              -75
             ]
           ],
           [
             [
-              -800,
-              615
+              -1030,
+              -560
             ],
             [
-              -520,
-              615
+              -800,
+              -560
+            ],
+            [
+              -530,
+              -570
+            ],
+            [
+              -530,
+              -420
             ],
             [
               -500,
-              280
+              -300
             ],
             [
-              -375,
-              0
+              -440,
+              -185
+            ],
+            [
+              -440,
+              -75
             ]
           ],
           [
             [
-              -800,
-              -615
+              -440,
+              -75
             ],
             [
-              -520,
-              -615
+              -355,
+              -75
             ],
             [
-              -500,
-              -280
-            ],
-            [
-              -375,
-              0
+              -270,
+              -75
             ]
           ]
         ],
