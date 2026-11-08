@@ -361,6 +361,27 @@ function create(opts){
    R(.1,.08,.8,.84,"#446a7c");
    R(.2,.13,.6,.18,"#9ab9c6",null);
    R(.15,.4,.7,.43,"#658497");
+  }else if(kind==="charging_station"){
+   // Charging cradle: docking rails, charging port and central connector.
+   R(.12,.12,.14,.76,"#537b8a");R(.74,.12,.14,.76,"#537b8a");
+   R(.32,.21,.36,.57,"#264d5b");
+   circle(.5,.47,.14,"#6ebdc5");
+   ctx.strokeStyle="#d1e8d5";ctx.lineWidth=1.8/scale();
+   line(x+w*.46,y+h*.36,x+w*.39,y+h*.51);
+   line(x+w*.39,y+h*.51,x+w*.53,y+h*.48);
+   line(x+w*.53,y+h*.48,x+w*.46,y+h*.63);
+  }else if(kind==="fuel_dispenser"){
+   // Physical filler nozzle and reservoir, kept distinct from charge sockets.
+   R(.16,.12,.52,.76,"#385a65");R(.26,.22,.32,.22,"#6395a6");
+   R(.73,.29,.12,.38,"#9da8a0");
+   ctx.strokeStyle="#e5be79";ctx.lineWidth=1.8/scale();
+   line(x+w*.68,y+h*.39,x+w*.78,y+h*.39);
+   line(x+w*.78,y+h*.39,x+w*.78,y+h*.6);
+  }else if(kind==="terminal_device"){
+   // Fixed terminal: display and tactile control buttons.
+   R(.1,.08,.8,.84,"#1b4554");
+   R(.2,.2,.6,.42,"#3c8094");
+   for(const fx of [.34,.5,.66])circle(fx,.76,.045,"#b0d0cd",null);
   }else if(kind==="storage_container"){
    for(const f of [.2,.4,.6,.8])line(x+w*f,y,x+w*f,y+h);
   }else if(kind==="stair"){
