@@ -230,6 +230,36 @@ function create(opts){
   const root=scene?.objects.find(o=>o.id===viewRootId);
   return root?{id:root.id,name:root.name||root.id,displayLevel:root.displayLevel}:null;
  }
+ function getViewRootPath(){
+  if(!scene||!viewRootId)return [];
+  const byId=new Map(scene.objects.map(o=>[o.id,o]));
+  const chain=[],seen=new Set();
+  let current=byId.get(viewRootId);
+  while(current&&!seen.has(current.id)){
+   seen.add(current.id);
+   chain.unshift({id:current.id,name:current.name||current.id,displayLevel:current.displayLevel});
+   current=byId.get(current.parentId);
+  }
+  return chain;
+ }
+ function navigateToItem(id){
+  if(!scene)return false;
+  const byId=new Map(scene.objects.map(o=>[o.id,o])),target=byId.get(id);
+  if(!target)return false;
+  const path=[],seen=new Set();
+  let current=target;
+  while(current&&!seen.has(current.id)){
+   seen.add(current.id);path.unshift(current);current=byId.get(current.parentId);
+  }
+  // Reopen the nearest hierarchy container first, not all map levels at once.
+  viewRootId=null;
+  const focused=path.findLast(o=>o.parentId&&o.displayLevel>=initialDisplayLevel()&&
+    path.some(child=>child.parentId===o.id))||null;
+  if(focused)viewRootId=focused.id;
+  fitToObject(focused||target);
+  showDetails(target);
+  return true;
+ }
  function enterItem(id=selected?.id){
   const target=scene?.objects.find(o=>o.id===id);
   if(!target||!scene.objects.some(o=>o.parentId===target.id))return false;
@@ -704,7 +734,7 @@ function create(opts){
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
+ return{show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
   getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
