@@ -331,7 +331,7 @@ function create(opts){
    if(seen.has(o.id))return null;
    const next=new Set(seen);next.add(o.id);
    return{id:o.id,name:o.name||o.id,parentId:o.parentId||null,
-    displayLevel:o.displayLevel??null,
+    floorId:o.floorId||null,displayLevel:o.displayLevel??null,
     children:(children.get(o.id)||[]).map(c=>build(c,next)).filter(Boolean)};
   };
   return{roots:(children.get(null)||[]).map(o=>build(o)).filter(Boolean)};
