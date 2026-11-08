@@ -371,40 +371,53 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     ctx.restore();
   }
   function editorMiddleFrames(){
- if(active!=="middle"||kind!=="facility")return;
- const parent=selectedItem();
- if(!parent?.mediumZones?.length)return;
+ if(active!=="middle")return;
+ const parent=kind==="facility"&&selectedItem()?.mediumZones?.length?selectedItem():null;
+ const medium=parent?.mediumZones?.find(z=>z.id===interiorPreview?.mediumId)||null;
  ctx.save();ctx.lineJoin="round";
- for(const zone of parent.mediumZones){
-  const r=rect(zone);
-  ctx.fillStyle=interiorPreview?.mediumId===zone.id?"rgba(255,233,161,.23)":"rgba(222,225,229,.09)";
-  ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
-  ctx.lineWidth=interiorPreview?.mediumId===zone.id?3:1.8;
-  ctx.strokeStyle=interiorPreview?.mediumId===zone.id?"#fff3af":"#d8e1e5";
-  ctx.setLineDash(interiorPreview?.mediumId===zone.id?[]:[6,4]);
-  ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+ for(const district of current().facilities.filter(f=>f.mediumZones?.length)){
+  for(const zone of district.mediumZones){
+   if(district.id===parent?.id&&zone.id===medium?.id)continue;
+   const r=rect(zone);
+   ctx.fillStyle="rgba(222,225,229,.085)";
+   ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+   ctx.lineWidth=1.65;ctx.strokeStyle="#d8e1e5";ctx.setLineDash([6,4]);
+   ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+  }
  }
- const medium=parent.mediumZones.find(z=>z.id===interiorPreview?.mediumId);
  if(medium)for(const z of medium.smallZones||[]){
   const r=rect(z);
-  ctx.fillStyle=interiorPreview?.smallId===z.id?"rgba(255,237,166,.25)":"rgba(234,232,230,.06)";
+  ctx.fillStyle=interiorPreview?.smallId===z.id?"rgba(255,237,166,.25)":"rgba(234,232,230,.11)";
   ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
-  ctx.lineWidth=interiorPreview?.smallId===z.id?3:1.3;
+  ctx.lineWidth=interiorPreview?.smallId===z.id?3:1.5;
   ctx.strokeStyle=interiorPreview?.smallId===z.id?"#fff3af":"#c2cbd0";ctx.setLineDash([]);
   ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
  }
- if(state.labels&&interiorPreview){
-  const zone=medium?.smallZones?.find(z=>z.id===interiorPreview.smallId)||medium;
-  if(zone){
-   const p=worldToPixel(zone.x,zone.y);
-   ctx.font="bold 15px system-ui";ctx.textAlign="center";ctx.lineWidth=4;
-   ctx.strokeStyle="#12222b";ctx.strokeText(zone.name,p.px,p.py);
-   ctx.fillStyle="#fff4cf";ctx.fillText(zone.name,p.px,p.py);
+ if(state.labels){
+  const txt=(text,x,y,size,color)=>{
+   const p=worldToPixel(x,y);
+   ctx.font="bold "+size+"px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.lineWidth=size>14?4.5:3;ctx.strokeStyle="#12222b";ctx.strokeText(text,p.px,p.py);
+   ctx.fillStyle=color;ctx.fillText(text,p.px,p.py);
+  };
+  for(const district of current().facilities.filter(f=>f.mediumZones?.length)){
+   if(district.id===parent?.id)continue;
+   const [x,y]=district.mapLabelPosition||[district.x,district.y];
+   txt(district.districtMapLabel||district.name,x,y,16,"#fff4d7");
+  }
+  if(medium){
+   for(const z of medium.smallZones||[])
+    txt(z.name,z.x,z.y,11,interiorPreview?.smallId===z.id?"#fff4a4":"#ebf0f1");
+  }else if(parent){
+   for(const z of parent.mediumZones)txt(z.name,z.x,z.y,12,"#edf2f5");
+  }else{
+   const selected=kind==="facility"?selectedItem():null;
+   if(selected&&!selected.mediumZones?.length)
+    txt(selected.name,selected.x,selected.y,15,"#fff4d7");
   }
  }
  ctx.restore();
 }
-
   function draw(){
     ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
     drawSortieRestrictions();
@@ -516,14 +529,6 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
       }
       ctx.restore();
-    }
-    if(active==="middle"&&state.labels&&!interiorPreview){
-      const picked=selectedItem();
-      if(picked){const p=worldToPixel(picked.x,picked.y);
-       ctx.save();ctx.font="bold 16px system-ui";ctx.textAlign="center";
-       ctx.strokeStyle="#12222b";ctx.lineWidth=4;ctx.strokeText(picked.name,p.px,p.py);
-       ctx.fillStyle="#fff4d7";ctx.fillText(picked.name,p.px,p.py);ctx.restore();
-      }
     }
     const item=selectedItem();
     if(item&&selection?.kind===kind){
