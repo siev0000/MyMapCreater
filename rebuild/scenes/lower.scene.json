@@ -61,7 +61,6 @@
     }
   ],
   "settings": {
-    "routeMode": "main",
     "selectionZoom": {
       "large": 1.45,
       "medium": 2.25
@@ -71,6 +70,25 @@
       "fontSize": 11.5,
       "stroke": "#0b1d27",
       "strokeWidth": 3.3
+    },
+    "visibilityGroups": {
+      "routes": {
+        "default": "main",
+        "options": [
+          {
+            "id": "main",
+            "label": "主要のみ"
+          },
+          {
+            "id": "all",
+            "label": "全案を表示"
+          },
+          {
+            "id": "off",
+            "label": "非表示"
+          }
+        ]
+      }
     }
   },
   "objects": [
