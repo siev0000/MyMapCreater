@@ -310,13 +310,23 @@ function create(opts){
    let n=o,ids=[];while(n){ids.unshift(n.id);n=lookup.get(n.parentId)}
    return ids;
   };
-  if(selected){
-   const descendants=candidates.filter(o=>ancestors(o).includes(selected.id)&&o.id!==selected.id);
-   if(descendants.length)return descendants.sort((a,b)=>ancestors(b).length-ancestors(a).length)[0];
-  }
-  const large=candidates.filter(o=>o.level==="large");
-  if(large.length)return large.sort((a,b)=>layerRank(b)-layerRank(a))[0];
-  return candidates[candidates.length-1];
+  // Choose the most specific visible object. Never force a large frame over
+  // its nested rooms; declared selectable:false backgrounds are filtered above.
+  // Children of the current selection remain the first navigation target.
+  const descendants=selected?candidates.filter(o=>ancestors(o).includes(selected.id)&&o.id!==selected.id):[];
+  const pool=descendants.length?descendants:candidates;
+  const depth=o=>ancestors(o).length;
+  const area=o=>{
+   const g=o.geometry||{};
+   if(g.type==="rect")return Math.abs(g.width*g.height);
+   if(g.type==="circle")return Math.PI*g.radius*g.radius;
+   if(g.type==="ring")return Math.PI*(g.outerRadius*g.outerRadius-g.innerRadius*g.innerRadius);
+   if(g.type==="polygon"&&g.points?.length>=3)
+    return Math.abs(g.points.reduce((sum,p,i)=>{const q=g.points[(i+1)%g.points.length];return sum+p[0]*q[1]-q[0]*p[1]},0))/2;
+   return Infinity;
+  };
+  return pool.map((o,i)=>({o,i})).sort((a,b)=>
+   depth(b.o)-depth(a.o)||area(a.o)-area(b.o)||layerRank(b.o)-layerRank(a.o)||b.i-a.i)[0].o;
  }
  function modeConfig(group){
   const declared=scene?.settings?.visibilityGroups?.[group]||{};
@@ -485,7 +495,7 @@ function create(opts){
   canvas.setPointerCapture(e.pointerId);
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   dragged=false;dragStart={x,y};
-  if(editMode&&selected&&selected.selectable!==false&&
+  if(editMode&&selected&&
    contains(selected,...worldAt(x,y),8/scale())){
    objectDrag={id:selected.id,x,y,moved:false};
    if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
