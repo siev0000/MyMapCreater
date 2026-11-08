@@ -15,7 +15,7 @@ const specs=[
 ];
 const names=new Map(specs),cache=new Map();
 let current="README.md",priorFocus=null,request=0;
-const modal=$("spec-modal"),content=$("spec-content"),picker=$("spec-picker"),title=$("spec-title"),status=$("spec-status");
+const modal=$("spec-modal"),content=$("spec-content"),picker=$("spec-picker"),status=$("spec-status");
 if(!modal||!content||!picker)return;
 for(const [file,label] of specs){const o=document.createElement("option");o.value=file;o.textContent=label;picker.append(o)}
 function elt(tag,text){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e}
@@ -82,7 +82,7 @@ function render(md){
 async function open(file="README.md"){
  if(!names.has(file))file="README.md";
  if(modal.hidden){priorFocus=document.activeElement;modal.hidden=false;document.body.classList.add("spec-open")}
- current=file;picker.value=file;title.textContent=names.get(file);content.replaceChildren();status.textContent="読み込み中…";
+ current=file;picker.value=file;content.replaceChildren();status.textContent="読み込み中…";
  const id=++request;
  try{
   let markdown=cache.get(file);
