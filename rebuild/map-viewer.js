@@ -203,9 +203,8 @@ function create(opts){
   const pxWidth=roadWidthPixels(r)+(selected?.id===r.id?1.5:0);
   ctx.save();ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash([]);
   if(!traceRoad(r)){ctx.restore();return}
-  // The dark casing separates a gray road from colored district boundaries.
-  // Tunnels have hatch marks rather than a dotted road line.
-  ctx.strokeStyle="#26343d";ctx.lineWidth=(pxWidth+2.4)/scale();ctx.stroke();
+  // Roads use one flat gray stroke, without a dark casing.
+  // Tunnels retain a sparse hatch mark; selected roads can highlight.
   ctx.strokeStyle=selected?.id===r.id?"#fff0ac":ROAD_GRAY;
   ctx.lineWidth=pxWidth/scale();ctx.stroke();
   tunnelHatching(r,pxWidth);
