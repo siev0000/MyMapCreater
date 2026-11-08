@@ -93,6 +93,7 @@ main{max-width:none;padding:0}
      <div id="map-menu-list" class="menu-list" role="menu"></div>
      <div class="menu-heading">表示設定</div>
      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
+     <button type="button" id="road-switch" class="menu-settings-button" title="主要のみ → 全案 → 非表示">経路：主要のみ</button>
     </div>
    </div>
   </div>
@@ -127,7 +128,7 @@ main{max-width:none;padding:0}
  </section>
 </main>
 
-<script src="./map-viewer.js"></script>
+<script src="./map-viewer.js?v=middle-routes-v3"></script>
 <script>
 (()=>{
 'use strict';
@@ -136,7 +137,7 @@ const viewer=window.AAMapViewer.create({
  host:$('viewport'),canvas:$('map-canvas'),
  info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
  infoClose:$('detail-close'),legend:$('legend-footer'),legendContent:$('legend-content'),
- legendButton:$('legend-switch'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
+ legendButton:$('legend-switch'),roadButton:$('road-switch'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
  zoomLabel:$('zoom-label'),hint:$('map-hint')
 });
 let nodes=new Map(),roots=[],selected=null,viewId='top';
