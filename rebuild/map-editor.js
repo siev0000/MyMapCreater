@@ -132,6 +132,28 @@ $("editor-grid-save").addEventListener("click",()=>{
  next.settings.editorGrid={spacing:grid.spacing,fraction:grid.fraction,originX:grid.originX,originY:grid.originY};
  if(applyScene(next,state.selectedId))notice("グリッドの座標換算・補助スナップ設定をJSONに反映しました。実寸0.5m/マスです。","success");
 });
+function translateSelectedBy(dx,dy){
+ const current=sceneNow(),root=current?.objects.find(o=>o.id===state.selectedId);
+ if(!root||!Number.isFinite(dx)||!Number.isFinite(dy))return false;
+ if(!dx&&!dy)return true;
+ if(root.interiorSource&&!current.objects.some(o=>o.parentId===root.id)){
+  notice("建物内部を読み込んでから移動してください","error");return false;
+ }
+ const next=copy(current),byId=new Map(next.objects.map(o=>[o.id,o]));
+ const ids=new Set([root.id]);let changed=true;
+ while(changed){changed=false;for(const o of next.objects)
+  if(!ids.has(o.id)&&ids.has(o.parentId)){ids.add(o.id);changed=true}}
+ for(const id of ids){
+  const o=byId.get(id),g=o.geometry||{};
+  if(g.type==="rect"){g.x+=dx;g.y+=dy}
+  else if(g.type==="circle"||g.type==="ring"){g.center[0]+=dx;g.center[1]+=dy}
+  else if(g.points)for(const p of g.points){p[0]+=dx;p[1]+=dy}
+  if(Array.isArray(o.label?.position)){o.label.position[0]+=dx;o.label.position[1]+=dy}
+  if(Array.isArray(o.connection?.fromAnchor)){o.connection.fromAnchor[0]+=dx;o.connection.fromAnchor[1]+=dy}
+  if(Array.isArray(o.connection?.toAnchor)){o.connection.toAnchor[0]+=dx;o.connection.toAnchor[1]+=dy}
+ }
+ return applyScene(next,root.id);
+}
 function renderGeometry(obj){
  const g=obj.geometry||{type:"none"},target=$("geometry-fields");
  target.replaceChildren();
@@ -147,6 +169,15 @@ function renderGeometry(obj){
    const value=gridState.snap&&step>0&&axis!==null
     ?snapPoint(axis===0?[n,0]:[0,n])[axis]
     :gridState.snap&&step>0&&["width","height"].includes(key)?Math.max(step,Math.round(n/step)*step):n;
+   if(["x","y","cx","cy"].includes(key)){
+    const current=sceneNow()?.objects.find(o=>o.id===state.selectedId);
+    const origin=current?.geometry;
+    const oldValue=origin?(key==="x"?origin.x:key==="y"?origin.y:key==="cx"?origin.center?.[0]:origin.center?.[1]):null;
+    if(Number.isFinite(oldValue)){
+     translateSelectedBy(key==="x"||key==="cx"?value-oldValue:0,key==="y"||key==="cy"?value-oldValue:0);
+     return;
+    }
+   }
    changeObject(o=>assign(o.geometry,value));
   });
   root.append(field);return root;
