@@ -1576,6 +1576,28 @@ function drawArboraMacroZones(){
  }
  ctx.restore();
 }
+function drawMiddleDistrictLabels(){
+ if(currentMap!=='middle'||!showProposal||!state.districts||!state.labels)return;
+ const map={core_shell_town:'上位タウン',refine_valley:'上位ラボ・工房',
+  stern_core_shell_town:'下位タウン',stern_refine_lab_district:'下位ラボ・工房'};
+ ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+ for(const f of facilities){
+  if(!map[f.id]||!f.footprint?.length)continue;
+  const bow=f.socialTier==='upper',town=f.type==='town';
+  const [mx,my]=xy(...(f.mapLabelPosition||[f.x,f.y]));
+  ctx.font='bold 21px system-ui';ctx.lineWidth=5;ctx.strokeStyle='#15252e';
+  ctx.strokeText(map[f.id],mx,my);
+  ctx.fillStyle=bow?'#f4fbff':'#fff0dc';ctx.fillText(map[f.id],mx,my);
+  if(view.zoom<.85)continue;
+  ctx.font='bold 13px system-ui';ctx.lineWidth=3.5;
+  ctx.strokeStyle='#12232a';ctx.fillStyle=town?'#eafbe9':'#f6e6ff';
+  for(const z of f.mapDisplaySubzones||[]){
+   const [x,y]=xy(z.x,z.y);
+   ctx.strokeText(z.name,x,y);ctx.fillText(z.name,x,y);
+  }
+ }
+ ctx.restore();
+}
 function draw(){
 if(activeWorldId==='dark_world'){darkWorld.draw();return}
 if(shipView==='side'){drawHullSide();return}
@@ -1613,15 +1635,18 @@ for(const f of [...facilities.filter(f=>f.zoneOutline),...facilities.filter(f=>!
    ctx.strokeStyle=chosen?.id===f.id||chosen?.parentId===f.id?'#f6edb5':'#73c99c';
    ctx.lineWidth=chosen?.id===f.id?4:2.5;ctx.setLineDash([9,6]);ctx.stroke();ctx.setLineDash([]);
   }else if(currentMap==='middle'&&f.socialTier&&state.districts){
-   // A district contains separate buildings; it is not itself one giant building.
-   const bow=f.socialTier==='upper';
+   // Colored land USE districts, not small individual buildings.
+   const bow=f.socialTier==='upper',town=f.type==='town';
    if(f.footprint?.length>=3)traceFacilityPolygon(f);
    else{const w=f.h*.4,h=f.w*.4;ctx.beginPath();ctx.rect(cx-w/2,cy-h/2,w,h);}
-   ctx.fillStyle=bow?'rgba(172,203,228,.10)':'rgba(194,154,106,.12)';
+   ctx.fillStyle=bow
+    ?(town?'rgba(52,148,192,.39)':'rgba(135,98,187,.36)')
+    :(town?'rgba(178,130,66,.38)':'rgba(162,102,119,.37)');
    ctx.fill();
-   ctx.lineWidth=chosen?.id===f.id?3.2:1.8;
-   ctx.strokeStyle=chosen?.id===f.id?'#fff4a9':bow?'#a9e2fb':'#e3b98a';
-   ctx.setLineDash([7,5]);ctx.stroke();ctx.setLineDash([]);
+   ctx.lineWidth=chosen?.id===f.id?4.2:2.6;
+   ctx.strokeStyle=chosen?.id===f.id?'#fff4a9':
+    (bow?(town?'#8eeaff':'#dcc1ff'):(town?'#ffd18c':'#f6b9bd'));
+   ctx.setLineDash(chosen?.id===f.id?[]:[10,5]);ctx.stroke();ctx.setLineDash([]);
   }else{
    // Other unsettled large districts remain symbolic.
    ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);
@@ -1659,8 +1684,9 @@ if(isProtectedDraft&&currentMap!=='middle'&&window.AATerminalInterior){
  window.AATerminalInterior.draw(ctx,xy,facilities[0],{labels:state.labels&&chosen?.id===facilities[0].id,zoom:view.zoom,roads:state.roads,chosen});
 }
 if(isProtectedDraft&&currentMap==='middle')drawCompoundFacilities();
-for(const f of facilities){if(f.ringDistrict||f.areaFrame)continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
-if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false);for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft)continue;let [cx,cy]=xy(...(f.mapLabelPosition||[f.x,f.y]));let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+for(const f of facilities){if(f.ringDistrict||f.areaFrame||(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier))continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
+if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false&&!(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier));for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft)continue;let [cx,cy]=xy(...(f.mapLabelPosition||[f.x,f.y]));let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+if(isProtectedDraft)drawMiddleDistrictLabels();
 if(state.labels&&isProtectedDraft){
  const terminal=facilities[0];
  if(terminal&&(!chosen||chosen.id!==terminal.id)){
