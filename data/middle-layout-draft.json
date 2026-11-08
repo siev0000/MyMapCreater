@@ -112,25 +112,33 @@
             "id": "rest_and_housing",
             "name": "居住・休止",
             "purpose": "個体の休止、停止保管、住居・共有休止設備",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "core_shell_town_mid_rest_and_housing",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "charging_and_supply",
             "name": "充電・燃料・補給",
             "purpose": "充電、燃料・水・空気の供給、簡易診断",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "core_shell_town_mid_charging_and_supply",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "market_and_exchange",
             "name": "市場・交流",
             "purpose": "生活物資や中古部品の販売、情報交換、娯楽・掲示",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "core_shell_town_mid_market_and_exchange",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "basic_care",
             "name": "簡易洗浄・点検",
             "purpose": "日常の洗浄・除塵・軽整備。本格的な修理は専門設備へ",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "core_shell_town_mid_basic_care",
+            "layoutStatus": "draft_medium_frame"
           }
         ],
         "proposedSpecialization": "生活・補給を持つ街区。上位区としての追加機能・居住資格は未設定",
@@ -619,7 +627,176 @@
         }
       ],
       "detailedBuildingCount": "not_set",
-      "layoutReviewNote": "大型の塗りつぶし地区。内側半径330m、外側半径820m。中央の一般・大型機・貨物路は別管理。4棟の工場の個別サイズは保持。"
+      "layoutReviewNote": "大型の塗りつぶし地区。内側半径330m、外側半径820m。中央の一般・大型機・貨物路は別管理。4棟の工場の個別サイズは保持。",
+      "mediumZones": [
+        {
+          "x": 644,
+          "y": 287,
+          "w": 130,
+          "h": 110,
+          "id": "core_shell_town_mid_rest_and_housing",
+          "name": "居住・休止",
+          "detail": "個体の休止、停止保管、住居・共有休止設備",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "core_shell_town_mid_rest_and_housing_small_a",
+              "name": "内部区画A",
+              "x": 612.15,
+              "y": 287,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_rest_and_housing"
+            },
+            {
+              "id": "core_shell_town_mid_rest_and_housing_small_b",
+              "name": "内部区画B",
+              "x": 675.85,
+              "y": 287,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_rest_and_housing"
+            }
+          ]
+        },
+        {
+          "x": 493,
+          "y": 220,
+          "w": 130,
+          "h": 110,
+          "id": "core_shell_town_mid_charging_and_supply",
+          "name": "充電・燃料・補給",
+          "detail": "充電、燃料・水・空気の供給、簡易診断",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "core_shell_town_mid_charging_and_supply_small_a",
+              "name": "内部区画A",
+              "x": 461.15,
+              "y": 220,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_charging_and_supply"
+            },
+            {
+              "id": "core_shell_town_mid_charging_and_supply_small_b",
+              "name": "内部区画B",
+              "x": 524.85,
+              "y": 220,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_charging_and_supply"
+            }
+          ]
+        },
+        {
+          "x": 171,
+          "y": 373,
+          "w": 130,
+          "h": 110,
+          "id": "core_shell_town_mid_market_and_exchange",
+          "name": "市場・交流",
+          "detail": "生活物資や中古部品の販売、情報交換、娯楽・掲示",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "core_shell_town_mid_market_and_exchange_small_a",
+              "name": "内部区画A",
+              "x": 139.15,
+              "y": 373,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_market_and_exchange"
+            },
+            {
+              "id": "core_shell_town_mid_market_and_exchange_small_b",
+              "name": "内部区画B",
+              "x": 202.85,
+              "y": 373,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_market_and_exchange"
+            }
+          ]
+        },
+        {
+          "x": 340,
+          "y": 420,
+          "w": 130,
+          "h": 110,
+          "id": "core_shell_town_mid_basic_care",
+          "name": "簡易洗浄・点検",
+          "detail": "日常の洗浄・除塵・軽整備。本格的な修理は専門設備へ",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "core_shell_town_mid_basic_care_small_a",
+              "name": "内部区画A",
+              "x": 308.15,
+              "y": 420,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_basic_care"
+            },
+            {
+              "id": "core_shell_town_mid_basic_care_small_b",
+              "name": "内部区画B",
+              "x": 371.85,
+              "y": 420,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "core_shell_town_mid_basic_care"
+            }
+          ]
+        }
+      ],
+      "layeredLayout": {
+        "big": "district",
+        "medium": "facility_function_group",
+        "small": "provisional_interior_cell",
+        "defaultDisplay": "big_frames_only",
+        "expandOn": "select_parent",
+        "labelRule": "selected_item_only",
+        "zoneCount": 4,
+        "linkedNamedLabs": [],
+        "caveat": "中枠の位置は仮案。小枠は部屋・設備個数の確定を意味しない"
+      }
     },
     {
       "id": "refine_valley",
@@ -658,37 +835,49 @@
             "id": "repair_diagnosis",
             "name": "機体整備・損傷診断",
             "purpose": "外装洗浄、故障・動力・回路診断、部品交換、除染",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "refine_valley_mid_repair_diagnosis",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "equipment_custom",
             "name": "装備修理・改修",
             "purpose": "武器・外装・補助装備の強化、改造、カスタマイズ",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "refine_valley_mid_equipment_custom",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "private_workshops",
             "name": "個人工房群",
             "purpose": "個人・少人数による専用装備設計、試作、持込装備の改修",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "refine_valley_mid_private_workshops",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "parts_storage",
             "name": "交換部品・工具倉庫",
             "purpose": "交換部品、工具、修復材の保管。燃料・危険物は分離保管",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "refine_valley_mid_parts_storage",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "alchimeria_development",
             "name": "アルキメリア装備開発ラボ",
             "purpose": "既存の装備開発ラボ。研究・設計・試作の拠点",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "existingFacilityId": "alchimeria_lab",
+            "layoutStatus": "existing_building_reference_no_duplicate_frame"
           },
           {
             "id": "prototype_testing",
             "name": "設計・試作・検証",
             "purpose": "装備の設計・試作・性能検査を、他の整備区と接続して行う",
-            "status": "planned_subzone_not_new_building"
+            "status": "planned_subzone_not_new_building",
+            "regionId": "refine_valley_mid_prototype_testing",
+            "layoutStatus": "draft_medium_frame"
           }
         ],
         "proposedSpecialization": "アルキメリア装備開発ラボを含む研究・整備地区",
@@ -1177,7 +1366,217 @@
         }
       ],
       "detailedBuildingCount": "not_set",
-      "layoutReviewNote": "大型の塗りつぶし地区。内側半径330m、外側半径820m。中央の一般・大型機・貨物路は別管理。4棟の工場の個別サイズは保持。"
+      "layoutReviewNote": "大型の塗りつぶし地区。内側半径330m、外側半径820m。中央の一般・大型機・貨物路は別管理。4棟の工場の個別サイズは保持。",
+      "mediumZones": [
+        {
+          "x": 374,
+          "y": -167,
+          "w": 125,
+          "h": 100,
+          "id": "refine_valley_mid_repair_diagnosis",
+          "name": "機体整備・損傷診断",
+          "detail": "外装洗浄、故障・動力・回路診断、部品交換、除染",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "refine_valley",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "refine_valley_mid_repair_diagnosis_small_a",
+              "name": "内部区画A",
+              "x": 343.375,
+              "y": -167,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_repair_diagnosis"
+            },
+            {
+              "id": "refine_valley_mid_repair_diagnosis_small_b",
+              "name": "内部区画B",
+              "x": 404.625,
+              "y": -167,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_repair_diagnosis"
+            }
+          ]
+        },
+        {
+          "x": 430,
+          "y": -327,
+          "w": 125,
+          "h": 100,
+          "id": "refine_valley_mid_equipment_custom",
+          "name": "装備修理・改修",
+          "detail": "武器・外装・補助装備の強化、改造、カスタマイズ",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "refine_valley",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "refine_valley_mid_equipment_custom_small_a",
+              "name": "内部区画A",
+              "x": 399.375,
+              "y": -327,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_equipment_custom"
+            },
+            {
+              "id": "refine_valley_mid_equipment_custom_small_b",
+              "name": "内部区画B",
+              "x": 460.625,
+              "y": -327,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_equipment_custom"
+            }
+          ]
+        },
+        {
+          "x": 226,
+          "y": -491,
+          "w": 125,
+          "h": 100,
+          "id": "refine_valley_mid_private_workshops",
+          "name": "個人工房群",
+          "detail": "個人・少人数による専用装備設計、試作、持込装備の改修",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "refine_valley",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "refine_valley_mid_private_workshops_small_a",
+              "name": "内部区画A",
+              "x": 195.375,
+              "y": -491,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_private_workshops"
+            },
+            {
+              "id": "refine_valley_mid_private_workshops_small_b",
+              "name": "内部区画B",
+              "x": 256.625,
+              "y": -491,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_private_workshops"
+            }
+          ]
+        },
+        {
+          "x": 70,
+          "y": -535,
+          "w": 125,
+          "h": 100,
+          "id": "refine_valley_mid_parts_storage",
+          "name": "交換部品・工具倉庫",
+          "detail": "交換部品、工具、修復材の保管。燃料・危険物は分離保管",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "refine_valley",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "refine_valley_mid_parts_storage_small_a",
+              "name": "内部区画A",
+              "x": 39.375,
+              "y": -535,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_parts_storage"
+            },
+            {
+              "id": "refine_valley_mid_parts_storage_small_b",
+              "name": "内部区画B",
+              "x": 100.625,
+              "y": -535,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_parts_storage"
+            }
+          ]
+        },
+        {
+          "x": 390,
+          "y": -482,
+          "w": 125,
+          "h": 100,
+          "id": "refine_valley_mid_prototype_testing",
+          "name": "設計・試作・検証",
+          "detail": "装備の設計・試作・性能検査を、他の整備区と接続して行う",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "refine_valley",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "refine_valley_mid_prototype_testing_small_a",
+              "name": "内部区画A",
+              "x": 359.375,
+              "y": -482,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_prototype_testing"
+            },
+            {
+              "id": "refine_valley_mid_prototype_testing_small_b",
+              "name": "内部区画B",
+              "x": 420.625,
+              "y": -482,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "refine_valley_mid_prototype_testing"
+            }
+          ]
+        }
+      ],
+      "layeredLayout": {
+        "big": "district",
+        "medium": "facility_function_group",
+        "small": "provisional_interior_cell",
+        "defaultDisplay": "big_frames_only",
+        "expandOn": "select_parent",
+        "labelRule": "selected_item_only",
+        "zoneCount": 5,
+        "linkedNamedLabs": [
+          "alchimeria_lab"
+        ],
+        "caveat": "中枠の位置は仮案。小枠は部屋・設備個数の確定を意味しない"
+      }
     },
     {
       "id": "alchimeria_lab",
@@ -2619,25 +3018,33 @@
             "id": "rest_and_housing",
             "name": "居住・休止",
             "purpose": "個体の休止、停止保管、住居・共有休止設備",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "stern_core_shell_town_mid_rest_and_housing",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "charging_and_supply",
             "name": "充電・燃料・補給",
             "purpose": "充電、燃料・水・空気の供給、簡易診断",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "stern_core_shell_town_mid_charging_and_supply",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "market_and_exchange",
             "name": "市場・交流",
             "purpose": "生活物資や中古部品の販売、情報交換、娯楽・掲示",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "stern_core_shell_town_mid_market_and_exchange",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "basic_care",
             "name": "簡易洗浄・点検",
             "purpose": "日常の洗浄・除塵・軽整備。本格的な修理は専門設備へ",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "stern_core_shell_town_mid_basic_care",
+            "layoutStatus": "draft_medium_frame"
           }
         ],
         "proposedSpecialization": "広い混合街区。小規模工房・加工施設が点在するが、貨物は公共通路と分離",
@@ -2660,7 +3067,176 @@
           "zoneRole": "outer_district_functions_not_buildings"
         }
       ],
-      "detailedBuildingCount": "not_set"
+      "detailedBuildingCount": "not_set",
+      "mediumZones": [
+        {
+          "x": -444,
+          "y": 548,
+          "w": 130,
+          "h": 110,
+          "id": "stern_core_shell_town_mid_rest_and_housing",
+          "name": "居住・休止",
+          "detail": "個体の休止、停止保管、住居・共有休止設備",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_core_shell_town_mid_rest_and_housing_small_a",
+              "name": "内部区画A",
+              "x": -475.85,
+              "y": 548,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_rest_and_housing"
+            },
+            {
+              "id": "stern_core_shell_town_mid_rest_and_housing_small_b",
+              "name": "内部区画B",
+              "x": -412.15,
+              "y": 548,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_rest_and_housing"
+            }
+          ]
+        },
+        {
+          "x": -340,
+          "y": 420,
+          "w": 130,
+          "h": 110,
+          "id": "stern_core_shell_town_mid_charging_and_supply",
+          "name": "充電・燃料・補給",
+          "detail": "充電、燃料・水・空気の供給、簡易診断",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_core_shell_town_mid_charging_and_supply_small_a",
+              "name": "内部区画A",
+              "x": -371.85,
+              "y": 420,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_charging_and_supply"
+            },
+            {
+              "id": "stern_core_shell_town_mid_charging_and_supply_small_b",
+              "name": "内部区画B",
+              "x": -308.15,
+              "y": 420,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_charging_and_supply"
+            }
+          ]
+        },
+        {
+          "x": -171,
+          "y": 373,
+          "w": 130,
+          "h": 110,
+          "id": "stern_core_shell_town_mid_market_and_exchange",
+          "name": "市場・交流",
+          "detail": "生活物資や中古部品の販売、情報交換、娯楽・掲示",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_core_shell_town_mid_market_and_exchange_small_a",
+              "name": "内部区画A",
+              "x": -202.85,
+              "y": 373,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_market_and_exchange"
+            },
+            {
+              "id": "stern_core_shell_town_mid_market_and_exchange_small_b",
+              "name": "内部区画B",
+              "x": -139.15,
+              "y": 373,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_market_and_exchange"
+            }
+          ]
+        },
+        {
+          "x": -118,
+          "y": 527,
+          "w": 130,
+          "h": 110,
+          "id": "stern_core_shell_town_mid_basic_care",
+          "name": "簡易洗浄・点検",
+          "detail": "日常の洗浄・除塵・軽整備。本格的な修理は専門設備へ",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_core_shell_town",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_core_shell_town_mid_basic_care_small_a",
+              "name": "内部区画A",
+              "x": -149.85,
+              "y": 527,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_basic_care"
+            },
+            {
+              "id": "stern_core_shell_town_mid_basic_care_small_b",
+              "name": "内部区画B",
+              "x": -86.15,
+              "y": 527,
+              "w": 51,
+              "h": 66,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_core_shell_town_mid_basic_care"
+            }
+          ]
+        }
+      ],
+      "layeredLayout": {
+        "big": "district",
+        "medium": "facility_function_group",
+        "small": "provisional_interior_cell",
+        "defaultDisplay": "big_frames_only",
+        "expandOn": "select_parent",
+        "labelRule": "selected_item_only",
+        "zoneCount": 4,
+        "linkedNamedLabs": [],
+        "caveat": "中枠の位置は仮案。小枠は部屋・設備個数の確定を意味しない"
+      }
     },
     {
       "id": "stern_refine_lab_district",
@@ -3169,37 +3745,49 @@
             "id": "repair_diagnosis",
             "name": "機体整備・損傷診断",
             "purpose": "外装洗浄、故障・動力・回路診断、部品交換、除染",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "stern_refine_lab_district_mid_repair_diagnosis",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "equipment_custom",
             "name": "装備修理・改修",
             "purpose": "武器・外装・補助装備の強化、改造、カスタマイズ",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "stern_refine_lab_district_mid_equipment_custom",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "private_workshops",
             "name": "個人工房群",
             "purpose": "船尾の新しい下位ラボ・工房街区に、小規模の修理・試作工房を配置する候補。個人工房群の現行正式所在地はリファインバレー内。",
-            "status": "github_planned_extension_not_an_existing_Notion_stern_workshop_location"
+            "status": "github_planned_extension_not_an_existing_Notion_stern_workshop_location",
+            "regionId": "stern_refine_lab_district_mid_private_workshops",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "parts_storage",
             "name": "交換部品・工具倉庫",
             "purpose": "交換部品、工具、修復材の保管。燃料・危険物は分離保管",
-            "status": "notion_supported"
+            "status": "notion_supported",
+            "regionId": "stern_refine_lab_district_mid_parts_storage",
+            "layoutStatus": "draft_medium_frame"
           },
           {
             "id": "stern_practical_lab",
             "name": "船尾実用技術ラボ",
             "purpose": "GitHub作業案で追加した実用技術ラボ。修復・部品改良など",
-            "status": "github_proposal_not_notion_canon"
+            "status": "github_proposal_not_notion_canon",
+            "existingFacilityId": "stern_equipment_lab",
+            "layoutStatus": "existing_building_reference_no_duplicate_frame"
           },
           {
             "id": "material_interface",
             "name": "素材・加工連携",
             "purpose": "近接する加工施設との素材受渡・評価。工場そのものをラボ扱いしない",
-            "status": "planned_subzone_not_new_building"
+            "status": "planned_subzone_not_new_building",
+            "regionId": "stern_refine_lab_district_mid_material_interface",
+            "layoutStatus": "draft_medium_frame"
           }
         ],
         "proposedSpecialization": "実用技術ラボと近接工場を含む技術街区",
@@ -3222,7 +3810,217 @@
           "zoneRole": "outer_district_functions_not_buildings"
         }
       ],
-      "detailedBuildingCount": "not_set"
+      "detailedBuildingCount": "not_set",
+      "mediumZones": [
+        {
+          "x": -258,
+          "y": -319,
+          "w": 125,
+          "h": 100,
+          "id": "stern_refine_lab_district_mid_repair_diagnosis",
+          "name": "機体整備・損傷診断",
+          "detail": "外装洗浄、故障・動力・回路診断、部品交換、除染",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_refine_lab_district",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_refine_lab_district_mid_repair_diagnosis_small_a",
+              "name": "内部区画A",
+              "x": -288.625,
+              "y": -319,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_repair_diagnosis"
+            },
+            {
+              "id": "stern_refine_lab_district_mid_repair_diagnosis_small_b",
+              "name": "内部区画B",
+              "x": -227.375,
+              "y": -319,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_repair_diagnosis"
+            }
+          ]
+        },
+        {
+          "x": -226,
+          "y": -491,
+          "w": 125,
+          "h": 100,
+          "id": "stern_refine_lab_district_mid_equipment_custom",
+          "name": "装備修理・改修",
+          "detail": "武器・外装・補助装備の強化、改造、カスタマイズ",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_refine_lab_district",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_refine_lab_district_mid_equipment_custom_small_a",
+              "name": "内部区画A",
+              "x": -256.625,
+              "y": -491,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_equipment_custom"
+            },
+            {
+              "id": "stern_refine_lab_district_mid_equipment_custom_small_b",
+              "name": "内部区画B",
+              "x": -195.375,
+              "y": -491,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_equipment_custom"
+            }
+          ]
+        },
+        {
+          "x": -70,
+          "y": -535,
+          "w": 125,
+          "h": 100,
+          "id": "stern_refine_lab_district_mid_private_workshops",
+          "name": "個人工房群",
+          "detail": "船尾の新しい下位ラボ・工房街区に、小規模の修理・試作工房を配置する候補。個人工房群の現行正式所在地はリファインバレー内。",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_refine_lab_district",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_refine_lab_district_mid_private_workshops_small_a",
+              "name": "内部区画A",
+              "x": -100.625,
+              "y": -535,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_private_workshops"
+            },
+            {
+              "id": "stern_refine_lab_district_mid_private_workshops_small_b",
+              "name": "内部区画B",
+              "x": -39.375,
+              "y": -535,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_private_workshops"
+            }
+          ]
+        },
+        {
+          "x": -444,
+          "y": -548,
+          "w": 125,
+          "h": 100,
+          "id": "stern_refine_lab_district_mid_parts_storage",
+          "name": "交換部品・工具倉庫",
+          "detail": "交換部品、工具、修復材の保管。燃料・危険物は分離保管",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_refine_lab_district",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_refine_lab_district_mid_parts_storage_small_a",
+              "name": "内部区画A",
+              "x": -474.625,
+              "y": -548,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_parts_storage"
+            },
+            {
+              "id": "stern_refine_lab_district_mid_parts_storage_small_b",
+              "name": "内部区画B",
+              "x": -413.375,
+              "y": -548,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_parts_storage"
+            }
+          ]
+        },
+        {
+          "x": -294,
+          "y": -641,
+          "w": 125,
+          "h": 100,
+          "id": "stern_refine_lab_district_mid_material_interface",
+          "name": "素材・加工連携",
+          "detail": "近接する加工施設との素材受渡・評価。工場そのものをラボ扱いしない",
+          "level": "medium",
+          "draft": true,
+          "districtParentId": "stern_refine_lab_district",
+          "status": "draft_medium_frame",
+          "smallZones": [
+            {
+              "id": "stern_refine_lab_district_mid_material_interface_small_a",
+              "name": "内部区画A",
+              "x": -324.625,
+              "y": -641,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_material_interface"
+            },
+            {
+              "id": "stern_refine_lab_district_mid_material_interface_small_b",
+              "name": "内部区画B",
+              "x": -263.375,
+              "y": -641,
+              "w": 49,
+              "h": 60,
+              "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+              "level": "small",
+              "draft": true,
+              "parentId": "stern_refine_lab_district_mid_material_interface"
+            }
+          ]
+        }
+      ],
+      "layeredLayout": {
+        "big": "district",
+        "medium": "facility_function_group",
+        "small": "provisional_interior_cell",
+        "defaultDisplay": "big_frames_only",
+        "expandOn": "select_parent",
+        "labelRule": "selected_item_only",
+        "zoneCount": 5,
+        "linkedNamedLabs": [
+          "stern_equipment_lab"
+        ],
+        "caveat": "中枠の位置は仮案。小枠は部屋・設備個数の確定を意味しない"
+      }
     },
     {
       "id": "stern_equipment_lab",
@@ -4721,9 +5519,9 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "correct_both_halves_of_core_ring_rendered_bow_stern_with_arbora_boundary_reconciled",
+    "review": "layered_medium_small_frames_added_no_factory_dimension_changes",
     "layoutModel": "middle-terminal-internal-guild-v2",
-    "stage1Focus": "4大街区の多角形塗りで船首上位半分・船尾下位半分を実表示し、内部機能も大区画として整理。工場寸法は変更しない"
+    "stage1Focus": "街区大枠→施設中枠→仮内部小枠の選択階層、全名称は選択時のみ表示"
   },
   "centralUrbanPlan": {
     "status": "all_four_quarter_circle_districts_bow_upper_stern_lower",
@@ -4977,7 +5775,16 @@
       ],
       "displayPlan": "four_full_quarter_ring_colored_districts_with_two_broad_function_labels_each",
       "location": "bow_upper_and_stern_lower",
-      "roomLayoutsApproved": false
+      "roomLayoutsApproved": false,
+      "frameHierarchy": {
+        "status": "draft_layout_applied_to_four_districts",
+        "big": "4 full size polygons",
+        "medium": "framed facility/functional zones shown on district selection",
+        "small": "two placeholder interior cells shown on medium selection",
+        "text": "only selected item labelled",
+        "dataSource": "GitHub working draft only",
+        "notionUpdated": false
+      }
     }
   },
   "stage1Skeleton": {
