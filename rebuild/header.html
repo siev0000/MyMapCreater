@@ -293,7 +293,7 @@ const viewer=window.AAMapViewer.create({
   floorLoadErrors.delete(mapId);
   if(pendingFocus?.floorId===mapId){
    const pending=pendingFocus;pendingFocus=null;
-   viewer.selectItemById(pending.id,{focus:true});
+   viewer.navigateToItem(pending.id);
   }else{
    // Optional deep link to an exact object in the currently loaded scene.
    const objectId=new URLSearchParams(location.search).get('focus');
@@ -486,9 +486,11 @@ function focusMapItem(floorId,id){
  if(selected!==floorId){
   pendingFocus={floorId,id};select(floorId,null);return;
  }
- if(!viewer.selectItemById(id,{focus:true})){
-  pendingFocus={floorId,id};
- }
+ const obj=viewer.getScene()?.objects.find(o=>o.id===id);
+ const enter=obj?.displayLevel>=viewer.initialDisplayLevel()&&
+  viewer.getScene()?.objects.some(o=>o.parentId===id);
+ const ok=enter?viewer.navigateToItem(id):viewer.selectItemById(id,{focus:true});
+ if(!ok)pendingFocus={floorId,id};
  renderMapTree();
 }
 function render(){
