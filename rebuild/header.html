@@ -104,6 +104,7 @@ main{max-width:none;padding:0}
 .spec-body h1{font-size:22px;margin-top:.3em}.spec-body h2{font-size:18px;border-bottom:1px solid #42606f;padding-bottom:6px}.spec-body h3{font-size:16px}
 .spec-body p{margin:.8em 0}.spec-body a{color:#8ce5e7;text-decoration:underline}.spec-body ul,.spec-body ol{padding-left:24px}.spec-body li{margin:.3em 0}
 .spec-body code{font-family:ui-monospace,SFMono-Regular,monospace;background:#24414d;border-radius:4px;padding:1px 5px;font-size:.9em}
+.spec-body pre.spec-raw{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
 .spec-body pre{background:#071c25;border:1px solid #385969;padding:12px;overflow-x:auto;border-radius:8px}.spec-body pre code{background:none;padding:0;white-space:pre}
 .spec-body table{border-collapse:collapse;width:100%;display:block;overflow-x:auto;font-size:12px}.spec-body th,.spec-body td{padding:7px 9px;border:1px solid #3e6171;text-align:left;min-width:90px}.spec-body th{background:#234453;white-space:nowrap}
 .spec-body blockquote{border-left:3px solid #7acbd1;color:#b9d4dd;margin:12px 0;padding:1px 14px;background:#17323e}
@@ -172,11 +173,11 @@ main{max-width:none;padding:0}
    <select id="spec-picker" aria-label="表示する仕様書を選択"></select>
    <button id="spec-close" type="button" aria-label="仕様書を閉じる">×</button>
   </div>
-  <div id="spec-status" class="spec-status" role="status"></div>
+  <div id="spec-status" class="spec-status" role="status">仕様書を読み込んでいます…</div>
   <article id="spec-content" class="spec-body" tabindex="0"></article>
  </section>
 </div>
-<script src="./spec-viewer.js?v=2"></script>
+<script src="./spec-viewer.js?v=3"></script>
 <script src="./map-viewer.js?v=generic-editor-v12"></script>
 <script>
 (()=>{
