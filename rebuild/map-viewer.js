@@ -547,6 +547,7 @@ function create(opts){
     scene.objects.push(...JSON.parse(JSON.stringify(newObjects)));
     interiorLoaded.add(obj.id);
     if(opts.onInteriorLoaded)opts.onInteriorLoaded(obj.id,getScene());
+    if(opts.onSelectionChanged)opts.onSelectionChanged(sceneKey,selected);
     if(opts.onInteriorStatus)opts.onInteriorStatus(obj.id,"loaded");
     draw();
    }catch(error){
