@@ -15,7 +15,9 @@ const MODEL={
   middle:{
     columns:[[0,-730],[400,-650],[650,-450],[650,450],[400,650],[0,730],[-400,650],[-400,-650],
       [-1500,1000],[-1000,900],[-1500,-900],[-1000,-900],[1000,-400],[1000,400],[1350,-350],[1350,350]],
-    partitions:[{id:'middle-arbora-boundary',name:'アルボラ環境区境界（候補）',points:[[-1560,-630],[-530,-630],[-530,630],[-1560,630],[-1560,-630]]}],
+    // Environmental boundaries are taken from the current floor draft polygon at draw time.
+    // The previous rectangular sketch is intentionally not drawn over the new Arbora.
+    partitions:[],
     gateChecks:[]
   },
   lower:{
@@ -109,6 +111,8 @@ function drawPartition(ctx,xy,part,facilities,roads){
 function draw(ctx,xy,{floor,facilities=[],roads=[]}={}){
  const data=MODEL[floor];if(!data)return;
  ctx.save();
+ // District boundaries (including Arbora) are already rendered by the map;
+ // this layer is for independently proposed support columns.
  for(const part of data.partitions)drawPartition(ctx,xy,part,facilities,roads);
  const activeRoads=roads.filter(r=>!String(r.geometryStatus||'').startsWith('stale_'));
  const supportCandidates=floor==='middle'?proposedMiddleSupports():
