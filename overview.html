@@ -93,8 +93,8 @@ const candidates={
   belts:[{id:'processing_starboard',name:'燃料・油加工',x:-1070,y:660,w:900,h:220},{id:'processing_port',name:'繊維・樹脂加工',x:-1080,y:-660,w:900,h:220}],
   issues:['栽培区から加工施設まで近い一方、湿度や排熱の分離が必要です。','船体の左右幅に加工施設と搬送路が本当に収まるかを確認します。']},
  B:{
-    "title": "B｜紫通路沿いの加工／船首上位・船尾下位",
-    "summary": "船首・船尾にそれぞれタウンとラボ区を設け、加工施設を紫の大型機通路の左右へ集約。貨物は独立した橙の路線で検査・専用リフトへ送ります。",
+    "title": "B｜船尾側の生活・研究・加工混合街区",
+    "summary": "船首の上位タウン・ラボは残し、リンクターミナル船尾半周には下位タウン・ラボと小さな加工施設4棟を混在配置。住居側の一般通路と工場側の貨物道路は分離します。",
     "arbora": {
       "polygon": [
         [
@@ -148,22 +148,39 @@ const candidates={
       ],
       "areaSqM": 913200
     },
-    "belts": [
+    "belts": [],
+    "factories": [
       {
-        "id": "processing_starboard",
-        "name": "燃料・油加工",
-        "x": -660,
-        "y": 600,
-        "w": 1040,
-        "h": 400
+        "id": "standard_fuel_factory",
+        "label": "燃料",
+        "x": -545,
+        "y": 245,
+        "w": 160,
+        "h": 120
       },
       {
-        "id": "processing_port",
-        "name": "繊維・素材加工",
-        "x": -620,
-        "y": -607.5,
-        "w": 1110,
-        "h": 365
+        "id": "plant_oil_processing",
+        "label": "植物油",
+        "x": -500,
+        "y": 410,
+        "w": 100,
+        "h": 80
+      },
+      {
+        "id": "fiber_resin_processing",
+        "label": "繊維樹脂",
+        "x": -545,
+        "y": -245,
+        "w": 120,
+        "h": 100
+      },
+      {
+        "id": "middle_material_processing",
+        "label": "素材加工",
+        "x": -490,
+        "y": -400,
+        "w": 140,
+        "h": 100
       }
     ],
     "relay": {
@@ -175,66 +192,78 @@ const candidates={
     "cargoFlow": [
       [
         [
-          -680,
-          600
-        ],
-        [
           -600,
-          600
-        ],
-        [
-          -600,
-          500
-        ],
-        [
-          -600,
-          80
+          145
         ],
         [
           -405,
-          80
-        ]
-      ],
-      [
-        [
-          -775,
-          -575
-        ],
-        [
-          -600,
-          -575
-        ],
-        [
-          -600,
-          -80
+          145
         ],
         [
           -405,
-          -80
+          120
         ]
       ],
       [
         [
-          -540,
-          500
+          -600,
+          -145
         ],
         [
-          -600,
-          500
+          -405,
+          -145
+        ],
+        [
+          -405,
+          -120
         ]
       ],
       [
         [
-          -515,
-          -640
+          -600,
+          185
         ],
         [
           -600,
-          -640
+          145
+        ]
+      ],
+      [
+        [
+          -570,
+          -195
         ],
         [
-          -600,
-          -575
+          -570,
+          -145
+        ]
+      ],
+      [
+        [
+          -450,
+          410
+        ],
+        [
+          -405,
+          410
+        ],
+        [
+          -405,
+          145
+        ]
+      ],
+      [
+        [
+          -420,
+          -400
+        ],
+        [
+          -405,
+          -400
+        ],
+        [
+          -405,
+          -145
         ]
       ],
       [
@@ -301,7 +330,7 @@ const candidates={
     "towns": [
       {
         "id": "core_shell_town",
-        "name": "船首上位タウン",
+        "name": "コアシェルタウン〈船首・上位区〉",
         "tier": "upper",
         "x": 430,
         "y": 350,
@@ -310,7 +339,7 @@ const candidates={
       },
       {
         "id": "refine_valley",
-        "name": "船首上位ラボ区",
+        "name": "リファインバレー〈船首・上位ラボ区〉",
         "tier": "upper",
         "x": 430,
         "y": -350,
@@ -319,21 +348,21 @@ const candidates={
       },
       {
         "id": "stern_core_shell_town",
-        "name": "船尾下位タウン",
+        "name": "船尾タウン〈下位区〉",
         "tier": "lower",
-        "x": -360,
-        "y": 350,
+        "x": -270,
+        "y": 410,
         "w": 180,
-        "h": 180
+        "h": 170
       },
       {
         "id": "stern_refine_lab_district",
-        "name": "船尾下位ラボ区",
+        "name": "船尾工房・ラボ区〈下位区〉",
         "tier": "lower",
-        "x": -360,
-        "y": -350,
+        "x": -270,
+        "y": -410,
         "w": 180,
-        "h": 180
+        "h": 170
       }
     ],
     "interior": [
@@ -387,9 +416,9 @@ const candidates={
       }
     ],
     "issues": [
-      "船首側のタウン・ラボ区は上位、船尾側のタウン・ラボ区は下位とする構想。生活・入場権の細則はまだ確定していません。",
-      "紫は大型機専用、橙は貨物専用。貨物検査区では立体分離を計画しており、混在して通行できるわけではありません。",
-      "アルボラは約0.91km²の段状自然区。道路・荷役口・避難・ポッド線の旧経路は再接続検証待ちです。"
+      "船尾側は『工場地区と住宅地区を別々に並べる』のではなく、タウン・ラボ・工場が近接した混合街区です。住宅出入口と工場荷役口は別系統にしています。",
+      "工場4件は160×120m以下の仮寸法に縮小。生産能力、倉庫、消防・排熱条件が未確定のため、必要になれば再調整します。",
+      "紫通路は大型機専用。橙の貨物専用路と貨物リフト入口は引き続き仮設計で、道路の完全な接続はまだ承認していません。"
     ]
   },
  C:{title:'C｜外周加工＋中央貨物中継',summary:'アルボラ外周で加工し、ターミナル船尾側には貨物検査・仕分けの中継施設だけ置く案。',
@@ -420,6 +449,10 @@ const placeDescriptions={
  refine_valley:'船首側の上位整備・研究区。装備開発や精密改修を行う。',
  stern_core_shell_town:'リンクターミナル船尾側の下位タウン。休止・充電・市場・現場作業者の生活を支える。',
  stern_refine_lab_district:'船尾側の下位工房・技術区。修理、素材試験、装備改良を担う。',
+ standard_fuel_factory:'植物系素材を加工して一般燃料を製造する施設。',
+ plant_oil_processing:'植物から油を抽出・精製する施設。',
+ fiber_resin_processing:'植物繊維と樹脂を加工する施設。',
+ middle_material_processing:'木質装甲材などの植物資源を加工する施設。',
 
  arbora_nursery:'苗木・挿し木・草本植物を育成する栽培区。',
  arbora_forest:'樹木・燃料植物などを育て、樹皮や繊維を生産する自然区。',
@@ -493,6 +526,9 @@ function draw(){
   addZone('arbora_sector','アルボラ自然区',shape,colors.nature,placeDescriptions.arbora_sector);insertToClip();
   for(const b of plan.belts){
    addZone(b.id,b.name,{tag:'rect',props:rectBounds(b.x-b.w/2,b.x+b.w/2,b.y-b.h/2,b.y+b.h/2),label:pos(b.x,b.y),fontSize:15,opacity:.34},colors.industry,placeDescriptions[b.id]);insertToClip();
+  }
+  if(Array.isArray(plan.factories))for(const plant of plan.factories){
+   addZone(plant.id,plant.label,{tag:'rect',props:rectBounds(plant.x-plant.w/2,plant.x+plant.w/2,plant.y-plant.h/2,plant.y+plant.h/2),label:pos(plant.x,plant.y),fontSize:12,opacity:.65},colors.industry,placeDescriptions[plant.id]);insertToClip();
   }
   if(Array.isArray(plan.towns))for(const t of plan.towns){
    const upper=t.tier==='upper';
