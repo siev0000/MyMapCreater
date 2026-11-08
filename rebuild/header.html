@@ -97,7 +97,7 @@ main{max-width:none;padding:0}
    <div class="menu-wrap" id="map-menu">
     <button type="button" id="map-menu-button" class="menu-trigger" aria-haspopup="true" aria-controls="map-menu-popover" aria-expanded="false">☰ マップ</button>
     <div id="map-menu-popover" class="menu-popover" hidden>
-     <div class="menu-heading">マップ → 大枠 → 中枠（押すと展開・選択）</div>
+     <div class="menu-heading">マップ → 大枠 → 中枠（選択・展開）</div>
      <div id="map-menu-list" class="menu-list" role="group" aria-label="マップ階層一覧"></div>
      <div class="menu-heading">表示設定</div>
      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
@@ -169,8 +169,6 @@ const viewer=window.AAMapViewer.create({
    const h=floorStructures.get(mapId);
    const parent=h?.large.find(f=>f.id===item.id||f.children.some(c=>c.id===item.id));
    if(parent)treeExpanded.add('large:'+mapId+':'+parent.id);
-   const root=nodes.size&&nodes.get(mapId)?.parentId;
-   if(root)treeExpanded.add('map:'+root);
   }
   renderMapTree();
  }
@@ -245,19 +243,13 @@ function renderMapTree(){
  function toggle(key){if(treeExpanded.has(key))treeExpanded.delete(key);else treeExpanded.add(key)}
  function message(text){const e=document.createElement('div');e.className='map-tree-status';e.textContent=text;container.append(e)}
  for(const root of roots){
-  const rootKey='map:'+root.id,rootOpen=treeExpanded.has(rootKey);
-  item({key:rootKey,label:root.name,category:'船体',depth:0,expanded:rootOpen,hasChildren:true,
-   active:selected===root.id,onClick:()=>{
-    toggle(rootKey);renderMapTree();
-   }});
-  if(!rootOpen)continue;
-  for(const v of root.views||[]){
-   item({key:root.id+'::'+v.id,label:v.displayName||v.name,category:'表示',depth:1,
-    active:selected===root.id&&viewId===v.id,onClick:()=>{select(root.id,v.id);closeMenu()}});
-  }
-  for(const floor of children(root.id)){
+  // The root is data context (ship, town, world, etc.), not a fixed UI category.
+  // Start selectable hierarchy from "マップ"; projection switches stay in header.
+  const nestedMaps=children(root.id);
+  const mapChoices=nestedMaps.length?(root.source?[root,...nestedMaps]:nestedMaps):[root];
+  for(const floor of mapChoices){
    const key='floor:'+floor.id,opened=treeExpanded.has(key);
-   item({key,label:floor.name,category:'マップ',depth:1,expanded:opened,hasChildren:true,
+   item({key,label:floor.name,category:'マップ',depth:0,expanded:opened,hasChildren:true,
     active:selected===floor.id&&!selectedObjectId,
     onClick:()=>{
      toggle(key);
@@ -276,7 +268,7 @@ function renderMapTree(){
    for(const large of hierarchy.large){
     const groupKey='large:'+floor.id+':'+large.id,groupOpen=treeExpanded.has(groupKey);
     const hasChildren=large.children.length>0;
-    item({key:groupKey,label:large.name,category:'大枠',depth:2,
+    item({key:groupKey,label:large.name,category:'大枠',depth:1,
      expanded:groupOpen,hasChildren,active:selected===floor.id&&selectedObjectId===large.id,
      onClick:()=>{
       if(hasChildren)toggle(groupKey);
@@ -285,7 +277,7 @@ function renderMapTree(){
      }});
     if(!groupOpen||!hasChildren)continue;
     for(const mid of large.children){
-     item({key:'medium:'+floor.id+':'+mid.id,label:mid.name,category:'中枠',depth:3,
+     item({key:'medium:'+floor.id+':'+mid.id,label:mid.name,category:'中枠',depth:2,
       active:selected===floor.id&&selectedObjectId===mid.id,
       onClick:()=>{focusMapItem(floor.id,mid.id);closeMenu()}});
     }
@@ -294,9 +286,9 @@ function renderMapTree(){
    if(hierarchy.unassigned.length){
     const key='unassigned:'+floor.id,opened=treeExpanded.has(key);
     item({key,label:'所属未設定の施設 ('+hierarchy.unassigned.length+')',
-     category:'未分類',depth:2,hasChildren:true,expanded:opened,onClick:()=>{toggle(key);renderMapTree()}});
+     category:'未分類',depth:1,hasChildren:true,expanded:opened,onClick:()=>{toggle(key);renderMapTree()}});
     if(opened)for(const f of hierarchy.unassigned){
-     item({key:'loose:'+floor.id+':'+f.id,label:f.name,category:'施設',depth:3,
+     item({key:'loose:'+floor.id+':'+f.id,label:f.name,category:'施設',depth:2,
       active:selected===floor.id&&selectedObjectId===f.id,
       onClick:()=>{focusMapItem(floor.id,f.id);closeMenu()}});
     }
@@ -363,11 +355,7 @@ $('map-menu-button').addEventListener('click',()=>{
  const menu=$('map-menu-popover');
  menu.hidden=!menu.hidden;
  $('map-menu-button').setAttribute('aria-expanded',String(!menu.hidden));
- if(!menu.hidden){
-  const root=activeRoot();
-  if(root)treeExpanded.add('map:'+root.id);
-  renderMapTree();
- }
+ if(!menu.hidden)renderMapTree();
 });
 document.addEventListener('pointerdown',e=>{
  if(!$('map-menu').contains(e.target))closeMenu();
