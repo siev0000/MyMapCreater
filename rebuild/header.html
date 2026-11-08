@@ -330,7 +330,8 @@ main{max-width:none;padding:0}
  </section>
 </div>
 <script src="./spec-viewer.js?v=5"></script>
-<script src="./map-viewer.js?v=door-swing-arc-v1"></script>
+<script src="./map-viewer.js?v=supply-icons-v1"></script>
+<script src="./object-catalog.js?v=approved-30-v1"></script>
 <script>
 (()=>{
 'use strict';
@@ -433,6 +434,21 @@ const viewer=window.AAMapViewer.create({
     heading.append(trail);
    }
   }else heading.title='';
+  // Selected container contents are shown beneath the single-line title.
+  const detailText=$('detail-text');
+  if(item){
+   const catalog=window.AAMapObjectCatalog?.entries(viewer.getScene())||[];
+   const entries=Array.isArray(item.contents)?item.contents:[];
+   if(entries.length){
+    const lines=entries.map(entry=>{
+     const preset=catalog.find(p=>p.id===entry.presetId);
+     return (preset?.icon||'•')+' '+(entry.name||preset?.name||entry.presetId)+' ×'+entry.quantity;
+    });
+    detailText.textContent=(item.detail||'')+'\n収納内容： '+lines.join('　');
+   }else if(item.objectType==='supply'){
+    detailText.textContent=(item.detail||'')+'\n数量：'+(item.quantity||1);
+   }
+  }
   $('current-map-title').hidden=false;
   $('detail-placeholder').hidden=Boolean(item);
   renderMapTree();
