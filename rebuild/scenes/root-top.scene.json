@@ -33,7 +33,8 @@
     }
   ],
   "settings": {
-    "routeMode": "all"
+    "routeMode": "all",
+    "legendGroups": []
   },
   "objects": [
     {
