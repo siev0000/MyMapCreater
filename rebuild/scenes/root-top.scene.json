@@ -866,7 +866,8 @@
         "structureRole": "outer-shell",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-1",
@@ -1698,7 +1699,8 @@
         "structureRole": "nested-outline-1",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-2",
@@ -2530,7 +2532,8 @@
         "structureRole": "nested-outline-2",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-3",
@@ -3362,7 +3365,8 @@
         "structureRole": "nested-outline-3",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     }
   ]
 }
