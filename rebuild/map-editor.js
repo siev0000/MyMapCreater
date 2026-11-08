@@ -312,6 +312,28 @@ function download(){
  }catch(error){notice("保存できません："+error.message,"error")}
 }
 bind("download",download,"click");
+bind("show-scene-json",()=>{
+ const fields=$("scene-json-fields"),open=fields.classList.contains("hidden");
+ fields.classList.toggle("hidden",!open);
+ $("show-scene-json").textContent=open?"マップ全体のJSONを閉じる":"マップ全体のJSONを開く";
+ if(open&&sceneNow())$("scene-json-text").value=JSON.stringify(sceneNow(),null,2);
+},"click");
+bind("reload-scene-json",()=>{
+ const scene=sceneNow();if(!scene)return;
+ $("scene-json-text").value=JSON.stringify(scene,null,2);
+ notice("現在のマップ全体のJSONを読み直しました");
+},"click");
+bind("apply-scene-json",()=>{
+ try{
+  const scene=JSON.parse(input("scene-json-text"));
+  const currentId=state.selectedId;
+  if(applyScene(scene,scene.objects.some(o=>o.id===currentId)?currentId:null,{record:true,resetView:true})){
+   $("scene-json-text").value=JSON.stringify(sceneNow(),null,2);
+   notice("マップ全体のJSONを適用しました（未保存）","success");
+  }
+ }catch(error){notice("マップJSONを適用できません："+error.message,"error")}
+},"click");
+
 window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.returnValue=""}});
 viewer=window.AAMapViewer.create({
  host:$("viewport"),canvas:$("map-canvas"),info:$("detail-panel"),
