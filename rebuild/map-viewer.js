@@ -227,15 +227,12 @@ function create(opts){
   const [u,v]=project(cx,cy),[cu,cv]=project(...center());
   panX=-(u-cu)*scale();panY=-(v-cv)*scale();
  }
- function getViewRoot(){
-  const root=scene?.objects.find(o=>o.id===viewRootId);
-  return root?{id:root.id,name:root.name||root.id,displayLevel:root.displayLevel}:null;
- }
+ function getViewRoot(){return null}
  function getViewRootPath(){
-  if(!scene||!viewRootId)return [];
+  if(!scene||!selected)return [];
   const byId=new Map(scene.objects.map(o=>[o.id,o]));
   const chain=[],seen=new Set();
-  let current=byId.get(viewRootId);
+  let current=byId.get(selected.id);
   while(current&&!seen.has(current.id)){
    seen.add(current.id);
    chain.unshift({id:current.id,name:current.name||current.id,displayLevel:current.displayLevel});
@@ -243,44 +240,13 @@ function create(opts){
   }
   return chain;
  }
- function navigateToItem(id){
-  if(!scene)return false;
-  const byId=new Map(scene.objects.map(o=>[o.id,o])),target=byId.get(id);
-  if(!target)return false;
-  const path=[],seen=new Set();
-  let current=target;
-  while(current&&!seen.has(current.id)){
-   seen.add(current.id);path.unshift(current);current=byId.get(current.parentId);
-  }
-  // A deep link to a room or facility with children enters that map level.
-  // For a leaf object, enter its immediate parent instead.
-  const hasChildren=scene.objects.some(o=>o.parentId===target.id);
-  const owner=hasChildren?target:(byId.get(target.parentId)||null);
-  viewRootId=owner&&owner.displayLevel>=initialDisplayLevel()?owner.id:null;
-  fitToObject(owner&&viewRootId?owner:target);
-  showDetails(target);
-  return true;
- }
- function enterItem(id=selected?.id){
-  const target=scene?.objects.find(o=>o.id===id);
-  if(!target||!scene.objects.some(o=>o.parentId===target.id))return false;
-  viewRootId=target.id;
-  fitToObject(target);
-  showDetails(target);
-  return true;
- }
+ function navigateToItem(id){return selectItemById(id,{focus:true})}
+ function enterItem(id=selected?.id){return selectItemById(id,{focus:true})}
  function exitItem(){
-  if(!viewRootId)return false;
-  const current=scene.objects.find(o=>o.id===viewRootId);
-  const parent=scene.objects.find(o=>o.id===current?.parentId);
-  if(parent&&parent.displayLevel>=initialDisplayLevel()){
-   viewRootId=parent.id;fitToObject(parent);showDetails(parent);
-  }else{
-   viewRootId=null;
-   if(parent){fitToObject(parent);showDetails(parent)}
-   else{zoom=1;panX=0;panY=0;showDetails(null)}
-  }
-  return true;
+  if(!selected||!scene)return false;
+  const parent=scene.objects.find(o=>o.id===selected.parentId);
+  if(!parent){showDetails(null);return true}
+  return selectItemById(parent.id,{focus:true});
  }
  function visible(obj){
   if(obj.visible===false||!visibleByDepth(obj))return false;
@@ -420,7 +386,6 @@ function create(opts){
  function selectItemById(id,{focus=true,force=false}={}){
   const obj=scene?.objects.find(o=>o.id===id);
   if(!obj||(!force&&obj.selectable===false))return false;
-  if(viewRootId&&!isWithin(obj,viewRootId))viewRootId=null;
   if(focus){
    const g=obj.geometry||{};
    if(Array.isArray(obj.floors)&&obj.floors.length&&g.type==="rect"){
