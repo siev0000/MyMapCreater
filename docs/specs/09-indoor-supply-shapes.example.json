@@ -1,0 +1,396 @@
+{
+  "description": "室内物資の初期図形プリセット案。現行Scene v2未対応・アプリ未接続。寸法はマップ座標の初期値で実物サイズではない。",
+  "schemaVersion": "proposal-1",
+  "presets": {
+    "supply_box": {
+      "name": "梱包物資",
+      "shape": {
+        "type": "rect",
+        "width": 44,
+        "height": 34
+      },
+      "icon": {
+        "text": "📦",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "tool_kit": {
+      "name": "工具箱",
+      "shape": {
+        "type": "rect",
+        "width": 42,
+        "height": 24
+      },
+      "icon": {
+        "text": "🧰",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "repair_supplies": {
+      "name": "工具",
+      "shape": {
+        "type": "rect",
+        "width": 38,
+        "height": 20
+      },
+      "icon": {
+        "text": "🔧",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "hardware_parts": {
+      "name": "金属部品",
+      "shape": {
+        "type": "rect",
+        "width": 32,
+        "height": 28
+      },
+      "icon": {
+        "text": "🔩",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "machine_parts": {
+      "name": "機械部品",
+      "shape": {
+        "type": "circle",
+        "width": 34,
+        "height": 34
+      },
+      "icon": {
+        "text": "⚙️",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "building_material": {
+      "name": "建築資材",
+      "shape": {
+        "type": "rect",
+        "width": 54,
+        "height": 32
+      },
+      "icon": {
+        "text": "🧱",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "timber": {
+      "name": "木材",
+      "shape": {
+        "type": "rect",
+        "width": 64,
+        "height": 18
+      },
+      "icon": {
+        "text": "🪵",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "raw_stone": {
+      "name": "鉱石",
+      "shape": {
+        "type": "circle",
+        "width": 36,
+        "height": 36
+      },
+      "icon": {
+        "text": "🪨",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "textile_material": {
+      "name": "糸",
+      "shape": {
+        "type": "circle",
+        "width": 30,
+        "height": 30
+      },
+      "icon": {
+        "text": "🧵",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "fiber_bundle": {
+      "name": "繊維束",
+      "shape": {
+        "type": "circle",
+        "width": 36,
+        "height": 36
+      },
+      "icon": {
+        "text": "🧶",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "food": {
+      "name": "食料",
+      "shape": {
+        "type": "rect",
+        "width": 40,
+        "height": 32
+      },
+      "icon": {
+        "text": "🍞",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "preserved_food": {
+      "name": "保存食",
+      "shape": {
+        "type": "rect",
+        "width": 36,
+        "height": 28
+      },
+      "icon": {
+        "text": "🥫",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "drinks": {
+      "name": "飲料",
+      "shape": {
+        "type": "circle",
+        "width": 30,
+        "height": 30
+      },
+      "icon": {
+        "text": "🥤",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "water": {
+      "name": "水",
+      "shape": {
+        "type": "circle",
+        "width": 32,
+        "height": 32
+      },
+      "icon": {
+        "text": "💧",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "bottled_supplies": {
+      "name": "洗剤",
+      "shape": {
+        "type": "rect",
+        "width": 30,
+        "height": 36
+      },
+      "icon": {
+        "text": "🧴",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "hygiene_supplies": {
+      "name": "衛生用品",
+      "shape": {
+        "type": "rect",
+        "width": 40,
+        "height": 28
+      },
+      "icon": {
+        "text": "🧻",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "clothing": {
+      "name": "衣服",
+      "shape": {
+        "type": "rect",
+        "width": 46,
+        "height": 32
+      },
+      "icon": {
+        "text": "👕",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "bedding_supply": {
+      "name": "寝具",
+      "shape": {
+        "type": "rect",
+        "width": 64,
+        "height": 38
+      },
+      "icon": {
+        "text": "🛏️",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "medical_supply": {
+      "name": "医薬品",
+      "shape": {
+        "type": "rect",
+        "width": 38,
+        "height": 28
+      },
+      "icon": {
+        "text": "💊",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "batteries": {
+      "name": "バッテリー",
+      "shape": {
+        "type": "rect",
+        "width": 40,
+        "height": 28
+      },
+      "icon": {
+        "text": "🔋",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "power_parts": {
+      "name": "電源部品",
+      "shape": {
+        "type": "rect",
+        "width": 40,
+        "height": 26
+      },
+      "icon": {
+        "text": "🔌",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "reagent": {
+      "name": "試薬",
+      "shape": {
+        "type": "circle",
+        "width": 30,
+        "height": 30
+      },
+      "icon": {
+        "text": "🧪",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "samples": {
+      "name": "研究試料",
+      "shape": {
+        "type": "circle",
+        "width": 36,
+        "height": 36
+      },
+      "icon": {
+        "text": "🧫",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "magnetic_parts": {
+      "name": "磁性素材",
+      "shape": {
+        "type": "rect",
+        "width": 36,
+        "height": 28
+      },
+      "icon": {
+        "text": "🧲",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "drafting_supplies": {
+      "name": "製図用品",
+      "shape": {
+        "type": "rect",
+        "width": 52,
+        "height": 34
+      },
+      "icon": {
+        "text": "📐",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "data_media": {
+      "name": "記録媒体",
+      "shape": {
+        "type": "rect",
+        "width": 36,
+        "height": 30
+      },
+      "icon": {
+        "text": "💾",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "documents": {
+      "name": "書類",
+      "shape": {
+        "type": "rect",
+        "width": 42,
+        "height": 32
+      },
+      "icon": {
+        "text": "📄",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "books": {
+      "name": "書籍",
+      "shape": {
+        "type": "rect",
+        "width": 48,
+        "height": 36
+      },
+      "icon": {
+        "text": "📚",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "keys": {
+      "name": "鍵",
+      "shape": {
+        "type": "rect",
+        "width": 26,
+        "height": 20
+      },
+      "icon": {
+        "text": "🗝️",
+        "position": "center"
+      },
+      "labelVisible": false
+    },
+    "valuables": {
+      "name": "金銭・貴重品",
+      "shape": {
+        "type": "rect",
+        "width": 40,
+        "height": 32
+      },
+      "icon": {
+        "text": "💰",
+        "position": "center"
+      },
+      "labelVisible": false
+    }
+  }
+}
