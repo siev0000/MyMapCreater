@@ -62,8 +62,10 @@
   ],
   "settings": {
     "selectionZoom": {
-      "large": 1.45,
-      "medium": 2.25
+      "1": 1.45,
+      "2": 2.25,
+      "3": 2.25,
+      "4": 2.25
     },
     "labelDefaults": {
       "color": "#edf4f1",
@@ -93,10 +95,10 @@
     },
     "legendGroups": [
       {
-        "title": "大枠",
+        "title": "区画",
         "filter": {
-          "levels": [
-            "large"
+          "displayLevels": [
+            1
           ]
         },
         "swatch": "box"
@@ -946,7 +948,8 @@
         "structureRole": "outer-shell",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-1",
@@ -1778,7 +1781,8 @@
         "structureRole": "nested-outline-1",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-2",
@@ -2610,7 +2614,8 @@
         "structureRole": "nested-outline-2",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-3",
@@ -3442,13 +3447,13 @@
         "structureRole": "nested-outline-3",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_terminal",
       "name": "上層ターミナル",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "rect",
@@ -3483,13 +3488,13 @@
         "legacyType": "terminal",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_main_control",
       "name": "上層共同メインコントロール",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3554,13 +3559,13 @@
         "legacyType": "shared",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "orbital_sphere",
       "name": "オービタルスフィア",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3617,13 +3622,13 @@
         "legacyType": "shared",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "information_archive",
       "name": "上層共通情報保存区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3688,13 +3693,13 @@
         "legacyType": "shared",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "myosphere_field",
       "name": "マイオスフィールド",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3751,13 +3756,13 @@
         "legacyType": "shared",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_shared_logistics",
       "name": "上層共通物流区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3822,13 +3827,13 @@
         "legacyType": "shared",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_shared_high_grade_fuel",
       "name": "上層高級燃料供給区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3893,13 +3898,13 @@
         "legacyType": "shared",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_shared_security_magitech",
       "name": "マギテック側認証門",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3964,13 +3969,13 @@
         "legacyType": "security",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_shared_security_eidolon",
       "name": "エイドロン側認証門",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4035,13 +4040,13 @@
         "legacyType": "security",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_residential_area",
       "name": "マギテック側居住・待機区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4106,13 +4111,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_update_facility",
       "name": "マギテック・アップデート施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4169,13 +4174,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_creation_area",
       "name": "マギテック創造領域",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4232,13 +4237,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_weapon_development",
       "name": "マギテック武器開発施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4303,13 +4308,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_research_facility",
       "name": "魔力系研究施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4374,13 +4379,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_force_field_lab",
       "name": "力場シールド研究区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4445,13 +4450,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_attribute_test_area",
       "name": "属性実験区画",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4516,13 +4521,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_combat_test_range",
       "name": "マギテック戦闘試験場",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4587,13 +4592,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_prototype_test_facility",
       "name": "マギテック試作試験施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4658,13 +4663,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_high_grade_fuel_lab",
       "name": "マギテック高級燃料研究施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4729,13 +4734,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_secure_storage",
       "name": "マギテック高機密保管区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4800,13 +4805,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "magitech_military_research_area",
       "name": "マギテック軍事研究区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4871,13 +4876,13 @@
         "legacyType": "magitech",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_residential_area",
       "name": "エイドロン側居住・待機区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4934,13 +4939,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_update_facility",
       "name": "エイドロン・アップデート施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5005,13 +5010,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_creation_area",
       "name": "エイドロン創造領域",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5076,13 +5081,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_support_equipment_development",
       "name": "エイドロン装備開発施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5139,13 +5144,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_faith_research_facility",
       "name": "信仰系研究施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5210,13 +5215,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_barrier_lab",
       "name": "聖結界研究区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5281,13 +5286,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_radiant_test_area",
       "name": "光輝魔法実験区画",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5352,13 +5357,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_life_structure_lab",
       "name": "生命構造研究区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5423,13 +5428,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_combat_test_range",
       "name": "エイドロン戦闘試験場",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5486,13 +5491,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_prototype_test_facility",
       "name": "エイドロン試作試験施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5557,13 +5562,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_sample_storage",
       "name": "信仰系試料保管区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5628,13 +5633,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_secure_storage",
       "name": "エイドロン高機密保管区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5691,13 +5696,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "eidolon_military_research_area",
       "name": "エイドロン軍事研究区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5762,13 +5767,13 @@
         "legacyType": "eidolon",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_terminal_concourse",
       "name": "上層ターミナルコンコース",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "circle",
@@ -5807,13 +5812,13 @@
         "roadType": "コンコース",
         "roadWidthM": 80,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_shared_spine",
       "name": "上層中央幹線",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5858,13 +5863,13 @@
         "roadType": "主要幹線道路",
         "roadWidthM": 36,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_shared_ring",
       "name": "上層中央環状路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "circle",
@@ -5903,13 +5908,13 @@
         "roadType": "地区環状道路",
         "roadWidthM": 30,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_magitech_gate_corridor",
       "name": "マギテック認証通路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5953,13 +5958,13 @@
         "roadType": "隔壁付き通路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_magitech_trunk",
       "name": "マギテック中央幹線",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6004,13 +6009,13 @@
         "roadType": "主要幹線道路",
         "roadWidthM": 36,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_magitech_loop",
       "name": "マギテック環状路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6078,13 +6083,13 @@
         "roadType": "地区環状道路",
         "roadWidthM": 30,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_eidolon_gate_corridor",
       "name": "エイドロン認証通路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6128,13 +6133,13 @@
         "roadType": "隔壁付き通路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_eidolon_trunk",
       "name": "エイドロン中央幹線",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6179,13 +6184,13 @@
         "roadType": "主要幹線道路",
         "roadWidthM": 36,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_eidolon_loop",
       "name": "エイドロン環状路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6253,13 +6258,13 @@
         "roadType": "地区環状道路",
         "roadWidthM": 30,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_magitech_freight_tunnel",
       "name": "マギテック貨物トンネル",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6312,13 +6317,13 @@
         "roadType": "貨物トンネル",
         "roadWidthM": 32,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_eidolon_freight_tunnel",
       "name": "エイドロン貨物トンネル",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6371,13 +6376,13 @@
         "roadType": "貨物トンネル",
         "roadWidthM": 32,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "upper_cross_emergency_corridor",
       "name": "上層緊急横断路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6421,7 +6426,8 @@
         "roadType": "非常用迂回路",
         "roadWidthM": 12,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     }
   ]
 }
