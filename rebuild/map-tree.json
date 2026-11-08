@@ -13,7 +13,19 @@
       "bounds": {
         "lengthM": 4000,
         "maxWidthM": 2500
-      }
+      },
+      "views": [
+        {
+          "id": "top",
+          "name": "上面",
+          "kind": "projection"
+        },
+        {
+          "id": "side",
+          "name": "側面",
+          "kind": "projection"
+        }
+      ]
     },
     {
       "id": "upper",
