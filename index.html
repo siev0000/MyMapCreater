@@ -1093,6 +1093,8 @@ function findFacility(id){
  for(const parent of facilities){
   const child=parent.internalFacilities?.find(c=>c.id===id);
   if(child)return virtualChild(parent,child);
+  const macro=parent.macroZones?.find(c=>c.id===id);
+  if(macro)return {...macro,type:parent.type,parentId:parent.id,compoundChild:true};
  }
  return null;
 }
@@ -1104,7 +1106,7 @@ function internalLinksHTML(f){
 }
 function facilityInfoHTML(f){
  const children=internalLinksHTML(f)+(currentMap==='middle'&&showProposal&&f.id==='middle_terminal'?'<div class="compoundBranches"><button type="button" data-place="resist_link_dome">内部：レジストリンク・ドーム</button></div>':'');
- const parentNote=f.compoundChild?'<p class="compoundNote">リンクターミナル内、レジストリンク・ドームの内部施設。館内位置・寸法は仮配置です。</p>':'';
+ const parentNote=f.parentId==='arbora_sector'?'<p class="compoundNote">アルボラセクター内部の大区画。個別建物・監視所の位置は今後の設計対象です。</p>':f.compoundChild?'<p class="compoundNote">リンクターミナル内、レジストリンク・ドームの内部施設。館内位置・寸法は仮配置です。</p>':'';
  const functions=Array.isArray(f.functions)&&f.functions.length?
   '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
  const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
