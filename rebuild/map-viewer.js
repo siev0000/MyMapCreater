@@ -477,9 +477,23 @@ function create(opts){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.save();
   ctx.textBaseline="middle";ctx.textAlign="center";
   const defaultStyle=scene?.settings?.labelDefaults||{};
+  // Opening an area/building reveals its contents. Hide labels belonging
+  // to the opened level and higher parent levels, so their large text never
+  // overlaps the newly revealed buildings or indoor equipment.
+  const openedLevel=selected&&["region","facility"].includes(selected.objectType)
+   ?selected.displayLevel
+   :selected?(()=>{const byId=new Map(scene.objects.map(o=>[o.id,o]));let p=selected;
+     const seen=new Set();while(p&&!seen.has(p.id)){
+      seen.add(p.id);
+      if(["region","facility"].includes(p.objectType))return p.displayLevel;
+      p=byId.get(p.parentId);
+     }return null})():null;
   for(const o of objects){
    const l=o.label||{};
    if(l.visible===false||!l.text)continue;
+   if(Number.isSafeInteger(openedLevel)&&
+      ["region","facility"].includes(o.objectType)&&
+      Number.isSafeInteger(o.displayLevel)&&o.displayLevel<=openedLevel)continue;
    const p=l.position||o.geometry?.center||[0,0];
    const [x,y]=screenAt(p[0],p[1]);
    const fontSize=Math.max(7,finite(l.fontSize,finite(defaultStyle.fontSize,12)));
