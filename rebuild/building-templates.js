@@ -279,6 +279,20 @@ function generate(templateId,options={}){
         metadata:{templateId:template.id,generated:true,role:"dormancy-pod",podIndex:number}});
      }
     }
+    if(mode==="pods"&&number<desired){
+     // Last bank near the entrance, with its own walking gap.
+     const lastY=nY-7;
+     for(let col=0;col<available&&number<desired;col++){
+      const px=left+col*stepX;
+      if(px+podW>right||lastY<=bankBottom+podH+1)break;
+      number++;
+      base("pod_"+f+"_"+String(number).padStart(3,"0"),
+       "個人休眠ポッド "+number,"object",rect(px,lastY,podW,podH),f,
+       {fill:"#244c59",stroke:"#9fc9d8",strokeWidth:1},
+       {shapePresetId:"dormancy_pod",podGroup:"south_"+f,
+        metadata:{templateId:template.id,generated:true,role:"dormancy-pod",podIndex:number}});
+     }
+    }
     addDevice("management","休眠管理端末",nX-6,2,3,3,"terminal_device");
     // Fuel/charging are separate systems and not embedded in each dormancy pod.
     if(mode==="housing")addDevice("charging","共用充電設備",nX-7,nY-10,3,3,"charging_station");
