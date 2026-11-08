@@ -62,8 +62,10 @@
   ],
   "settings": {
     "selectionZoom": {
-      "large": 1.45,
-      "medium": 2.25
+      "1": 1.45,
+      "2": 2.25,
+      "3": 2.25,
+      "4": 2.25
     },
     "labelDefaults": {
       "color": "#edf4f1",
@@ -93,10 +95,10 @@
     },
     "legendGroups": [
       {
-        "title": "大枠",
+        "title": "区画",
         "filter": {
-          "levels": [
-            "large"
+          "displayLevels": [
+            1
           ]
         },
         "swatch": "box"
@@ -946,7 +948,8 @@
         "structureRole": "outer-shell",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-1",
@@ -1778,7 +1781,8 @@
         "structureRole": "nested-outline-1",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-2",
@@ -2610,7 +2614,8 @@
         "structureRole": "nested-outline-2",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-3",
@@ -3442,13 +3447,13 @@
         "structureRole": "nested-outline-3",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "core_shell_town_mid_rest_and_housing",
       "name": "居住・休止",
       "parentId": "core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3486,13 +3491,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_a",
       "name": "内部区画A",
       "parentId": "core_shell_town_mid_rest_and_housing",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3530,13 +3535,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_b",
       "name": "内部区画B",
       "parentId": "core_shell_town_mid_rest_and_housing",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3574,13 +3579,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "core_shell_town_mid_charging_and_supply",
       "name": "充電・燃料・補給",
       "parentId": "core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3618,13 +3623,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "core_shell_town_mid_charging_and_supply_small_a",
       "name": "内部区画A",
       "parentId": "core_shell_town_mid_charging_and_supply",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3662,13 +3667,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "core_shell_town_mid_charging_and_supply_small_b",
       "name": "内部区画B",
       "parentId": "core_shell_town_mid_charging_and_supply",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3706,13 +3711,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "core_shell_town_mid_market_and_exchange",
       "name": "市場・交流",
       "parentId": "core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3750,13 +3755,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "core_shell_town_mid_market_and_exchange_small_a",
       "name": "内部区画A",
       "parentId": "core_shell_town_mid_market_and_exchange",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3794,13 +3799,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "core_shell_town_mid_market_and_exchange_small_b",
       "name": "内部区画B",
       "parentId": "core_shell_town_mid_market_and_exchange",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3838,13 +3843,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "core_shell_town_mid_basic_care",
       "name": "簡易洗浄・点検",
       "parentId": "core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3882,13 +3887,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "core_shell_town_mid_basic_care_small_a",
       "name": "内部区画A",
       "parentId": "core_shell_town_mid_basic_care",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3926,13 +3931,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "core_shell_town_mid_basic_care_small_b",
       "name": "内部区画B",
       "parentId": "core_shell_town_mid_basic_care",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -3970,13 +3975,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_repair_diagnosis",
       "name": "機体整備・損傷診断",
       "parentId": "refine_valley",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4014,13 +4019,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "refine_valley_mid_repair_diagnosis_small_a",
       "name": "内部区画A",
       "parentId": "refine_valley_mid_repair_diagnosis",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4058,13 +4063,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_repair_diagnosis_small_b",
       "name": "内部区画B",
       "parentId": "refine_valley_mid_repair_diagnosis",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4102,13 +4107,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_equipment_custom",
       "name": "装備修理・改修",
       "parentId": "refine_valley",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4146,13 +4151,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "refine_valley_mid_equipment_custom_small_a",
       "name": "内部区画A",
       "parentId": "refine_valley_mid_equipment_custom",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4190,13 +4195,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_equipment_custom_small_b",
       "name": "内部区画B",
       "parentId": "refine_valley_mid_equipment_custom",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4234,13 +4239,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_private_workshops",
       "name": "個人工房群",
       "parentId": "refine_valley",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4278,13 +4283,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "refine_valley_mid_private_workshops_small_a",
       "name": "内部区画A",
       "parentId": "refine_valley_mid_private_workshops",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4322,13 +4327,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_private_workshops_small_b",
       "name": "内部区画B",
       "parentId": "refine_valley_mid_private_workshops",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4366,13 +4371,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_parts_storage",
       "name": "交換部品・工具倉庫",
       "parentId": "refine_valley",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4410,13 +4415,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "refine_valley_mid_parts_storage_small_a",
       "name": "内部区画A",
       "parentId": "refine_valley_mid_parts_storage",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4454,13 +4459,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_parts_storage_small_b",
       "name": "内部区画B",
       "parentId": "refine_valley_mid_parts_storage",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4498,13 +4503,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_prototype_testing",
       "name": "設計・試作・検証",
       "parentId": "refine_valley",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4542,13 +4547,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "refine_valley_mid_prototype_testing_small_a",
       "name": "内部区画A",
       "parentId": "refine_valley_mid_prototype_testing",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4586,13 +4591,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "refine_valley_mid_prototype_testing_small_b",
       "name": "内部区画B",
       "parentId": "refine_valley_mid_prototype_testing",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4630,13 +4635,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_rest_and_housing",
       "name": "居住・休止",
       "parentId": "stern_core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4674,13 +4679,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_core_shell_town_mid_rest_and_housing_small_a",
       "name": "内部区画A",
       "parentId": "stern_core_shell_town_mid_rest_and_housing",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4718,13 +4723,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_rest_and_housing_small_b",
       "name": "内部区画B",
       "parentId": "stern_core_shell_town_mid_rest_and_housing",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4762,13 +4767,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_charging_and_supply",
       "name": "充電・燃料・補給",
       "parentId": "stern_core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4806,13 +4811,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_core_shell_town_mid_charging_and_supply_small_a",
       "name": "内部区画A",
       "parentId": "stern_core_shell_town_mid_charging_and_supply",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4850,13 +4855,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_charging_and_supply_small_b",
       "name": "内部区画B",
       "parentId": "stern_core_shell_town_mid_charging_and_supply",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4894,13 +4899,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_market_and_exchange",
       "name": "市場・交流",
       "parentId": "stern_core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4938,13 +4943,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_core_shell_town_mid_market_and_exchange_small_a",
       "name": "内部区画A",
       "parentId": "stern_core_shell_town_mid_market_and_exchange",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -4982,13 +4987,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_market_and_exchange_small_b",
       "name": "内部区画B",
       "parentId": "stern_core_shell_town_mid_market_and_exchange",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5026,13 +5031,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_basic_care",
       "name": "簡易洗浄・点検",
       "parentId": "stern_core_shell_town",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5070,13 +5075,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_core_shell_town_mid_basic_care_small_a",
       "name": "内部区画A",
       "parentId": "stern_core_shell_town_mid_basic_care",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5114,13 +5119,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_core_shell_town_mid_basic_care_small_b",
       "name": "内部区画B",
       "parentId": "stern_core_shell_town_mid_basic_care",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5158,13 +5163,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_repair_diagnosis",
       "name": "機体整備・損傷診断",
       "parentId": "stern_refine_lab_district",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5202,13 +5207,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_refine_lab_district_mid_repair_diagnosis_small_a",
       "name": "内部区画A",
       "parentId": "stern_refine_lab_district_mid_repair_diagnosis",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5246,13 +5251,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_repair_diagnosis_small_b",
       "name": "内部区画B",
       "parentId": "stern_refine_lab_district_mid_repair_diagnosis",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5290,13 +5295,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_equipment_custom",
       "name": "装備修理・改修",
       "parentId": "stern_refine_lab_district",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5334,13 +5339,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_refine_lab_district_mid_equipment_custom_small_a",
       "name": "内部区画A",
       "parentId": "stern_refine_lab_district_mid_equipment_custom",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5378,13 +5383,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_equipment_custom_small_b",
       "name": "内部区画B",
       "parentId": "stern_refine_lab_district_mid_equipment_custom",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5422,13 +5427,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_private_workshops",
       "name": "個人工房群",
       "parentId": "stern_refine_lab_district",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5466,13 +5471,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_refine_lab_district_mid_private_workshops_small_a",
       "name": "内部区画A",
       "parentId": "stern_refine_lab_district_mid_private_workshops",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5510,13 +5515,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_private_workshops_small_b",
       "name": "内部区画B",
       "parentId": "stern_refine_lab_district_mid_private_workshops",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5554,13 +5559,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_parts_storage",
       "name": "交換部品・工具倉庫",
       "parentId": "stern_refine_lab_district",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5598,13 +5603,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_refine_lab_district_mid_parts_storage_small_a",
       "name": "内部区画A",
       "parentId": "stern_refine_lab_district_mid_parts_storage",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5642,13 +5647,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_parts_storage_small_b",
       "name": "内部区画B",
       "parentId": "stern_refine_lab_district_mid_parts_storage",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5686,13 +5691,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_material_interface",
       "name": "素材・加工連携",
       "parentId": "stern_refine_lab_district",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5730,13 +5735,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "stern_refine_lab_district_mid_material_interface_small_a",
       "name": "内部区画A",
       "parentId": "stern_refine_lab_district_mid_material_interface",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5774,13 +5779,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "stern_refine_lab_district_mid_material_interface_small_b",
       "name": "内部区画B",
       "parentId": "stern_refine_lab_district_mid_material_interface",
-      "level": "small",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -5818,13 +5823,13 @@
         "legacyType": null,
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 4
     },
     {
       "id": "middle_terminal",
       "name": "中層ターミナル",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "circle",
@@ -5860,13 +5865,13 @@
         "legacyType": "terminal",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "core_shell_refine",
       "name": "コアシェル・リファイン",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "ring",
@@ -5903,13 +5908,13 @@
         "legacyType": "town",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "core_shell_town",
       "name": "コアシェルタウン〈船首・上位区〉",
-      "parentId": null,
-      "level": "large",
+      "parentId": "core_shell_refine",
       "objectType": "region",
       "geometry": {
         "type": "polygon",
@@ -6398,13 +6403,13 @@
         "legacyType": "town",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "refine_valley",
       "name": "リファインバレー〈船首・上位ラボ区〉",
-      "parentId": null,
-      "level": "large",
+      "parentId": "core_shell_refine",
       "objectType": "region",
       "geometry": {
         "type": "polygon",
@@ -6893,13 +6898,13 @@
         "legacyType": "workshop",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "alchimeria_lab",
       "name": "アルキメリア装備開発ラボ",
       "parentId": "refine_valley",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -6964,13 +6969,13 @@
         "legacyType": "workshop",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "resist_link_dome",
       "name": "レジストリンク・ドーム",
       "parentId": "middle_terminal",
-      "level": "medium",
       "objectType": "region",
       "geometry": {
         "type": "ring",
@@ -7007,13 +7012,13 @@
         "legacyType": "guild",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "arbora_sector",
       "name": "アルボラセクター",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "polygon",
@@ -7094,13 +7099,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "standard_fuel_factory",
       "name": "標準燃料生産施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7165,13 +7170,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "plant_oil_processing",
       "name": "植物油加工区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7228,13 +7233,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "fiber_resin_processing",
       "name": "植物繊維・樹脂加工区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7291,13 +7296,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_material_processing",
       "name": "植物資源加工施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7354,13 +7359,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "ecosystem_greenhouses",
       "name": "生態系再現温室群",
       "parentId": "arbora_sector",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7425,13 +7430,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "water_soil_cycle",
       "name": "水・土壌循環施設",
       "parentId": "arbora_sector",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7488,13 +7493,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "biological_management",
       "name": "生物・植物管理施設",
       "parentId": "arbora_sector",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7551,13 +7556,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "bio_material_greenhouse",
       "name": "バイオ素材研究温室",
       "parentId": "arbora_sector",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7622,13 +7627,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "middle_cargo_inspection",
       "name": "中層貨物検査区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7693,13 +7698,13 @@
         "legacyType": "industrial",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_weapon_operation_field",
       "name": "兵器動作場",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "rect",
@@ -7734,13 +7739,13 @@
         "legacyType": "shared",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "stern_core_shell_town",
       "name": "船尾タウン〈下位・混合街区〉",
-      "parentId": null,
-      "level": "large",
+      "parentId": "core_shell_refine",
       "objectType": "region",
       "geometry": {
         "type": "polygon",
@@ -8229,13 +8234,13 @@
         "legacyType": "town",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "stern_refine_lab_district",
       "name": "船尾工房・ラボ〈下位・混合街区〉",
-      "parentId": null,
-      "level": "large",
+      "parentId": "core_shell_refine",
       "objectType": "region",
       "geometry": {
         "type": "polygon",
@@ -8724,13 +8729,13 @@
         "legacyType": "workshop",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 2
     },
     {
       "id": "stern_equipment_lab",
       "name": "船尾実用技術ラボ〈下位区〉",
       "parentId": "stern_refine_lab_district",
-      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "rect",
@@ -8765,13 +8770,13 @@
         "legacyType": "workshop",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 3
     },
     {
       "id": "middle_terminal_concourse",
       "name": "中層ターミナルコンコース",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "circle",
@@ -8810,13 +8815,13 @@
         "roadType": "コンコース",
         "roadWidthM": 80,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_public_ring",
       "name": "中層中央環状路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "circle",
@@ -8856,13 +8861,13 @@
         "roadType": "主要幹線道路",
         "roadWidthM": 36,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_core_prom_enable",
       "name": "コアシェル生活遊歩路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9170,13 +9175,13 @@
         "roadType": "歩行通路",
         "roadWidthM": 8,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_refine_service_road",
       "name": "タウン・工房街連絡路（仮）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9232,13 +9237,13 @@
         "roadType": "一般道路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_mission_avenue",
       "name": "ターミナル船首側大型機通路（仮）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9311,13 +9316,13 @@
         "roadType": "大型機用主要通路",
         "roadWidthM": 48,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_resist_internal_corridor",
       "name": "レジストリンク環状内部通路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "none"
@@ -9351,13 +9356,13 @@
         "roadType": "歩行通路",
         "roadWidthM": 8,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_arbora_boulevard",
       "name": "アルボラ大通り",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9410,13 +9415,13 @@
         "roadType": "主要幹線道路",
         "roadWidthM": 36,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_arbora_loop",
       "name": "アルボラ管理環状路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9472,13 +9477,13 @@
         "roadType": "地区環状道路",
         "roadWidthM": 30,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_industrial_freight_road",
       "name": "左舷側・独立貨物幹線",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9527,13 +9532,13 @@
         "roadType": "重貨物道路",
         "roadWidthM": 32,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_cargo_tunnel",
       "name": "ターミナル貨物専用接続（仮）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9582,13 +9587,13 @@
         "roadType": "貨物トンネル",
         "roadWidthM": 32,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_botanical_service_tunnel",
       "name": "植物管理トンネル",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -9640,13 +9645,13 @@
         "roadType": "整備通路",
         "roadWidthM": 8,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_pod_loop",
       "name": "中層輸送ポッド環状線",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "circle",
@@ -9685,13 +9690,13 @@
         "roadType": "輸送ポッド線",
         "roadWidthM": 16,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "middle_emergency_bypass",
       "name": "中層非常迂回環状路",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10131,13 +10136,13 @@
         "roadType": "非常用迂回路",
         "roadWidthM": 12,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_industrial_starboard",
       "name": "右舷側・独立貨物幹線",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10186,13 +10191,13 @@
         "roadType": "重貨物道路",
         "roadWidthM": 32,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_weapon_operation_access",
       "name": "兵器動作場取付道路（案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10236,13 +10241,13 @@
         "roadType": "一般道路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_middle_terminal_large_stern",
       "name": "船尾側大型機専用通路（仮）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10323,13 +10328,13 @@
         "roadType": "大型機用主要通路",
         "roadWidthM": 48,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_middle_city_starboard_access",
       "name": "中層中心街入口（右舷側・仮）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10397,13 +10402,13 @@
         "roadType": "一般道路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_middle_city_port_access",
       "name": "中層中心街入口（左舷側・仮）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10467,13 +10472,13 @@
         "roadType": "一般道路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_middle_alchimeria_service",
       "name": "アルキメリアラボ取付道路（仮）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10517,13 +10522,13 @@
         "roadType": "施設取付道路",
         "roadWidthM": 12,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_oil_industrial_feeder",
       "name": "植物油加工施設・荷役接続",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10571,13 +10576,13 @@
         "roadType": "重貨物取付道路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_material_industrial_feeder",
       "name": "植物資源加工施設・荷役接続",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10625,13 +10630,13 @@
         "roadType": "重貨物取付道路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_bow_town_access",
       "name": "船首上位タウン入口",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10679,13 +10684,13 @@
         "roadType": "一般道路",
         "roadWidthM": 20,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_bow_lab_access",
       "name": "船首上位ラボ区入口",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10733,13 +10738,13 @@
         "roadType": "一般道路",
         "roadWidthM": 20,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_stern_town_access",
       "name": "船尾下位タウン入口",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10787,13 +10792,13 @@
         "roadType": "一般道路",
         "roadWidthM": 20,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_stern_lab_access",
       "name": "船尾下位ラボ区入口",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10841,13 +10846,13 @@
         "roadType": "一般道路",
         "roadWidthM": 20,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_fuel_industrial_feeder",
       "name": "燃料生産施設・荷役接続",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10891,13 +10896,13 @@
         "roadType": "貨物施設取付路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "draft_resin_industrial_feeder",
       "name": "繊維樹脂加工施設・荷役接続",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -10941,7 +10946,8 @@
         "roadType": "貨物施設取付路",
         "roadWidthM": 24,
         "status": "draft_route_requires_review"
-      }
+      },
+      "displayLevel": 1
     }
   ]
 }
