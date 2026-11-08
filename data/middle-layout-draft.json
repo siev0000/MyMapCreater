@@ -2123,8 +2123,9 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "stage1_arbora_processing_bbox_separation_verified; internal_and_outer_road_clearances_pending",
-    "layoutModel": "middle-terminal-internal-guild-v2"
+    "review": "stage1_arbora_processing_bbox_separation_verified; internal_and_outer_road_clearances_pending; efficiency_first_B_selected_macro_geometry_not_yet_committed",
+    "layoutModel": "middle-terminal-internal-guild-v2",
+    "stage1Focus": "B: generous aft natural district + near-terminal separated processing + cargo lift access"
   },
   "centralUrbanPlan": {
     "status": "draft_integrated_hub_and_space_review",
@@ -2325,6 +2326,202 @@
       "note": "現行GitHub配置案の簡易矩形で自然区と加工施設4件の重複を解消。施設内の温室・受付・作戦室は変更なし。通行可能な道路は今の段階では確定しない。"
     },
     "revisedAt": "2026-11-08",
-    "phase": 1
+    "phase": 1,
+    "preferredOption": "B",
+    "stage1Decision": "B案の考え方を採用して効率優先で設計中。個別施設寸法・座標は未確定のため据え置く。",
+    "efficiencyFirst": {
+      "status": "selected_for_stage1_planning_not_final_buildings",
+      "designPriority": "貨物リフトへの実移動距離・積み替え・交差の少なさを優先。一般生活区と危険物の分離は必須。",
+      "operationalChain": [
+        "アルボラ栽培／育苗",
+        "採取・一時検査",
+        "ターミナル船尾寄りの加工帯",
+        "貨物検査・仕分け",
+        "貨物専用接続・リフト",
+        "他階層・生活区へ出荷"
+      ],
+      "conceptLayout": {
+        "arbora": {
+          "type": "stepped_polygon",
+          "polygon": [
+            [
+              -660,
+              -400
+            ],
+            [
+              -1250,
+              -400
+            ],
+            [
+              -1250,
+              -730
+            ],
+            [
+              -1630,
+              -730
+            ],
+            [
+              -1630,
+              730
+            ],
+            [
+              -1250,
+              730
+            ],
+            [
+              -1250,
+              400
+            ],
+            [
+              -660,
+              400
+            ]
+          ],
+          "areaSqM": 1026800,
+          "note": "船尾の人工自然環境の一体化。広さは概算。正確な施設・環境境界は未確定"
+        },
+        "processingBelts": [
+          {
+            "id": "processing_starboard",
+            "name": "右舷・燃料／油加工帯",
+            "x": -800,
+            "y": 615,
+            "w": 830,
+            "h": 370
+          },
+          {
+            "id": "processing_port",
+            "name": "左舷・繊維／樹脂加工帯",
+            "x": -800,
+            "y": -615,
+            "w": 830,
+            "h": 370
+          }
+        ],
+        "cargoInspection": {
+          "id": "middle_cargo_inspection",
+          "x": -375,
+          "y": 0,
+          "w": 160,
+          "h": 140,
+          "note": "貨物専用接続の候補。現在の貨物検査区の正式な移動ではない"
+        },
+        "cargoFlowIndicative": [
+          [
+            [
+              -760,
+              0
+            ],
+            [
+              -520,
+              0
+            ],
+            [
+              -375,
+              0
+            ],
+            [
+              -250,
+              0
+            ]
+          ],
+          [
+            [
+              -800,
+              615
+            ],
+            [
+              -520,
+              615
+            ],
+            [
+              -500,
+              280
+            ],
+            [
+              -375,
+              0
+            ]
+          ],
+          [
+            [
+              -800,
+              -615
+            ],
+            [
+              -520,
+              -615
+            ],
+            [
+              -500,
+              -280
+            ],
+            [
+              -375,
+              0
+            ]
+          ]
+        ],
+        "ecologicalMacroZones": [
+          {
+            "id": "arbora_nursery",
+            "name": "育苗・栽培区",
+            "x": -930,
+            "y": 230,
+            "w": 290,
+            "h": 220
+          },
+          {
+            "id": "arbora_forest",
+            "name": "森林・樹木区",
+            "x": -990,
+            "y": -190,
+            "w": 330,
+            "h": 260
+          },
+          {
+            "id": "arbora_research",
+            "name": "調査・培養区",
+            "x": -1200,
+            "y": 0,
+            "w": 250,
+            "h": 160
+          },
+          {
+            "id": "arbora_wetland",
+            "name": "湿地・水循環区",
+            "x": -1460,
+            "y": 270,
+            "w": 270,
+            "h": 350
+          },
+          {
+            "id": "arbora_dry",
+            "name": "乾燥・高温区",
+            "x": -1450,
+            "y": -265,
+            "w": 260,
+            "h": 310
+          },
+          {
+            "id": "arbora_watch",
+            "name": "監視・生物管理区",
+            "x": -1500,
+            "y": 575,
+            "w": 230,
+            "h": 150
+          }
+        ]
+      },
+      "inspectionPending": [
+        "加工帯2か所へ既存4工場の個別占有寸法と搬送道路が収まるか検証",
+        "ターミナル船尾側の居住・工房街と工業帯の隔離距離",
+        "実際の貨物ゲート・貨物リフト・貨物検査区の接続と搬送距離を比較",
+        "船殻保守内側、自然区の広さ、天井高さ、水循環、避難の整合",
+        "アルボラ内の既存4施設の位置を新しい広い区画へ合わせて再検証",
+        "自然区の監視設備・研究設備の具体数と個別座標は後工程"
+      ],
+      "note": "A/C案と比較してB案を優先。ここでは施設の実際のx/y/w/h、既存道路points、Notionは変更しない。地図のマクロ区画だけの優先候補"
+    }
   }
 }
