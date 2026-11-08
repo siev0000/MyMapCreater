@@ -536,13 +536,23 @@ function create(opts){
      data=await result.json();
      if(data.schemaVersion!==2||data.buildingId!==obj.id||!Array.isArray(data.objects))
       throw Error("建物内部JSONの形式または建物IDが一致しません");
-     if(data.objects.some(o=>o.id===obj.id||!o.id||o.parentId!==obj.id))
-      throw Error("建物内部JSONの親子参照が不正です");
+     const byId=new Map(data.objects.map(child=>[child.id,child]));
+     if(byId.size!==data.objects.length||byId.has(obj.id))throw Error("建物内部JSONに重複IDがあります");
+     for(const child of data.objects){
+      if(!child.id)throw Error("建物内部JSONにIDのない設備があります");
+      const seen=new Set();let current=child;
+      while(current&&current.id!==obj.id&&!seen.has(current.id)){
+       seen.add(current.id);
+       current=current.parentId===obj.id?obj:byId.get(current.parentId);
+      }
+      if(current?.id!==obj.id)throw Error("建物内部JSONの親子参照が不正です: "+child.id);
+     }
      interiorCache.set(source,data);
     }
     if(request!==active||!scene?.objects.some(o=>o.id===obj.id&&o.interiorSource===source))return;
     const seen=new Set(scene.objects.map(o=>o.id));
-    const newObjects=data.objects.filter(o=>!seen.has(o.id));
+    if(data.objects.some(child=>seen.has(child.id)))throw Error("建物内部JSONのオブジェクトIDが街マップと衝突しています");
+    const newObjects=data.objects;
     sceneCheck({...scene,objects:[...scene.objects,...newObjects]});
     scene.objects.push(...JSON.parse(JSON.stringify(newObjects)));
     interiorLoaded.add(obj.id);
