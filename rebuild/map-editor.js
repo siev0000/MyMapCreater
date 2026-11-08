@@ -8,7 +8,7 @@ const notice=(message,kind="")=>{$("message").className=kind;$("message").textCo
 const input=id=>$(id).value;
 const checked=id=>$(id).checked;
 const state={scene:null,selectedId:null,options:[],undo:[],redo:[],dragBefore:null,
- savingName:"",dirty:false,internal:false};
+ savingName:"",dirty:false,internal:false,currentOptionKey:null};
 let viewer;
 function sceneNow(){return viewer?.getScene()||state.scene}
 function buttonStatus(){
@@ -370,6 +370,7 @@ async function load(option){
  state.dragBefore=null;state.undo.length=0;state.redo.length=0;state.selectedId=null;
  notice("読み込み中："+option.title);
  $("scene-select").value=option.key;
+ state.currentOptionKey=option.key;
  if(history.replaceState)history.replaceState(null,"","#"+encodeURIComponent(option.key));
  await viewer.show(option.id,option.projection||null,option.source);
  if(sceneNow())notice("編集する図形を選択してください");
@@ -378,7 +379,7 @@ bind("scene-select",async()=>{
  const option=state.options.find(o=>o.key===input("scene-select"));
  if(!option)return;
  if(state.dirty&&!confirm("未保存の編集を破棄してマップを切り替えますか？")){
-  $("scene-select").value=state.options.find(o=>o.id===state.scene?.id)?.key||state.options[0].key;
+  $("scene-select").value=state.currentOptionKey||state.options[0].key;
   return;
  }
  await load(option);
