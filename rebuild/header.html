@@ -19,12 +19,20 @@ header{position:sticky;top:0;z-index:10;background:#0d202cee;border-bottom:1px s
 .menu-wrap{position:relative;flex:none}
 .menu-trigger{min-width:76px;height:28px;background:#17333f;border:1px solid #567a8d;border-radius:7px;padding:3px 8px;font-size:12px;white-space:nowrap;font-weight:700}
 .menu-trigger[aria-expanded="true"]{border-color:var(--accent);background:#1a4654}
-.menu-popover{position:absolute;z-index:20;right:0;top:calc(100% + 7px);min-width:230px;max-width:min(90vw,360px);background:#112936;border:1px solid #608696;border-radius:10px;padding:8px;box-shadow:0 12px 30px #0009}
+.menu-popover{position:absolute;z-index:20;right:0;top:calc(100% + 7px);width:min(90vw,370px);background:#112936;border:1px solid #608696;border-radius:10px;padding:8px;box-shadow:0 12px 30px #0009;max-height:min(77dvh,650px);display:flex;flex-direction:column;overflow:hidden}
 .menu-popover[hidden]{display:none}
 .menu-heading{font-size:11px;color:var(--muted);padding:4px 8px 7px}
-.menu-list{display:grid;gap:4px}
+.menu-list{display:grid;gap:3px;min-height:0;max-height:min(56dvh,475px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:3px 1px 6px}
 .menu-list button{width:100%;background:#193743;border:1px solid transparent;text-align:left;border-radius:7px;padding:10px 11px;font-size:13px}
 .menu-list button[aria-current="true"]{border-color:var(--accent);color:#e5ffff}
+.map-tree-row{display:flex;align-items:center;gap:6px;min-height:36px;padding-top:6px!important;padding-bottom:6px!important;background:#17313d!important}
+.map-tree-row[aria-expanded="true"]{background:#20434e!important}
+.map-tree-caret{flex:none;width:12px;color:#92bac5;text-align:center;font-size:12px}
+.map-tree-tag{flex:none;font-size:10px;font-weight:750;color:#a3c4ca;min-width:31px}
+.map-tree-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.map-tree-active{color:#b6f0ec!important}
+.map-tree-status{font-size:11px;color:#a0bcc3;padding:8px 10px 8px 35px;line-height:1.5}
+.map-tree-row:hover{background:#2a505c!important}
 .segment-scroll{min-width:0;flex:1;overflow-x:auto;scrollbar-width:none}
 .segment-scroll::-webkit-scrollbar{display:none}
 .segments{display:flex;width:max-content;min-width:100%;gap:4px;align-items:center}
@@ -89,8 +97,8 @@ main{max-width:none;padding:0}
    <div class="menu-wrap" id="map-menu">
     <button type="button" id="map-menu-button" class="menu-trigger" aria-haspopup="true" aria-controls="map-menu-popover" aria-expanded="false">☰ マップ</button>
     <div id="map-menu-popover" class="menu-popover" hidden>
-     <div class="menu-heading">大枠マップの切り替え</div>
-     <div id="map-menu-list" class="menu-list" role="menu"></div>
+     <div class="menu-heading">マップ → 大枠 → 中枠（押すと展開・選択）</div>
+     <div id="map-menu-list" class="menu-list" role="group" aria-label="マップ階層一覧"></div>
      <div class="menu-heading">表示設定</div>
      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
      <button type="button" id="road-switch" class="menu-settings-button" title="主要のみ → 全案 → 非表示">経路：主要のみ</button>
@@ -128,7 +136,7 @@ main{max-width:none;padding:0}
  </section>
 </main>
 
-<script src="./map-viewer.js?v=middle-arbora-v6"></script>
+<script src="./map-viewer.js?v=map-tree-v7"></script>
 <script>
 (()=>{
 'use strict';
@@ -138,9 +146,27 @@ const viewer=window.AAMapViewer.create({
  info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
  infoClose:$('detail-close'),legend:$('legend-footer'),legendContent:$('legend-content'),
  legendButton:$('legend-switch'),roadButton:$('road-switch'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
- zoomLabel:$('zoom-label'),hint:$('map-hint')
+ zoomLabel:$('zoom-label'),hint:$('map-hint'),
+ onLayoutLoaded:(mapId,data)=>{
+  if(data)floorStructures.set(mapId,viewer.getHierarchy());
+  else floorStructures.delete(mapId);
+  floorLoadErrors.delete(mapId);
+  if(pendingFocus?.floorId===mapId){
+   const pending=pendingFocus;pendingFocus=null;
+   viewer.selectItemById(pending.id,{focus:true});
+  }
+  renderMapTree();
+ },
+ onLayoutError:(mapId,message)=>{
+  floorLoadErrors.set(mapId,message);renderMapTree();
+ },
+ onSelectionChanged:(mapId,item)=>{
+  selectedObjectId=item?.id||null;
+  renderMapTree();
+ }
 });
-let nodes=new Map(),roots=[],selected=null,viewId='top';
+let nodes=new Map(),roots=[],selected=null,viewId='top',selectedObjectId=null,pendingFocus=null;
+const treeExpanded=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
 function validate(data){
  if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップの設定形式が不正です');
  const map=new Map();
@@ -184,16 +210,103 @@ function persist(){
  const hash=encodeURIComponent(state);
  if(location.hash.slice(1)!==hash)history.replaceState(null,'','#'+hash);
 }
+// Collapsible selector built from map-tree.json and the active floor's actual JSON.
+// An unassigned facility is NOT silently attributed to a nearby district.
+function renderMapTree(){
+ const container=$('map-menu-list');
+ if(!container)return;
+ container.replaceChildren();
+ if(!roots.length)return;
+ function item({key,label,category,depth=0,expanded,hasChildren=false,active=false,onClick}){
+  const button=document.createElement('button');button.type='button';button.className='map-tree-row';
+  button.style.paddingLeft=(8+depth*14)+'px';
+  button.setAttribute('aria-current',String(active));
+  if(hasChildren)button.setAttribute('aria-expanded',String(Boolean(expanded)));
+  const caret=document.createElement('span');caret.className='map-tree-caret';
+  caret.textContent=hasChildren?(expanded?'▾':'▸'):'·';
+  const tag=document.createElement('span');tag.className='map-tree-tag';tag.textContent=category;
+  const title=document.createElement('span');title.className='map-tree-label';title.textContent=label;
+  button.append(caret,tag,title);
+  if(active)button.classList.add('map-tree-active');
+  button.addEventListener('click',onClick);
+  container.append(button);
+  return button;
+ }
+ function toggle(key){if(treeExpanded.has(key))treeExpanded.delete(key);else treeExpanded.add(key)}
+ function message(text){const e=document.createElement('div');e.className='map-tree-status';e.textContent=text;container.append(e)}
+ for(const root of roots){
+  const rootKey='map:'+root.id,rootOpen=treeExpanded.has(rootKey);
+  item({key:rootKey,label:root.name,category:'マップ',depth:0,expanded:rootOpen,hasChildren:true,
+   active:selected===root.id,onClick:()=>{
+    toggle(rootKey);if(selected!==root.id)select(root.id,'top');else renderMapTree();
+   }});
+  if(!rootOpen)continue;
+  for(const v of root.views||[]){
+   item({key:root.id+'::'+v.id,label:v.displayName||v.name,category:'表示',depth:1,
+    active:selected===root.id&&viewId===v.id,onClick:()=>{select(root.id,v.id);closeMenu()}});
+  }
+  for(const floor of children(root.id)){
+   const key='floor:'+floor.id,opened=treeExpanded.has(key);
+   item({key,label:floor.name,category:'階層',depth:1,expanded:opened,hasChildren:true,
+    active:selected===floor.id&&!selectedObjectId,
+    onClick:()=>{
+     toggle(key);
+     if(selected!==floor.id)select(floor.id,null);
+     else renderMapTree();
+    }});
+   if(!opened)continue;
+   const hierarchy=floorStructures.get(floor.id);
+   if(!hierarchy){
+    message(floorLoadErrors.has(floor.id)?
+     '読み込み失敗：'+floorLoadErrors.get(floor.id):
+     selected===floor.id?'配置データを読み込み中…':'階層を選択すると大枠が表示されます');
+    continue;
+   }
+   if(!hierarchy.large.length&&!hierarchy.unassigned.length){message('区画は未登録です');continue}
+   for(const large of hierarchy.large){
+    const groupKey='large:'+floor.id+':'+large.id,groupOpen=treeExpanded.has(groupKey);
+    const hasChildren=large.children.length>0;
+    item({key:groupKey,label:large.name,category:'大枠',depth:2,
+     expanded:groupOpen,hasChildren,active:selected===floor.id&&selectedObjectId===large.id,
+     onClick:()=>{
+      if(hasChildren)toggle(groupKey);
+      focusMapItem(floor.id,large.id);
+      if(!hasChildren)closeMenu();
+     }});
+    if(!groupOpen||!hasChildren)continue;
+    for(const mid of large.children){
+     item({key:'medium:'+floor.id+':'+mid.id,label:mid.name,category:'中枠',depth:3,
+      active:selected===floor.id&&selectedObjectId===mid.id,
+      onClick:()=>{focusMapItem(floor.id,mid.id);closeMenu()}});
+    }
+   }
+   // Unknown memberships are clearly separated, never guessed from proximity.
+   if(hierarchy.unassigned.length){
+    const key='unassigned:'+floor.id,opened=treeExpanded.has(key);
+    item({key,label:'所属未設定の施設 ('+hierarchy.unassigned.length+')',
+     category:'未分類',depth:2,hasChildren:true,expanded:opened,onClick:()=>{toggle(key);renderMapTree()}});
+    if(opened)for(const f of hierarchy.unassigned){
+     item({key:'loose:'+floor.id+':'+f.id,label:f.name,category:'施設',depth:3,
+      active:selected===floor.id&&selectedObjectId===f.id,
+      onClick:()=>{focusMapItem(floor.id,f.id);closeMenu()}});
+    }
+   }
+  }
+ }
+}
+function focusMapItem(floorId,id){
+ if(selected!==floorId){
+  pendingFocus={floorId,id};select(floorId,null);return;
+ }
+ if(!viewer.selectItemById(id,{focus:true})){
+  pendingFocus={floorId,id};
+ }
+ renderMapTree();
+}
 function render(){
  const root=activeRoot(),active=nodes.get(selected);
  if(!root||!active)return;
- const menu=$('map-menu-list');menu.replaceChildren();
- for(const n of roots){
-  const button=document.createElement('button');button.type='button';button.textContent=n.name;
-  button.setAttribute('role','menuitem');button.setAttribute('aria-current',String(n.id===root.id));
-  button.addEventListener('click',()=>{select(n.id,null);closeMenu();$('map-menu-button').focus()});
-  menu.append(button);
- }
+ renderMapTree();
  const options=availableViews(root),key=selectedKey(),tabs=$('view-tabs'),viewPicker=$('view-select');
  tabs.replaceChildren();viewPicker.replaceChildren();
  for(const v of options){
@@ -240,6 +353,11 @@ $('map-menu-button').addEventListener('click',()=>{
  const menu=$('map-menu-popover');
  menu.hidden=!menu.hidden;
  $('map-menu-button').setAttribute('aria-expanded',String(!menu.hidden));
+ if(!menu.hidden){
+  const root=activeRoot();
+  if(root)treeExpanded.add('map:'+root.id);
+  renderMapTree();
+ }
 });
 document.addEventListener('pointerdown',e=>{
  if(!$('map-menu').contains(e.target))closeMenu();
