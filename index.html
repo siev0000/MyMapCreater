@@ -1472,7 +1472,8 @@ function clipToProtectedInterior(){
  hullProtectedPath(PROTECTED_SHELL.interior);ctx.clip();
 }
 function drawHullStructuralLabels(){
- if(!state.hull)return;
+ // Avoid two long permanent structural annotations on the middle map.
+ if(!state.hull||currentMap==='middle')return;
  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
  ctx.font='bold 14px system-ui';
  ctx.fillStyle='#e2f1fa';
