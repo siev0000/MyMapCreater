@@ -181,7 +181,7 @@ function renderGeometry(obj){
  }
 }
 function initBuildingTemplates(){
- const list=window.AAMapBuildingTemplates?.presets||[];
+ const list=window.AAMapBuildingTemplates?.allPresets()||[];
  const picker=$("building-template");picker.replaceChildren();
  for(const category of [...new Set(list.map(t=>t.category))]){
   const group=document.createElement("optgroup");
@@ -198,16 +198,68 @@ function initBuildingTemplates(){
   const t=list.find(t=>t.id===input("building-template"));
   if(!t)return;
   const [w,h]=t.cells;
-  $("building-template-description").textContent=t.description+"｜"+w+"×"+h+"マス（"+(w*.5)+"×"+(h*.5)+"m）｜"+t.floors+"階";
+  $("building-template-description").textContent=t.description+"｜"+(t.custom?"保存時 "+t.originalSize.join("×")+"座標":w+"×"+h+"マス（"+(w*.5)+"×"+(h*.5)+"m）")+"｜"+t.floors+"階";
   $("building-base-name").value=t.name;
  }
  bind("building-template",describe);
  describe();
 }
+const customStorageKey="mymapcreater:building-templates:v1";
+function loadCustomBuildingTemplates(){
+ try{
+  const raw=localStorage.getItem(customStorageKey);
+  if(raw){const items=JSON.parse(raw);if(Array.isArray(items))for(const item of items)window.AAMapBuildingTemplates.register(item)}
+ }catch(error){notice("保存済みテンプレートの読込に失敗："+error.message,"error")}
+}
+function persistCustomBuildingTemplates(){
+ try{localStorage.setItem(customStorageKey,JSON.stringify(window.AAMapBuildingTemplates.custom))}
+ catch(error){notice("ブラウザー保存できません。JSON書き出しでバックアップしてください："+error.message,"error")}
+}
+function downloadBuildingFile(payload,filename){
+ const blob=new Blob([JSON.stringify(payload,null,2)+"\n"],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),0);
+}
+bind("building-capture",()=>{
+ const scene=sceneNow(),library=window.AAMapBuildingTemplates;
+ try{
+  const spec=library.capture(scene,state.selectedId,{
+   id:input("building-template-id"),name:input("building-template-name")
+  });
+  library.register(spec);persistCustomBuildingTemplates();initBuildingTemplates();
+  $("building-template").value=spec.id;
+  $("building-template-description").textContent="保存済み：" + spec.name+"｜"+spec.objects.length+"オブジェクト";
+  notice("自作テンプレートを登録しました。JSON保存で他端末にも持ち出せます。","success");
+ }catch(error){notice("テンプレート登録できません："+error.message,"error")}
+},"click");
+bind("building-export",()=>{
+ const lib=window.AAMapBuildingTemplates;
+ if(!lib.custom.length){notice("書き出す自作テンプレートがありません","error");return}
+ downloadBuildingFile({schema:"map-building-template-library-v1",items:lib.custom},"custom-building-templates.json");
+ notice("自作建物テンプレートを書き出しました","success");
+},"click");
+bind("building-import",()=>$("building-import-file").click(),"click");
+bind("building-import-file",async()=>{
+ const file=$("building-import-file").files?.[0];$("building-import-file").value="";
+ if(!file)return;
+ try{
+  const data=JSON.parse(await file.text());
+  const items=data.schema==="map-building-template-library-v1"?data.items:[data];
+  if(!Array.isArray(items)||items.length>100)throw Error("テンプレート数が不正です");
+  // Validate all entries before registering any, preserving existing custom templates.
+  for(const entry of items){
+   if(entry?.schema!=="map-building-template-v1"||!Array.isArray(entry.objects))throw Error("テンプレートJSONが不正です");
+  }
+  for(const entry of items)window.AAMapBuildingTemplates.register(entry);
+  persistCustomBuildingTemplates();initBuildingTemplates();
+  notice(items.length+"件の建物テンプレートを読み込みました","success");
+ }catch(error){notice("テンプレートを読み込めません："+error.message,"error")}
+});
 function addBuildingTemplates(){
  const scene=sceneNow(),library=window.AAMapBuildingTemplates;
  if(!scene||!library){notice("建物テンプレートを読み込めません","error");return}
- const t=library.presets.find(t=>t.id===input("building-template"));
+ const t=library.allPresets().find(t=>t.id===input("building-template"));
  const count=Number(input("building-count")),columns=Number(input("building-columns")),gap=Number(input("building-gap"));
  if(!t||!Number.isSafeInteger(count)||count<1||count>100||
     !Number.isSafeInteger(columns)||columns<1||columns>25||
@@ -234,8 +286,10 @@ function addBuildingTemplates(){
  try{
   for(let i=0;i<count;i++){
    const col=i%columns,row=Math.floor(i/columns);
-   const x=p[0]+col*(t.cells[0]*spacing+gapDistance);
-   const y=p[1]+row*(t.cells[1]*spacing+gapDistance);
+   const width=t.custom?t.originalSize[0]:t.cells[0]*spacing;
+   const height=t.custom?t.originalSize[1]:t.cells[1]*spacing;
+   const x=p[0]+col*(width+gapDistance);
+   const y=p[1]+row*(height+gapDistance);
    const name=count===1?baseName:baseName+" "+(i+1);
    const id=prefix();
    if(!firstId)firstId=id;
@@ -573,6 +627,7 @@ viewer=window.AAMapViewer.create({
  }
 });
 setGridInputs(gridDefaults);
+loadCustomBuildingTemplates();
 initBuildingTemplates();
 async function init(){
  try{
