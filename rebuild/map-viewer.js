@@ -311,8 +311,25 @@ function create(opts){
   ctx.beginPath();ctx.arc(hinge[0],hinge[1],Math.max(1/scale(),len*.055),0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
   ctx.restore();return true;
  }
+ function traceSupplyIcon(obj,emphasized=false){
+  if(obj.objectType!=="supply")return false;
+  const g=obj.geometry||{};
+  const point=g.type==="rect"?[g.x+g.width/2,g.y+g.height/2]:
+   Array.isArray(obj.label?.position)?obj.label.position:null;
+  if(!point)return true;
+  ctx.save();
+  const size=Math.max(12,finite(obj.icon?.fontSize,18))/scale();
+  ctx.font=size+"px system-ui, sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(obj.icon?.text||"●",point[0],point[1]);
+  if(emphasized){
+   ctx.strokeStyle="#ffefa7";ctx.lineWidth=1.4/scale();
+   ctx.strokeRect(point[0]-size*.72,point[1]-size*.72,size*1.44,size*1.44);
+  }
+  ctx.restore();return true;
+ }
  function traceStroke(obj,emphasized=false){
   const st=obj.style||{},g=obj.geometry;
+  if(obj.objectType==="supply"&&traceSupplyIcon(obj,emphasized))return;
   if(!g||g.type==="none")return;
   ctx.save();
   ctx.globalAlpha=emphasized?1:clamp(finite(st.opacity,1),0,1);
