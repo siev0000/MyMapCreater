@@ -456,7 +456,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
           continue;
         }
         if(f.type==="terminal"&&current().editorMeta?.status==="draft")continue;
-        const c=worldToPixel(f.x,f.y),label=f.short||f.name;
+        const c=worldToPixel(...(f.mapLabelPosition||[f.x,f.y])),label=f.short||f.name;
         ctx.strokeStyle="#0e202a";ctx.lineWidth=4;ctx.strokeText(label,c.px,c.py-12,230);
         ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
       }
