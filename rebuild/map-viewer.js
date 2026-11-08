@@ -105,6 +105,7 @@ function create(opts){
  const legendButton=opts.legendButton,roadButton=opts.roadButton;
  const memory=new Map(),pointers=new Map();
  let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
+ const interiorCache=new Map(),interiorPending=new Map(),interiorLoaded=new Set();
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
  let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null;
  let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
@@ -515,6 +516,44 @@ function create(opts){
   drawLabels(list);
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
  }
+ // Exterior scene is loaded first. Interiors are fetched only after selecting
+ // the corresponding facility; repeated selections reuse the cached payload.
+ async function ensureInterior(obj){
+  if(!obj?.interiorSource||!scene||interiorLoaded.has(obj.id))return;
+  const source=obj.interiorSource,key=sceneKey+"::"+obj.id,active=request;
+  if(interiorPending.has(key))return interiorPending.get(key);
+  const task=(async()=>{
+   try{
+    if(opts.onInteriorStatus)opts.onInteriorStatus(obj.id,"loading");
+    let data=interiorCache.get(source);
+    if(!data){
+     const result=await fetch(source,{cache:"no-store"});
+     if(!result.ok)throw Error("HTTP "+result.status);
+     data=await result.json();
+     if(data.schemaVersion!==2||data.buildingId!==obj.id||!Array.isArray(data.objects))
+      throw Error("建物内部JSONの形式または建物IDが一致しません");
+     if(data.objects.some(o=>o.id===obj.id||!o.id||o.parentId!==obj.id))
+      throw Error("建物内部JSONの親子参照が不正です");
+     interiorCache.set(source,data);
+    }
+    if(request!==active||!scene?.objects.some(o=>o.id===obj.id&&o.interiorSource===source))return;
+    const seen=new Set(scene.objects.map(o=>o.id));
+    const newObjects=data.objects.filter(o=>!seen.has(o.id));
+    sceneCheck({...scene,objects:[...scene.objects,...newObjects]});
+    scene.objects.push(...JSON.parse(JSON.stringify(newObjects)));
+    interiorLoaded.add(obj.id);
+    if(opts.onInteriorLoaded)opts.onInteriorLoaded(obj.id,getScene());
+    if(opts.onInteriorStatus)opts.onInteriorStatus(obj.id,"loaded");
+    draw();
+   }catch(error){
+    if(request===active){
+     if(opts.onInteriorStatus)opts.onInteriorStatus(obj.id,"error",error.message);
+     if(opts.hint)setHint("建物内部の読み込み失敗: "+error.message);
+    }
+   }finally{interiorPending.delete(key)}
+  })();
+  interiorPending.set(key,task);return task;
+ }
  function showDetails(obj){
   selected=obj||null;
   const panel=opts.info;
@@ -527,6 +566,7 @@ function create(opts){
   }
   draw();
   if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(sceneKey,selected);
+  if(selected?.interiorSource)void ensureInterior(selected);
  }
  function getHierarchy(){
   if(!scene)return{roots:[]};
@@ -597,6 +637,8 @@ function create(opts){
  function replaceScene(next,{preserveView=true,selectedId=null}={}){
   const valid=sceneCheck(clone(next));
   ++request;scene=valid;viewRootId=null;objectDrag=null;
+  interiorLoaded.clear();
+  for(const obj of scene.objects)if(obj.interiorSource&&scene.objects.some(child=>child.parentId===obj.id))interiorLoaded.add(obj.id);
   if(!preserveView){initialScale=computeScale();zoom=1;panX=0;panY=0}
   else initialScale=computeScale();
   setupModes();
@@ -776,7 +818,7 @@ function create(opts){
  async function show(mapId,viewId,source){
   const key=[mapId,viewId||"",source||""].join("::");
   if(key===projection&&scene)return;
-  projection=key;sceneKey=mapId;selected=null;viewRootId=null;scene=null;
+  projection=key;sceneKey=mapId;selected=null;viewRootId=null;scene=null;interiorLoaded.clear();
   if(opts.info)opts.info.hidden=true;
   reset();
   const myRequest=++request;
