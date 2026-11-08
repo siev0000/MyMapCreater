@@ -11000,10 +11000,24 @@
         "color": "#ffffff",
         "maxWidth": 90
       },
-      "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
+      "detail": "【仮配置テスト】収納棚。選択時に複数の収納物資を一覧表示するための動作確認データ。正式な物資配置ではありません。",
       "metadata": {
         "testOnly": true
-      }
+      },
+      "contents": [
+        {
+          "presetId": "tool_kit",
+          "quantity": 2
+        },
+        {
+          "presetId": "hardware_parts",
+          "quantity": 12
+        },
+        {
+          "presetId": "machine_parts",
+          "quantity": 4
+        }
+      ]
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_a_test_table",
