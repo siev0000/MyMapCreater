@@ -116,12 +116,13 @@ function create(opts){
   setRoadMode(next);
  });
  syncRoadButton();
- function setCurrentHint(){
-  const n=visibleRoads().length;
-  const label=data?(floor==="middle"?"中層":"階層")+"・配置検討案｜経路"+n+"/"+data.roads.length:"船体表示";
-  hint.textContent=label+"｜"+RENDER_REVISION;
+ // The header's map title chip displays the map name. Avoid the old
+ // developer-status label covering the map.
+ function setCurrentHint(){setHint("")}
+ function setHint(message){
+  const value=String(message||"");
+  hint.textContent=value;hint.hidden=!value;
  }
- function setHint(s){hint.textContent=s||""}
  function baseScale(){return Math.min((width-34)/2500,(height-30)/4000)}
  function scale(){return baseScale()*zoom}
  function worldToScreen(x,y){
@@ -496,7 +497,7 @@ function create(opts){
   if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(mapId,null);
   const myToken=++token;
   if(!source){
-   setHint(projection==="side"?"船体側面の詳細描画は次の段階で追加します。":"船体全域の上面表示（外殻幅は現行図面の仮案）。");
+   setHint(projection==="side"?"側面図はまだ未実装です。":"");
    renderLegend();
    if(typeof opts.onLayoutLoaded==="function")opts.onLayoutLoaded(mapId,null);
    return;
