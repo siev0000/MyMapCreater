@@ -132,8 +132,45 @@ function create(opts){
   const l=layers.find(x=>x.id===obj.layer);
   return finite(obj.zIndex,finite(l?.zIndex,0));
  }
+ const floorChoices=new Map();
+ function getFloorContext(){
+  if(!scene||!selected)return null;
+  const byId=new Map(scene.objects.map(o=>[o.id,o]));
+  let current=selected;
+  const seen=new Set();
+  while(current&&!seen.has(current.id)){
+   seen.add(current.id);
+   if(Array.isArray(current.floors)&&current.floors.length){
+    const valid=current.floors;
+    const selectedFloorId=floorChoices.get(current.id)||valid[0].id;
+    return{ownerId:current.id,floors:valid.map(f=>({id:f.id,label:f.label||f.id})),selectedFloorId};
+   }
+   current=byId.get(current.parentId);
+  }
+  return null;
+ }
+ function setFloor(floorId){
+  const context=getFloorContext();
+  if(!context||!context.floors.some(f=>f.id===floorId))return false;
+  floorChoices.set(context.ownerId,floorId);
+  const owner=scene.objects.find(o=>o.id===context.ownerId);
+  showDetails(owner);
+  return true;
+ }
  function visible(obj){
   if(obj.visible===false)return false;
+  if(obj.floorId){
+   const context=getFloorContext();
+   if(!context||obj.floorId!==context.selectedFloorId)return false;
+   const byId=new Map(scene.objects.map(o=>[o.id,o]));
+   let parent=byId.get(obj.parentId),belongs=false;
+   const seen=new Set();
+   while(parent&&!seen.has(parent.id)){
+    if(parent.id===context.ownerId){belongs=true;break}
+    seen.add(parent.id);parent=byId.get(parent.parentId);
+   }
+   if(!belongs)return false;
+  }
   const v=obj.visibility||{};
   if(v.whenParentSelected){
    if(!selected)return false;
@@ -263,6 +300,10 @@ function create(opts){
   if(!obj||(!force&&obj.selectable===false))return false;
   if(focus){
    const g=obj.geometry||{};
+   if(Array.isArray(obj.floors)&&obj.floors.length&&g.type==="rect"){
+    const targetScale=Math.min(width/Math.max(1,g.width*1.75),height/Math.max(1,g.height*1.75));
+    zoom=Math.min(24,Math.max(zoom,targetScale/Math.max(initialScale,.000001)));
+   }
    let p=obj.label?.position||g.center||[0,0];
    if(g.type==="rect")p=[g.x+g.width/2,g.y+g.height/2];
    if(g.type==="polygon"&&g.points?.length){
@@ -551,7 +592,7 @@ function create(opts){
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById,getScene,getSelected,replaceScene,setEditMode,
+ return{show,reset,getHierarchy,selectItemById,getScene,getSelected,getFloorContext,setFloor,replaceScene,setEditMode,
   getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
