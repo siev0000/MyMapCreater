@@ -236,9 +236,9 @@ function renderMapTree(){
  function message(text){const e=document.createElement('div');e.className='map-tree-status';e.textContent=text;container.append(e)}
  for(const root of roots){
   const rootKey='map:'+root.id,rootOpen=treeExpanded.has(rootKey);
-  item({key:rootKey,label:root.name,category:'マップ',depth:0,expanded:rootOpen,hasChildren:true,
+  item({key:rootKey,label:root.name,category:'船体',depth:0,expanded:rootOpen,hasChildren:true,
    active:selected===root.id,onClick:()=>{
-    toggle(rootKey);if(selected!==root.id)select(root.id,'top');else renderMapTree();
+    toggle(rootKey);renderMapTree();
    }});
   if(!rootOpen)continue;
   for(const v of root.views||[]){
@@ -247,7 +247,7 @@ function renderMapTree(){
   }
   for(const floor of children(root.id)){
    const key='floor:'+floor.id,opened=treeExpanded.has(key);
-   item({key,label:floor.name,category:'階層',depth:1,expanded:opened,hasChildren:true,
+   item({key,label:floor.name,category:'マップ',depth:1,expanded:opened,hasChildren:true,
     active:selected===floor.id&&!selectedObjectId,
     onClick:()=>{
      toggle(key);
