@@ -184,7 +184,8 @@ main{max-width:none;padding:0}
 .interior-breadcrumb{position:absolute;z-index:7;top:8px;left:90px;right:160px;font-size:11px;line-height:1.5;padding:6px 10px;border:1px solid #678f9c;border-radius:7px;background:rgba(6,28,37,.93);color:#ddf5f5;overflow-wrap:anywhere;pointer-events:none}
 .interior-breadcrumb[hidden]{display:none}
 @media(max-width:500px){.interior-breadcrumb{left:73px;right:100px;top:6px;font-size:10px;padding:4px 6px}}
-/* An explicit drill-down menu replaces the unclear selection-only behavior. */
+.map-title-chip[hidden]{display:none}
+ /* An explicit drill-down menu replaces the unclear selection-only behavior. */
 .detail-actions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
 .map-info-footer .detail-top .detail-action{width:auto;height:auto;min-height:28px;padding:4px 7px;font-size:11px;color:#eaf8f9;background:#214a58}
 .detail-action[hidden]{display:none!important}
@@ -341,6 +342,7 @@ const viewer=window.AAMapViewer.create({
   }
   const navigation=viewer.getSelectionNavigation();
   const viewRoot=viewer.getViewRoot();
+  $('current-map-title').hidden=Boolean(viewRoot);
   const parentBtn=$('go-parent'),childBtn=$('open-children'),childNav=$('child-navigation');
   parentBtn.hidden=!viewRoot;
   parentBtn.textContent='← 上の階層へ';
