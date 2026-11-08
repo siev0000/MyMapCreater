@@ -131,6 +131,7 @@ function renderSelected(){
  $("obj-id").value=obj.id;
  $("obj-name").value=obj.name||"";
  $("obj-level").value=obj.level||"facility";
+  $("obj-display-level").value=obj.displayLevel??"";
  $("obj-type").value=obj.objectType||"";
  const opts=[["","（親なし）"],...data.objects.filter(o=>o.id!==obj.id).map(o=>[o.id,o.name||o.id])];
  fillSelect($("obj-parent"),opts,obj.parentId||"");
@@ -192,6 +193,11 @@ function changeObject(callback){
 function bind(id,callback,event="change"){$(id).addEventListener(event,callback)}
 function changeString(id,key){bind(id,()=>changeObject(o=>{o[key]=input(id)}))}
 changeString("obj-name","name");changeString("obj-level","level");
+bind("obj-display-level",()=>{
+ const value=Number(input("obj-display-level"));
+ if(!Number.isSafeInteger(value)||value<1){notice("表示Lvは1以上の整数を指定してください","error");renderSelected();return}
+ changeObject(o=>{o.displayLevel=value});
+});
 changeString("obj-type","objectType");changeString("obj-layer","layer");
 bind("obj-z",()=>changeObject(o=>{o.zIndex=Number(input("obj-z"))}));
 bind("obj-parent",()=>changeObject(o=>{o.parentId=input("obj-parent")||null}));
@@ -246,7 +252,10 @@ bind("add-object",()=>{
   notice("親を選択したときだけ表示するには、先に親図形を選択し「選択中の図形を親にする」を有効にしてください","error");
   return;
  }
- const obj={id,name:labelText,parentId,level,objectType:kind,layer,
+ const parent=scene.objects.find(o=>o.id===parentId);
+ const parentLv=Number.isSafeInteger(parent?.displayLevel)?parent.displayLevel:(parent?.level==="large"?1:parent?.level==="medium"?2:parent?.level==="small"?3:null);
+ const displayLevel=parentLv?parentLv+1:(level==="large"?1:level==="medium"?2:level==="small"?3:1);
+ const obj={id,name:labelText,parentId,level,displayLevel,objectType:kind,layer,
   zIndex:Number.isFinite(index)?index:20,
   visible:true,selectable:true,geometry:g,
   style:{fill:gtype==="none"||gtype==="polyline"?null:"rgba(79,145,168,.22)",stroke:"#98d5df",strokeWidth:1.5},
