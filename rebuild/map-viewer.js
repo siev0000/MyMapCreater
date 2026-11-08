@@ -412,10 +412,7 @@ function create(opts){
   const {district,medium}=getSelectionPath();
   if(medium)for(const s of medium.smallZones||[])if(contains(s,x,y))return s;
   if(district)for(const m of district.mediumZones||[])if(contains(m,x,y))return m;
-  if(selected?.id==="arbora_sector"||data.facilities.find(f=>f.id==="arbora_sector")?.macroZones?.some(z=>z.id===selected?.id)){
-   const macro=data.facilities.find(f=>f.id==="arbora_sector")?.macroZones||[];
-   for(const z of macro)if(contains(z,x,y))return z;
-  }
+  // Hidden macro environment zones must not intercept clicks on visible medium facilities.
   // Arbora medium frames are selectable only after the sector is selected.
   if(isArboraOpen())for(const f of [...presentationChildren("arbora_sector")].reverse()){
    if(contains(f,x,y))return f;
