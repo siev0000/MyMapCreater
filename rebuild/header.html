@@ -234,6 +234,8 @@ main{max-width:none;padding:0}
 .map-info-footer .detail-meta{flex:none;margin:0}
 .map-info-footer .detail-text{flex:1 1 auto;min-height:0;overflow-y:auto;line-height:1.45;margin:0;white-space:pre-wrap}
 @media(max-width:500px){.map-info-footer .detail-context{gap:4px}.map-info-footer .detail-path-title{font-size:11px}.map-info-footer .floor-switch{max-width:75px;min-width:54px}}
+.map-info-footer .detail-close-inline{font-size:16px;line-height:1}
+.map-info-footer .detail-close-inline[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -291,7 +293,7 @@ main{max-width:none;padding:0}
      <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
      <h2 id="detail-title" class="detail-path-title"></h2>
      <select id="floor-switch" class="floor-switch" aria-label="表示する階を選択" hidden></select>
-     <button type="button" id="detail-close" class="detail-close-inline" title="説明を閉じる" aria-label="説明を閉じる">×</button>
+     <button type="button" id="detail-back" class="detail-close-inline" title="親の区画へ戻る" aria-label="親の区画へ戻る" hidden>🔙</button>
     </div>
     <p class="detail-meta" id="detail-meta"></p>
     <p class="detail-text" id="detail-text"></p>
@@ -321,7 +323,7 @@ const $=id=>document.getElementById(id);
 const viewer=window.AAMapViewer.create({
  host:$('viewport'),canvas:$('map-canvas'),
  info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
- infoClose:$('detail-close'),legend:$('legend-footer'),legendContent:$('legend-content'),
+ legend:$('legend-footer'),legendContent:$('legend-content'),
  legendButton:$('legend-switch'),visibilityControls:$('visibility-controls'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
  zoomLabel:$('zoom-label'),hint:$('map-hint'),
  onLayoutLoaded:(mapId,data)=>{
@@ -389,6 +391,7 @@ const viewer=window.AAMapViewer.create({
    floorSwitch.value=floors.selectedFloorId;
   }
   const navigation=viewer.getSelectionNavigation();
+  $('detail-back').hidden=!navigation?.parents?.length;
   // Display the full parent path in the existing title, not in a second row.
   if(item&&navigation){
    const path=[...navigation.parents,navigation.current].map(n=>n.name);
@@ -403,6 +406,11 @@ const viewer=window.AAMapViewer.create({
 });
 let nodes=new Map(),roots=[],selected=null,viewId='top',selectedObjectId=null,pendingFocus=null;
 const treeExpanded=new Set(),initializedTreeMaps=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
+$('detail-back').addEventListener('click',()=>{
+ const navigation=viewer.getSelectionNavigation();
+ const parent=navigation?.parents?.at(-1);
+ if(parent)viewer.selectItemById(parent.id,{focus:true});
+});
 $('floor-switch').addEventListener('change',e=>viewer.setFloor(e.target.value));
 let defaultMapId=null;
 function validate(data){
