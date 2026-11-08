@@ -197,6 +197,21 @@ main{max-width:none;padding:0}
 .map-load-status{position:absolute;z-index:15;top:95px;left:88px;right:12px;background:#391f26;border:1px solid #e19c98;color:#ffe7e2;padding:12px;border-radius:8px;font-size:13px;line-height:1.6}
 .map-load-status[hidden]{display:none}
 @media(max-width:500px){.map-load-status{left:73px;top:90px;font-size:12px}}
+
+/* Keep all selected-object context inside the existing footer. */
+.map-info-footer .detail-context{position:static;display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;min-width:0;margin:0 0 3px}
+.map-info-footer .map-level-chip{position:static;display:inline-flex;flex:none;z-index:auto;inset:auto;padding:1px 5px;font-size:10px;line-height:1.4;background:rgba(16,50,64,.8);pointer-events:auto}
+.map-info-footer .interior-breadcrumb{position:static;display:block;flex:1 1 200px;min-width:0;inset:auto;z-index:auto;max-width:none;padding:0;border:0;background:transparent;font-size:11px;line-height:1.4;overflow-wrap:anywhere;pointer-events:auto}
+.map-info-footer .floor-switch{position:static;display:flex;flex:0 0 auto;min-width:0;max-width:100%;max-height:none;overflow-x:auto;inset:auto;z-index:auto;padding:0;border:0;background:transparent;border-radius:0}
+.map-info-footer .floor-switch button{min-height:23px;padding:2px 7px;font-size:11px}
+.map-info-footer .detail-context [hidden]{display:none!important}
+.map-info-footer .map-detail{overflow-y:auto;overflow-x:hidden}
+@media(max-width:500px){
+ .map-info-footer .detail-context{gap:3px 6px}
+ .map-info-footer .interior-breadcrumb{flex-basis:130px;font-size:10px}
+ .map-info-footer .floor-switch button{padding:2px 5px;font-size:10px}
+}
+
 </style>
 </head>
 <body>
@@ -235,8 +250,6 @@ main{max-width:none;padding:0}
   <nav class="vertical-map-tabs" aria-label="マップ切替"><div id="view-tabs" class="vertical-map-tab-list"></div></nav>
   <canvas id="map-canvas" aria-label="地図をドラッグで移動、ホイールやボタンで拡大縮小。タップして区画情報を選択"></canvas>
   <div class="map-title-chip" id="current-map-title" aria-live="polite">マップを読み込み中…</div>
-  <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
-  <nav id="floor-switch" class="floor-switch" aria-label="選択した区画の階切替" hidden></nav>
   <div class="map-hint" id="map-hint" role="status" hidden></div>
   <div id="map-load-status" class="map-load-status" role="alert" hidden></div>
   <div class="map-zoom" aria-label="マップの拡大縮小">
@@ -249,10 +262,14 @@ main{max-width:none;padding:0}
   <footer class="legend-footer" id="legend-footer" aria-label="表示色と区画の凡例" hidden>
    <div id="legend-content"></div>
   </footer>
-  <div id="interior-breadcrumb" class="interior-breadcrumb" role="status" aria-live="polite" hidden></div>
   <section class="map-info-footer" aria-label="施設・区画の説明">
    <p id="detail-placeholder" class="detail-placeholder">区画・施設を選択すると、ここに説明が表示されます。</p>
    <aside class="map-detail" id="detail-panel" aria-label="選択した区画の説明" hidden>
+    <div class="detail-context">
+     <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
+     <div id="interior-breadcrumb" class="interior-breadcrumb" aria-label="選択中の階層" hidden></div>
+     <nav id="floor-switch" class="floor-switch" aria-label="選択した区画の階切替" hidden></nav>
+    </div>
     <div class="detail-top"><h2 id="detail-title"></h2>
      <div class="detail-actions">
       <button type="button" id="go-parent" class="detail-action" hidden>← 親へ戻る</button>
