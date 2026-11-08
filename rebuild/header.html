@@ -141,7 +141,7 @@ main{max-width:none;padding:0}
  </section>
 </main>
 
-<script src="./map-viewer.js?v=large-label-v9"></script>
+<script src="./map-viewer.js?v=generic-scene-v10"></script>
 <script>
 (()=>{
 'use strict';
@@ -318,7 +318,9 @@ function render(){
   '全長4,000m・最大幅2,500mの船体全域を扱います。上面・側面は表示方向であり、別の船体ではありません。':
   active.name+'の配置を表示する予定です。現在はヘッダー操作のみ実装しています。';
  document.title=$('view-name').textContent+'｜AA マップ';
- viewer.show(active.id,active.id===root.id?viewId:null,active.source||null);
+ const sceneSource=active.id===root.id?
+  (root.views||[]).find(v=>v.id===viewId)?.source||active.source||null:active.source||null;
+ viewer.show(active.id,active.id===root.id?viewId:null,sceneSource);
 }
 function select(id,mode){
  if(!nodes.has(id))return;
