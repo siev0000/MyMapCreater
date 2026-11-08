@@ -684,7 +684,9 @@ function create(opts){
   if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(sceneKey,selected);
   return true;
  }
- function translateObject(obj,dx,dy){
+ // Move a selected object with all loaded descendants and absolute anchors.
+ // Coordinates remain world-relative, while floor IDs and references are unchanged.
+ function translateSingle(obj,dx,dy){
   const geom=obj.geometry||{type:"none"};
   if(geom.type==="rect"){geom.x+=dx;geom.y+=dy}
   else if(geom.type==="polygon"||geom.type==="polyline"){
@@ -695,7 +697,33 @@ function create(opts){
   if(Array.isArray(obj.label?.position)){
    obj.label.position[0]+=dx;obj.label.position[1]+=dy;
   }
+  if(Array.isArray(obj.connection?.fromAnchor)){
+   obj.connection.fromAnchor[0]+=dx;obj.connection.fromAnchor[1]+=dy;
+  }
+  if(Array.isArray(obj.connection?.toAnchor)){
+   obj.connection.toAnchor[0]+=dx;obj.connection.toAnchor[1]+=dy;
+  }
  }
+ function descendantsOf(rootId){
+  if(!scene)return[];
+  const descendants=[],ids=new Set([rootId]);
+  let added=true;
+  while(added){
+   added=false;
+   for(const candidate of scene.objects){
+    if(!ids.has(candidate.id)&&ids.has(candidate.parentId)){
+     ids.add(candidate.id);descendants.push(candidate);added=true;
+    }
+   }
+  }
+  return descendants;
+ }
+ function translateObject(obj,dx,dy){
+  if(!Number.isFinite(dx)||!Number.isFinite(dy)||(!dx&&!dy))return;
+  translateSingle(obj,dx,dy);
+  for(const child of descendantsOf(obj.id))translateSingle(child,dx,dy);
+ }
+
  function pick(px,py){
   if(!scene)return null;
   const [x,y]=worldAt(px,py),tol=8/scale();
@@ -910,6 +938,10 @@ function create(opts){
   if(dragStart&&Math.hypot(x-dragStart.x,y-dragStart.y)>4)dragged=true;
   if(objectDrag&&pointers.size===1&&selected?.id===objectDrag.id){
    const [ax,ay]=worldAt(old.x,old.y),[bx,by]=worldAt(x,y);
+   if(selected.interiorSource&&!interiorLoaded.has(selected.id)&&!scene.objects.some(child=>child.parentId===selected.id)){
+    setHint("建物内部の読み込みが完了してから移動してください");
+    return;
+   }
    if(Math.hypot(x-objectDrag.x,y-objectDrag.y)>4){
     const dx=bx-ax,dy=by-ay;
     if(dx||dy){translateObject(selected,dx,dy);objectDrag.moved=true;draw()}
