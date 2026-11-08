@@ -180,11 +180,78 @@ function renderGeometry(obj){
   target.append(p);
  }
 }
+function supplyCatalog(){return window.AAMapObjectCatalog.entries(sceneNow())}
+function supplyOptions(){
+ const picker=$("supply-preset"),last=picker.value;
+ fillSelect(picker,supplyCatalog().map(x=>[x.id,x.icon+" "+x.name]),last||"supply_box");
+ const current=sceneNow()?.objects.find(o=>o.id===state.selectedId);
+ const lookup=new Map((sceneNow()?.objects||[]).map(o=>[o.id,o]));
+ let owner=current;
+ while(owner&&!Array.isArray(owner.floors))owner=lookup.get(owner.parentId);
+ const rows=[["","階なし"],...(owner?.floors||[]).map(f=>[f.id,f.label||f.id])];
+ fillSelect($("supply-floor"),rows,owner?viewer.getFloorContext()?.selectedFloorId||owner.floors[0].id:"");
+ renderSupplyContents();
+}
+function renderSupplyContents(){
+ const obj=sceneNow()?.objects.find(o=>o.id===state.selectedId),entries=obj?.contents||[];
+ const panel=$("supply-contents-editor"),list=$("supply-contents-list");
+ panel.classList.toggle("hidden",!obj||(!entries.length&&obj.objectType!=="object"&&obj.objectType!=="container"));
+ list.replaceChildren();
+ if(!obj)return;
+ for(const entry of entries){
+  const preset=supplyCatalog().find(x=>x.id===entry.presetId);
+  const row=document.createElement("div");row.className="row";
+  const name=document.createElement("span");name.textContent=(preset?.icon||"•")+" "+(entry.name||preset?.name||entry.presetId)+" ×"+entry.quantity;
+  name.style.flex="1";
+  const del=document.createElement("button");del.type="button";del.textContent="削除";del.title="この物資を収納内容から削除";
+  del.addEventListener("click",()=>changeObject(o=>{o.contents=o.contents.filter(e=>e!==entry&&!(e.presetId===entry.presetId&&e.quantity===entry.quantity&&e.name===entry.name))}));
+  row.append(name,del);list.append(row);
+ }
+ if(!entries.length)list.textContent="収納物は未登録です。";
+}
+function storeSupply(){
+ const preset=supplyCatalog().find(x=>x.id===input("supply-preset"));
+ const quantity=Number(input("supply-quantity"));
+ if(!preset||!Number.isSafeInteger(quantity)||quantity<1){notice("物資の種類と1以上の個数を指定してください","error");return}
+ if(!state.selectedId){notice("収納棚・物置などの図形を選択してください","error");return}
+ const selected=sceneNow().objects.find(o=>o.id===state.selectedId);
+ if(!selected||selected.objectType==="supply"||selected.objectType==="wall"||selected.objectType==="door"){
+  notice("収納先には家具や収納物の図形を選択してください","error");return;
+ }
+ changeObject(o=>{
+  o.contents=o.contents||[];
+  const existing=o.contents.find(e=>e.presetId===preset.id&&!e.name);
+  if(existing)existing.quantity+=quantity;
+  else o.contents.push({presetId:preset.id,quantity});
+ });
+}
+function placeSupply(){
+ const preset=supplyCatalog().find(x=>x.id===input("supply-preset")),quantity=Number(input("supply-quantity"));
+ const scene=sceneNow();if(!scene||!preset||!Number.isSafeInteger(quantity)||quantity<1){notice("物資と個数を確認してください","error");return}
+ const canvas=$("map-canvas"),bounds=canvas.getBoundingClientRect();
+ const [cx,cy]=snapPoint(viewer.screenToWorld(bounds.width/2,bounds.height/2));
+ const id=uniqueId("supply_"+preset.id,scene.objects);
+ const parent=scene.objects.find(o=>o.id===state.selectedId);
+ const parentId=parent?.id||null;
+ const floorId=input("supply-floor");
+ if(floorId&&!parentId){notice("階へ配置するには対象の建物または室内オブジェクトを選択してください","error");return}
+ const obj={id,name:preset.name,parentId,displayLevel:parent?.displayLevel+1||1,objectType:"supply",presetId:preset.id,quantity,
+  layer:"structures",zIndex:48,visible:true,selectable:true,
+  geometry:{type:"rect",x:cx-4,y:cy-4,width:8,height:8},
+  style:{fill:null,stroke:null},
+  icon:{text:preset.icon,visible:true,fontSize:18},
+  label:{visible:false,text:preset.name,position:[cx,cy]},
+  detail:"物資： "+preset.name+" ×"+quantity};
+ if(floorId)obj.floorId=floorId;
+ scene.objects.push(obj);applyScene(scene,id);
+}
+$("supply-place").addEventListener("click",placeSupply);
+$("supply-store").addEventListener("click",storeSupply);
 function renderSelected(){
  const data=sceneNow(),obj=data?.objects.find(o=>o.id===state.selectedId);
  $("selected-fields").classList.toggle("hidden",!obj);
  $("select-empty").classList.toggle("hidden",!!obj);
- if(!obj){buttonStatus();return}
+ if(!obj){buttonStatus();supplyOptions();return}
  $("obj-id").value=obj.id;
  $("obj-name").value=obj.name||"";
   $("obj-display-level").value=obj.displayLevel??"";
@@ -219,7 +286,7 @@ function renderSelected(){
  $("obj-label-size").value=String(number(label.fontSize,12));
  $("obj-detail").value=obj.detail||"";
  $("json-object").value=JSON.stringify(obj,null,2);
- renderGeometry(obj);buttonStatus();
+ renderGeometry(obj);buttonStatus();supplyOptions();
 }
 function applyScene(scene,selectedId,{record=true,resetView=false}={}){
  try{
