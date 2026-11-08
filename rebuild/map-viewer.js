@@ -202,9 +202,16 @@ function create(opts){
   const [u,v]=getAxes(),s=scale(),[cu,cv]=project(...center());
   ctx.setTransform(dpr*s*u[0],dpr*s*v[0],dpr*s*u[1],dpr*s*v[1],
    dpr*(width/2+panX-s*cu),dpr*(height/2+panY-s*cv));
-  drawGrid();
   const list=sortedVisible();
-  for(const obj of list)traceStroke(obj,false);
+  // Grid is a regular ranked rendering pass, not a special background overlay.
+  const gridRank=finite(scene.layers?.find(l=>l.id==="grid")?.zIndex,5);
+  const passes=list.map((obj,i)=>({kind:"object",rank:layerRank(obj),i,obj}));
+  if(scene.grid?.visible)passes.push({kind:"grid",rank:gridRank,i:-1});
+  passes.sort((a,b)=>a.rank-b.rank||a.i-b.i);
+  for(const pass of passes){
+   if(pass.kind==="grid")drawGrid();
+   else traceStroke(pass.obj,false);
+  }
   if(selected&&visible(selected))traceStroke(selected,true);
   drawLabels(list);
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
