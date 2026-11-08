@@ -29,6 +29,16 @@ function validate(scene,{migrated=false}={}){
  }
  for(const o of scene.objects){
   if(o.parentId)assert(ids.has(o.parentId),"Missing parent for "+o.id);
+  if(o.floorId){
+   let parent=scene.objects.find(item=>item.id===o.parentId),owner=null;
+   const seen=new Set();
+   while(parent&&!seen.has(parent.id)){
+    seen.add(parent.id);
+    if(Array.isArray(parent.floors)){owner=parent;break}
+    parent=scene.objects.find(item=>item.id===parent.parentId);
+   }
+   assert(owner&&owner.floors.some(f=>f.id===o.floorId),"Invalid floor reference for "+o.id);
+  }
   const trace=new Set();
   let current=o;
   while(current.parentId){
@@ -83,6 +93,11 @@ for(const floor of ["upper","middle","lower"]){
  }
  counts.push({floor,facilities:original.facilities.length,roads:original.roads.length,objects:scene.objects.length});
 }
+const middleTest=validate(read("rebuild/scenes/middle.scene.json"),{migrated:true});
+const room=middleTest.objects.find(o=>o.id==="core_shell_town_mid_rest_and_housing_small_a");
+assert.deepEqual(room.floors.map(f=>f.id),["1F","2F"]);
+assert.equal(middleTest.objects.filter(o=>o.parentId===room.id&&o.floorId==="1F").length,3);
+assert.equal(middleTest.objects.filter(o=>o.parentId===room.id&&o.floorId==="2F").length,3);
 const sample=validate(read("rebuild/examples/sample-town.scene.json"),{migrated:true});
 assert(sample.objects.some(o=>o.objectType==="wall"&&o.geometry.type==="polyline"));
 assert(sample.objects.some(o=>o.displayLevel===2&&o.parentId));
