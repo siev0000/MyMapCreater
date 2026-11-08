@@ -33,7 +33,7 @@ const ids=[
 "obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
-"apply-json","new-shape","new-role","new-level","new-layer","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
+"apply-json","new-shape","new-role","new-level","new-layer","new-parent-selected","new-when-parent-selected","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
 ];
 const el=Object.fromEntries(ids.map(id=>[id,makeElement(id)]));
 el["new-shape"].value="rect";
@@ -76,6 +76,17 @@ async function main(){
  assert(choice,"Editor did not show building");
  choice.click();
  assert.equal(el["obj-id"].value,"workshop");
+ // Explicitly create a nested door, displayed only when the parent is selected.
+ el["new-shape"].value="polyline";el["new-role"].value="door";el["new-level"].value="small";
+ el["new-parent-selected"].checked=true;el["new-when-parent-selected"].checked=true;
+ el["add-object"].click();
+ assert.equal(el["obj-type"].value,"door");
+ assert.equal(el["obj-parent"].value,"workshop");
+ assert.equal(JSON.parse(el["json-object"].value).visibility.whenParentSelected,true);
+ el.undo.click();
+ const workshopAgain=el.objects.children.find(item=>item.children[0].textContent==="作業棟");
+ workshopAgain.click();
+ el["new-parent-selected"].checked=false;el["new-when-parent-selected"].checked=false;
  el["obj-name"].value="編集済み作業棟";el["obj-name"].listeners.change();
  assert.equal(el["obj-name"].value,"編集済み作業棟");
  el.undo.click();assert.equal(el["obj-name"].value,"作業棟");
