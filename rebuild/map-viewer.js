@@ -404,7 +404,8 @@ function create(opts){
   if(selected.roadType)parts.push(selected.roadType);
   if(selected.status?.startsWith("draft")||selected.draft===true||selected.reviewStatus==="draft")
    parts.push("配置・接続未確定");
-  if(selected.w&&selected.h)parts.push(Math.round(selected.w)+"×"+Math.round(selected.h)+"m");
+  if(selected.ringComplex)parts.push("環状施設｜内半径"+selected.ringComplex.innerRadius+"m・外半径"+selected.ringComplex.outerRadius+"m");
+  else if(selected.w&&selected.h)parts.push(Math.round(selected.w)+"×"+Math.round(selected.h)+"m");
   infoMeta.textContent=parts.join(" ｜ ")||"選択した区画";
   infoText.textContent=selected.detail||selected.draftNote||"説明は現在の配置JSONに登録されていません。";
   draw();
