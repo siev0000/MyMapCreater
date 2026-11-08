@@ -26,6 +26,32 @@ const MODEL={
     partitions:[],gateChecks:[]
   }
 };
+// A broad structural grid for the 4km x 2.5km vessel. All locations are design
+// candidates only, not approved columns nor an engineering load calculation.
+// Use two interleaved lattices to cover the long hull without excessive clutter.
+function proposedMiddleSupports(){
+ const supports=[];
+ for(let x=-1540;x<=1540;x+=440){
+  for(let y=-840;y<=840;y+=420)supports.push({point:[x,y],primary:true});
+ }
+ for(let x=-1320;x<=1320;x+=440){
+  for(let y=-630;y<=630;y+=420)supports.push({point:[x,y],primary:false});
+ }
+ // Extra supports around the large terminal/urban circular structure.
+ for(let n=0;n<16;n++){
+  const rad=n*Math.PI/8;
+  supports.push({point:[Math.round(750*Math.cos(rad)),Math.round(750*Math.sin(rad))],primary:true});
+ }
+ return supports;
+}
+function withinStructuralEnvelope(point){
+ const [x,y]=point;
+ // Restrict to the protected interior, rather than the full outer hull.
+ // This is a conservative graphic guard only; actual frame offsets are unverified.
+ if(Math.abs(x)>1730)return false;
+ const allowedY=820-Math.max(0,Math.abs(x)-1050)*.24;
+ return Math.abs(y)<=allowedY;
+}
 function segmentDistance(p,a,b){
  const vx=b[0]-a[0],vy=b[1]-a[1],q=vx*vx+vy*vy;
  const t=q?Math.max(0,Math.min(1,((p[0]-a[0])*vx+(p[1]-a[1])*vy)/q)):0;
@@ -84,11 +110,25 @@ function draw(ctx,xy,{floor,facilities=[],roads=[]}={}){
  const data=MODEL[floor];if(!data)return;
  ctx.save();
  for(const part of data.partitions)drawPartition(ctx,xy,part,facilities,roads);
- for(const p of data.columns){
-  if(!isClear(p,facilities,roads,35,25))continue;
-  const [x,y]=xy(...p);
-  ctx.save();ctx.fillStyle='rgba(91,201,222,.70)';ctx.strokeStyle='#e0f9ff';ctx.lineWidth=1.5;
-  ctx.fillRect(x-4,y-4,8,8);ctx.strokeRect(x-4,y-4,8,8);
+ const activeRoads=roads.filter(r=>!String(r.geometryStatus||'').startsWith('stale_'));
+ const supportCandidates=floor==='middle'?proposedMiddleSupports():
+   data.columns.map(point=>({point,primary:true}));
+ const placed=[];
+ for(const {point,primary} of supportCandidates){
+  if(!withinStructuralEnvelope(point))continue;
+  if(!isClear(point,facilities,activeRoads,primary?55:40,primary?36:28))continue;
+  // Avoid drawing a denser cluster of markers in the same area.
+  if(placed.some(p=>Math.hypot(p[0]-point[0],p[1]-point[1])<140))continue;
+  placed.push(point);
+  const [x,y]=xy(...point),size=primary?17:13,half=size/2;
+  ctx.save();
+  ctx.fillStyle=primary?'rgba(68,151,174,.82)':'rgba(62,128,148,.68)';
+  ctx.strokeStyle=primary?'#d4faff':'#a2d9ea';
+  ctx.lineWidth=primary?2:1.5;
+  ctx.fillRect(x-half,y-half,size,size);
+  ctx.strokeRect(x-half,y-half,size,size);
+  // Reinforced core mark makes it recognizable as a post, not a grid cell.
+  if(primary){ctx.fillStyle='#153743';ctx.fillRect(x-2.5,y-2.5,5,5);}
   ctx.restore();
  }
  for(const gate of data.gateChecks){
