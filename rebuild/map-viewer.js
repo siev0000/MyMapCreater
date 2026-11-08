@@ -176,8 +176,33 @@ function create(opts){
   showDetails(owner);
   return true;
  }
+ function initialDisplayLevel(){
+  const level=scene?.settings?.initialDisplayLevel;
+  return Number.isSafeInteger(level)&&level>=1?level:3;
+ }
+ function selectionPath(){
+  const ids=new Set(),byId=new Map((scene?.objects||[]).map(o=>[o.id,o]));
+  let o=selected;
+  while(o&&!ids.has(o.id)){ids.add(o.id);o=byId.get(o.parentId)}
+  return ids;
+ }
+ function visibleByDepth(obj){
+  const level=Number.isSafeInteger(obj.displayLevel)?obj.displayLevel:1;
+  if(level<=initialDisplayLevel())return true;
+  if(!selected)return false;
+  // Selecting Lv N reveals directly nested Lv N+1, but never grandchildren.
+  const ids=selectionPath(),byId=new Map(scene.objects.map(o=>[o.id,o]));
+  let parent=byId.get(obj.parentId);
+  const seen=new Set();
+  while(parent&&!seen.has(parent.id)){
+   seen.add(parent.id);
+   if(ids.has(parent.id)&&level<=parent.displayLevel+1)return true;
+   parent=byId.get(parent.parentId);
+  }
+  return false;
+ }
  function visible(obj){
-  if(obj.visible===false)return false;
+  if(obj.visible===false||!visibleByDepth(obj))return false;
   if(obj.floorId){
    const context=getFloorContext();
    if(!context||obj.floorId!==context.selectedFloorId)return false;
@@ -191,16 +216,12 @@ function create(opts){
    if(!belongs)return false;
   }
   const v=obj.visibility||{};
-  if(v.whenParentSelected){
+  // Explicit parent-selection visibility is still supported for legacy scenes,
+  // but initialDisplayLevel is authoritative for the level-based reveal.
+  if(v.whenParentSelected && obj.displayLevel===undefined){
    if(!selected)return false;
-   const lookup=new Map(scene.objects.map(o=>[o.id,o]));
-   let current=selected;
-   let match=false;
-   while(current){
-    if(current.id===obj.parentId){match=true;break}
-    current=lookup.get(current.parentId);
-   }
-   if(!match&&selected.id!==obj.id)return false;
+   const path=selectionPath();
+   if(!path.has(obj.parentId)&&selected.id!==obj.id)return false;
   }
   if(v.modeGroup&&Array.isArray(v.modes)){
    const mode=groupModes[v.modeGroup]||modeConfig(v.modeGroup).default;
@@ -297,7 +318,8 @@ function create(opts){
  }
  function getHierarchy(){
   if(!scene)return{roots:[]};
-  const candidates=scene.objects.filter(o=>o.objectType==="region"||o.objectType==="facility");
+  const floorParents=new Set(scene.objects.filter(o=>Array.isArray(o.floors)).map(o=>o.id));
+  const candidates=scene.objects.filter(o=>o.objectType==="region"||o.objectType==="facility"||floorParents.has(o.parentId));
   const byId=new Map(candidates.map(o=>[o.id,o]));
   const children=new Map();
   for(const o of candidates){
@@ -611,7 +633,7 @@ function create(opts){
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById,getScene,getSelected,getFloorContext,setFloor,replaceScene,setEditMode,
+ return{show,reset,getHierarchy,selectItemById,getScene,getSelected,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
   getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
