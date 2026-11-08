@@ -7293,8 +7293,8 @@
     {
       "id": "ecosystem_greenhouses",
       "name": "生態系再現温室群",
-      "parentId": null,
-      "level": "facility",
+      "parentId": "arbora_sector",
+      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7333,14 +7333,14 @@
           ]
         ]
       },
-      "layer": "structures",
-      "zIndex": 28,
+      "layer": "subregions",
+      "zIndex": 30,
       "selectable": true,
       "visible": true,
       "style": {
-        "fill": "#356956",
-        "stroke": "#b0e8f7",
-        "strokeWidth": 1.2
+        "fill": "rgba(132,211,155,.10)",
+        "stroke": "#9ed9ae",
+        "strokeWidth": 1.15
       },
       "label": {
         "text": "生態系再現温室群",
@@ -7364,8 +7364,8 @@
     {
       "id": "water_soil_cycle",
       "name": "水・土壌循環施設",
-      "parentId": null,
-      "level": "facility",
+      "parentId": "arbora_sector",
+      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7396,14 +7396,14 @@
           ]
         ]
       },
-      "layer": "structures",
-      "zIndex": 28,
+      "layer": "subregions",
+      "zIndex": 30,
       "selectable": true,
       "visible": true,
       "style": {
-        "fill": "#356956",
-        "stroke": "#b0e8f7",
-        "strokeWidth": 1.2
+        "fill": "rgba(132,211,155,.10)",
+        "stroke": "#9ed9ae",
+        "strokeWidth": 1.15
       },
       "label": {
         "text": "水・土壌循環施設",
@@ -7427,8 +7427,8 @@
     {
       "id": "biological_management",
       "name": "生物・植物管理施設",
-      "parentId": null,
-      "level": "facility",
+      "parentId": "arbora_sector",
+      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7459,14 +7459,14 @@
           ]
         ]
       },
-      "layer": "structures",
-      "zIndex": 28,
+      "layer": "subregions",
+      "zIndex": 30,
       "selectable": true,
       "visible": true,
       "style": {
-        "fill": "#356956",
-        "stroke": "#b0e8f7",
-        "strokeWidth": 1.2
+        "fill": "rgba(132,211,155,.10)",
+        "stroke": "#9ed9ae",
+        "strokeWidth": 1.15
       },
       "label": {
         "text": "生物・植物管理施設",
@@ -7490,8 +7490,8 @@
     {
       "id": "bio_material_greenhouse",
       "name": "バイオ素材研究温室",
-      "parentId": null,
-      "level": "facility",
+      "parentId": "arbora_sector",
+      "level": "medium",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -7530,14 +7530,14 @@
           ]
         ]
       },
-      "layer": "structures",
-      "zIndex": 28,
+      "layer": "subregions",
+      "zIndex": 30,
       "selectable": true,
       "visible": true,
       "style": {
-        "fill": "#356956",
-        "stroke": "#b0e8f7",
-        "strokeWidth": 1.2
+        "fill": "rgba(132,211,155,.10)",
+        "stroke": "#9ed9ae",
+        "strokeWidth": 1.15
       },
       "label": {
         "text": "バイオ素材研究温室",
