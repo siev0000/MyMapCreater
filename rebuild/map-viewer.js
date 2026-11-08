@@ -10,20 +10,18 @@ const TYPES={
  industrial:{fill:"#70634c",line:"#e8bc7e"},
  shared:{fill:"#42687a",line:"#b0e8f7"}
 };
+// District tint is the primary identifier; its hairline is NOT a solid wall.
 const DISTRICT_COLORS={
- "core_shell_town":{fill:"rgba(52,148,192,.39)",line:"#8eeaff"},
- "refine_valley":{fill:"rgba(135,98,187,.36)",line:"#dcc1ff"},
- "stern_core_shell_town":{fill:"rgba(178,130,66,.38)",line:"#ffd18c"},
- "stern_refine_lab_district":{fill:"rgba(162,102,119,.37)",line:"#f6b9bd"},
- "arbora_sector":{fill:"rgba(61,140,102,.25)",line:"#73c99c"}
+ "core_shell_town":{fill:"rgba(52,148,192,.28)",line:"#8eeaff"},
+ "refine_valley":{fill:"rgba(135,98,187,.27)",line:"#dcc1ff"},
+ "stern_core_shell_town":{fill:"rgba(178,130,66,.28)",line:"#ffd18c"},
+ "stern_refine_lab_district":{fill:"rgba(162,102,119,.27)",line:"#f6b9bd"},
+ "arbora_sector":{fill:"rgba(61,140,102,.23)",line:"#73c99c"}
 };
-const ROAD_COLORS={
- "コンコース":"#e6cd99",
- "freight_authorized":"#a8c2dd",
- "hazard_authorized":"#ef9a72",
- "bio_authorized":"#85dbc0",
- "draft_parallel_freight_B":"#e4ac6a"
-};
+const ROAD_GRAY="#929da5";
+const TUNNEL_MARK="#d5dde0";
+function isTunnel(r){return /トンネル|tunnel/i.test(r.roadType||"") || /tunnel/i.test(r.subtype||"")}
+function roadWidthPixels(r){return Math.min(8,Math.max(3,2.2+(Number(r.width)||16)/12))}
 const shipProfile=[[0,.39],[.035,.63],[.12,.83],[.22,.94],[.40,1],[.68,.99],[.82,.97],[.94,.91],[1,.81]];
 const q=id=>document.getElementById(id);
 function hullWidth(t){
@@ -54,9 +52,7 @@ function contains(f,x,y){
  if(f.type==="terminal"&&f.id==="middle_terminal")return Math.hypot(x-f.x,y-f.y)<=250;
  return shapeVertices(f).length>=3&&insidePolygon(shapeVertices(f),x,y);
 }
-function roadColor(r){
- return ROAD_COLORS[r.geometryStatus]||ROAD_COLORS[r.access]||ROAD_COLORS[r.roadType]||r.color||"#a8b5bd";
-}
+function roadColor(r){return ROAD_GRAY}
 function nearestSegmentDistance(p,a,b){
  const vx=b[0]-a[0],vy=b[1]-a[1],l=vx*vx+vy*vy||1;
  const t=Math.max(0,Math.min(1,((p[0]-a[0])*vx+(p[1]-a[1])*vy)/l));
@@ -144,16 +140,15 @@ function create(opts){
   const palette=DISTRICT_COLORS[f.id]||TYPES[f.type]||TYPES.town;
   ctx.save();polygon(f);ctx.fillStyle=palette.fill;ctx.fill();
   ctx.strokeStyle=selected?.id===f.id?"#fff2a6":palette.line;
-  ctx.lineWidth=(selected?.id===f.id?3.2:2)/scale();
-  ctx.setLineDash(selected?.id===f.id?[]:[7/scale(),4/scale()]);
-  ctx.stroke();ctx.restore();
+  ctx.lineWidth=(selected?.id===f.id?2.5:1.25)/scale();
+  ctx.setLineDash([]);ctx.stroke();ctx.restore();
  }
  function drawRing(f){
   ctx.save();
   const {x,y,outerRadius:o,innerRadius:i}=f;
   ctx.beginPath();ctx.arc(x,y,o,0,2*Math.PI);ctx.arc(x,y,i,0,2*Math.PI,true);
-  ctx.fillStyle="rgba(64,136,100,.20)";ctx.fill("evenodd");
-  ctx.strokeStyle=selected?.id===f.id?"#ffef9b":"#8ccf9f";ctx.lineWidth=2/scale();
+  ctx.fillStyle="rgba(64,136,100,.15)";ctx.fill("evenodd");
+  ctx.strokeStyle=selected?.id===f.id?"#ffef9b":"#8ccf9f";ctx.lineWidth=(selected?.id===f.id?2.5:1.25)/scale();
   for(const r of [o,i]){ctx.beginPath();ctx.arc(x,y,r,0,2*Math.PI);ctx.stroke()}
   ctx.restore();
  }
@@ -162,34 +157,58 @@ function create(opts){
   ctx.save();ctx.globalAlpha=alpha;
   polygon(f);ctx.fillStyle=t.fill;ctx.fill();
   ctx.strokeStyle=selected?.id===f.id?"#fff2a6":t.line;
-  ctx.lineWidth=(selected?.id===f.id?3:1.7)/scale();ctx.stroke();
+  ctx.lineWidth=(selected?.id===f.id?2.5:1.2)/scale();ctx.stroke();
   ctx.restore();
  }
  function drawZone(z){
-  ctx.save();polygon(z);ctx.fillStyle="rgba(125,198,160,.13)";ctx.fill();
+  ctx.save();polygon(z);ctx.fillStyle="rgba(125,198,160,.15)";ctx.fill();
   ctx.strokeStyle=selected?.id===z.id?"#fff2a6":"#a8daba";
-  ctx.lineWidth=1.35/scale();ctx.setLineDash([5/scale(),5/scale()]);ctx.stroke();ctx.restore();
+  ctx.lineWidth=(selected?.id===z.id?2.2:1)/scale();ctx.setLineDash([]);ctx.stroke();ctx.restore();
  }
  function drawMedium(f){
   ctx.save();polygon(f);ctx.fillStyle="rgba(225,233,237,.07)";ctx.fill();
-  ctx.strokeStyle="#cfdae0";ctx.lineWidth=1.25/scale();
-  ctx.setLineDash([5/scale(),4/scale()]);ctx.stroke();ctx.restore();
+  ctx.strokeStyle="#c4d3db";ctx.lineWidth=1/scale();
+  ctx.setLineDash([]);ctx.stroke();ctx.restore();
  }
  function drawSmall(f){
   ctx.save();polygon(f);ctx.fillStyle=selected?.id===f.id?"rgba(255,236,172,.28)":"rgba(240,241,224,.12)";
   ctx.fill();ctx.strokeStyle=selected?.id===f.id?"#ffefa7":"#d6d9ce";
-  ctx.lineWidth=1.5/scale();ctx.stroke();ctx.restore();
+  ctx.lineWidth=1/scale();ctx.stroke();ctx.restore();
+ }
+ function traceRoad(r){
+  if(r.kind==="ring"){ctx.beginPath();ctx.arc(0,0,r.r,0,2*Math.PI);return true}
+  if(r.kind==="line"&&r.points?.length>=2){
+   ctx.beginPath();r.points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));return true;
+  }
+  return false;
+ }
+ function tunnelHatching(r,pxWidth){
+  if(!isTunnel(r)||r.kind!=="line"||!Array.isArray(r.points))return;
+  ctx.save();ctx.strokeStyle=TUNNEL_MARK;ctx.lineWidth=.8/scale();ctx.setLineDash([]);
+  const step=14/scale(),half=(pxWidth/2+.2)/scale(),slant=2.2/scale();
+  for(let i=1;i<r.points.length;i++){
+   const a=r.points[i-1],b=r.points[i],dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
+   if(len<step)continue;
+   const ux=dx/len,uy=dy/len,nx=-uy,ny=ux;
+   for(let d=step/2;d<len;d+=step){
+    const x=a[0]+ux*d,y=a[1]+uy*d;
+    ctx.beginPath();ctx.moveTo(x-nx*half-ux*slant,y-ny*half-uy*slant);
+    ctx.lineTo(x+nx*half+ux*slant,y+ny*half+uy*slant);ctx.stroke();
+   }
+  }
+  ctx.restore();
  }
  function drawRoad(r){
   if(r.kind==="internal")return;
-  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
-  ctx.strokeStyle=selected?.id===r.id?"#fff1a5":roadColor(r);
-  ctx.lineWidth=(selected?.id===r.id?3.5:1.7)/scale();
-  ctx.setLineDash(r.status?.startsWith("draft")?[6/scale(),5/scale()]:[]);
-  if(r.kind==="ring"){ctx.beginPath();ctx.arc(0,0,r.r,0,2*Math.PI);ctx.stroke()}
-  if(r.kind==="line"&&r.points?.length>=2){
-   ctx.beginPath();r.points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();
-  }
+  const pxWidth=roadWidthPixels(r)+(selected?.id===r.id?1.5:0);
+  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash([]);
+  if(!traceRoad(r)){ctx.restore();return}
+  // The dark casing separates a gray road from colored district boundaries.
+  // Tunnels have hatch marks rather than a dotted road line.
+  ctx.strokeStyle="#26343d";ctx.lineWidth=(pxWidth+2.4)/scale();ctx.stroke();
+  ctx.strokeStyle=selected?.id===r.id?"#fff0ac":ROAD_GRAY;
+  ctx.lineWidth=pxWidth/scale();ctx.stroke();
+  tunnelHatching(r,pxWidth);
   ctx.restore();
  }
  function drawTerminal(){
@@ -308,7 +327,8 @@ function create(opts){
    const list=document.createElement("div");list.className="legend-items";
    for(const e of entries){
     const item=document.createElement("span");item.className="legend-item";
-    const color=document.createElement("i");color.className=e.kind==="road"?"legend-line":"legend-swatch";color.style.backgroundColor=e.color;
+    const color=document.createElement("i");color.className=e.kind==="district"?"legend-swatch":e.kind==="tunnel"?"legend-line legend-tunnel":"legend-line";
+    color.style.backgroundColor=e.color;
     const label=document.createElement("span");label.textContent=e.name;
     item.append(color,label);list.append(item);
    }
@@ -318,15 +338,13 @@ function create(opts){
    name:f.districtMapLabel||f.short||f.name,
    color:(DISTRICT_COLORS[f.id]||TYPES[f.type]).line,kind:"district"
   }));
-  const byType=new Map();
-  for(const r of data.roads){
-   if(r.kind==="internal")continue;
-   const key=r.roadType+"|"+roadColor(r);
-   if(!byType.has(key))byType.set(key,{name:r.roadType,color:roadColor(r),kind:"road"});
-  }
-  section("区画",districts);section("道路・通路",[...byType.values()]);
+  const roads=data.roads.filter(r=>r.kind!=="internal");
+  const entries=[];
+  if(roads.some(r=>!isTunnel(r)))entries.push({name:"道路・通路（灰色・実線）",color:ROAD_GRAY,kind:"road"});
+  if(roads.some(isTunnel))entries.push({name:"トンネル（斜線入り）",color:ROAD_GRAY,kind:"tunnel"});
+  section("区画",districts);section("経路",entries);
   const footnote=document.createElement("small");footnote.className="legend-note";
-  footnote.textContent="道路の破線＝接続未確定／同じ位置でも通行可能とは限りません。";
+  footnote.textContent="仮道路・通行条件は選択時に表示。区画境界は壁ではなく、道路の交差も接続確定ではありません。";
   legendContent.append(footnote);
  }
  async function show(mapId,viewId,source){
