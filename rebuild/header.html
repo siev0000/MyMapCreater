@@ -180,6 +180,16 @@ main{max-width:none;padding:0}
 .floor-switch button{flex:none;border:1px solid #547786;background:#193945;color:#d8eaf2;padding:5px 9px;border-radius:5px;font-size:12px;font-weight:650}
 .floor-switch button[aria-pressed="true"]{background:#296171;border-color:#a6e4e7;color:white}
 @media(max-width:500px){.floor-switch{left:73px;top:38px;max-width:calc(100% - 151px)}.floor-switch button{font-size:11px;padding:4px 7px}}
+
+/* An explicit drill-down menu replaces the unclear selection-only behavior. */
+.detail-actions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.map-info-footer .detail-top .detail-action{width:auto;height:auto;min-height:28px;padding:4px 7px;font-size:11px;color:#eaf8f9;background:#214a58}
+.detail-action[hidden]{display:none!important}
+.child-navigation{position:absolute;z-index:9;bottom:112px;left:80px;max-height:min(44vh,270px);min-width:170px;width:min(300px,calc(100vw - 90px));overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:7px;background:rgba(8,30,40,.97);border:1px solid #6e9ca9;border-radius:8px;box-shadow:0 12px 30px #0008}
+.child-navigation[hidden]{display:none}
+.child-navigation button{font-size:12px;text-align:left;padding:8px 10px;border:1px solid #446b7b;border-radius:6px;color:#e5f8fa;background:#1d4655}
+.child-navigation button:hover{background:#2e6170}
+@media(max-width:500px){.child-navigation{left:8px;bottom:120px;width:min(300px,calc(100vw - 16px))}.map-info-footer .detail-top .detail-action{font-size:10px;padding:3px 5px}}
 </style>
 </head>
 <body>
@@ -231,11 +241,16 @@ main{max-width:none;padding:0}
   <footer class="legend-footer" id="legend-footer" aria-label="表示色と区画の凡例" hidden>
    <div id="legend-content"></div>
   </footer>
+  <nav id="child-navigation" class="child-navigation" aria-label="内部区画・設置物を選択" hidden></nav>
   <section class="map-info-footer" aria-label="施設・区画の説明">
    <p id="detail-placeholder" class="detail-placeholder">区画・施設を選択すると、ここに説明が表示されます。</p>
    <aside class="map-detail" id="detail-panel" aria-label="選択した区画の説明" hidden>
     <div class="detail-top"><h2 id="detail-title"></h2>
-     <button type="button" id="detail-close" title="説明を閉じる" aria-label="説明を閉じる">×</button>
+     <div class="detail-actions">
+      <button type="button" id="go-parent" class="detail-action" hidden>← 親へ戻る</button>
+      <button type="button" id="open-children" class="detail-action" hidden aria-expanded="false" aria-controls="child-navigation">内部を見る ▾</button>
+      <button type="button" id="detail-close" title="説明を閉じる" aria-label="説明を閉じる">×</button>
+     </div>
     </div>
     <p class="detail-meta" id="detail-meta"></p>
     <p class="detail-text" id="detail-text"></p>
@@ -257,7 +272,7 @@ main{max-width:none;padding:0}
  </section>
 </div>
 <script src="./spec-viewer.js?v=5"></script>
-<script src="./map-viewer.js?v=initial-lv3-v1"></script>
+<script src="./map-viewer.js?v=zoom30-nav-v1"></script>
 <script>
 (()=>{
 'use strict';
@@ -313,6 +328,27 @@ const viewer=window.AAMapViewer.create({
     button.setAttribute('aria-pressed',String(floor.id===floors.selectedFloorId));
     button.addEventListener('click',()=>viewer.setFloor(floor.id));
     floorSwitch.append(button);
+   }
+  }
+  const navigation=viewer.getSelectionNavigation();
+  const parentBtn=$('go-parent'),childBtn=$('open-children'),childNav=$('child-navigation');
+  parentBtn.hidden=!navigation?.parents?.length;
+  parentBtn.textContent=navigation?.parents?.length?'← '+navigation.parents.at(-1).name:'← 親へ戻る';
+  parentBtn.onclick=()=>{const p=viewer.getSelectionNavigation()?.parents.at(-1);if(p)viewer.selectItemById(p.id,{focus:true})};
+  const hasChildren=Boolean(navigation?.children?.length);
+  childBtn.hidden=!hasChildren;
+  childBtn.textContent=hasChildren?'内部を見る ('+navigation.children.length+') ▾':'内部を見る';
+  childBtn.setAttribute('aria-expanded','false');
+  childNav.hidden=true;childNav.replaceChildren();
+  if(hasChildren){
+   for(const child of navigation.children){
+    const button=document.createElement('button');
+    button.type='button';button.textContent=child.name;
+    button.addEventListener('click',()=>{
+     childNav.hidden=true;
+     viewer.selectItemById(child.id,{focus:true});
+    });
+    childNav.append(button);
    }
   }
   $('detail-placeholder').hidden=Boolean(item);
@@ -513,6 +549,11 @@ for(const [id,tab] of [['menu-tab-map','map'],['menu-tab-settings','settings']])
   $(next==='map'?'menu-tab-map':'menu-tab-settings').focus();
  });
 }
+$('open-children').addEventListener('click',()=>{
+ const nav=$('child-navigation'),opening=nav.hidden;
+ nav.hidden=!opening;
+ $('open-children').setAttribute('aria-expanded',String(opening));
+});
 function closeMenu(){
  $('map-menu-popover').hidden=true;
  $('map-menu-button').setAttribute('aria-expanded','false');
