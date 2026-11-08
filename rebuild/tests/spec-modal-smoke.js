@@ -24,7 +24,7 @@ const context=vm.createContext({document,fetch,console});
 vm.runInContext(specSource,context,{filename:"spec-viewer.js"});
 const tick=async()=>{for(let i=0;i<20;i++)await Promise.resolve()};
 (async()=>{
- assert.equal(elements["spec-picker"].children.length,9);
+ assert.equal(elements["spec-picker"].children.length,10);
  elements["open-specs"].listeners.click();
  await tick();
  assert.equal(elements["spec-modal"].hidden,false,"Modal must open");
