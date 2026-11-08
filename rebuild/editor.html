@@ -118,6 +118,24 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <label class="switches"><span style="display:flex;gap:6px;align-items:center"><input id="move-mode" type="checkbox"> 選択中の図形をドラッグ移動</span></label>
    <p class="note">道路・壁・区画は同じ図形エンジンで編集できます。図形を作成しても自動で壁・道路には変換しません。</p>
   </section>
+  <section class="panel" id="supply-palette">
+   <h2>物資・収納カタログ（仕様09）</h2>
+   <p class="note">承認済みの30種類から選択。物資はアイコンのみで描き、棚・家具は別の図形として管理します。</p>
+   <label>物資アイコン<select id="supply-preset"></select></label>
+   <div class="col2">
+    <label>個数<input id="supply-quantity" type="number" min="1" step="1" value="1"></label>
+    <label>所属階<select id="supply-floor"><option value="">階なし</option></select></label>
+   </div>
+   <div class="actions">
+    <button id="supply-place" type="button">地図へ配置</button>
+    <button id="supply-store" type="button">選択中の収納へ追加</button>
+   </div>
+   <p class="note">収納棚・物置などの図形を選択して「収納へ追加」を押すと、同じ収納に複数の物資を登録できます。</p>
+   <div id="supply-contents-editor" class="hidden">
+    <h3>選択中の収納内容</h3>
+    <div id="supply-contents-list"></div>
+   </div>
+  </section>
   <section class="panel" id="object-properties">
    <h2>選択した図形の設定</h2>
    <p class="note" id="select-empty">右上の一覧または地図から図形を選択してください。</p>
@@ -179,5 +197,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  </aside>
 </main>
 <script src="./map-viewer.js?v=door-swing-arc-v1"></script>
-<script src="./map-editor.js?v=editor-grid-v1"></script>
+<script src="./object-catalog.js?v=approved-30-v1"></script>
+<script src="./map-editor.js?v=supply-catalog-v1"></script>
 </body></html>
