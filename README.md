@@ -28,6 +28,7 @@
 
 - [共通マップエンジン実装状況・残作業](./docs/aa-common-map-engine-v2.md)
 - [中層のデータ駆動プレビュー（SVG）](./preview/middle-regenerated.svg) — 現行の配置下書きから再生成。柱位置・通路接続は未確定。
+- [アルボラ重複修正の前後比較（SVG）](./preview/arbora-before-after.svg) — 温室・機能区画の干渉除去と内部施設の段階表示。補正した切欠き形状は未承認の試験案。
 - 中層の大中小枠と選択を aa-map-engine.js へ共通化。通常マップ、配置エディター、比較画面B案で座標・形状を共有する。
 - 配置エディターは「編集モード」をONにしたときだけドラッグ編集を有効化。
 - 再生成: `node tools/regenerate-middle-preview.cjs` ／ 回帰確認: `node tools/test-map-engine.cjs`
