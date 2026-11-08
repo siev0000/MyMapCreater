@@ -55,5 +55,6 @@
       "source": "../rebuild/scenes/lower.scene.json",
       "shortName": "下層"
     }
-  ]
+  ],
+  "defaultMapId": "middle"
 }
