@@ -54,6 +54,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   <button id="undo" title="操作を戻す" disabled>戻す</button>
   <button id="redo" title="操作を進める" disabled>進める</button>
   <button id="download">街マップJSONを保存</button>
+  <button id="download-bundle" title="街マップとすべての建物内部JSONをZIPにまとめる">全データZIP保存</button>
   <button id="download-interior" title="選択した建物の内部データを保存">建物内部JSONを保存</button>
  </div>
 </header>
@@ -224,12 +225,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </section>
   <section class="panel">
    <h2>ファイルについて</h2>
-   <p class="note">編集内容はこのブラウザー内の作業状態です。「JSONを保存」でファイルを書き出してください。GitHub上のデータには自動で上書きしません。保存したJSONをリポジトリの該当シーンに配置すると表示側にも反映されます。</p>
+   <p class="note">編集内容はこのブラウザー内の作業状態です。「全データZIP保存」で街マップと建物内部JSONを一括で書き出せます。GitHub上のデータには自動で上書きしません。保存したJSONをリポジトリの該当シーンに配置すると表示側にも反映されます。</p>
   </section>
  </aside>
 </main>
 <script src="./map-viewer.js?v=lazy-interior-v1"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script src="./building-templates.js?v=dormancy-facilities-v1"></script>
-<script src="./map-editor.js?v=custom-building-v1"></script>
+<script src="./map-zip.js?v=map-bundle-v1"></script>
+<script src="./map-editor.js?v=lazy-interior-bundle-v1"></script>
 </body></html>
