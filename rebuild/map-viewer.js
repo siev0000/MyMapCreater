@@ -22,7 +22,13 @@ const ROAD_GRAY="#929da5";
 // Only key transport routes appear on the first view. Other source routes remain intact.
 const PRIMARY_ROAD_TYPES=new Set(["主要幹線道路","大型機用主要通路","重貨物道路","貨物トンネル"]);
 const ROAD_DISPLAY_MODES=["main","all","off"];
-const RENDER_REVISION="中層描画 v4";
+const RENDER_REVISION="中層描画 v5";
+// Display hierarchy only. No mutation of data/middle-layout-draft.json.
+const DISPLAY_MEDIUM_CHILDREN=Object.freeze({
+ arbora_sector:Object.freeze([
+  "ecosystem_greenhouses","water_soil_cycle","biological_management","bio_material_greenhouse"
+ ])
+});
 function primaryRoute(r){return PRIMARY_ROAD_TYPES.has(r.roadType)&&!String(r.geometryStatus||"").startsWith("stale")}
 const TUNNEL_MARK="#d5dde0";
 function isTunnel(r){return /トンネル|tunnel/i.test(r.roadType||"") || /tunnel/i.test(r.subtype||"")}
@@ -134,8 +140,19 @@ function create(opts){
   offsetX+=x-pos[0];offsetY+=y-pos[1];
   draw();
  }
+ function presentationChildren(parentId){
+  if(!data)return [];
+  const ids=DISPLAY_MEDIUM_CHILDREN[parentId]||[];
+  const byId=new Map(data.facilities.map(f=>[f.id,f]));
+  return ids.map(id=>byId.get(id)).filter(Boolean);
+ }
+ function isArboraMedium(f){return Boolean(f&&DISPLAY_MEDIUM_CHILDREN.arbora_sector.includes(f.id))}
+ function arboraParent(){return data?.facilities.find(f=>f.id==="arbora_sector")||null}
+ function isArboraOpen(){return selected?.id==="arbora_sector"||isArboraMedium(selected)}
  function getSelectionPath(){
   if(!data||!selected)return {district:null,medium:null};
+  const arbora=arboraParent();
+  if(arbora&&isArboraOpen())return {district:arbora,medium:isArboraMedium(selected)?selected:null};
   const districts=data.facilities.filter(f=>Array.isArray(f.mediumZones)&&f.mediumZones.length);
   const district=districts.find(f=>f.id===selected.id||
    f.mediumZones.some(m=>m.id===selected.id||(m.smallZones||[]).some(s=>s.id===selected.id)));
@@ -217,6 +234,15 @@ function create(opts){
   ctx.strokeStyle=selected?.id===z.id?"#fff2a6":"#a8daba";
   ctx.lineWidth=(selected?.id===z.id?2.2:1)/scale();ctx.setLineDash([]);ctx.stroke();ctx.restore();
  }
+ function drawArboraMedium(f){
+  // Physical facilities are medium-level frames, not separate opaque buildings.
+  ctx.save();polygon(f);
+  ctx.fillStyle=selected?.id===f.id?"rgba(132,211,155,.23)":"rgba(132,211,155,.10)";
+  ctx.fill();
+  ctx.strokeStyle=selected?.id===f.id?"#fff2a6":"#9ed9ae";
+  ctx.lineWidth=(selected?.id===f.id?2.2:1.15)/scale();
+  ctx.setLineDash([]);ctx.stroke();ctx.restore();
+ }
  function drawMedium(f){
   ctx.save();polygon(f);ctx.fillStyle="rgba(225,233,237,.07)";ctx.fill();
   ctx.strokeStyle="#c4d3db";ctx.lineWidth=1/scale();
@@ -281,18 +307,23 @@ function create(opts){
    ctx.fillStyle=emphasis?"#fff1ad":"#edf4f1";ctx.fillText(txt,px,py,maxWidth);
   };
   const {district,medium}=getSelectionPath();
-  for(const f of data.facilities.filter(f=>f.mediumZones?.length)){
+  for(const f of data.facilities.filter(f=>f.mediumZones?.length||f.id==="arbora_sector")){
    if(district?.id===f.id)continue;
    const p=f.mapLabelPosition||[f.x,f.y];
    label(f.districtMapLabel||f.short||f.name,p[0],p[1],Math.max(60,235*scale()),false);
   }
-  if(district){
+  if(isArboraOpen()){
+   // One label per registered physical facility, no macroZone labels on top.
+   for(const f of presentationChildren("arbora_sector")){
+    label(f.name,f.x,f.y,Math.max(60,165*scale()),selected?.id===f.id);
+   }
+  }else if(district){
    if(medium){
     for(const small of medium.smallZones||[])label(small.name,small.x,small.y,Math.max(50,130*scale()),small.id===selected?.id);
    }else for(const zone of district.mediumZones||[])
     label(zone.name,zone.x,zone.y,Math.max(50,175*scale()),selected?.id===zone.id);
   }
-  if(selected&&(!selected.districtMapLabel)&&selected.id!=="middle_terminal"&&!medium?.smallZones?.some(s=>s.id===selected.id)){
+  if(selected&&!isArboraOpen()&&(!selected.districtMapLabel)&&selected.id!=="middle_terminal"&&!medium?.smallZones?.some(s=>s.id===selected.id)){
    label(selected.name,selected.x,selected.y-60,180,true);
   }
   ctx.restore();
@@ -336,9 +367,8 @@ function create(opts){
    },
    facilities:()=>{
     for(const f of data.facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&f.type!=="terminal")){
-     const arboraChildren=["ecosystem_greenhouses","water_soil_cycle","biological_management","bio_material_greenhouse"];
-     if(arboraChildren.includes(f.id)&&selected?.id!=="arbora_sector"&&
-       selected?.id!==f.id&&!data.facilities.find(d=>d.id==="arbora_sector")?.macroZones?.some(z=>z.id===selected?.id))continue;
+     // Arbora's physical facilities are drawn exactly once in the medium pass.
+     if(isArboraMedium(f))continue;
      drawFacility(f);
     }
    },
@@ -348,8 +378,9 @@ function create(opts){
      for(const m of d.mediumZones)if(m.id!==medium?.id)drawMedium(m);
     }
     if(medium)for(const item of medium.smallZones||[])drawSmall(item);
-    if(selected?.id==="arbora_sector"||data.facilities.find(f=>f.id==="arbora_sector")?.macroZones?.some(z=>z.id===selected?.id))
-     for(const z of data.facilities.find(f=>f.id==="arbora_sector")?.macroZones||[])drawZone(z);
+    // Macro environment areas overlap the physical buildings, so keep them as
+    // source metadata until a separate optional environmental layer is designed.
+    if(isArboraOpen())for(const f of presentationChildren("arbora_sector"))drawArboraMedium(f);
    },
    terminal:drawTerminal,
    roads:()=>{for(const r of visibleRoads())drawRoad(r)},
@@ -385,12 +416,17 @@ function create(opts){
    const macro=data.facilities.find(f=>f.id==="arbora_sector")?.macroZones||[];
    for(const z of macro)if(contains(z,x,y))return z;
   }
+  // Arbora medium frames are selectable only after the sector is selected.
+  if(isArboraOpen())for(const f of [...presentationChildren("arbora_sector")].reverse()){
+   if(contains(f,x,y))return f;
+  }
   // Roads need a click tolerance even though they are intentionally drawn as thin lines.
   for(const r of [...visibleRoads()].reverse()){
    if(r.kind==="ring"&&Math.abs(Math.hypot(x,y)-r.r)<tol)return r;
    if(r.kind==="line"&&(r.points||[]).some((p,i,a)=>i&&nearestSegmentDistance(world,a[i-1],p)<tol))return r;
   }
-  for(const f of [...data.facilities].reverse())if(!f.zoneOutline&&!f.ringDistrict&&contains(f,x,y))return f;
+  for(const f of [...data.facilities].reverse())
+   if(!f.zoneOutline&&!f.ringDistrict&&!isArboraMedium(f)&&contains(f,x,y))return f;
   for(const f of [...data.facilities].reverse())if(f.zoneOutline&&contains(f,x,y))return f;
   for(const f of data.facilities.filter(f=>f.ringDistrict))if(contains(f,x,y))return f;
   return null;
@@ -402,6 +438,8 @@ function create(opts){
   infoTitle.textContent=selected.name||selected.id;
   const parts=[];
   if(selected.roadType)parts.push(selected.roadType);
+  if(selected.id==="arbora_sector")parts.push("大枠・自然環境地区");
+  if(isArboraMedium(selected))parts.push("中枠・施設");
   if(selected.status?.startsWith("draft")||selected.draft===true||selected.reviewStatus==="draft")
    parts.push("配置・接続未確定");
   if(selected.ringComplex)parts.push("環状施設｜内半径"+selected.ringComplex.innerRadius+"m・外半径"+selected.ringComplex.outerRadius+"m");
