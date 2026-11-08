@@ -22,6 +22,15 @@ header{position:sticky;top:0;z-index:10;background:#0d202cee;border-bottom:1px s
 .menu-trigger[aria-expanded="true"]{border-color:var(--accent);background:#1a4654}
 .menu-popover{position:absolute;z-index:20;right:0;top:calc(100% + 7px);width:min(90vw,370px);background:rgba(9,28,39,.62);border:1px solid rgba(137,191,205,.72);border-radius:10px;padding:8px;box-shadow:0 8px 24px #0005;max-height:min(77dvh,650px);display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px)}
 .menu-popover[hidden]{display:none}
+.menu-trigger{min-width:32px;width:32px;padding:2px 5px;font-size:20px;line-height:1;display:grid;place-items:center}
+.menu-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px;flex:none}
+.menu-tab{padding:7px 6px;background:rgba(18,48,62,.6);border:1px solid #3c6274;border-radius:7px;font-size:12px;font-weight:700;color:#b7d0d9}
+.menu-tab[aria-selected="true"]{color:#efffff;border-color:#8bd6d8;background:#235260}
+.menu-tab:focus-visible{outline:2px solid #8bd6d8;outline-offset:1px}
+.menu-panel{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.menu-panel[hidden]{display:none}
+.menu-panel .menu-list{max-height:none}
+
 .menu-heading{font-size:11px;color:var(--muted);padding:4px 8px 7px}
 .menu-list{display:grid;gap:3px;min-height:0;max-height:min(62dvh,525px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:3px 1px 6px}
 .menu-list button{width:100%;background:rgba(25,55,67,.32);border:1px solid transparent;text-align:left;border-radius:7px;padding:10px 11px;font-size:13px}
@@ -47,7 +56,7 @@ main{max-width:1240px;margin:0 auto;padding:5px clamp(10px,3vw,24px) 16px}
 .viewport .kind{font-size:12px;font-weight:700;letter-spacing:.08em;color:#8acbd0}
 .note{font-size:12px;color:var(--muted);line-height:1.5}
 #error{color:#ffc1ba}
-@media(max-width:500px){.header-label{font-size:11px}.shell{grid-template-rows:31px 29px;gap:2px}.segment-scroll{display:none}.view-select{display:block}.logo{font-size:12px}.root-picker{gap:5px}.root-picker label{font-size:10px}.root-picker select{height:27px;font-size:11px}.menu-trigger{min-width:68px;padding:3px 6px}}
+@media(max-width:500px){.header-label{font-size:11px}.shell{grid-template-rows:31px 29px;gap:2px}.segment-scroll{display:none}.view-select{display:block}.logo{font-size:12px}.root-picker{gap:5px}.root-picker label{font-size:10px}.root-picker select{height:27px;font-size:11px}.menu-trigger{min-width:32px;width:32px;padding:2px 5px}}
 
 /* Full-height read-only map area; header stays exactly two rows. */
 main{max-width:none;padding:0}
@@ -123,14 +132,21 @@ main{max-width:none;padding:0}
     <select id="big-map-select" aria-label="大マップを選択"></select>
    </div>
    <div class="menu-wrap" id="map-menu">
-    <button type="button" id="map-menu-button" class="menu-trigger" aria-haspopup="true" aria-controls="map-menu-popover" aria-expanded="false">☰ マップ</button>
+    <button type="button" id="map-menu-button" class="menu-trigger" aria-label="メニューを開く" title="メニュー" aria-haspopup="true" aria-controls="map-menu-popover" aria-expanded="false">☰</button>
     <div id="map-menu-popover" class="menu-popover" hidden>
-     <div id="map-menu-list" class="menu-list" role="group" aria-label="マップ階層一覧"></div>
-     <div class="menu-heading">表示設定</div>
-     <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
-     <div id="visibility-controls" aria-label="JSONで定義された表示グループ"></div>
-     <button type="button" id="open-specs" class="menu-settings-button">📖 仕様書を見る</button>
-     <a id="open-editor-link" class="menu-editor-link" href="./editor.html">現在のマップを編集（JSON）</a>
+     <div class="menu-tabs" role="tablist" aria-label="メニューの項目">
+      <button type="button" id="menu-tab-map" class="menu-tab" role="tab" aria-selected="true" aria-controls="menu-panel-map" tabindex="0">マップ内容</button>
+      <button type="button" id="menu-tab-settings" class="menu-tab" role="tab" aria-selected="false" aria-controls="menu-panel-settings" tabindex="-1">設定</button>
+     </div>
+     <div id="menu-panel-map" class="menu-panel" role="tabpanel" aria-labelledby="menu-tab-map">
+      <div id="map-menu-list" class="menu-list" role="group" aria-label="マップ階層一覧"></div>
+     </div>
+     <div id="menu-panel-settings" class="menu-panel" role="tabpanel" aria-labelledby="menu-tab-settings" hidden>
+      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
+      <div id="visibility-controls" aria-label="JSONで定義された表示グループ"></div>
+      <button type="button" id="open-specs" class="menu-settings-button">📖 仕様書を見る</button>
+      <a id="open-editor-link" class="menu-editor-link" href="./editor.html">現在のマップを編集（JSON）</a>
+     </div>
     </div>
    </div>
   </div>
@@ -377,6 +393,26 @@ function restoreState(){
  const split=raw.split('::');
  if(split.length===2&&nodes.has(split[0])){select(split[0],split[1]);return}
  select(nodes.has(raw)?raw:(nodes.has(defaultMapId)?defaultMapId:roots[0].id),null);
+}
+function selectMenuTab(tab){
+ const map=tab==='map';
+ $('menu-tab-map').setAttribute('aria-selected',String(map));
+ $('menu-tab-settings').setAttribute('aria-selected',String(!map));
+ $('menu-tab-map').tabIndex=map?0:-1;
+ $('menu-tab-settings').tabIndex=map?-1:0;
+ $('menu-panel-map').hidden=!map;
+ $('menu-panel-settings').hidden=map;
+}
+$('menu-tab-map').addEventListener('click',()=>selectMenuTab('map'));
+$('menu-tab-settings').addEventListener('click',()=>selectMenuTab('settings'));
+for(const [id,tab] of [['menu-tab-map','map'],['menu-tab-settings','settings']]){
+ $(id).addEventListener('keydown',e=>{
+  if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
+  e.preventDefault();
+  const next=tab==='map'?'settings':'map';
+  selectMenuTab(next);
+  $(next==='map'?'menu-tab-map':'menu-tab-settings').focus();
+ });
 }
 function closeMenu(){
  $('map-menu-popover').hidden=true;
