@@ -162,6 +162,16 @@ const viewer=window.AAMapViewer.create({
  },
  onSelectionChanged:(mapId,item)=>{
   selectedObjectId=item?.id||null;
+  // When the user taps an object directly on the map, open its parents next
+  // time the tree is viewed. Do not override manual collapse while menu is open.
+  if(item&&$('map-menu-popover').hidden){
+   treeExpanded.add('floor:'+mapId);
+   const h=floorStructures.get(mapId);
+   const parent=h?.large.find(f=>f.id===item.id||f.children.some(c=>c.id===item.id));
+   if(parent)treeExpanded.add('large:'+mapId+':'+parent.id);
+   const root=nodes.size&&nodes.get(mapId)?.parentId;
+   if(root)treeExpanded.add('map:'+root);
+  }
   renderMapTree();
  }
 });
