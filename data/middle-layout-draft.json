@@ -101,7 +101,43 @@
       "stage1Layout": "efficiency_B_dual_town",
       "short": "船首上位タウン",
       "socialTier": "upper",
-      "districtSide": "bow"
+      "districtSide": "bow",
+      "functionalDistrict": {
+        "scope": "district_level_functions_not_individual_rooms",
+        "classification": "town",
+        "side": "bow",
+        "tier": "upper",
+        "functionAreas": [
+          {
+            "id": "rest_and_housing",
+            "name": "居住・休止",
+            "purpose": "個体の休止、停止保管、住居・共有休止設備",
+            "status": "notion_supported"
+          },
+          {
+            "id": "charging_and_supply",
+            "name": "充電・燃料・補給",
+            "purpose": "充電、燃料・水・空気の供給、簡易診断",
+            "status": "notion_supported"
+          },
+          {
+            "id": "market_and_exchange",
+            "name": "市場・交流",
+            "purpose": "生活物資や中古部品の販売、情報交換、娯楽・掲示",
+            "status": "notion_supported"
+          },
+          {
+            "id": "basic_care",
+            "name": "簡易洗浄・点検",
+            "purpose": "日常の洗浄・除塵・軽整備。本格的な修理は専門設備へ",
+            "status": "notion_supported"
+          }
+        ],
+        "proposedSpecialization": "生活・補給を持つ街区。上位区としての追加機能・居住資格は未設定",
+        "detailedBuildingCount": "not_set",
+        "interiorLayoutStatus": "macro_functions_only_not_placed",
+        "sourceScope": "Notion生活・整備区／個人工房／オートマン住居の既存機能＋明記された作業案"
+      }
     },
     {
       "id": "refine_valley",
@@ -129,7 +165,55 @@
       "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
       "short": "船首上位ラボ区",
       "socialTier": "upper",
-      "districtSide": "bow"
+      "districtSide": "bow",
+      "functionalDistrict": {
+        "scope": "district_level_functions_not_individual_rooms",
+        "classification": "lab_workshops",
+        "side": "bow",
+        "tier": "upper",
+        "functionAreas": [
+          {
+            "id": "repair_diagnosis",
+            "name": "機体整備・損傷診断",
+            "purpose": "外装洗浄、故障・動力・回路診断、部品交換、除染",
+            "status": "notion_supported"
+          },
+          {
+            "id": "equipment_custom",
+            "name": "装備修理・改修",
+            "purpose": "武器・外装・補助装備の強化、改造、カスタマイズ",
+            "status": "notion_supported"
+          },
+          {
+            "id": "private_workshops",
+            "name": "個人工房群",
+            "purpose": "個人・少人数による専用装備設計、試作、持込装備の改修",
+            "status": "notion_supported"
+          },
+          {
+            "id": "parts_storage",
+            "name": "交換部品・工具倉庫",
+            "purpose": "交換部品、工具、修復材の保管。燃料・危険物は分離保管",
+            "status": "notion_supported"
+          },
+          {
+            "id": "alchimeria_development",
+            "name": "アルキメリア装備開発ラボ",
+            "purpose": "既存の装備開発ラボ。研究・設計・試作の拠点",
+            "status": "notion_supported"
+          },
+          {
+            "id": "prototype_testing",
+            "name": "設計・試作・検証",
+            "purpose": "装備の設計・試作・性能検査を、他の整備区と接続して行う",
+            "status": "planned_subzone_not_new_building"
+          }
+        ],
+        "proposedSpecialization": "アルキメリア装備開発ラボを含む研究・整備地区",
+        "detailedBuildingCount": "not_set",
+        "interiorLayoutStatus": "macro_functions_only_not_placed",
+        "sourceScope": "Notion生活・整備区／個人工房／オートマン住居の既存機能＋明記された作業案"
+      }
     },
     {
       "id": "alchimeria_lab",
@@ -190,7 +274,8 @@
       "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
       "socialTier": "upper",
       "districtSide": "bow",
-      "showLabel": false
+      "showLabel": false,
+      "organizationStatus": "existing_named_lab_in_notion"
     },
     {
       "id": "resist_link_dome",
@@ -1435,7 +1520,43 @@
         555
       ],
       "mapLabelReason": "工場のアイコン／名称との重複を避け、街区中央の空いている場所に表示",
-      "layoutReviewNote": "中央の半径330mコンコースと大型機通路・貨物通路は街区の外に保留。外側の円は半径820m。船尾の生態区（アルボラ）とは境界を共有。"
+      "layoutReviewNote": "中央の半径330mコンコースと大型機通路・貨物通路は街区の外に保留。外側の円は半径820m。船尾の生態区（アルボラ）とは境界を共有。",
+      "functionalDistrict": {
+        "scope": "district_level_functions_not_individual_rooms",
+        "classification": "town",
+        "side": "stern",
+        "tier": "lower",
+        "functionAreas": [
+          {
+            "id": "rest_and_housing",
+            "name": "居住・休止",
+            "purpose": "個体の休止、停止保管、住居・共有休止設備",
+            "status": "notion_supported"
+          },
+          {
+            "id": "charging_and_supply",
+            "name": "充電・燃料・補給",
+            "purpose": "充電、燃料・水・空気の供給、簡易診断",
+            "status": "notion_supported"
+          },
+          {
+            "id": "market_and_exchange",
+            "name": "市場・交流",
+            "purpose": "生活物資や中古部品の販売、情報交換、娯楽・掲示",
+            "status": "notion_supported"
+          },
+          {
+            "id": "basic_care",
+            "name": "簡易洗浄・点検",
+            "purpose": "日常の洗浄・除塵・軽整備。本格的な修理は専門設備へ",
+            "status": "notion_supported"
+          }
+        ],
+        "proposedSpecialization": "広い混合街区。小規模工房・加工施設が点在するが、貨物は公共通路と分離",
+        "detailedBuildingCount": "not_set",
+        "interiorLayoutStatus": "macro_functions_only_not_placed",
+        "sourceScope": "Notion生活・整備区／個人工房／オートマン住居の既存機能＋明記された作業案"
+      }
     },
     {
       "id": "stern_refine_lab_district",
@@ -1809,7 +1930,55 @@
         -555
       ],
       "mapLabelReason": "工場のアイコン／名称との重複を避け、街区中央の空いている場所に表示",
-      "layoutReviewNote": "中央の半径330mコンコースと大型機通路・貨物通路は街区の外に保留。外側の円は半径820m。船尾の生態区（アルボラ）とは境界を共有。"
+      "layoutReviewNote": "中央の半径330mコンコースと大型機通路・貨物通路は街区の外に保留。外側の円は半径820m。船尾の生態区（アルボラ）とは境界を共有。",
+      "functionalDistrict": {
+        "scope": "district_level_functions_not_individual_rooms",
+        "classification": "lab_workshops",
+        "side": "stern",
+        "tier": "lower",
+        "functionAreas": [
+          {
+            "id": "repair_diagnosis",
+            "name": "機体整備・損傷診断",
+            "purpose": "外装洗浄、故障・動力・回路診断、部品交換、除染",
+            "status": "notion_supported"
+          },
+          {
+            "id": "equipment_custom",
+            "name": "装備修理・改修",
+            "purpose": "武器・外装・補助装備の強化、改造、カスタマイズ",
+            "status": "notion_supported"
+          },
+          {
+            "id": "private_workshops",
+            "name": "個人工房群",
+            "purpose": "個人・少人数による専用装備設計、試作、持込装備の改修",
+            "status": "notion_supported"
+          },
+          {
+            "id": "parts_storage",
+            "name": "交換部品・工具倉庫",
+            "purpose": "交換部品、工具、修復材の保管。燃料・危険物は分離保管",
+            "status": "notion_supported"
+          },
+          {
+            "id": "stern_practical_lab",
+            "name": "船尾実用技術ラボ",
+            "purpose": "GitHub作業案で追加した実用技術ラボ。修復・部品改良など",
+            "status": "github_proposal_not_notion_canon"
+          },
+          {
+            "id": "material_interface",
+            "name": "素材・加工連携",
+            "purpose": "近接する加工施設との素材受渡・評価。工場そのものをラボ扱いしない",
+            "status": "planned_subzone_not_new_building"
+          }
+        ],
+        "proposedSpecialization": "実用技術ラボと近接工場を含む技術街区",
+        "detailedBuildingCount": "not_set",
+        "interiorLayoutStatus": "macro_functions_only_not_placed",
+        "sourceScope": "Notion生活・整備区／個人工房／オートマン住居の既存機能＋明記された作業案"
+      }
     },
     {
       "id": "stern_equipment_lab",
@@ -1827,7 +1996,8 @@
       "stage1Layout": "stern_mixed_use_B",
       "detail": "船尾側の下位混合街区にある実用技術ラボ。機体部品の改良、試作品評価、現場向け修復試験を行う。",
       "districtRole": "stern_lower_mixed_use",
-      "draftRepositioned": true
+      "draftRepositioned": true,
+      "organizationStatus": "github_draft_additional_lab_not_in_notion"
     }
   ],
   "roads": [
@@ -3309,7 +3479,7 @@
     "sourceFile": "data/middle-draft.json",
     "review": "aftar_full_half_circle_urban_sector_span_updated_struts_larger_more_evenly",
     "layoutModel": "middle-terminal-internal-guild-v2",
-    "stage1Focus": "船尾側半周は各約19.5万m²のタウン・ラボ混合街区に拡大し、工場の現行小型寸法は維持"
+    "stage1Focus": "船首上位・船尾下位それぞれのタウン／ラボの大機能を整理。室内個別配置や人数・戸数は未確定"
   },
   "centralUrbanPlan": {
     "status": "stern_full_half_ring_social_districts",
@@ -3499,6 +3669,56 @@
         "centralAxisFreightMachineReserved": true
       },
       "planningPrinciple": "船首の上位タウン・ラボは維持し、船尾半周の下位タウン・ラボ・加工施設を機能的に混在させる。厳密な用途分離ではなく、危険な荷役・熱・騒音の経路だけを確実に隔離する。"
+    },
+    "townLabOrganization": {
+      "version": 1,
+      "status": "macro_function_inventory_confirmed_against_notion_not_room_layout",
+      "districtIds": [
+        "core_shell_town",
+        "stern_core_shell_town",
+        "refine_valley",
+        "stern_refine_lab_district"
+      ],
+      "upperTownId": "core_shell_town",
+      "lowerTownId": "stern_core_shell_town",
+      "upperLabDistrictId": "refine_valley",
+      "lowerLabDistrictId": "stern_refine_lab_district",
+      "namedLabIds": [
+        "alchimeria_lab",
+        "stern_equipment_lab"
+      ],
+      "productionFacilityIds": [
+        "standard_fuel_factory",
+        "plant_oil_processing",
+        "fiber_resin_processing",
+        "middle_material_processing"
+      ],
+      "commonTownFunctions": [
+        "rest_and_housing",
+        "charging_and_supply",
+        "market_and_exchange",
+        "basic_care"
+      ],
+      "commonLabFunctions": [
+        "repair_diagnosis",
+        "equipment_custom",
+        "private_workshops",
+        "parts_storage"
+      ],
+      "separation": "居住・交流入口 vs 修理工房の騒音・排熱区 vs 工場の荷役口は独立して管理",
+      "relationship": "リンクターミナル／コンコースから一般街路でタウンとラボへ。工業荷役は貨物専用路",
+      "unknowns": [
+        "上位・下位の居住資格やサービス差",
+        "住居棟・工房棟・研究棟の数",
+        "タウン内の店舗名・人口",
+        "ラボ設備の実棟数・内部配置",
+        "街区内歩行路と避難・貨物ゲートの接続"
+      ],
+      "assumptionCautions": [
+        "上位＝豪華、下位＝貧困などは未決定",
+        "アルキメリア装備開発ラボとギルド受付は別施設",
+        "個人工房群は複数の小規模工房を指し、単独の巨大工場ではない"
+      ]
     }
   },
   "stage1Skeleton": {
