@@ -108,6 +108,18 @@ for(const [category,arr] of Object.entries(variants)){
   presets.push({id,name,cells,floors,layout,description,entranceSide,category});
 }
 for(const preset of presets)if(!preset.category)preset.category=preset.id;
+// Mechanical-life layouts are generic proposals based on AA's documented
+// charging, fuel supply and communication facilities, not canonical floor plans.
+const mechanical=[
+ ["machine_residence","機械居住区・充電室",[16,14],1,"split","充電スタンドと個体用端末を置く生活施設","small_house"],
+ ["machine_rest","機械休止所・共用型",[24,18],2,"side","複数の充電設備と燃料補給機を備える休止所","row_house"],
+ ["machine_fuel","燃料補給ステーション",[22,16],1,"front","燃料補給設備と登録端末を持つ施設","shop"],
+ ["machine_terminal","端末・情報施設",[20,18],2,"cross","登録・案内・通信のための端末施設","office"],
+ ["machine_maintenance","整備・充電工房",[28,22],1,"split","保守台・充電設備・診断端末を持つ工房","workshop"],
+ ["machine_supply","機械物資補給所",[28,20],1,"open","燃料・部品・バッテリーなどを管理する補給所","warehouse"]
+];
+for(const [id,name,cells,floors,layout,description,category] of mechanical)
+ presets.push({id,name,cells,floors,layout,description,category,worldStyle:"machine",entranceSide:"center"});
 const copy=x=>JSON.parse(JSON.stringify(x));
 function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
@@ -189,12 +201,96 @@ function generate(templateId,options={}){
   }else if(template.category==="workshop"){
     base("workbench_"+f,"作業台","object",rect(2,2,6,3),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"workbench"});
-  }else if(["small_house","row_house","apartment"].includes(template.category)){
+  }else if(template.worldStyle!=="machine"&&["small_house","row_house","apartment"].includes(template.category)){
     base("bed_"+f,"ベッド","object",rect(2,2,3,5),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"bed"});
+  }
+  if(template.worldStyle==="machine"){
+   const devices=template.id==="machine_fuel"?[
+    ["fuel_station","燃料補給機",2,2,5,4,"fuel_dispenser"],["terminal","登録端末",nX-6,2,4,3,"terminal_device"]]:
+    template.id==="machine_terminal"?[
+    ["terminal","情報端末",2,2,5,4,"terminal_device"],["communication","通信端末",nX-7,2,4,3,"terminal_device"]]:
+    template.id==="machine_maintenance"?[
+    ["repair","整備台",2,2,7,5,"workbench"],["charging","充電設備",nX-8,2,5,5,"charging_station"],["diagnostic","診断端末",3,nY-6,4,3,"terminal_device"]]:
+    template.id==="machine_supply"?[
+    ["fuel_station","燃料補給機",2,2,5,4,"fuel_dispenser"],["terminal","管理端末",nX-7,2,4,3,"terminal_device"]]:
+    [["charging","充電設備",2,2,5,5,"charging_station"],
+     ["fuel_station","燃料補給機",nX-8,2,5,4,"fuel_dispenser"],
+     ["terminal","個体用端末",2,nY-6,4,3,"terminal_device"]];
+   for(const [deviceId,name,px,py,pw,ph,shapePresetId] of devices)
+    base("device_"+deviceId+"_"+f,name,"object",rect(px,py,pw,ph),f,
+     {fill:"#294d5d",stroke:"#9fc9d8",strokeWidth:1.2},{shapePresetId});
   }
  }
  return{template:copy(template),objects};
 }
-global.AAMapBuildingTemplates={presets,generate};
+// User-saved templates store complete independent building/subobject snapshots.
+const custom=[];
+function register(spec){
+ if(!spec||spec.schema!=="map-building-template-v1"||typeof spec.id!=="string"||
+    !/^[a-z0-9_-]{3,80}$/i.test(spec.id)||!Array.isArray(spec.objects)||spec.objects.length<1)
+  throw Error("テンプレート形式が不正です");
+ if(presets.some(p=>p.id===spec.id))throw Error("標準テンプレートIDは上書きできません");
+ if(spec.objects.length>500)throw Error("テンプレートは500オブジェクト以内にしてください");
+ const root=spec.objects.find(o=>o.id===spec.rootId);
+ if(!root||root.objectType!=="facility"||root.geometry?.type!=="rect")throw Error("建物の親図形が必要です");
+ const oldIds=new Set(spec.objects.map(o=>o.id));
+ if(oldIds.size!==spec.objects.length)throw Error("テンプレート内IDが重複しています");
+ for(const o of spec.objects)if(o.id!==root.id&&!oldIds.has(o.parentId))throw Error("テンプレートに外部の親参照があります");
+ const item=copy(spec),pos=custom.findIndex(c=>c.id===item.id);
+ if(pos>=0)custom.splice(pos,1,item);else custom.push(item);
+ return item;
+}
+function capture(scene,rootId,info){
+ const root=scene?.objects?.find(o=>o.id===rootId);
+ if(!root||root.objectType!=="facility"||root.geometry?.type!=="rect")throw Error("施設の四角形を選択してください");
+ const subset=[],included=new Set([root.id]);
+ let added=true;
+ while(added){
+  added=false;
+  for(const o of scene.objects)if(!included.has(o.id)&&included.has(o.parentId)){included.add(o.id);added=true}
+ }
+ for(const o of scene.objects)if(included.has(o.id))subset.push(copy(o));
+ const id=String(info?.id||"").trim(),name=String(info?.name||root.name||"").trim();
+ if(!/^[a-z0-9_-]{3,80}$/i.test(id)||!name)throw Error("英数字ID（3〜80文字）と名称が必要です");
+ if(subset.length>500)throw Error("選択した建物には500個超のオブジェクトがあります");
+ const position=[root.geometry.x,root.geometry.y];
+ // Geometry remains in scene-coordinate units. Relative offsets are restored on placement.
+ return{schema:"map-building-template-v1",id,name,category:"custom",description:info?.description||"",
+   rootId:root.id,origin:position,originalSize:[root.geometry.width,root.geometry.height],objects:subset};
+}
+function generateCustom(templateId,options={}){
+ const t=custom.find(v=>v.id===templateId);
+ if(!t)throw Error("登録済みテンプレートが見つかりません");
+ const {prefix,parentId=null,displayLevel=4,x=0,y=0,baseName=t.name}=options;
+ if(!prefix)throw Error("建物IDが必要です");
+ const idMap=new Map(t.objects.map(o=>[o.id,o.id===t.rootId?prefix:prefix+"_"+o.id.replace(/[^a-z0-9_-]/gi,"_")]));
+ if(new Set(idMap.values()).size!==idMap.size)throw Error("ID変換が衝突します");
+ const [ox,oy]=t.origin,dx=x-ox,dy=y-oy;
+ const out=t.objects.map(src=>{
+  const o=copy(src);
+  o.id=idMap.get(src.id);
+  o.parentId=src.id===t.rootId?parentId:idMap.get(src.parentId);
+  o.displayLevel=displayLevel+(src.displayLevel-(t.objects.find(v=>v.id===t.rootId).displayLevel||4));
+  const g=o.geometry||{};
+  if(g.type==="rect"){g.x+=dx;g.y+=dy}
+  if(["circle","ring"].includes(g.type)){g.center[0]+=dx;g.center[1]+=dy}
+  if(g.points)for(const p of g.points){p[0]+=dx;p[1]+=dy}
+  if(Array.isArray(o.label?.position)){o.label.position[0]+=dx;o.label.position[1]+=dy}
+  if(src.id===t.rootId){o.name=baseName;if(o.label?.text)o.label.text=baseName}
+  if(o.opening?.wallId&&idMap.has(o.opening.wallId))o.opening.wallId=idMap.get(o.opening.wallId);
+  if(o.connection){
+   if(Array.isArray(o.connection.fromAnchor)){o.connection.fromAnchor[0]+=dx;o.connection.fromAnchor[1]+=dy}
+   if(Array.isArray(o.connection.toAnchor)){o.connection.toAnchor[0]+=dx;o.connection.toAnchor[1]+=dy}
+   if(o.connection.id)o.connection.id=prefix+"_connection_"+String(o.connection.id).replace(/[^a-z0-9_-]/gi,"_");
+  }
+  o.metadata={...o.metadata,templateId:t.id,generated:true};
+  return o;
+ });
+ return{template:{id:t.id,name:t.name,cells:[t.originalSize[0]/(options.spacing||2),t.originalSize[1]/(options.spacing||2)],floors:out[0].floors?.length||1,description:t.description,category:"custom",originalSize:t.originalSize},objects:out};
+}
+function allPresets(){return[...presets,...custom.map(t=>({id:t.id,name:t.name,category:"custom",description:t.description||"保存した建物",cells:[...t.originalSize],floors:t.objects.find(o=>o.id===t.rootId)?.floors?.length||1,custom:true,originalSize:t.originalSize}))]}
+function generateAny(templateId,options){return custom.some(t=>t.id===templateId)?generateCustom(templateId,options):generate(templateId,options)}
+global.AAMapBuildingTemplates={presets,custom,allPresets,generate:generateAny,register,capture};
+
 })(window);
