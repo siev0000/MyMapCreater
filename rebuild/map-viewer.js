@@ -252,9 +252,16 @@ function create(opts){
   if(!width||!height)return;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle="#0b1d27";ctx.fillRect(0,0,width,height);
-  drawWorld();
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  drawLabels();
+  // The top hull profile is not the side elevation. Never pass it off as one.
+  if(floor==="automaton_ship"&&projection==="side"){
+   ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#a9c9d4";
+   ctx.font="700 15px system-ui";
+   ctx.fillText("船体側面図は次の工程で作成",width/2,height/2);
+  }else{
+   drawWorld();
+   ctx.setTransform(dpr,0,0,dpr,0,0);
+   drawLabels();
+  }
   zoomLabel.textContent=Math.round(zoom*100)+"%";
  }
  function pickAt(px,py){
