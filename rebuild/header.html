@@ -135,16 +135,16 @@ function render(){
   button.addEventListener('click',()=>{select(n.id,null);closeMenu();$('map-menu-button').focus()});
   menu.append(button);
  }
- const options=availableViews(root),key=selectedKey(),tabs=$('view-tabs'),select=$('view-select');
- tabs.replaceChildren();select.replaceChildren();
+ const options=availableViews(root),key=selectedKey(),tabs=$('view-tabs'),viewPicker=$('view-select');
+ tabs.replaceChildren();viewPicker.replaceChildren();
  for(const v of options){
   const b=document.createElement('button');b.type='button';b.textContent=v.name;
   b.setAttribute('aria-pressed',String(key===v.key));
   b.addEventListener('click',()=>choose(v));
   tabs.append(b);
-  const o=document.createElement('option');o.value=v.key;o.textContent=v.name;select.append(o);
+  const o=document.createElement('option');o.value=v.key;o.textContent=v.name;viewPicker.append(o);
  }
- select.value=key;
+ viewPicker.value=key;
  $('map-name').textContent=root.name;
  const displayName=active.id===root.id?
   (options.find(v=>v.key===root.id+'::'+viewId)?.displayName||'船体全体'):active.name;
