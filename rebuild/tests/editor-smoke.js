@@ -25,7 +25,7 @@ function makeElement(tag="div"){
 }
 const ids=[
 "viewport","map-canvas","detail-panel","detail-title","detail-text","detail-meta",
-"legend-footer","legend-content","legend-switch","road-switch","zoom-in","zoom-out",
+"legend-footer","legend-content","legend-switch","visibility-controls","zoom-in","zoom-out",
 "zoom-reset","zoom-label","map-hint","scene-select","scene-name","edit-hint","message",
 "undo","redo","clone-object","delete-object","selected-fields","select-empty",
 "objects","object-search","clear-search","obj-id","obj-name","obj-level","obj-type",
