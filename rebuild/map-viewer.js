@@ -199,14 +199,15 @@ function create(opts){
  }
  function visibleByDepth(obj){
   const level=Number.isSafeInteger(obj.displayLevel)?obj.displayLevel:1;
-  if(viewRootId){
-   const root=scene.objects.find(o=>o.id===viewRootId);
-   if(!root||!isWithin(obj,viewRootId))return false;
-   // Inside a selected room: draw that room and its immediate contents only.
-   return obj.id===viewRootId||obj.parentId===viewRootId;
-  }
-  // Overview never paints the deeper layers on top of the exterior.
-  return level<=initialDisplayLevel();
+  // The overview always remains on screen, including when looking inside a
+  // facility. Only the direct children along the current selection path open.
+  if(level<=initialDisplayLevel())return true;
+  if(!selected)return false;
+  const byId=new Map(scene.objects.map(o=>[o.id,o]));
+  const path=selectionPath();
+  const parent=byId.get(obj.parentId);
+  return !!(parent&&path.has(parent.id)&&
+   level===parent.displayLevel+1);
  }
  function fitToObject(obj){
   const g=obj.geometry||{};
@@ -347,7 +348,7 @@ function create(opts){
   const defaultStyle=scene?.settings?.labelDefaults||{};
   for(const o of objects){
    const l=o.label||{};
-   if(l.visible===false||!l.text||o.id===viewRootId)continue;
+   if(l.visible===false||!l.text)continue;
    const p=l.position||o.geometry?.center||[0,0];
    const [x,y]=screenAt(p[0],p[1]);
    const fontSize=Math.max(7,finite(l.fontSize,finite(defaultStyle.fontSize,12)));
@@ -379,7 +380,7 @@ function create(opts){
    if(pass.kind==="grid")drawGrid();
    else traceStroke(pass.obj,false);
   }
-  if(selected&&visible(selected)&&selected.id!==viewRootId)traceStroke(selected,true);
+  if(selected&&visible(selected))traceStroke(selected,true);
   drawLabels(list);
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
  }
