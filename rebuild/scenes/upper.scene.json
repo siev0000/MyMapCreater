@@ -87,9 +87,33 @@
             "id": "off",
             "label": "非表示"
           }
-        ]
+        ],
+        "label": "経路"
       }
-    }
+    },
+    "legendGroups": [
+      {
+        "title": "大枠",
+        "filter": {
+          "levels": [
+            "large"
+          ]
+        },
+        "swatch": "box"
+      },
+      {
+        "title": "経路",
+        "filter": {
+          "objectTypes": [
+            "route"
+          ],
+          "visibleOnly": true
+        },
+        "swatch": "line",
+        "uniqueBy": "metadata.roadType",
+        "displayField": "metadata.roadType"
+      }
+    ]
   },
   "objects": [
     {
