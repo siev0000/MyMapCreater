@@ -281,12 +281,43 @@ function create(opts){
   return scene?.objects?.filter(visible).map((obj,i)=>({obj,i}))
    .sort((a,b)=>layerRank(a.obj)-layerRank(b.obj)||a.i-b.i).map(x=>x.obj)||[];
  }
+ function traceDoorSymbol(obj,emphasized=false){
+  const points=obj.geometry?.points;
+  if(!Array.isArray(points)||points.length!==2)return false;
+  const [a,b]=points,dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
+  if(len<=0)return false;
+  const door=obj.door||{},hinge=door.hinge==="end"?b:a;
+  const far=door.hinge==="end"?a:b;
+  const vx=(far[0]-hinge[0])/len,vy=(far[1]-hinge[1])/len;
+  const side=door.swingSide==="right"?-1:1;
+  const openX=-vy*side,openY=vx*side;
+  const color=emphasized?(scene?.settings?.selectionStyle?.stroke||"#ffefa7"):(obj.style?.stroke||"#f0be72");
+  ctx.save();ctx.strokeStyle=color;ctx.lineCap="round";ctx.lineJoin="round";
+  // The wall has an actual gap; the leaf opens perpendicular to the gap.
+  ctx.lineWidth=(emphasized?2.6:2)/scale();
+  ctx.beginPath();ctx.moveTo(...hinge);ctx.lineTo(hinge[0]+openX*len,hinge[1]+openY*len);ctx.stroke();
+  // Quarter-circle swing arc, not a line painted across the opening.
+  ctx.lineWidth=(emphasized?1.6:1.1)/scale();
+  ctx.setLineDash([3/scale(),2/scale()]);
+  ctx.beginPath();
+  const segments=16;
+  for(let i=0;i<=segments;i++){
+   const t=(Math.PI/2)*i/segments;
+   const x=hinge[0]+(vx*Math.cos(t)+openX*Math.sin(t))*len;
+   const y=hinge[1]+(vy*Math.cos(t)+openY*Math.sin(t))*len;
+   if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(hinge[0],hinge[1],Math.max(1/scale(),len*.055),0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+  ctx.restore();return true;
+ }
  function traceStroke(obj,emphasized=false){
   const st=obj.style||{},g=obj.geometry;
   if(!g||g.type==="none")return;
   ctx.save();
   ctx.globalAlpha=emphasized?1:clamp(finite(st.opacity,1),0,1);
   ctx.lineJoin=st.lineJoin||"round";ctx.lineCap=st.lineCap||"round";
+  if(obj.objectType==="door"&&traceDoorSymbol(obj,emphasized)){ctx.restore();return}
   const ok=trace(ctx,g);
   if(ok){
    if(!emphasized&&st.fill){ctx.fillStyle=st.fill;ctx.fill(g.type==="ring"?"evenodd":"nonzero")}
