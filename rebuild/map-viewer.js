@@ -327,9 +327,67 @@ function create(opts){
   }
   ctx.restore();return true;
  }
+ // Shared plan symbols for indoor furniture and stairs. Objects retain a
+ // normal geometry for selection, scaling and floor filtering.
+ function traceIndoorShape(obj,emphasized=false){
+  const kind=obj.shapePresetId||(obj.objectType==="stair"?"stair":null),g=obj.geometry;
+  if(!kind||g?.type!=="rect"||g.width<=0||g.height<=0)return false;
+  const {x,y,width:w,height:h}=g,accent=emphasized?"#ffefa7":"#9fc7d0";
+  const edge=1.45/scale(),line=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()};
+  const R=(a,b,c,d,fill,stroke=accent)=>{
+   ctx.beginPath();ctx.rect(x+a*w,y+b*h,c*w,d*h);
+   if(fill){ctx.fillStyle=fill;ctx.fill()}
+   if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=edge;ctx.stroke()}
+  };
+  const circle=(cx,cy,r,fill,stroke=accent)=>{
+   ctx.beginPath();ctx.arc(x+cx*w,y+cy*h,r*Math.min(w,h),0,Math.PI*2);
+   if(fill){ctx.fillStyle=fill;ctx.fill()}
+   if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=edge;ctx.stroke()}
+  };
+  ctx.save();ctx.globalAlpha=1;ctx.lineWidth=edge;ctx.strokeStyle=accent;
+  // Outer bounds always show the physical footprint, not an emoji.
+  R(0,0,1,1,"#18333d");
+  if(kind==="shelf"){
+   for(const f of [.25,.5,.75])line(x,y+h*f,x+w,y+h*f);
+   R(.05,.035,.12,.93,"#678f9d",null);R(.83,.035,.12,.93,"#678f9d",null);
+  }else if(kind==="cabinet"){
+   line(x+w/2,y,x+w/2,y+h);
+   circle(.44,.52,.045,"#bbd3d6",null);circle(.56,.52,.045,"#bbd3d6",null);
+  }else if(kind==="table"||kind==="workbench"){
+   R(.07,.1,.86,.8,"#3d6572");
+   for(const ax of [.13,.87])for(const ay of [.2,.8])R(ax-.045,ay-.045,.09,.09,"#99bdc5",null);
+   if(kind==="workbench")R(.16,.24,.25,.5,"#294956");
+  }else if(kind==="bed"){
+   R(.1,.08,.8,.84,"#446a7c");
+   R(.2,.13,.6,.18,"#9ab9c6",null);
+   R(.15,.4,.7,.43,"#658497");
+  }else if(kind==="storage_container"){
+   for(const f of [.2,.4,.6,.8])line(x+w*f,y,x+w*f,y+h);
+  }else if(kind==="stair"){
+   const n=Math.max(4,Math.min(12,Math.round(Math.max(w,h)/2)));
+   const horizontal=h>=w;
+   for(let i=1;i<n;i++){
+    if(horizontal)line(x,y+h*i/n,x+w,y+h*i/n);
+    else line(x+w*i/n,y,x+w*i/n,y+h);
+   }
+   ctx.strokeStyle=emphasized?"#ffefa7":"#e3bd7b";ctx.lineWidth=2/scale();
+   const direction=obj.connection?.direction==="down"?-1:1;
+   const cx=x+w/2,cy=y+h/2,dist=(horizontal?h:w)*.31;
+   const sx=horizontal?cx-dist*0:cx-dist*direction;
+   const sy=horizontal?cy-dist*direction:cy;
+   const ex=horizontal?cx:cx+dist*direction;
+   const ey=horizontal?cy+dist*direction:cy;
+   line(sx,sy,ex,ey);
+   const angle=Math.atan2(ey-sy,ex-sx),head=Math.min(w,h)*.16;
+   line(ex,ey,ex-head*Math.cos(angle-.6),ey-head*Math.sin(angle-.6));
+   line(ex,ey,ex-head*Math.cos(angle+.6),ey-head*Math.sin(angle+.6));
+  }
+  ctx.restore();return true;
+ }
  function traceStroke(obj,emphasized=false){
   const st=obj.style||{},g=obj.geometry;
   if(obj.objectType==="supply"&&traceSupplyIcon(obj,emphasized))return;
+  if(traceIndoorShape(obj,emphasized))return;
   if(!g||g.type==="none")return;
   ctx.save();
   ctx.globalAlpha=emphasized?1:clamp(finite(st.opacity,1),0,1);
