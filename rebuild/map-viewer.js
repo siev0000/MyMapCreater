@@ -251,12 +251,12 @@ function create(opts){
   while(current&&!seen.has(current.id)){
    seen.add(current.id);path.unshift(current);current=byId.get(current.parentId);
   }
-  // Reopen the nearest hierarchy container first, not all map levels at once.
-  viewRootId=null;
-  const focused=path.findLast(o=>o.parentId&&o.displayLevel>=initialDisplayLevel()&&
-    path.some(child=>child.parentId===o.id))||null;
-  if(focused)viewRootId=focused.id;
-  fitToObject(focused||target);
+  // A deep link to a room or facility with children enters that map level.
+  // For a leaf object, enter its immediate parent instead.
+  const hasChildren=scene.objects.some(o=>o.parentId===target.id);
+  const owner=hasChildren?target:(byId.get(target.parentId)||null);
+  viewRootId=owner&&owner.displayLevel>=initialDisplayLevel()?owner.id:null;
+  fitToObject(owner&&viewRootId?owner:target);
   showDetails(target);
   return true;
  }
