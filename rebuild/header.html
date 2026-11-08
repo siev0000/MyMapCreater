@@ -212,6 +212,7 @@ main{max-width:none;padding:0}
  .map-info-footer .floor-switch button{padding:2px 5px;font-size:10px}
 }
 
+.map-info-footer .detail-top h2{min-width:0;flex:1;overflow-wrap:anywhere;word-break:normal}
 </style>
 </head>
 <body>
@@ -373,6 +374,13 @@ const viewer=window.AAMapViewer.create({
    }
   }
   const navigation=viewer.getSelectionNavigation();
+  // Display the full parent path in the existing title, not in a second row.
+  if(item&&navigation){
+   const path=[...navigation.parents,navigation.current].map(n=>n.name);
+   const heading=$('detail-title');
+   heading.textContent=path.join(' › ');
+   heading.title=heading.textContent;
+  }
   const parentBtn=$('go-parent');
   parentBtn.hidden=!navigation?.parents?.length;
   parentBtn.textContent='← 親へ戻る';
