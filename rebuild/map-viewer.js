@@ -361,6 +361,26 @@ function create(opts){
  function clone(obj){return JSON.parse(JSON.stringify(obj))}
  function getScene(){return scene?clone(scene):null}
  function getSelected(){return selected?clone(selected):null}
+ function getSelectionNavigation(){
+  if(!scene)return null;
+  const byId=new Map(scene.objects.map(o=>[o.id,o]));
+  const current=selected?byId.get(selected.id):null;
+  if(!current)return null;
+  const parents=[],visited=new Set();
+  let parent=byId.get(current.parentId);
+  while(parent&&!visited.has(parent.id)){
+   parents.unshift({id:parent.id,name:parent.name||parent.id,displayLevel:parent.displayLevel});
+   visited.add(parent.id);parent=byId.get(parent.parentId);
+  }
+  const children=scene.objects.filter(o=>o.parentId===current.id&&
+   (o.objectType==="region"||o.objectType==="facility"||o.floorId||
+    scene.objects.some(child=>child.parentId===o.id)))
+   .filter(o=>!o.floorId||getFloorContext()?.selectedFloorId===o.floorId)
+   .map(o=>({id:o.id,name:o.name||o.id,displayLevel:o.displayLevel,floorId:o.floorId||null}));
+  return{current:{id:current.id,name:current.name||current.id,displayLevel:current.displayLevel},
+   parents,children};
+ }
+
  function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;return editMode}
  function replaceScene(next,{preserveView=true,selectedId=null}={}){
   const valid=sceneCheck(clone(next));
@@ -633,7 +653,7 @@ function create(opts){
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById,getScene,getSelected,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
+ return{show,reset,getHierarchy,selectItemById,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
   getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
