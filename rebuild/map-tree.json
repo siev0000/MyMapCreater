@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "system": "AA common map hierarchy",
+  "description": "Common map grouping. UI reads parentId rather than special-casing upper/middle/lower.",
+  "maps": [
+    {
+      "id": "automaton_ship",
+      "name": "オートマン船体",
+      "shortName": "船全体",
+      "kind": "root",
+      "parentId": null,
+      "description": "船体全体（全長4,000m／最大幅2,500m）",
+      "bounds": {
+        "lengthM": 4000,
+        "maxWidthM": 2500
+      }
+    },
+    {
+      "id": "upper",
+      "name": "上層",
+      "kind": "floor",
+      "parentId": "automaton_ship",
+      "source": "../data/upper-layout-draft.json"
+    },
+    {
+      "id": "middle",
+      "name": "中層",
+      "kind": "floor",
+      "parentId": "automaton_ship",
+      "source": "../data/middle-layout-draft.json"
+    },
+    {
+      "id": "lower",
+      "name": "下層",
+      "kind": "floor",
+      "parentId": "automaton_ship",
+      "source": "../data/lower-layout-draft.json"
+    }
+  ]
+}
