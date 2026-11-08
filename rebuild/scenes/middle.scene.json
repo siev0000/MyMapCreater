@@ -11017,7 +11017,8 @@
           "presetId": "machine_parts",
           "quantity": 4
         }
-      ]
+      ],
+      "shapePresetId": "shelf"
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_a_test_table",
@@ -11057,7 +11058,8 @@
       "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
       "metadata": {
         "testOnly": true
-      }
+      },
+      "shapePresetId": "workbench"
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_a_test_supply",
@@ -11065,7 +11067,7 @@
       "parentId": "core_shell_town_mid_rest_and_housing_small_a",
       "floorId": "1F",
       "displayLevel": 5,
-      "objectType": "object",
+      "objectType": "supply",
       "layer": "structures",
       "zIndex": 45,
       "geometry": {
@@ -11078,8 +11080,8 @@
       "visible": true,
       "selectable": true,
       "style": {
-        "fill": "#7b9671",
-        "stroke": "#d5eef0",
+        "fill": null,
+        "stroke": null,
         "strokeWidth": 0.75,
         "opacity": 0.93
       },
@@ -11097,6 +11099,13 @@
       "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
       "metadata": {
         "testOnly": true
+      },
+      "presetId": "supply_box",
+      "quantity": 1,
+      "icon": {
+        "text": "📦",
+        "visible": true,
+        "fontSize": 18
       }
     },
     {
@@ -11137,7 +11146,8 @@
       "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
       "metadata": {
         "testOnly": true
-      }
+      },
+      "shapePresetId": "bed"
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_a_test_cabinet",
@@ -11177,7 +11187,8 @@
       "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
       "metadata": {
         "testOnly": true
-      }
+      },
+      "shapePresetId": "cabinet"
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_a_test_battery",
@@ -11185,7 +11196,7 @@
       "parentId": "core_shell_town_mid_rest_and_housing_small_a",
       "floorId": "2F",
       "displayLevel": 5,
-      "objectType": "object",
+      "objectType": "supply",
       "layer": "structures",
       "zIndex": 45,
       "geometry": {
@@ -11198,8 +11209,8 @@
       "visible": true,
       "selectable": true,
       "style": {
-        "fill": "#8d9f65",
-        "stroke": "#d5eef0",
+        "fill": null,
+        "stroke": null,
         "strokeWidth": 0.75,
         "opacity": 0.93
       },
@@ -11217,6 +11228,13 @@
       "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
       "metadata": {
         "testOnly": true
+      },
+      "presetId": "batteries",
+      "quantity": 1,
+      "icon": {
+        "text": "🔋",
+        "visible": true,
+        "fontSize": 18
       }
     },
     {
@@ -11839,7 +11857,8 @@
           305.5
         ],
         "direction": "up"
-      }
+      },
+      "shapePresetId": "stair"
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_a_build_floor_2F",
@@ -12366,7 +12385,8 @@
           305.5
         ],
         "direction": "down"
-      }
+      },
+      "shapePresetId": "stair"
     }
   ]
 }
