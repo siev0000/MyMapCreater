@@ -298,6 +298,9 @@ function addBuildingTemplates(){
     displayLevel:parent?.displayLevel+1||viewer.initialDisplayLevel(),
     x,y,spacing,baseName:name
    });
+   // Newly generated building interiors belong in their own files on export.
+   const generatedRoot=generated.objects.find(o=>o.id===id);
+   if(generatedRoot)generatedRoot.interiorSource="./buildings/generated/"+id+".interior.json";
    next.objects.push(...generated.objects);
   }
   if(applyScene(next,firstId)){viewer.selectItemById(firstId,{focus:true,force:true});notice(count+"棟の建物を追加しました。保存して確定してください（未保存）","success")}
@@ -617,6 +620,38 @@ function downloadInterior(){
   notice("建物内部JSONを保存しました。配置先："+root.interiorSource+"（リポジトリへの反映は別途必要）","success");
  }catch(error){notice("内部JSONの保存失敗："+error.message,"error")}
 }
+async function downloadBundle(){
+ const data=sceneNow();if(!data){notice("保存データがありません","error");return}
+ const roots=externalOwners(data),files=[],used=new Set();
+ const basename=(state.savingName||((data.id||"map")+".scene.json")).replace(/[\\/]/g,"_");
+ try{
+  files.push({name:"scenes/"+basename,content:JSON.stringify(exteriorOnly(data),null,2)+"\n"});
+  for(const root of roots){
+   const target=String(root.interiorSource).replace(/^\.\//,"");
+   if(!target.startsWith("buildings/")||target.split("/").includes(".."))
+    throw Error("不正な内部JSONパス："+target);
+   if(used.has(target))throw Error("建物の内部参照が重複しています："+target);
+   used.add(target);
+   const children=belongingTo(data,root.id);
+   let payload;
+   if(children.length)payload={schemaVersion:2,buildingId:root.id,objects:children};
+   else{
+    const response=await fetch(root.interiorSource,{cache:"no-store"});
+    if(!response.ok)throw Error("内部JSONが取得できません："+target+" (HTTP "+response.status+")");
+    payload=await response.json();
+    if(payload.schemaVersion!==2||payload.buildingId!==root.id||!Array.isArray(payload.objects))
+     throw Error("内部JSONの内容が不正："+target);
+   }
+   files.push({name:target,content:JSON.stringify(payload,null,2)+"\n"});
+  }
+  const blob=window.AAMapZip.pack(files),url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=url;link.download=(data.id||"map")+"-scene-and-interiors.zip";
+  document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),0);
+  setDirty(false);notice(files.length+"ファイルをZIPにまとめて保存しました。rebuild/ 以下に展開して反映してください。","success");
+ }catch(error){notice("ZIP保存できません："+error.message,"error")}
+}
+bind("download-bundle",downloadBundle,"click");
 bind("download",download,"click");
 bind("download-interior",downloadInterior,"click");
 bind("show-scene-json",()=>{
