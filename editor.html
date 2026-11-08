@@ -269,9 +269,34 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(r.kind==="line"){r.points.forEach((p,i)=>{const c=worldToPixel(p[0],p[1]);i?ctx.lineTo(c.px,c.py):ctx.moveTo(c.px,c.py)});return true}
     return false;
   }
+  // Map presentation line thickness is not equivalent to road width in metres.
+  function editorDrawThinMiddleRoad(r){
+    const purple=r.geometryStatus==="draft_purple_machine_axis";
+    const freight=r.geometryStatus==="draft_parallel_freight_B";
+    const trunk=purple||["draft_industrial_starboard","middle_industrial_freight_road","middle_cargo_tunnel"].includes(r.id);
+    ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.strokeStyle=purple?"#d3b4ee":freight?"#e4ac6a":r.color||"#a5b8c8";
+    const pts=(r.points||[]).map(([x,y])=>{const p=worldToPixel(x,y);return[p.px,p.py]});
+    if(r.kind==="ring"){if(roadPath(r)){ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.stroke()}return;}
+    if(pts.length<2)return;
+    for(const off of trunk?[-2.7,2.7]:[0]){
+      ctx.beginPath();
+      pts.forEach(([x,y],i)=>{
+        const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+        const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;
+        const px=x-off*dy/l,py=y+off*dx/l;
+        if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+      });
+      ctx.lineWidth=trunk?1.55:1.65;ctx.setLineDash([]);ctx.stroke();
+    }
+  }
   function drawRoad(r,alpha=1){
     ctx.save();ctx.globalAlpha=alpha;
-    if(roadPath(r)){ctx.strokeStyle=r.color||"#a5b8c8";ctx.lineWidth=Math.max(2,r.width*SC);ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(r.dash||[]);ctx.stroke()}
+    if(active==="middle")editorDrawThinMiddleRoad(r);
+    else if(roadPath(r)){
+      ctx.strokeStyle=r.color||"#a5b8c8";ctx.lineWidth=Math.max(2,r.width*SC);
+      ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(r.dash||[]);ctx.stroke();
+    }
     ctx.restore();
   }
   function drawCompound(f){
@@ -362,7 +387,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(active==="middle"&&window.AAMiddleCentral&&current().centralUrbanPlan){
       window.AAMiddleCentral.drawUrbanBlocks(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},current().centralUrbanPlan,{labels:state.labels,zoom:1.35});
     }
-    for(const f of current().facilities){
+    for(const f of [...current().facilities.filter(f=>f.zoneOutline),...current().facilities.filter(f=>!f.zoneOutline)]){
       if(f.ringDistrict)continue;
       if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
       if(f.type==="terminal"&&current().editorMeta?.status==="draft"){
@@ -389,16 +414,21 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         }
       }else if(active==="middle"&&f.zoneOutline&&f.socialTier){
         const upper=f.socialTier==="upper";
-        ctx.fillStyle=upper?"rgba(164,206,235,.23)":"rgba(206,151,98,.23)";
-        ctx.fillRect(b.left,b.top,b.right-b.left,b.bottom-b.top);
-        ctx.strokeStyle=upper?"#abdbff":"#e2bd8a";ctx.lineWidth=2.5;ctx.setLineDash([8,5]);ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);ctx.setLineDash([]);
+        if(f.footprint?.length>=3)traceShape(f);
+        else{ctx.beginPath();ctx.rect(b.left,b.top,b.right-b.left,b.bottom-b.top);}
+        ctx.fillStyle=upper?"rgba(164,206,235,.10)":"rgba(206,151,98,.12)";ctx.fill();
+        ctx.strokeStyle=upper?"#abdbff":"#e2bd8a";ctx.lineWidth=1.8;
+        ctx.setLineDash([8,5]);ctx.stroke();ctx.setLineDash([]);
       }else if(f.draftRegion||f.zoneOutline){
         ctx.beginPath();ctx.arc(b.cx,b.cy,15,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle="#e7ded0";ctx.lineWidth=2;ctx.stroke();
       }else{traceShape(f);ctx.fillStyle=color+"55";ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke()}
       ctx.restore();
     }
-    if(current().editorMeta?.revision!=='polygon-packed-10m-v2'||current().editorMeta?.routingRevision)for(const r of current().roads)drawRoad(r,.9);
-    else if(active==="middle")for(const r of current().roads.filter(r=>r.kind==="line"&&["draft_central_access","draft_purple_machine_axis","draft_parallel_freight_B","draft_arbora_B_access"].includes(r.geometryStatus)))drawRoad(r,.9);
+    if(active==="middle"){
+      for(const r of current().roads.filter(r=>r.kind==="line"&&["draft_central_access","draft_purple_machine_axis","draft_parallel_freight_B","draft_arbora_B_access"].includes(r.geometryStatus)))drawRoad(r,.9);
+    }else if(current().editorMeta?.revision!=='polygon-packed-10m-v2'||current().editorMeta?.routingRevision){
+      for(const r of current().roads)drawRoad(r,.9);
+    }
     drawAccessControls();
     if(state.labels){
       ctx.save();ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
