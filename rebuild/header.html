@@ -420,7 +420,9 @@ function renderMapTree(){
  }
  // Recursive parent/child structure: no hardcoded large/medium levels.
  function renderNodes(nodes,depth=0){
+  const floor=viewer.getFloorContext();
   for(const node of nodes){
+   if(node.floorId&&(!floor||node.floorId!==floor.selectedFloorId))continue;
    const key='node:'+active.id+':'+node.id;
    const hasChildren=Boolean(node.children?.length);
    const opened=treeExpanded.has(key);
