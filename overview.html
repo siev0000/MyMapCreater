@@ -93,8 +93,8 @@ const candidates={
   belts:[{id:'processing_starboard',name:'燃料・油加工',x:-1070,y:660,w:900,h:220},{id:'processing_port',name:'繊維・樹脂加工',x:-1080,y:-660,w:900,h:220}],
   issues:['栽培区から加工施設まで近い一方、湿度や排熱の分離が必要です。','船体の左右幅に加工施設と搬送路が本当に収まるかを確認します。']},
  B:{
-    "title": "B｜船尾側の生活・研究・加工混合街区",
-    "summary": "船首の上位タウン・ラボは残し、リンクターミナル船尾半周には下位タウン・ラボと小さな加工施設4棟を混在配置。住居側の一般通路と工場側の貨物道路は分離します。",
+    "title": "B｜船尾半周の広いタウン・ラボ混合街区",
+    "summary": "リンクターミナル船尾側の半環状地区を広く使い、タウン・工房・ラボ・加工施設4棟を同じ街区に配置。工場は小さな独立施設のまま、広い街区を施設1棟とは扱いません。",
     "arbora": {
       "polygon": [
         [
@@ -335,7 +335,8 @@ const candidates={
         "x": 430,
         "y": 350,
         "w": 270,
-        "h": 190
+        "h": 190,
+        "isDistrict": true
       },
       {
         "id": "refine_valley",
@@ -344,25 +345,104 @@ const candidates={
         "x": 430,
         "y": -350,
         "w": 270,
-        "h": 190
+        "h": 190,
+        "isDistrict": true
       },
       {
         "id": "stern_core_shell_town",
-        "name": "船尾タウン〈下位区〉",
+        "name": "船尾タウン〈下位・混合街区〉",
         "tier": "lower",
-        "x": -270,
+        "x": -445,
         "y": 410,
-        "w": 180,
-        "h": 170
+        "w": 470,
+        "h": 560,
+        "polygon": [
+          [
+            -300,
+            160
+          ],
+          [
+            -645,
+            130
+          ],
+          [
+            -645,
+            370
+          ],
+          [
+            -680,
+            385
+          ],
+          [
+            -600,
+            540
+          ],
+          [
+            -480,
+            635
+          ],
+          [
+            -330,
+            690
+          ],
+          [
+            -230,
+            600
+          ],
+          [
+            -210,
+            340
+          ]
+        ],
+        "isDistrict": true
       },
       {
         "id": "stern_refine_lab_district",
-        "name": "船尾工房・ラボ区〈下位区〉",
+        "name": "船尾工房・ラボ〈下位・混合街区〉",
         "tier": "lower",
-        "x": -270,
+        "x": -445,
         "y": -410,
-        "w": 180,
-        "h": 170
+        "w": 470,
+        "h": 560,
+        "polygon": [
+          [
+            -210,
+            -340
+          ],
+          [
+            -230,
+            -600
+          ],
+          [
+            -330,
+            -690
+          ],
+          [
+            -480,
+            -635
+          ],
+          [
+            -600,
+            -540
+          ],
+          [
+            -680,
+            -385
+          ],
+          [
+            -645,
+            -370
+          ],
+          [
+            -645,
+            -130
+          ],
+          [
+            -300,
+            -160
+          ]
+        ],
+        "isDistrict": true
       }
     ],
     "interior": [
@@ -416,9 +496,9 @@ const candidates={
       }
     ],
     "issues": [
-      "船尾側は『工場地区と住宅地区を別々に並べる』のではなく、タウン・ラボ・工場が近接した混合街区です。住宅出入口と工場荷役口は別系統にしています。",
-      "工場4件は160×120m以下の仮寸法に縮小。生産能力、倉庫、消防・排熱条件が未確定のため、必要になれば再調整します。",
-      "紫通路は大型機専用。橙の貨物専用路と貨物リフト入口は引き続き仮設計で、道路の完全な接続はまだ承認していません。"
+      "船尾の右舷・左舷に、それぞれ約32.6万㎡の下位タウン・工房研究街区を設置しました。これは建物の床面積ではなく、道路・広場・工場を含む地区面積です。",
+      "工場4棟の寸法・位置は維持。紫の大型機幹線と橙の貨物幹線は細い二重線、生活道路と荷役支線は細い単線で表現します。",
+      "道路ゲート・隔壁・工場の生産能力・避難路など、細部の設計は未完了です。"
     ]
   },
  C:{title:'C｜外周加工＋中央貨物中継',summary:'アルボラ外周で加工し、ターミナル船尾側には貨物検査・仕分けの中継施設だけ置く案。',
@@ -527,28 +607,42 @@ function draw(){
   for(const b of plan.belts){
    addZone(b.id,b.name,{tag:'rect',props:rectBounds(b.x-b.w/2,b.x+b.w/2,b.y-b.h/2,b.y+b.h/2),label:pos(b.x,b.y),fontSize:15,opacity:.34},colors.industry,placeDescriptions[b.id]);insertToClip();
   }
+
+  if(Array.isArray(plan.towns))for(const t of plan.towns){
+   const upper=t.tier==='upper';
+   const title=t.id==='stern_core_shell_town'?'船尾タウン街区':t.id==='stern_refine_lab_district'?'船尾工房・研究街区':(upper?'上位 ':'下位 ')+(t.id.includes('town')?'タウン':'ラボ区');
+   const shape=t.polygon?.length>=3?
+     {tag:'polygon',props:{points:t.polygon.map(([x,y])=>pos(x,y).join(',')).join(' ')},label:pos(t.x,t.y),fontSize:14,opacity:.12}:
+     {tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:13,opacity:.20};
+   addZone(t.id,title,shape,upper?'#9ed7ee':'#c5a079',placeDescriptions[t.id]);insertToClip();
+  }
+
   if(Array.isArray(plan.factories))for(const plant of plan.factories){
    addZone(plant.id,plant.label,{tag:'rect',props:rectBounds(plant.x-plant.w/2,plant.x+plant.w/2,plant.y-plant.h/2,plant.y+plant.h/2),label:pos(plant.x,plant.y),fontSize:12,opacity:.65},colors.industry,placeDescriptions[plant.id]);insertToClip();
   }
-  if(Array.isArray(plan.towns))for(const t of plan.towns){
-   const upper=t.tier==='upper';
-   const title=(upper?'上位 ':'下位 ')+(t.id.includes('town')?'タウン':'ラボ区');
-   addZone(t.id,title,{tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:13,opacity:.44},
-    upper?'#9ed7ee':'#c5a079',placeDescriptions[t.id]);insertToClip();
-  }
-
   if(plan.relay){
    const t=plan.relay;
    addZone('middle_cargo_inspection','貨物中継',{tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:14,opacity:.65},colors.hub,placeDescriptions.middle_cargo_inspection);insertToClip();
   }
-  if(Array.isArray(plan.purplePassage)){
-   const d='M'+plan.purplePassage.map(([x,y])=>pos(x,y).map(n=>n.toFixed(1)).join(',')).join('L');
-   svg.append(E('path',{d,fill:'none',stroke:'#d3b4ee','stroke-width':5,'stroke-dasharray':'10 5','pointer-events':'none',opacity:.96}));insertToClip();
-  }
-  if(Array.isArray(plan.cargoFlow))for(const flow of plan.cargoFlow){
-   const d='M'+flow.map(([x,y])=>pos(x,y).map(n=>n.toFixed(1)).join(',')).join('L');
-   svg.append(E('path',{d,fill:'none',stroke:plan.purplePassage?'#e4ac6a':'#a0eddb','stroke-width':3.5,'stroke-dasharray':'8 5','pointer-events':'none',opacity:.9}));insertToClip();
-  }
+  const thinRoute=(worldPoints,color,doubleLine)=>{
+   const pts=worldPoints.map(([x,y])=>pos(x,y));
+   const offsets=doubleLine?[-2.4,2.4]:[0];
+   for(const off of offsets){
+    const arr=pts.map(([x,y],i)=>{
+     const a=pts[Math.max(i-1,0)],b=pts[Math.min(i+1,pts.length-1)];
+     const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;
+     return [(x-off*dy/len).toFixed(1),(y+off*dx/len).toFixed(1)];
+    });
+    const path='M'+arr.map(p=>p.join(',')).join('L');
+    svg.append(E('path',{d:path,fill:'none',stroke,'stroke-width':doubleLine?1.3:1.5,'pointer-events':'none',opacity:.95}));
+    insertToClip();
+   }
+  };
+  if(Array.isArray(plan.purplePassage))thinRoute(plan.purplePassage,'#d3b4ee',true);
+  if(Array.isArray(plan.cargoFlow))plan.cargoFlow.forEach((flow,i)=>{
+   const main=Array.isArray(plan.purplePassage)&&(i<2||i===plan.cargoFlow.length-1);
+   thinRoute(flow,plan.purplePassage?'#e4ac6a':'#a0eddb',main);
+  });
   // Major environmental units, not small rooms: show only when Arbora is selected.
   if(expandedArbora&&Array.isArray(plan.interior))for(const z of plan.interior){
    addZone(z.id,z.name,{tag:'rect',props:rectBounds(z.x-z.w/2,z.x+z.w/2,z.y-z.h/2,z.y+z.h/2),label:pos(z.x,z.y),fontSize:12,opacity:.52},colors.nature,placeDescriptions[z.id]);insertToClip();
