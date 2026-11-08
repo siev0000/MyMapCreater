@@ -142,7 +142,12 @@ function renderGeometry(obj){
   field.addEventListener("change",()=>{
    const n=Number(field.value);
    if(!Number.isFinite(n)){notice("座標には数値を入力してください","error");return}
-   changeObject(o=>assign(o.geometry,n));
+   const step=gridState.spacing*gridState.fraction;
+   const axis=(key==="x"||key==="cx")?0:(key==="y"||key==="cy")?1:null;
+   const value=gridState.snap&&step>0&&axis!==null
+    ?snapPoint(axis===0?[n,0]:[0,n])[axis]
+    :gridState.snap&&step>0&&["width","height"].includes(key)?Math.max(step,Math.round(n/step)*step):n;
+   changeObject(o=>assign(o.geometry,value));
   });
   root.append(field);return root;
  }
@@ -341,6 +346,7 @@ function restore(from,to){
  try{viewer.replaceScene(scene,{preserveView:true,selectedId:state.selectedId})}
  finally{state.internal=false}
  state.scene=viewer.getScene();showObjects();renderSelected();setDirty(true);
+ setGridInputs({...gridDefaults,...state.scene?.settings?.editorGrid});
  notice("履歴を復元しました","success");
 }
 bind("undo",()=>restore(state.undo,state.redo),"click");
