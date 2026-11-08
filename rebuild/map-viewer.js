@@ -22,7 +22,7 @@ const ROAD_GRAY="#929da5";
 // Only key transport routes appear on the first view. Other source routes remain intact.
 const PRIMARY_ROAD_TYPES=new Set(["主要幹線道路","大型機用主要通路","重貨物道路","貨物トンネル"]);
 const ROAD_DISPLAY_MODES=["main","all","off"];
-const RENDER_REVISION="中層描画 v3";
+const RENDER_REVISION="中層描画 v4";
 function primaryRoute(r){return PRIMARY_ROAD_TYPES.has(r.roadType)&&!String(r.geometryStatus||"").startsWith("stale")}
 const TUNNEL_MARK="#d5dde0";
 function isTunnel(r){return /トンネル|tunnel/i.test(r.roadType||"") || /tunnel/i.test(r.subtype||"")}
@@ -50,6 +50,12 @@ function insidePolygon(points,x,y){
  return inside;
 }
 function contains(f,x,y){
+ if(f.ringComplex){
+  // This facility is an annular area inside the terminal, not a solid square.
+  const cx=f.ringComplex.center?.[0]??f.x,cy=f.ringComplex.center?.[1]??f.y;
+  const d=Math.hypot(x-cx,y-cy);
+  return d>=f.ringComplex.innerRadius&&d<=f.ringComplex.outerRadius;
+ }
  if(f.ringDistrict){
   const d=Math.hypot(x-f.x,y-f.y);
   return d>=(f.innerRadius||0)&&d<=(f.outerRadius||0);
@@ -187,9 +193,23 @@ function create(opts){
  function drawFacility(f,alpha=1){
   const t=TYPES[f.type]||TYPES.shared;
   ctx.save();ctx.globalAlpha=alpha;
-  polygon(f);ctx.fillStyle=t.fill;ctx.fill();
   ctx.strokeStyle=selected?.id===f.id?"#fff2a6":t.line;
-  ctx.lineWidth=(selected?.id===f.id?2.5:1.2)/scale();ctx.stroke();
+  ctx.lineWidth=(selected?.id===f.id?2.5:1.2)/scale();
+  if(f.ringComplex){
+   // レジストリンク・ドーム: only the actual annular frame is shown.
+   // Never fill the parent's 500x500m bounding rectangle or the ring interior.
+   const ring=f.ringComplex,cx=ring.center?.[0]??f.x,cy=ring.center?.[1]??f.y;
+   for(const radius of [ring.innerRadius,ring.outerRadius]){
+    ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.stroke();
+   }
+  }else{
+   polygon(f);
+   if(!f.areaFrame){
+    // Ordinary solid facilities keep their existing color; grouping frames do not.
+    ctx.fillStyle=t.fill;ctx.fill();
+   }
+   ctx.stroke();
+  }
   ctx.restore();
  }
  function drawZone(z){
@@ -245,8 +265,9 @@ function create(opts){
  }
  function drawTerminal(){
   const t=data?.facilities.find(f=>f.id==="middle_terminal");if(!t)return;
+  // Transparent outer terminal frame; the 250m disc must not cover its inner guild.
   ctx.save();ctx.beginPath();ctx.arc(t.x,t.y,250,0,2*Math.PI);
-  ctx.fillStyle="#346e87";ctx.fill();ctx.strokeStyle=selected?.id===t.id?"#fff2a6":"#98e5fc";
+  ctx.strokeStyle=selected?.id===t.id?"#fff2a6":"#98e5fc";
   ctx.lineWidth=2.5/scale();ctx.stroke();ctx.restore();
  }
  function drawLabels(){
@@ -281,7 +302,12 @@ function create(opts){
   // The selected outline is drawn AFTER routes, so roads cannot hide it.
   ctx.save();ctx.strokeStyle="#fff2a6";ctx.lineWidth=2.4/scale();
   ctx.setLineDash([]);
-  if(selected.ringDistrict){
+  if(selected.ringComplex){
+   const ring=selected.ringComplex,cx=ring.center?.[0]??selected.x,cy=ring.center?.[1]??selected.y;
+   for(const radius of [ring.innerRadius,ring.outerRadius]){
+    ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.stroke();
+   }
+  }else if(selected.ringDistrict){
    for(const r of [selected.innerRadius,selected.outerRadius]){
     ctx.beginPath();ctx.arc(selected.x,selected.y,r,0,Math.PI*2);ctx.stroke();
    }
@@ -378,7 +404,8 @@ function create(opts){
   if(selected.roadType)parts.push(selected.roadType);
   if(selected.status?.startsWith("draft")||selected.draft===true||selected.reviewStatus==="draft")
    parts.push("配置・接続未確定");
-  if(selected.w&&selected.h)parts.push(Math.round(selected.w)+"×"+Math.round(selected.h)+"m");
+  if(selected.ringComplex)parts.push("環状施設｜内半径"+selected.ringComplex.innerRadius+"m・外半径"+selected.ringComplex.outerRadius+"m");
+  else if(selected.w&&selected.h)parts.push(Math.round(selected.w)+"×"+Math.round(selected.h)+"m");
   infoMeta.textContent=parts.join(" ｜ ")||"選択した区画";
   infoText.textContent=selected.detail||selected.draftNote||"説明は現在の配置JSONに登録されていません。";
   draw();
