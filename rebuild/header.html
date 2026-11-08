@@ -40,6 +40,40 @@ main{max-width:1240px;margin:0 auto;padding:5px clamp(10px,3vw,24px) 16px}
 .note{font-size:12px;color:var(--muted);line-height:1.5}
 #error{color:#ffc1ba}
 @media(max-width:500px){.header-label{font-size:11px}.shell{grid-template-rows:31px 29px;gap:2px}.segment-scroll{display:none}.view-select{display:block}.logo{font-size:12px}.floor-name{font-size:13px}.menu-trigger{min-width:68px;padding:3px 6px}.map-name{font-size:9px}}
+
+/* Full-height read-only map area; header stays exactly two rows. */
+main{max-width:none;padding:0}
+.viewport{position:relative;display:block;min-height:0;height:calc(100dvh - 68px);padding:0;overflow:hidden;border:0;border-radius:0;background:#0c2029;text-align:left}
+#map-canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#map-canvas:active{cursor:grabbing}
+.map-zoom{position:absolute;top:10px;right:10px;z-index:3;display:flex;gap:4px;background:rgba(6,21,30,.83);border:1px solid #4a7382;border-radius:9px;padding:4px;align-items:center}
+.map-zoom button{background:#1a3a49;border:1px solid #476a77;border-radius:6px;min-width:29px;height:29px;font-size:16px;color:#eaf7fa;padding:2px 6px}
+.map-zoom .zoom-percent{font-size:11px;color:#c9dce2;min-width:38px;text-align:center}
+.map-hint{position:absolute;top:11px;left:11px;max-width:calc(100% - 190px);z-index:2;color:#9cc6d0;background:rgba(7,22,31,.7);border-radius:7px;padding:5px 8px;font-size:11px;pointer-events:none}
+.map-detail{position:absolute;top:43px;left:10px;width:min(300px,72vw);max-height:min(55vh,500px);z-index:4;overflow-y:auto;border:1px solid rgba(135,186,199,.61);border-radius:10px;background:rgba(10,28,39,.82);padding:12px;box-shadow:0 10px 30px #0007;backdrop-filter:blur(4px)}
+.map-detail[hidden],.legend-footer[hidden]{display:none}
+.detail-top{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+.detail-top h2{font-size:15px;line-height:1.4;margin:0;font-weight:750}
+.detail-top button{flex:none;border:1px solid #486875;background:#173846;border-radius:6px;width:28px;height:28px;color:#fff}
+.detail-meta{font-size:11px;color:#e1c88b;line-height:1.5;margin:8px 0}
+.detail-text{font-size:12px;line-height:1.65;color:#e1edf1;white-space:pre-wrap;margin:0}
+.legend-footer{position:absolute;z-index:4;bottom:0;left:0;right:0;background:rgba(7,24,33,.91);border-top:1px solid rgba(117,170,185,.7);padding:5px 9px;max-height:122px;overflow-y:auto;backdrop-filter:blur(5px);font-size:11px}
+.legend-section{display:flex;align-items:center;gap:10px;min-width:0;margin:3px 0}
+.legend-section strong{color:#c7e6e9;flex:none;width:44px;font-size:11px}
+.legend-items{display:flex;gap:10px;white-space:nowrap;overflow-x:auto;min-width:0;scrollbar-width:thin}
+.legend-item{display:inline-flex;align-items:center;gap:5px;flex:none;color:#d7e9ed}
+.legend-swatch{display:block;width:10px;height:10px;border:1px solid #eee5;border-radius:2px;flex:none}
+.legend-line{display:block;width:16px;height:3px;border-radius:1px;flex:none}
+.legend-note{color:#c9af84;margin-left:54px;display:block;line-height:1.35}
+.menu-settings-button{display:block;width:100%;background:#1b3946;color:#eaf8fa;border:1px solid #416476;border-radius:7px;padding:8px 10px;text-align:left;margin-top:4px}
+@media(max-width:500px){
+ .viewport{height:calc(100dvh - 65px)}
+ .map-detail{width:min(272px,75vw);max-height:48vh;top:41px;padding:10px}
+ .map-hint{font-size:10px;max-width:calc(100% - 168px);top:8px;left:7px}
+ .map-zoom{top:7px;right:6px;padding:3px}
+ .map-zoom button{width:26px;min-width:26px;height:28px}
+ .legend-footer{max-height:111px;padding:4px 7px}
+}
 </style>
 </head>
 <body>
@@ -56,6 +90,8 @@ main{max-width:1240px;margin:0 auto;padding:5px clamp(10px,3vw,24px) 16px}
     <div id="map-menu-popover" class="menu-popover" hidden>
      <div class="menu-heading">大枠マップの切り替え</div>
      <div id="map-menu-list" class="menu-list" role="menu"></div>
+     <div class="menu-heading">表示設定</div>
+     <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
     </div>
    </div>
   </div>
@@ -67,20 +103,41 @@ main{max-width:1240px;margin:0 auto;padding:5px clamp(10px,3vw,24px) 16px}
  </div>
 </header>
 <main>
- <section class="viewport" id="viewport" aria-live="polite">
-  <div>
-   <div class="kind" id="view-kind">MAP</div>
-   <h1 id="view-name">読み込み中</h1>
-   <p id="view-description">ヘッダーの切り替えを試作しています。</p>
-   <p id="error" role="alert"></p>
+ <section class="viewport" id="viewport" aria-label="船体と階層マップ">
+  <canvas id="map-canvas" aria-label="地図をドラッグで移動、ホイールやボタンで拡大縮小。タップして区画情報を選択"></canvas>
+  <div class="map-hint" id="map-hint" role="status">表示対象を読み込み中…</div>
+  <div class="map-zoom" aria-label="マップの拡大縮小">
+   <button type="button" id="zoom-out" title="縮小">−</button>
+   <span class="zoom-percent" id="zoom-label">100%</span>
+   <button type="button" id="zoom-in" title="拡大">＋</button>
+   <button type="button" id="zoom-reset" title="全体に戻す">⌖</button>
   </div>
+  <aside class="map-detail" id="detail-panel" aria-label="選択した区画の説明" hidden>
+   <div class="detail-top"><h2 id="detail-title"></h2>
+    <button type="button" id="detail-close" title="説明を閉じる" aria-label="説明を閉じる">×</button>
+   </div>
+   <p class="detail-meta" id="detail-meta"></p>
+   <p class="detail-text" id="detail-text"></p>
+  </aside>
+  <footer class="legend-footer" id="legend-footer" aria-label="表示色と区画の凡例" hidden>
+   <div id="legend-content"></div>
+  </footer>
+  <div hidden aria-live="polite"><span id="view-kind"></span><span id="view-name"></span><span id="view-description"></span><span id="error"></span></div>
  </section>
- <p class="note">このページは2行ヘッダーの独立試作です。上面・側面・上層・中層・下層の選択で表示先だけが変わります。配置JSONや既存のマップ表示は変更していません。</p>
 </main>
+
+<script src="./map-viewer.js"></script>
 <script>
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
+const viewer=window.AAMapViewer.create({
+ host:$('viewport'),canvas:$('map-canvas'),
+ info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
+ infoClose:$('detail-close'),legend:$('legend-footer'),legendContent:$('legend-content'),
+ legendButton:$('legend-switch'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
+ zoomLabel:$('zoom-label'),hint:$('map-hint')
+});
 let nodes=new Map(),roots=[],selected=null,viewId='top';
 function validate(data){
  if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップの設定形式が不正です');
@@ -156,6 +213,7 @@ function render(){
   '全長4,000m・最大幅2,500mの船体全域を扱います。上面・側面は表示方向であり、別の船体ではありません。':
   active.name+'の配置を表示する予定です。現在はヘッダー操作のみ実装しています。';
  document.title=$('view-name').textContent+'｜AA マップ';
+ viewer.show(active.id,active.id===root.id?viewId:null,active.source||null);
 }
 function select(id,mode){
  if(!nodes.has(id))return;
@@ -170,7 +228,7 @@ function restoreState(){
  const raw=decodeURIComponent(location.hash.slice(1));
  const split=raw.split('::');
  if(split.length===2&&nodes.has(split[0])){select(split[0],split[1]);return}
- select(nodes.has(raw)?raw:roots[0].id,null);
+ select(nodes.has(raw)?raw:(nodes.has('middle')?'middle':roots[0].id),null);
 }
 function closeMenu(){
  $('map-menu-popover').hidden=true;
