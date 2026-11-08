@@ -1602,20 +1602,37 @@ fitCanvasToViewport();
 function closePopup(){
  const mask=document.getElementById('popupMask');mask.classList.remove('show');mask.setAttribute('aria-hidden','true');
 }
+// Popup is for an ordinary visitor: only a facility name and what it does.
+// Coordinates, dimensions, draft notes, internal navigation and audit metadata remain
+// available in the separate facility inspector, not in the popup.
+function popupFacilityHTML(f){
+ let description=String(f.popupDescription||f.detail||'').trim();
+ // Older draft JSON sometimes appends a planning note to an otherwise valid description.
+ description=description.split(/\s*【大枠仮配置】/)[0].trim();
+ const commonDescriptions={
+  arbora_sector:'植物・樹木・生物を育成、管理する人工自然区。植物性油、樹皮、繊維、樹脂などの素材を生産する。',
+  resist_link_dome:'リンクターミナル内に設けた任務受付とギルドの複合区。依頼の受注・報告、報酬の受け取り、作戦会議、素材や装備の保管などを行う。',
+  last_hub:'下層の生活区。休止・充電設備、中古部品や廃材の市場、小規模工房、現地修理施設などが集まる。',
+  middle_terminal:'上層・下層を結ぶ中層の交通拠点。一般・大型機リフト、乗降案内、認証、簡易検査、応急修理などを担う。',
+  upper_terminal:'上層の交通拠点。一般・大型機の乗降案内や認証・保安、緊急時の対応を担う。',
+  lower_terminal:'下層の交通拠点。一般・大型機の乗降案内や認証・検査、応急修理、充電、避難誘導などを担う。'
+ };
+ description=commonDescriptions[f.id]||description;
+ if(!description||/^Notion「エリア」の現行座標表に登録/.test(description)||description==='公式地図での接続案内は非公開。')description='施設の説明はまだ登録されていません。';
+ return '<h3>'+escHTML(f.name)+'</h3><p>'+escHTML(description)+'</p>';
+}
 function renderInfo(){
  const info=document.getElementById('info');
  if(!chosen){info.innerHTML='';closePopup();return}
  if(chosen.kind==='reserved'){
-  info.innerHTML='<h3>'+escHTML(chosen.name)+'</h3><p>下層の一般利用区とは独立した上層専用の船外出撃区です。正確な区画境界は検討中です。</p>';
+  info.innerHTML='<h3>'+escHTML(chosen.name)+'</h3><p>上層の機体が船外へ出撃するための専用区画です。下層の一般利用区とは分離されています。</p>';
  }else if(chosen.kind==='concourse'){
-  info.innerHTML='<h3>ターミナルコンコース</h3><p>中央塔の周囲にある乗降・案内区画。半径250〜330m、外径660mで、中央塔本体（直径500m）とは別です。</p>';
+  info.innerHTML='<h3>ターミナルコンコース</h3><p>中央ターミナルを囲み、乗降・案内と各地区への移動を支える連絡区画です。</p>';
  }else if(chosen.kind==='cell'){
-  const q=gridSpec(),x0=2000-(chosen.row+1)*q.cellX,x1=2000-chosen.row*q.cellX,y0=-1250+chosen.col*q.cellY,y1=y0+q.cellY;
-  const fmt=n=>Math.round(n*100)/100;
-  info.innerHTML=`<h3>マス (${chosen.col+1}, ${chosen.row+1})</h3><div class="meta"><span class="pill">X ${fmt(x0)}〜${fmt(x1)}m</span><span class="pill">Y ${fmt(y0)}〜${fmt(y1)}m</span></div><p>通行可否は道路・通路などの接続設定に従います。</p>`;
+  info.innerHTML='<h3>マス</h3><p>施設が配置されていない領域です。</p>';
  }else{
   const f=chosen;
-  info.innerHTML=facilityInfoHTML(f)+(f.type==='terminal'?'<p class="extra">中央ターミナル本体は直径500m。周囲に外径660mのコンコース、その外側に生活・整備地区があります。</p>':'');
+  info.innerHTML=popupFacilityHTML(f);
  }
  const mask=document.getElementById('popupMask');mask.classList.add('show');mask.setAttribute('aria-hidden','false');
 }
