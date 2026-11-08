@@ -9,6 +9,19 @@
 - [JSON Scene v2 仕様](./rebuild/SCENE_FORMAT_v2.md)
 - [架空の町のサンプル](./rebuild/examples/sample-town.scene.json)
 
+## 仕様書（項目別）
+
+汎用アプリの機能仕様・次期開発計画は **[docs/specs/ 仕様書目次](./docs/specs/README.md)** に分割して管理します。
+
+- [アーキテクチャ](./docs/specs/01-architecture.md)
+- [表示Lv・親子階層と表示](./docs/specs/02-hierarchy-and-visibility.md)
+- [図形・直接編集](./docs/specs/03-geometry-and-editing.md)
+- [壁・扉・開口・接続](./docs/specs/04-walls-doors-and-connections.md)
+- [JSON・保存・検証](./docs/specs/05-data-and-validation.md)
+- [施設内部までの実装タスク](./docs/specs/06-roadmap-and-acceptance.md)
+
+**現行の実装形式**は引き続き [Scene JSON v2](./rebuild/SCENE_FORMAT_v2.md) です。仕様書内の `displayLevel` 数値化や壁・扉の連動は次期実装予定であり、まだ実装済みではありません。
+
 ## データの分離
 
 | ファイル | 役割 |
