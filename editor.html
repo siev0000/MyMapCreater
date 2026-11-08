@@ -370,6 +370,10 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     }
     ctx.restore();
   }
+  function editorFacilityVisible(f){
+    if(active!=='middle'||!f.mapDisplayParentId)return true;
+    return selectedItem()?.id===f.id||interiorPreview?.macroId===f.mapDisplayParentId;
+  }
   function editorMiddleFrames(){
     if(active!=='middle')return;
     const selected=kind==='facility'?selectedItem():null;
@@ -401,7 +405,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       window.AAMiddleCentral.drawUrbanBlocks(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},current().centralUrbanPlan,{labels:state.labels,zoom:1.35});
     }
     for(const f of [...current().facilities.filter(f=>f.zoneOutline),...current().facilities.filter(f=>!f.zoneOutline)]){
-      if(f.ringDistrict)continue;
+      if(f.ringDistrict||!editorFacilityVisible(f))continue;
       if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
       if(f.type==="terminal"&&current().editorMeta?.status==="draft"){
         const c=worldToPixel(f.x,f.y),r=250*SC;
@@ -417,8 +421,9 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(active==="middle"&&f.id==="arbora_sector"&&f.footprint?.length>=3){
         traceShape(f);
         ctx.fillStyle="rgba(70,150,108,.24)";ctx.fill();ctx.strokeStyle="#91dcb0";ctx.lineWidth=2.8;ctx.setLineDash([8,5]);ctx.stroke();ctx.setLineDash([]);
-        if(selectedItem()?.id===f.id||selectedItem()?.parentId===f.id){
+        if(selectedItem()?.id===f.id||selectedItem()?.parentId===f.id||selectedItem()?.containedIn===f.id||interiorPreview?.macroId){
           for(const z of f.macroZones||[]){
+            if(z.id===interiorPreview?.macroId||z.id===selectedItem()?.mapDisplayParentId)continue;
             const p=worldToPixel(z.x,z.y),w=z.h*SC,h=z.w*SC;
             ctx.fillStyle="rgba(89,180,132,.22)";ctx.fillRect(p.px-w/2,p.py-h/2,w,h);
             ctx.lineWidth=1.5;ctx.strokeStyle="#a4e9b5";ctx.strokeRect(p.px-w/2,p.py-h/2,w,h);
@@ -635,7 +640,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(curr&&!curr.ringDistrict){const b=rect(curr);if(Math.hypot(p.px-b.right,p.py-b.bottom)<18)return {item:curr,mode:"resize"}}
     }
     for(const f of [...items()].reverse()){
-      if(f.ringDistrict)continue;
+      if(f.ringDistrict||!editorFacilityVisible(f))continue;
       const b=rect(f);
       if(withinShape(f,p))return {item:f,mode:"move"};
     }
@@ -676,8 +681,19 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
        renderDetail();draw();e.preventDefault();return;
       }
     }
-    interiorPreview=null;
+    // Arbora uses the same progressive drill-down: sector, then functional zone, then interior structure.
+    const arbora=kind==='facility'&&selectedItem()?.id==='arbora_sector'?selectedItem():null;
+    if(arbora&&!interiorPreview?.macroId){
+      const macro=arbora.macroZones?.find(z=>Math.abs(w.x-z.x)<=z.w/2&&Math.abs(w.y-z.y)<=z.h/2);
+      if(macro){
+        interiorPreview={districtId:arbora.id,macroId:macro.id};
+        draw();showStatus(macro.name+' の内部構造を表示中。施設を選択すると編集できます。');
+        e.preventDefault();return;
+      }
+    }
+    // Keep preview during picking so the revealed child is selectable.
     const hit=kind==="facility"?pickFacility(p):pickRoad(p);
+    interiorPreview=null;
     if(!hit){selection=null;render();if(pointInRestricted(w.x,w.y))showStatus("ここは上層専用の出撃区です。下層の通常施設・道路を配置できません。",true);return}
     selection={id:hit.item.id,kind};
     if(!editEnabled){drag=null;render();e.preventDefault();return}
