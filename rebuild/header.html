@@ -267,7 +267,6 @@ main{max-width:none;padding:0}
    <aside class="map-detail" id="detail-panel" aria-label="選択した区画の説明" hidden>
     <div class="detail-context">
      <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
-     <div id="interior-breadcrumb" class="interior-breadcrumb" aria-label="選択中の階層" hidden></div>
      <nav id="floor-switch" class="floor-switch" aria-label="選択した区画の階切替" hidden></nav>
     </div>
     <div class="detail-top"><h2 id="detail-title"></h2>
@@ -382,9 +381,6 @@ const viewer=window.AAMapViewer.create({
    if(parent)viewer.selectItemById(parent.id,{focus:true});
   };
   $('current-map-title').hidden=false;
-  const breadcrumb=$('interior-breadcrumb');
-  breadcrumb.hidden=!item;
-  breadcrumb.textContent=item?navigation?.parents.concat([navigation.current]).map(n=>n.name).join(' › ')||'':'';
   $('detail-placeholder').hidden=Boolean(item);
   renderMapTree();
  }
