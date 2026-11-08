@@ -280,7 +280,7 @@ main{max-width:none;padding:0}
  </section>
 </div>
 <script src="./spec-viewer.js?v=5"></script>
-<script src="./map-viewer.js?v=interior-navigation-v2"></script>
+<script src="./map-viewer.js?v=surrounding-map-v3"></script>
 <script>
 (()=>{
 'use strict';
@@ -365,7 +365,7 @@ const viewer=window.AAMapViewer.create({
   parentBtn.onclick=()=>viewer.exitItem();
   const hasChildren=Boolean(navigation?.children?.length);
   childBtn.hidden=!hasChildren;
-  childBtn.textContent=hasChildren?'内部へ入る →':'内部へ入る';
+  childBtn.textContent=hasChildren?'区画に拡大 →':'区画に拡大';
   childBtn.setAttribute('aria-expanded','false');
 
 
@@ -373,7 +373,7 @@ const viewer=window.AAMapViewer.create({
   breadcrumb.hidden=!viewRoot;
   if(viewRoot){
    const path=viewer.getViewRootPath();
-   breadcrumb.textContent='現在の階層：'+path.map(n=>n.name).join(' › ');
+   breadcrumb.textContent='注目中：'+path.map(n=>n.name).join(' › ');
   }else breadcrumb.textContent='';
 
   $('detail-placeholder').hidden=Boolean(item);
