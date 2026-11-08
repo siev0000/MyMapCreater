@@ -13,6 +13,8 @@ function validate(scene){
   assert.equal(typeof o.id,"string");
   assert(!ids.has(o.id),"Duplicate ID: "+o.id);
   ids.add(o.id);
+  assert(Number.isSafeInteger(o.displayLevel)&&o.displayLevel>=1,"Invalid displayLevel: "+o.id);
+  assert(!Object.hasOwn(o,"level"),"Legacy level remains: "+o.id);
   const g=o.geometry||{type:"none"};
   assert(["none","rect","polygon","polyline","circle","ring"].includes(g.type),"Unsupported "+g.type);
   if(g.type==="polygon"||g.type==="polyline"){
@@ -81,7 +83,7 @@ for(const floor of ["upper","middle","lower"]){
 }
 const sample=validate(read("rebuild/examples/sample-town.scene.json"));
 assert(sample.objects.some(o=>o.objectType==="wall"&&o.geometry.type==="polyline"));
-assert(sample.objects.some(o=>o.level==="medium"&&o.parentId));
+assert(sample.objects.some(o=>o.displayLevel===2&&o.parentId));
 const renderer=fs.readFileSync(path.join(root,"rebuild/map-viewer.js"),"utf8");
 for(const forbidden of ["arbora_sector","middle_terminal","core_shell_town","automaton_ship","shipProfile","hullWidth"]){
  assert(!renderer.includes(forbidden),"World-specific ID in generic renderer: "+forbidden);
