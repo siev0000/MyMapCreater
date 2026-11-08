@@ -1259,7 +1259,50 @@ document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()
 document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(e.target.value));
 // Legacy baseline/draft toggle removed from the UI; draft remains the displayed map.
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
-function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=currentMap==='middle'&&road.geometryStatus==='draft_parallel_freight_B'?'#e4ac6a':road.access==='hazard_authorized'?'#ef9a72':road.access==='bio_authorized'?'#85dbc0':road.access==='freight_authorized'?'#a8c2dd':road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(3,road.width*.4);ctx.setLineDash(road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+// Display-only: line weight is deliberately not the physical road width.
+function drawThinRoadPolyline(points,color,doubleLine,dash){
+ if(!Array.isArray(points)||points.length<2)return;
+ const P=points.map(([x,y])=>xy(x,y));
+ const offsets=doubleLine?[-2.7,2.7]:[0];
+ for(const off of offsets){
+  ctx.beginPath();
+  P.forEach(([px,py],i)=>{
+   let nx=0,ny=0;
+   const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)];
+   const vx=b[0]-a[0],vy=b[1]-a[1],length=Math.hypot(vx,vy)||1;
+   nx=-vy/length;ny=vx/length;
+   if(i===0)ctx.moveTo(px+off*nx,py+off*ny);
+   else ctx.lineTo(px+off*nx,py+off*ny);
+  });
+  ctx.lineWidth=doubleLine?1.55:1.65;
+  ctx.setLineDash(dash);ctx.stroke();
+ }
+}
+function drawRoad(road){
+ if(road.kind==='internal')return;
+ if((road.layer&&!state[road.layer])||(!road.layer&&!state.roads))return;
+ const middle=currentMap==='middle'&&showProposal&&layoutDrafts.middle;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.strokeStyle=middle&&road.geometryStatus==='draft_parallel_freight_B'?'#e4ac6a':
+ road.access==='hazard_authorized'?'#ef9a72':road.access==='bio_authorized'?'#85dbc0':
+ road.access==='freight_authorized'?'#a8c2dd':road.roadType==='コンコース'?'#e6cd99':road.color;
+ const isDraft=road.status==='draft_route_requires_review';
+ const dash=middle?[]:road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:isDraft&&road.kind!=='ring'?[10,7]:road.dash||[];
+ if(middle){
+  ctx.lineWidth=1.65;
+  if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke();}
+  else{
+   const main=road.geometryStatus==='draft_purple_machine_axis'||
+    ['draft_industrial_starboard','middle_industrial_freight_road','middle_cargo_tunnel'].includes(road.id);
+   drawThinRoadPolyline(road.points,ctx.strokeStyle,main,dash);
+  }
+ }else{
+  ctx.lineWidth=Math.max(3,road.width*.4);ctx.setLineDash(dash);
+  if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke();}
+  else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke();}
+ }
+ ctx.restore();
+}
 function facilityPolygonVertices(f){
  if(Array.isArray(f.footprint)&&f.footprint.length>=3)return f.footprint.map(([dx,dy])=>[f.x+dx,f.y+dy]);
  return [[f.x-f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y+f.h/2],[f.x-f.w/2,f.y+f.h/2]];
@@ -1559,7 +1602,7 @@ drawExclusiveSortieZones();
 drawMiddleDistrictAndDrafts();
 if(!state.gridOnTop)drawGridLayer();
 // Real facilities and district region footprint; compound interiors are drawn separately.
-for(const f of facilities){
+for(const f of [...facilities.filter(f=>f.zoneOutline),...facilities.filter(f=>!f.zoneOutline)]){
  if(f.type==='terminal'||f.ringDistrict||f.areaFrame)continue;
  const [cx,cy]=xy(f.x,f.y),g=groups[f.type];
  ctx.save();
@@ -1570,14 +1613,15 @@ for(const f of facilities){
    ctx.strokeStyle=chosen?.id===f.id||chosen?.parentId===f.id?'#f6edb5':'#73c99c';
    ctx.lineWidth=chosen?.id===f.id?4:2.5;ctx.setLineDash([9,6]);ctx.stroke();ctx.setLineDash([]);
   }else if(currentMap==='middle'&&f.socialTier&&state.districts){
-   // Show both bow and stern living/lab districts as accessible footprints.
-   const w=f.h*.4,h=f.w*.4;
+   // A district contains separate buildings; it is not itself one giant building.
    const bow=f.socialTier==='upper';
-   ctx.fillStyle=bow?'rgba(172,203,228,.20)':'rgba(194,154,106,.20)';
-   ctx.fillRect(cx-w/2,cy-h/2,w,h);
-   ctx.lineWidth=chosen?.id===f.id?4:2.4;
+   if(f.footprint?.length>=3)traceFacilityPolygon(f);
+   else{const w=f.h*.4,h=f.w*.4;ctx.beginPath();ctx.rect(cx-w/2,cy-h/2,w,h);}
+   ctx.fillStyle=bow?'rgba(172,203,228,.10)':'rgba(194,154,106,.12)';
+   ctx.fill();
+   ctx.lineWidth=chosen?.id===f.id?3.2:1.8;
    ctx.strokeStyle=chosen?.id===f.id?'#fff4a9':bow?'#a9e2fb':'#e3b98a';
-   ctx.setLineDash([7,5]);ctx.strokeRect(cx-w/2,cy-h/2,w,h);ctx.setLineDash([]);
+   ctx.setLineDash([7,5]);ctx.stroke();ctx.setLineDash([]);
   }else{
    // Other unsettled large districts remain symbolic.
    ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);
