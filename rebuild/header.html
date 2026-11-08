@@ -89,6 +89,26 @@ main{max-width:none;padding:0}
  .map-zoom button{width:26px;min-width:26px;height:28px}
  .legend-footer{max-height:111px;padding:4px 7px}
 }
+/* Documentation overlay, separate from the map's two-row header. */
+.spec-open{overflow:hidden}
+.spec-overlay[hidden]{display:none}
+.spec-overlay{position:fixed;inset:0;z-index:60;background:rgba(0,8,13,.78);display:flex;align-items:center;justify-content:center;padding:clamp(8px,3vw,24px)}
+.spec-dialog{display:flex;flex-direction:column;width:min(940px,100%);height:min(91dvh,870px);min-height:200px;background:#102934;border:1px solid #577f8f;border-radius:13px;box-shadow:0 16px 70px #000b;overflow:hidden}
+.spec-header{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid #476779;flex:none}
+.spec-header strong{flex:none;font-size:14px}
+.spec-header select{flex:1;min-width:0;max-width:370px;color:#e8f6fa;background:#1a3a47;border:1px solid #547c8d;border-radius:7px;padding:8px}
+.spec-header button{background:#244653;border:1px solid #648b9a;color:#fff;border-radius:7px;padding:6px 12px;font-size:16px;min-width:40px}
+.spec-status{font-size:12px;color:#f1cc94;padding:0 15px}
+.spec-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px clamp(14px,3vw,34px) 32px;color:#dcecf2;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+.spec-body h1,.spec-body h2,.spec-body h3{line-height:1.4;color:#f1fbff;margin:1.4em 0 .6em}
+.spec-body h1{font-size:22px;margin-top:.3em}.spec-body h2{font-size:18px;border-bottom:1px solid #42606f;padding-bottom:6px}.spec-body h3{font-size:16px}
+.spec-body p{margin:.8em 0}.spec-body a{color:#8ce5e7;text-decoration:underline}.spec-body ul,.spec-body ol{padding-left:24px}.spec-body li{margin:.3em 0}
+.spec-body code{font-family:ui-monospace,SFMono-Regular,monospace;background:#24414d;border-radius:4px;padding:1px 5px;font-size:.9em}
+.spec-body pre{background:#071c25;border:1px solid #385969;padding:12px;overflow-x:auto;border-radius:8px}.spec-body pre code{background:none;padding:0;white-space:pre}
+.spec-body table{border-collapse:collapse;width:100%;display:block;overflow-x:auto;font-size:12px}.spec-body th,.spec-body td{padding:7px 9px;border:1px solid #3e6171;text-align:left;min-width:90px}.spec-body th{background:#234453;white-space:nowrap}
+.spec-body blockquote{border-left:3px solid #7acbd1;color:#b9d4dd;margin:12px 0;padding:1px 14px;background:#17323e}
+.spec-body hr{border:0;border-top:1px solid #486874;margin:22px 0}
+@media(max-width:600px){.spec-overlay{padding:5px}.spec-dialog{height:calc(100dvh - 10px);border-radius:9px}.spec-header{padding:9px;gap:7px}.spec-header strong{font-size:12px}.spec-header select{font-size:12px}.spec-body{font-size:13px;padding:12px 14px 25px}.spec-body h1{font-size:19px}.spec-body h2{font-size:16px}}
 </style>
 </head>
 <body>
@@ -108,6 +128,7 @@ main{max-width:none;padding:0}
      <div class="menu-heading">表示設定</div>
      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
      <div id="visibility-controls" aria-label="JSONで定義された表示グループ"></div>
+     <button type="button" id="open-specs" class="menu-settings-button">📖 仕様書を見る</button>
      <a id="open-editor-link" class="menu-editor-link" href="./editor.html">現在のマップを編集（JSON）</a>
     </div>
    </div>
@@ -144,6 +165,18 @@ main{max-width:none;padding:0}
  </section>
 </main>
 
+<div id="spec-modal" class="spec-overlay" hidden>
+ <section class="spec-dialog" role="dialog" aria-modal="true" aria-label="仕様書を閲覧">
+  <div class="spec-header">
+   <strong>仕様書</strong>
+   <select id="spec-picker" aria-label="表示する仕様書を選択"></select>
+   <button id="spec-close" type="button" aria-label="仕様書を閉じる">×</button>
+  </div>
+  <div id="spec-status" class="spec-status" role="status"></div>
+  <article id="spec-content" class="spec-body" tabindex="0"></article>
+ </section>
+</div>
+<script src="./spec-viewer.js?v=1"></script>
 <script src="./map-viewer.js?v=generic-editor-v12"></script>
 <script>
 (()=>{
