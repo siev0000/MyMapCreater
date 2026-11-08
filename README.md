@@ -19,6 +19,8 @@
 - [壁・扉・開口・接続](./docs/specs/04-walls-doors-and-connections.md)
 - [JSON・保存・検証](./docs/specs/05-data-and-validation.md)
 - [施設内部までの実装タスク](./docs/specs/06-roadmap-and-acceptance.md)
+- [物理フロア・施設内部](./docs/specs/07-floors-and-interiors.md)
+- [大型設備・家具の配置](./docs/specs/08-placeable-objects.md)
 
 **現行の実装形式**は引き続き [Scene JSON v2](./rebuild/SCENE_FORMAT_v2.md) です。仕様書内の `displayLevel` 数値化や壁・扉の連動は次期実装予定であり、まだ実装済みではありません。
 
