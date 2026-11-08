@@ -64,6 +64,11 @@ const tick=async()=>{for(let i=0;i<30;i++)await Promise.resolve()};
 async function main(){
  await tick();
  assert.equal(el["scene-name"].textContent,"汎用サンプル：町");
+ assert.equal(el["visibility-controls"].children[0]?.textContent,"通路：主要のみ","Visibility label must come from JSON");
+ el["visibility-controls"].children[0].click();
+ assert.equal(el["visibility-controls"].children[0]?.textContent,"通路：全案を表示");
+ el["visibility-controls"].children[0].click();
+ assert.equal(el["visibility-controls"].children[0]?.textContent,"通路：非表示");
  assert.equal(el.objects.children.length,sample.objects.length);
  assert.deepEqual(draw.labels.includes("非表示のはず"),false);
  assert(draw.strokes.includes("#f5dfac"),"Independent wall not drawn");
