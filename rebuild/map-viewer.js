@@ -732,7 +732,12 @@ function create(opts){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
   }else if(clicked){
    const hit=pick(x,y);
-   showDetails(hit||(viewRootId?scene.objects.find(o=>o.id===viewRootId):null));
+   if(hit?.objectType==="stair"&&hit.connection?.toFloorId){
+    // A stair switches the physical floor of its owning building, never the
+    // display level or the surrounding map.
+    showDetails(hit);
+    if(!setFloor(hit.connection.toFloorId))showDetails(hit);
+   }else showDetails(hit||(viewRootId?scene.objects.find(o=>o.id===viewRootId):null));
   }
  }
  canvas.addEventListener("pointerup",end);
