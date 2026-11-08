@@ -17,7 +17,7 @@ function normalizeFloor(data){
   if(!num(x)||!num(y))throw Error('座標が不正: '+raw.id);
   const parent=parentId?byId.get(parentId):null;if(parentId&&!parent)throw Error('親が見つかりません: '+parentId);
   const node={id:raw.id,name:raw.name||raw.id,role,
-   type:role==='road'?'path':role==='district'?'district':['medium','small','internal'].includes(role)?'room':role==='macro'?'zone':'facility',
+   type:role==='road'?'path':['district','macro'].includes(role)?'district':['small','internal'].includes(role)?'room':'facility',
    subtype:raw.subtype||raw.type||raw.roadType||null,parentId:parentId||null,
    position:{x:x-(parent?.legacyX||0),y:y-(parent?.legacyY||0)},rotation:num(raw.rotation)?raw.rotation:0,
    geometry,properties:{sourceStatus:raw.reviewStatus||raw.status||null,locked:Boolean(raw.locked)},
