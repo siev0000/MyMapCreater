@@ -119,7 +119,7 @@ function draw(ctx,xy,{floor,facilities=[],roads=[]}={}){
    data.columns.map(point=>({point,primary:true}));
  const placed=[];
  for(const {point,primary} of supportCandidates){
-  if(!withinStructuralEnvelope(point))continue;
+  if(floor==='middle'&&!withinStructuralEnvelope(point))continue;
   if(!isClear(point,facilities,activeRoads,primary?55:40,primary?36:28))continue;
   // Avoid drawing a denser cluster of markers in the same area.
   if(placed.some(p=>Math.hypot(p[0]-point[0],p[1]-point[1])<140))continue;
