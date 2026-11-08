@@ -22,7 +22,7 @@ const ROAD_GRAY="#929da5";
 // Only key transport routes appear on the first view. Other source routes remain intact.
 const PRIMARY_ROAD_TYPES=new Set(["主要幹線道路","大型機用主要通路","重貨物道路","貨物トンネル"]);
 const ROAD_DISPLAY_MODES=["main","all","off"];
-const RENDER_REVISION="中層描画 v7";
+const RENDER_REVISION="中層描画 v8";
 // Display hierarchy only. No mutation of data/middle-layout-draft.json.
 const DISPLAY_MEDIUM_CHILDREN=Object.freeze({
  arbora_sector:Object.freeze([
