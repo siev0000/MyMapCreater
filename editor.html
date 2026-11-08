@@ -96,7 +96,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
   const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
   const snap=n=>state.snap?Math.round(n/10)*10:Math.round(n);
-  let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0};
+  let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0},interiorPreview=null;
   const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
   const state={snap:true,grid:true,overlay:false,labels:true};let gridMeters=10;
   function current(){return floors[active]}
@@ -211,7 +211,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   function floorName(){return LABEL[active]}
   function switchFloor(f){
     if(!floors[f])return;
-    active=f;selection=null;drag=null;
+    active=f;selection=null;interiorPreview=null;drag=null;
     render();
   }
   function rect(f){
@@ -370,6 +370,41 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     }
     ctx.restore();
   }
+  function editorMiddleFrames(){
+ if(active!=="middle"||kind!=="facility")return;
+ const parent=selectedItem();
+ if(!parent?.mediumZones?.length)return;
+ ctx.save();ctx.lineJoin="round";
+ for(const zone of parent.mediumZones){
+  const r=rect(zone);
+  ctx.fillStyle=interiorPreview?.mediumId===zone.id?"rgba(255,233,161,.23)":"rgba(222,225,229,.09)";
+  ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+  ctx.lineWidth=interiorPreview?.mediumId===zone.id?3:1.8;
+  ctx.strokeStyle=interiorPreview?.mediumId===zone.id?"#fff3af":"#d8e1e5";
+  ctx.setLineDash(interiorPreview?.mediumId===zone.id?[]:[6,4]);
+  ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+ }
+ const medium=parent.mediumZones.find(z=>z.id===interiorPreview?.mediumId);
+ if(medium)for(const z of medium.smallZones||[]){
+  const r=rect(z);
+  ctx.fillStyle=interiorPreview?.smallId===z.id?"rgba(255,237,166,.25)":"rgba(234,232,230,.06)";
+  ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+  ctx.lineWidth=interiorPreview?.smallId===z.id?3:1.3;
+  ctx.strokeStyle=interiorPreview?.smallId===z.id?"#fff3af":"#c2cbd0";ctx.setLineDash([]);
+  ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+ }
+ if(state.labels&&interiorPreview){
+  const zone=medium?.smallZones?.find(z=>z.id===interiorPreview.smallId)||medium;
+  if(zone){
+   const p=worldToPixel(zone.x,zone.y);
+   ctx.font="bold 15px system-ui";ctx.textAlign="center";ctx.lineWidth=4;
+   ctx.strokeStyle="#12222b";ctx.strokeText(zone.name,p.px,p.py);
+   ctx.fillStyle="#fff4cf";ctx.fillText(zone.name,p.px,p.py);
+  }
+ }
+ ctx.restore();
+}
+
   function draw(){
     ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
     drawSortieRestrictions();
@@ -409,7 +444,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
             const p=worldToPixel(z.x,z.y),w=z.h*SC,h=z.w*SC;
             ctx.fillStyle="rgba(89,180,132,.22)";ctx.fillRect(p.px-w/2,p.py-h/2,w,h);
             ctx.lineWidth=1.5;ctx.strokeStyle="#a4e9b5";ctx.strokeRect(p.px-w/2,p.py-h/2,w,h);
-            if(state.labels){ctx.font="11px system-ui";ctx.fillStyle="#e5fce6";ctx.fillText(z.name,p.px,p.py,Math.max(75,w));}
+            if(state.labels&&selectedItem()?.id===z.id){ctx.font="11px system-ui";ctx.fillStyle="#e5fce6";ctx.fillText(z.name,p.px,p.py,Math.max(75,w));}
           }
         }
       }else if(active==="middle"&&f.zoneOutline&&f.socialTier){
@@ -433,7 +468,8 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       for(const r of current().roads)drawRoad(r,.9);
     }
     drawAccessControls();
-    if(state.labels){
+    editorMiddleFrames();
+    if(state.labels&&active!=="middle"){
       ctx.save();ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
       for(const f of current().facilities){
         if(f.showLabel===false||f.ringDistrict)continue;
@@ -480,6 +516,14 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
       }
       ctx.restore();
+    }
+    if(active==="middle"&&state.labels&&!interiorPreview){
+      const picked=selectedItem();
+      if(picked){const p=worldToPixel(picked.x,picked.y);
+       ctx.save();ctx.font="bold 16px system-ui";ctx.textAlign="center";
+       ctx.strokeStyle="#12222b";ctx.lineWidth=4;ctx.strokeText(picked.name,p.px,p.py);
+       ctx.fillStyle="#fff4d7";ctx.fillText(picked.name,p.px,p.py);ctx.restore();
+      }
     }
     const item=selectedItem();
     if(item&&selection?.kind===kind){
@@ -553,6 +597,17 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   }
   function renderDetail(){
     const item=selectedItem(),e=$("detail");
+    if(interiorPreview&&item?.id===interiorPreview.districtId){
+      const mid=item.mediumZones?.find(z=>z.id===interiorPreview.mediumId);
+      const small=mid?.smallZones?.find(z=>z.id===interiorPreview.smallId);
+      const v=small||mid;
+      if(v){
+       e.innerHTML='<h3>'+esc(v.name)+'</h3><p>'+esc(v.detail||"仮の施設区画")+'</p>'+
+         '<p class="hint">これは編集前の区画構成案です。室内設備や部屋数を確定したものではありません。</p>'+
+         '<button type="button" id="closeInteriorPreview">大枠へ戻る</button>';
+       return;
+      }
+    }
     if(!item){e.innerHTML='<p class="hint">地図や一覧で施設・道路を選択してください。</p>';return}
     const typeOptions=Object.keys(COLORS).map(t=>`<option value="${t}" ${t===item.type?"selected":""}>${esc(t)}</option>`).join("");
     const common=`<div class="value-id">ID: ${esc(item.id)}</div>`;
@@ -642,6 +697,16 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   function down(e){
     if(e.button!==0||!current())return;
     const p=localPos(e),w=pixelToWorld(p.px,p.py);cursorWorld=w;
+    if(active==="middle"&&kind==="facility"&&selectedItem()?.mediumZones?.length){
+      const district=selectedItem(),medium=district.mediumZones.find(z=>interiorPreview?.mediumId===z.id);
+      const hitSmall=medium?.smallZones?.find(z=>Math.abs(w.x-z.x)<=z.w/2&&Math.abs(w.y-z.y)<=z.h/2);
+      const hitMedium=district.mediumZones.find(z=>Math.abs(w.x-z.x)<=z.w/2&&Math.abs(w.y-z.y)<=z.h/2);
+      if(hitSmall||hitMedium){
+       interiorPreview={districtId:district.id,mediumId:hitSmall?medium.id:hitMedium.id,smallId:hitSmall?.id||null};
+       renderDetail();draw();e.preventDefault();return;
+      }
+    }
+    interiorPreview=null;
     const hit=kind==="facility"?pickFacility(p):pickRoad(p);
     if(!hit){selection=null;render();if(pointInRestricted(w.x,w.y))showStatus("ここは上層専用の出撃区です。下層の通常施設・道路を配置できません。",true);return}
     selection={id:hit.item.id,kind};
@@ -846,7 +911,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     }catch(e){showStatus("読み込みに失敗しました: "+e.message,true)}
   }
   document.querySelectorAll("[data-floor]").forEach(b=>b.addEventListener("click",()=>switchFloor(b.dataset.floor)));
-  document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>{kind=b.dataset.kind;selection=null;render()}));
+  document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>{kind=b.dataset.kind;selection=null;interiorPreview=null;render()}));
   $("overlay").onclick=()=>{state.overlay=!state.overlay;render()};
   $("snap").onclick=()=>{state.snap=!state.snap;render()};
   $("grid").onclick=()=>{state.grid=!state.grid;render()};$("gridSize").onclick=()=>{gridMeters=gridMeters===10?50:10;$("gridSize").textContent=gridMeters+"m四方（"+(gridMeters===10?"50":"10")+"mへ切替）";draw()};
@@ -859,9 +924,11 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   $("export").onclick=exportJSON;$("resetFloor").onclick=resetToNotion;$("import").onclick=()=>$("importFile").click();
   $("importFile").addEventListener("change",async e=>{await importJSON(e.target.files?.[0]);e.target.value=""});
   $("search").addEventListener("input",renderList);
-  $("items").addEventListener("click",e=>{const b=e.target.closest("[data-pick]");if(b){selection={id:b.dataset.pick,kind};render()}});
+  $("items").addEventListener("click",e=>{const b=e.target.closest("[data-pick]");if(b){selection={id:b.dataset.pick,kind};interiorPreview=null;render()}});
   $("detail").addEventListener("change",detailChange);
-  $("detail").addEventListener("click",e=>{const p=e.target.closest("[data-delete-point]");if(p){removePoint(+p.dataset.deletePoint);return}if(e.target.id==="addPoint")addPoint();if(e.target.id==="delete")deleteItem()});
+  $("detail").addEventListener("click",e=>{const p=e.target.closest("[data-delete-point]");if(p){removePoint(+p.dataset.deletePoint);return}if(e.target.id==="addPoint")addPoint();if(e.target.id==="delete")deleteItem();
+  if(e.target.id==="closeInteriorPreview"){interiorPreview=null;render();}
+ });
   canvas.addEventListener("pointerdown",down);
   canvas.addEventListener("pointermove",move);
   canvas.addEventListener("pointerup",up);
