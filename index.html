@@ -393,7 +393,7 @@ function applyAAGridSize(cols,rows){
 }
 // Horizontal image axis = ship Y (left = -Y); vertical image axis = ship X (top = +X)
 function xy(x,y){return [W/2+y*.4,H/2-x*.4]}
-const state={labels:true,grid:true,roads:true,pods:true,freight:true,structures:true,districts:true,drafts:false,gridOnTop:false,hull:true};let chosen=null;
+const state={labels:true,grid:true,roads:true,pods:true,freight:true,structures:false,districts:true,drafts:false,gridOnTop:false,hull:true};let chosen=null;
 let shipView='map';
 let selectedShipPart=null;
 const SHIP_PARTS={"top":[{"id":"bow","name":"船首外装","x":500,"y":159,"detail":"船首側の外装輪郭。船首の絞り込み形状は仮案。","num":1},{"id":"armor","name":"主船殻・外装甲","x":174,"y":444,"detail":"外周の船殻と厚い外壁。装甲分割は仮案。","num":2},{"id":"ribs","name":"装甲補強フレーム","x":274,"y":625,"detail":"外装の継ぎ目と船体の長手方向の補強ライン。","num":3},{"id":"core","name":"中央上部構造物","x":500,"y":753,"detail":"甲板上の大型構造物。中央ターミナルが船外露出していると確定したものではない。","num":4},{"id":"seams","name":"外装セクションの境界","x":734,"y":558,"detail":"区画別の外装パネル境界。内部階層の区切りではない。","num":5},{"id":"dome","name":"後部覆蓋ドーム","x":500,"y":1169,"detail":"栽培区をイメージした仮の覆蓋構造。外部ドームの存在は未確定。","num":6},{"id":"stern","name":"船尾外殻","x":495,"y":1510,"detail":"船尾の外側を包む装甲。推進設備の配置は未確定。","num":7}],"side":[{"id":"bow","name":"船首装甲","x":110,"y":297,"detail":"前方の尖った船首外殻。詳細な外形は仮案。","num":1},{"id":"armor","name":"主船殻・側面装甲","x":394,"y":333,"detail":"船の内部を保護する側面外装。装甲パネルは模式的な区切り。","num":2},{"id":"hatches","name":"外装ハッチ","x":300,"y":318,"detail":"側面の四角い開口部。整備・物資搬入向けを想定した仮案。","num":3},{"id":"lights","name":"青色表示ライン","x":605,"y":259,"detail":"船体の状態表示灯・誘導灯の仮イメージ。","num":4},{"id":"tower","name":"中央上部構造物","x":483,"y":122,"detail":"船体上面から張り出す構造物。センサー・管制系などの想定で、用途未確定。","num":5},{"id":"sensors","name":"外部アンテナ","x":645,"y":174,"detail":"外部の観測・通信設備を想定。位置と機能は未確定。","num":6},{"id":"dome","name":"後部覆蓋ドーム","x":795,"y":155,"detail":"船尾寄りのドーム型外装。内部栽培区の位置と一致するとは限らない。","num":7},{"id":"engines","name":"船尾推進器","x":973,"y":336,"detail":"後部の発光する推進部。推進方式と数は未確定。","num":8},{"id":"keel","name":"船底補強帯","x":558,"y":405,"detail":"船底側に通した外殻補強部材。形状は仮案。","num":9}]};
@@ -1577,12 +1577,20 @@ function drawTerminalTowerBase(){
  ctx.strokeStyle=groups.terminal.line;ctx.lineWidth=4;ctx.stroke();
  ctx.restore();
 }
+// Detail assets are revealed only after the corresponding medium zone is selected.
+// Prevent stacked macro boundaries and independent building outlines at whole-map scale.
+function mapFacilityVisible(f){
+ if(currentMap!=='middle'||!showProposal||!f.mapDisplayParentId)return true;
+ return chosen?.id===f.id||chosen?.id===f.mapDisplayParentId;
+}
 function drawArboraMacroZones(){
  if(currentMap!=='middle'||!showProposal)return;
  const a=facilities.find(f=>f.id==='arbora_sector');
- if(!a?.macroZones?.length||!(chosen?.id===a.id||chosen?.parentId===a.id))return;
+ if(!a?.macroZones?.length||!(chosen?.id===a.id||chosen?.parentId===a.id||chosen?.containedIn===a.id||chosen?.mapDisplayParentId))return;
  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
  for(const z of a.macroZones){
+  // The active zone recedes when looking at its specific interior structure.
+  if(chosen?.id===z.id||chosen?.mapDisplayParentId===z.id)continue;
   const [px,py]=xy(z.x,z.y),w=z.h*.4,h=z.w*.4;
   ctx.fillStyle=chosen?.id===z.id?'rgba(174,226,150,.48)':'rgba(106,191,143,.22)';
   ctx.fillRect(px-w/2,py-h/2,w,h);
@@ -1638,7 +1646,7 @@ drawMiddleDistrictAndDrafts();
 if(!state.gridOnTop)drawGridLayer();
 // Real facilities and district region footprint; compound interiors are drawn separately.
 for(const f of [...facilities.filter(f=>f.zoneOutline),...facilities.filter(f=>!f.zoneOutline)]){
- if(f.type==='terminal'||f.ringDistrict||f.areaFrame)continue;
+ if(f.type==='terminal'||f.ringDistrict||f.areaFrame||!mapFacilityVisible(f))continue;
  const [cx,cy]=xy(f.x,f.y),g=groups[f.type];
  ctx.save();
  if(isProtectedDraft&&f.zoneOutline){
@@ -1697,7 +1705,7 @@ if(isProtectedDraft&&currentMap!=='middle'&&window.AATerminalInterior){
  window.AATerminalInterior.draw(ctx,xy,facilities[0],{labels:state.labels&&chosen?.id===facilities[0].id,zoom:view.zoom,roads:state.roads,chosen});
 }
 if(isProtectedDraft&&currentMap==='middle')drawCompoundFacilities();
-for(const f of facilities){if(f.ringDistrict||f.areaFrame||(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier))continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
+for(const f of facilities){if(f.ringDistrict||f.areaFrame||!mapFacilityVisible(f)||(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier))continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
 if(state.labels&&currentMap!=='middle'){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false&&!(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier));for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft)continue;let [cx,cy]=xy(...(f.mapLabelPosition||[f.x,f.y]));let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(isProtectedDraft)drawMiddleDistrictLabels();
 if(state.labels&&isProtectedDraft&&currentMap!=='middle'){
@@ -1892,9 +1900,18 @@ canvas.addEventListener('click',e=>{
    renderPlaces();updateInteriorPanels();renderInfo();draw();return;
   }
  }
+ // A revealed internal facility must be pickable before its enclosing macro label.
+ const visibleArboraChild=facilities.find(f=>f.mapDisplayParentId===chosen?.id&&
+  (f.footprint?.length>=3?pointInsideFacility(f,wx,wy):
+    Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2));
+ if(currentMap==='middle'&&visibleArboraChild){
+  chosen=visibleArboraChild;
+  document.getElementById('selectedPanel').hidden=true;
+  renderPlaces();updateInteriorPanels();renderInfo();draw();return;
+ }
  // While Arbora is expanded, its major environmental zones can be selected.
  const arbora=facilities.find(f=>f.id==='arbora_sector');
- const canPickArbora=arbora?.macroZones?.length&&(chosen?.id===arbora.id||chosen?.parentId===arbora.id);
+ const canPickArbora=arbora?.macroZones?.length&&(chosen?.id===arbora.id||chosen?.parentId===arbora.id||chosen?.containedIn===arbora.id||chosen?.mapDisplayParentId);
  const arboraMacro=canPickArbora?arbora.macroZones.find(z=>
     Math.abs(wx-z.x)<=z.w/2&&Math.abs(wy-z.y)<=z.h/2):null;
  if(arboraMacro){
@@ -1919,7 +1936,7 @@ canvas.addEventListener('click',e=>{
   }
  }
  if(!near)for(const f of [...facilities.filter(f=>!f.zoneOutline),...facilities.filter(f=>f.zoneOutline)]){
-  if(f.ringDistrict||f.areaFrame)continue;
+  if(f.ringDistrict||f.areaFrame||!mapFacilityVisible(f))continue;
   if(f.zoneOutline&&!f.draftRegion&&(f.footprint?.length>=3?pointInsideFacility(f,wx,wy):Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2))zoneParent=f;
   if(f.footprint&&pointInsideFacility(f,wx,wy)){near=f;break}
   const [fx,fy]=xy(f.x,f.y),d=Math.hypot(x-fx,y-fy);
