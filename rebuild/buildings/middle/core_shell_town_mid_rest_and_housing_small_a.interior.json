@@ -1,0 +1,1429 @@
+{
+  "schemaVersion": 2,
+  "buildingId": "core_shell_town_mid_rest_and_housing_small_a",
+  "objects": [
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_shelf",
+      "name": "収納棚（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 589.65,
+        "y": 258,
+        "width": 7,
+        "height": 14
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#688e9b",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": false,
+        "text": "収納棚（仮）",
+        "position": [
+          593.15,
+          265
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "【仮配置テスト】収納棚。選択時に複数の収納物資を一覧表示するための動作確認データ。正式な物資配置ではありません。",
+      "metadata": {
+        "testOnly": true
+      },
+      "contents": [
+        {
+          "presetId": "tool_kit",
+          "quantity": 2
+        },
+        {
+          "presetId": "hardware_parts",
+          "quantity": 12
+        },
+        {
+          "presetId": "machine_parts",
+          "quantity": 4
+        }
+      ],
+      "shapePresetId": "shelf"
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_table",
+      "name": "作業机（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 617.65,
+        "y": 259,
+        "width": 11,
+        "height": 7
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#9f9070",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": false,
+        "text": "作業机（仮）",
+        "position": [
+          623.15,
+          262.5
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
+      "metadata": {
+        "testOnly": true
+      },
+      "shapePresetId": "workbench"
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_supply",
+      "name": "梱包物資（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "supply",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 618.65,
+        "y": 272,
+        "width": 11,
+        "height": 6
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": null,
+        "stroke": null,
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": false,
+        "text": "梱包物資（仮）",
+        "position": [
+          624.15,
+          275
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
+      "metadata": {
+        "testOnly": true
+      },
+      "presetId": "supply_box",
+      "quantity": 1,
+      "icon": {
+        "text": "📦",
+        "visible": true,
+        "fontSize": 18
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_bed",
+      "name": "寝具（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 590.65,
+        "y": 259,
+        "width": 10,
+        "height": 16
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#7f88af",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": false,
+        "text": "寝具（仮）",
+        "position": [
+          595.65,
+          267
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
+      "metadata": {
+        "testOnly": true
+      },
+      "shapePresetId": "bed"
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_cabinet",
+      "name": "収納庫（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 619.65,
+        "y": 259,
+        "width": 10,
+        "height": 10
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#809c9b",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": false,
+        "text": "収納庫（仮）",
+        "position": [
+          624.65,
+          264
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
+      "metadata": {
+        "testOnly": true
+      },
+      "shapePresetId": "cabinet"
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_battery",
+      "name": "バッテリー（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "supply",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 619.65,
+        "y": 274,
+        "width": 10,
+        "height": 6
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": null,
+        "stroke": null,
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": false,
+        "text": "バッテリー（仮）",
+        "position": [
+          624.65,
+          277
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。 建物テスト用の仮間取りに合わせ、配置位置・大きさを調整。",
+      "metadata": {
+        "testOnly": true
+      },
+      "presetId": "batteries",
+      "quantity": 1,
+      "icon": {
+        "text": "🔋",
+        "visible": true,
+        "fontSize": 18
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_floor_1F",
+      "name": "1F 床",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "slab",
+      "layer": "structures",
+      "zIndex": 32,
+      "geometry": {
+        "type": "rect",
+        "x": 587.65,
+        "y": 255,
+        "width": 49,
+        "height": 64
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "fill": "rgba(37,68,70,.67)",
+        "stroke": null,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "1F 床"
+      },
+      "detail": "【建物テスト】1F 床。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_north_1F",
+      "name": "north_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            255
+          ],
+          [
+            636.65,
+            255
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "north_1F"
+      },
+      "detail": "【建物テスト】north_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_west_1F",
+      "name": "west_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            255
+          ],
+          [
+            587.65,
+            319
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "west_1F"
+      },
+      "detail": "【建物テスト】west_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_east_1F",
+      "name": "east_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            636.65,
+            255
+          ],
+          [
+            636.65,
+            319
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "east_1F"
+      },
+      "detail": "【建物テスト】east_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_south_l_1F",
+      "name": "south_l_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            319
+          ],
+          [
+            607.65,
+            319
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "south_l_1F"
+      },
+      "detail": "【建物テスト】south_l_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_south_r_1F",
+      "name": "south_r_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            613.65,
+            319
+          ],
+          [
+            636.65,
+            319
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "south_r_1F"
+      },
+      "detail": "【建物テスト】south_r_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_entrance_1F",
+      "name": "entrance_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "door",
+      "layer": "walls",
+      "zIndex": 49,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            607.65,
+            319
+          ],
+          [
+            613.65,
+            319
+          ]
+        ]
+      },
+      "selectable": true,
+      "visible": true,
+      "style": {
+        "stroke": "#f0be72",
+        "strokeWidth": 2.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "entrance_1F"
+      },
+      "detail": "【建物テスト】外部から1階へ通じる建物入口。外壁の開口6座標単位。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "opening": {
+        "kind": "entrance",
+        "wallSegments": [
+          "south_l_1F",
+          "south_r_1F"
+        ],
+        "width": 6,
+        "external": true
+      },
+      "door": {
+        "state": "closed",
+        "swing": "inward"
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_midleft_1F",
+      "name": "midleft_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            291
+          ],
+          [
+            605.65,
+            291
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "midleft_1F"
+      },
+      "detail": "【建物テスト】midleft_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_midright_1F",
+      "name": "midright_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            611.65,
+            291
+          ],
+          [
+            636.65,
+            291
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "midright_1F"
+      },
+      "detail": "【建物テスト】midright_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_room_entry_1F",
+      "name": "room_entry_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "door",
+      "layer": "walls",
+      "zIndex": 49,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            605.65,
+            291
+          ],
+          [
+            611.65,
+            291
+          ]
+        ]
+      },
+      "selectable": true,
+      "visible": true,
+      "style": {
+        "stroke": "#f0be72",
+        "strokeWidth": 2.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "room_entry_1F"
+      },
+      "detail": "【建物テスト】室内の扉。開口6座標単位。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "opening": {
+        "kind": "interior",
+        "wallSegments": [
+          "midleft_1F",
+          "midright_1F"
+        ],
+        "width": 6
+      },
+      "door": {
+        "state": "closed",
+        "swing": "inward"
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_partition_up_1F",
+      "name": "partition_up_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            613.65,
+            255
+          ],
+          [
+            613.65,
+            277
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "partition_up_1F"
+      },
+      "detail": "【建物テスト】partition_up_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_partition_down_1F",
+      "name": "partition_down_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            613.65,
+            283
+          ],
+          [
+            613.65,
+            291
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "partition_down_1F"
+      },
+      "detail": "【建物テスト】partition_down_1F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_partition_door_1F",
+      "name": "partition_door_1F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "door",
+      "layer": "walls",
+      "zIndex": 49,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            613.65,
+            277
+          ],
+          [
+            613.65,
+            283
+          ]
+        ]
+      },
+      "selectable": true,
+      "visible": true,
+      "style": {
+        "stroke": "#f0be72",
+        "strokeWidth": 2.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "partition_door_1F"
+      },
+      "detail": "【建物テスト】隣室につながる室内扉。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "opening": {
+        "kind": "interior",
+        "wallSegments": [
+          "partition_up_1F",
+          "partition_down_1F"
+        ],
+        "width": 6
+      },
+      "door": {
+        "state": "closed",
+        "swing": "inward"
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_stair_1F",
+      "name": "2階へ上がる階段",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "stair",
+      "layer": "structures",
+      "zIndex": 46,
+      "geometry": {
+        "type": "rect",
+        "x": 623.65,
+        "y": 297,
+        "width": 10,
+        "height": 17
+      },
+      "selectable": true,
+      "visible": true,
+      "style": {
+        "fill": "rgba(93,138,155,.6)",
+        "stroke": "#aad7da",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "2階へ上がる階段"
+      },
+      "detail": "【建物テスト】2階へ上がる階段。選択中の階を切り替えて接続先を確認するための仮設備。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "connection": {
+        "id": "core_shell_town_mid_rest_and_housing_small_a_stair_main",
+        "fromFloorId": "1F",
+        "toFloorId": "2F",
+        "fromAnchor": [
+          628.65,
+          305.5
+        ],
+        "toAnchor": [
+          628.65,
+          305.5
+        ],
+        "direction": "up"
+      },
+      "shapePresetId": "stair"
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_floor_2F",
+      "name": "2F 床",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "slab",
+      "layer": "structures",
+      "zIndex": 32,
+      "geometry": {
+        "type": "rect",
+        "x": 587.65,
+        "y": 255,
+        "width": 49,
+        "height": 64
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "fill": "rgba(37,68,70,.67)",
+        "stroke": null,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "2F 床"
+      },
+      "detail": "【建物テスト】2F 床。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_north_2F",
+      "name": "north_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            255
+          ],
+          [
+            636.65,
+            255
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "north_2F"
+      },
+      "detail": "【建物テスト】north_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_west_2F",
+      "name": "west_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            255
+          ],
+          [
+            587.65,
+            319
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "west_2F"
+      },
+      "detail": "【建物テスト】west_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_east_2F",
+      "name": "east_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            636.65,
+            255
+          ],
+          [
+            636.65,
+            319
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "east_2F"
+      },
+      "detail": "【建物テスト】east_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_south_2F",
+      "name": "south_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            319
+          ],
+          [
+            636.65,
+            319
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "south_2F"
+      },
+      "detail": "【建物テスト】south_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_midleft_2F",
+      "name": "midleft_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            587.65,
+            291
+          ],
+          [
+            605.65,
+            291
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "midleft_2F"
+      },
+      "detail": "【建物テスト】midleft_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_midright_2F",
+      "name": "midright_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            611.65,
+            291
+          ],
+          [
+            636.65,
+            291
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "midright_2F"
+      },
+      "detail": "【建物テスト】midright_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_room_entry_2F",
+      "name": "room_entry_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "door",
+      "layer": "walls",
+      "zIndex": 49,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            605.65,
+            291
+          ],
+          [
+            611.65,
+            291
+          ]
+        ]
+      },
+      "selectable": true,
+      "visible": true,
+      "style": {
+        "stroke": "#f0be72",
+        "strokeWidth": 2.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "room_entry_2F"
+      },
+      "detail": "【建物テスト】室内の扉。開口6座標単位。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "opening": {
+        "kind": "interior",
+        "wallSegments": [
+          "midleft_2F",
+          "midright_2F"
+        ],
+        "width": 6
+      },
+      "door": {
+        "state": "closed",
+        "swing": "inward"
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_partition_up_2F",
+      "name": "partition_up_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            613.65,
+            255
+          ],
+          [
+            613.65,
+            277
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "partition_up_2F"
+      },
+      "detail": "【建物テスト】partition_up_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_partition_down_2F",
+      "name": "partition_down_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 47,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            613.65,
+            283
+          ],
+          [
+            613.65,
+            291
+          ]
+        ]
+      },
+      "selectable": false,
+      "visible": true,
+      "style": {
+        "stroke": "#e6e9e3",
+        "strokeWidth": 2.3,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "partition_down_2F"
+      },
+      "detail": "【建物テスト】partition_down_2F。間取り・用途は仮配置。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "structure": {
+        "thickness": 0.25,
+        "height": 3
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_partition_door_2F",
+      "name": "partition_door_2F",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "door",
+      "layer": "walls",
+      "zIndex": 49,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            613.65,
+            277
+          ],
+          [
+            613.65,
+            283
+          ]
+        ]
+      },
+      "selectable": true,
+      "visible": true,
+      "style": {
+        "stroke": "#f0be72",
+        "strokeWidth": 2.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "partition_door_2F"
+      },
+      "detail": "【建物テスト】隣室につながる室内扉。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "opening": {
+        "kind": "interior",
+        "wallSegments": [
+          "partition_up_2F",
+          "partition_down_2F"
+        ],
+        "width": 6
+      },
+      "door": {
+        "state": "closed",
+        "swing": "inward"
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_build_stair_2F",
+      "name": "1階へ下りる階段",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "stair",
+      "layer": "structures",
+      "zIndex": 46,
+      "geometry": {
+        "type": "rect",
+        "x": 623.65,
+        "y": 297,
+        "width": 10,
+        "height": 17
+      },
+      "selectable": true,
+      "visible": true,
+      "style": {
+        "fill": "rgba(93,138,155,.6)",
+        "stroke": "#aad7da",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": false,
+        "text": "1階へ下りる階段"
+      },
+      "detail": "【建物テスト】1階へ下りる階段。選択中の階を切り替えて接続先を確認するための仮設備。",
+      "metadata": {
+        "testOnly": true,
+        "buildingPrototype": true
+      },
+      "connection": {
+        "id": "core_shell_town_mid_rest_and_housing_small_a_stair_main",
+        "fromFloorId": "2F",
+        "toFloorId": "1F",
+        "fromAnchor": [
+          628.65,
+          305.5
+        ],
+        "toAnchor": [
+          628.65,
+          305.5
+        ],
+        "direction": "down"
+      },
+      "shapePresetId": "stair"
+    }
+  ]
+}
