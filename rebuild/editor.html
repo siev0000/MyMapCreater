@@ -145,6 +145,18 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    </div>
   </section>
   <section class="panel">
+   <h2>マップ全体の設定（JSON）</h2>
+   <p class="note">マップ名・背景色・座標系・グリッド・レイヤー順・表示グループはこのJSONで編集します。施設・壁・道路の固有名をプログラムに登録する必要はありません。</p>
+   <button type="button" id="show-scene-json">マップ全体のJSONを開く</button>
+   <div id="scene-json-fields" class="hidden">
+    <textarea id="scene-json-text" spellcheck="false" style="min-height:215px" aria-label="マップ全体のJSON"></textarea>
+    <div class="actions">
+     <button type="button" id="reload-scene-json">現在の設定を読み直す</button>
+     <button type="button" id="apply-scene-json">JSONの変更を反映</button>
+    </div>
+   </div>
+  </section>
+  <section class="panel">
    <h2>ファイルについて</h2>
    <p class="note">編集内容はこのブラウザー内の作業状態です。「JSONを保存」でファイルを書き出してください。GitHub上のデータには自動で上書きしません。保存したJSONをリポジトリの該当シーンに配置すると表示側にも反映されます。</p>
   </section>
