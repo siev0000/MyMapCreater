@@ -290,6 +290,12 @@ const viewer=window.AAMapViewer.create({
   if(pendingFocus?.floorId===mapId){
    const pending=pendingFocus;pendingFocus=null;
    viewer.selectItemById(pending.id,{focus:true});
+  }else{
+   // Optional deep link to an exact object in the currently loaded scene.
+   const objectId=new URLSearchParams(location.search).get('focus');
+   if(objectId&&data?.objects?.some(o=>o.id===objectId)){
+    viewer.selectItemById(objectId,{focus:true});
+   }
   }
   renderMapTree();
  },
