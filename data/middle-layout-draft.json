@@ -1952,8 +1952,8 @@
           {
             "id": "private_workshops",
             "name": "個人工房群",
-            "purpose": "個人・少人数による専用装備設計、試作、持込装備の改修",
-            "status": "notion_supported"
+            "purpose": "船尾の新しい下位ラボ・工房街区に、小規模の修理・試作工房を配置する候補。個人工房群の現行正式所在地はリファインバレー内。",
+            "status": "github_planned_extension_not_an_existing_Notion_stern_workshop_location"
           },
           {
             "id": "parts_storage",
@@ -3717,7 +3717,8 @@
       "assumptionCautions": [
         "上位＝豪華、下位＝貧困などは未決定",
         "アルキメリア装備開発ラボとギルド受付は別施設",
-        "個人工房群は複数の小規模工房を指し、単独の巨大工場ではない"
+        "個人工房群は複数の小規模工房を指し、単独の巨大工場ではない",
+        "Notionの個人工房群の現在の正式所在地はリファインバレー。船尾工房群はGitHubでの追加検討であり正式施設ではない"
       ]
     }
   },
