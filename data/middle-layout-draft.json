@@ -8,7 +8,7 @@
     "section": "6.2-6.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。 計画線は貨物専用ルートの仮敷設であり、交通ゲートは未承認。",
+  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。 計画線は貨物専用ルートの仮敷設であり、交通ゲートは未承認。 2026-11-08: 二階級地区配置と工業貨物路の効率化案を実配置に反映。Notion未変更。",
   "facilities": [
     {
       "id": "middle_terminal",
@@ -77,13 +77,13 @@
     },
     {
       "id": "core_shell_town",
-      "name": "コアシェルタウン",
-      "x": 70,
-      "y": 550,
-      "w": 500,
-      "h": 340,
+      "name": "コアシェルタウン〈船首・上位区〉",
+      "x": 430,
+      "y": 350,
+      "w": 270,
+      "h": 190,
       "type": "town",
-      "detail": "リンクターミナル外周に連続する生活・商業街区。住宅、充電、物資市場と工房街が共通道路で接続する。区画マーカーであり巨大な単一建物ではない。",
+      "detail": "リンクターミナル船首側の上位タウン。居住・休止・充電・商業・交流を担う。",
       "sourceSection": "6.2",
       "sourcePosition": [
         0,
@@ -96,17 +96,21 @@
       "draftRepositioned": true,
       "draftScale": "district_locator",
       "zoneOutline": true,
-      "urbanArea": true
+      "urbanArea": true,
+      "stage1Layout": "efficiency_B_dual_town",
+      "short": "船首上位タウン",
+      "socialTier": "upper",
+      "districtSide": "bow"
     },
     {
       "id": "refine_valley",
-      "name": "リファインバレー",
-      "x": 300,
-      "y": 510,
-      "w": 340,
-      "h": 300,
+      "name": "リファインバレー〈船首・上位ラボ区〉",
+      "x": 430,
+      "y": -350,
+      "w": 270,
+      "h": 190,
       "type": "workshop",
-      "detail": "コアシェルタウンに隣接する機体整備・改修・個人工房地区。生活区と修理区の騒音・排熱を分ける。",
+      "detail": "リンクターミナル船首側の上位整備・研究地区。精密整備、装備開発、試作を担う。",
       "sourceSection": "6.2",
       "sourcePosition": [
         0,
@@ -120,18 +124,21 @@
       "draftScale": "district_locator",
       "zoneOutline": true,
       "urbanArea": true,
-      "stage1Layout": "efficiency_B",
-      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
+      "stage1Layout": "efficiency_B_dual_town",
+      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
+      "short": "船首上位ラボ区",
+      "socialTier": "upper",
+      "districtSide": "bow"
     },
     {
       "id": "alchimeria_lab",
       "name": "アルキメリア装備開発ラボ",
-      "x": 300,
-      "y": 550,
+      "x": 440,
+      "y": -355,
       "w": 90,
       "h": 80,
       "type": "workshop",
-      "detail": "リファインバレー内に置く装備開発ラボ。",
+      "detail": "船首側の上位ラボ区内で装備研究・設計・試作を担うアルキメリア装備開発ラボ。",
       "sourceSection": "6.2",
       "sourcePosition": [
         -450,
@@ -178,8 +185,11 @@
         ]
       ],
       "containedIn": "refine_valley",
-      "stage1Layout": "efficiency_B",
-      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
+      "stage1Layout": "efficiency_B_dual_town",
+      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
+      "socialTier": "upper",
+      "districtSide": "bow",
+      "showLabel": false
     },
     {
       "id": "resist_link_dome",
@@ -380,7 +390,7 @@
       "w": 970,
       "h": 1460,
       "type": "nature",
-      "detail": "船尾中央の広大な人工自然・栽培・生物管理地区。森林、湿地、乾燥区、育苗、植物素材の研究、監視設備を分区して管理する。",
+      "detail": "船尾の人工自然区。森林・湿地・乾燥・育苗・調査・監視を分区し、船首側の封鎖輸送帯とは隔壁で分ける。",
       "sourceSection": "6.2",
       "reviewStatus": "draft",
       "draftNote": "位置・寸法は船尾中央栽培案に沿う作業用配置。Notion未反映。",
@@ -400,11 +410,11 @@
       "footprint": [
         [
           485,
-          -360
+          -380
         ],
         [
           -105,
-          -360
+          -380
         ],
         [
           -105,
@@ -429,74 +439,91 @@
         [
           485,
           360
+        ],
+        [
+          485,
+          115
+        ],
+        [
+          145,
+          115
+        ],
+        [
+          145,
+          -115
+        ],
+        [
+          485,
+          -115
         ]
       ],
-      "draftShape": "stepped_polygon",
+      "draftShape": "notched_stepped_polygon",
       "areaKind": "natural_environment_district",
       "innerDesignStatus": "macro_zones_draft",
       "macroZones": [
         {
           "id": "arbora_forest",
           "name": "森林・樹木区",
-          "x": -990,
-          "y": -105,
-          "w": 620,
-          "h": 460,
-          "detail": "樹木と燃料用植物を育て、樹皮・繊維などを生産する自然区。"
+          "x": -1330,
+          "y": 0,
+          "w": 580,
+          "h": 450,
+          "detail": "燃料用植物や樹木を育てる森林区。"
+        },
+        {
+          "id": "arbora_wetland",
+          "name": "湿地・水循環区",
+          "x": -1460,
+          "y": 480,
+          "w": 280,
+          "h": 310,
+          "detail": "人工降雨・湿地環境と水循環を管理する区画。"
+        },
+        {
+          "id": "arbora_dry",
+          "name": "乾燥・高温区",
+          "x": -1450,
+          "y": -510,
+          "w": 290,
+          "h": 300,
+          "detail": "乾燥・高温環境を再現する区画。"
         },
         {
           "id": "arbora_nursery",
           "name": "育苗・栽培区",
-          "x": -1160,
-          "y": 250,
-          "w": 250,
-          "h": 180,
-          "detail": "苗木、挿し木、草本植物などを栽培する区画。"
+          "x": -1110,
+          "y": 290,
+          "w": 200,
+          "h": 120,
+          "detail": "苗木、挿し木、草本植物を育成する区画。"
+        },
+        {
+          "id": "arbora_research",
+          "name": "調査・培養区",
+          "x": -840,
+          "y": -245,
+          "w": 320,
+          "h": 240,
+          "detail": "植物生態とバイオ素材の調査・培養研究を行う区画。"
         },
         {
           "id": "arbora_watch",
           "name": "監視・生物管理区",
           "x": -850,
           "y": 245,
-          "w": 280,
-          "h": 200,
-          "detail": "生物の飼育・隔離・監視を行い、異常発生を確認する区画。"
-        },
-        {
-          "id": "arbora_wetland",
-          "name": "湿地・水循環区",
-          "x": -1460,
-          "y": 465,
-          "w": 300,
-          "h": 380,
-          "detail": "湿地環境と水循環、人工降雨に関わる設備を管理する区画。"
-        },
-        {
-          "id": "arbora_research",
-          "name": "調査・培養区",
-          "x": -1450,
-          "y": -235,
-          "w": 320,
-          "h": 310,
-          "detail": "植物素材の調査・研究温室・培養素材の試験を行う区画。"
-        },
-        {
-          "id": "arbora_dry",
-          "name": "乾燥・高温区",
-          "x": -1460,
-          "y": -565,
-          "w": 300,
-          "h": 260,
-          "detail": "乾燥・高温環境を再現し、適応植物や素材を育成する区画。"
+          "w": 270,
+          "h": 190,
+          "detail": "生物管理・監視・異常検知を担う区画。"
         }
       ],
-      "facilityLayoutNote": "B案。船尾中央に面積979,600㎡の段状区画を確保。内部の各区画と監視施設個数は詳細設計前の大枠。"
+      "facilityLayoutNote": "B案。船尾中央に面積979,600㎡の段状区画を確保。内部の各区画と監視施設個数は詳細設計前の大枠。",
+      "areaSqM": 913200
     },
     {
       "id": "standard_fuel_factory",
       "name": "標準燃料生産施設",
-      "x": -985,
-      "y": 590,
+      "x": -930,
+      "y": 600,
       "w": 500,
       "h": 400,
       "type": "industrial",
@@ -549,14 +576,14 @@
         ]
       ],
       "outerDistrict": "processing_starboard_B",
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
     },
     {
       "id": "plant_oil_processing",
       "name": "植物油加工区",
-      "x": -485,
-      "y": 600,
+      "x": -390,
+      "y": 650,
       "w": 400,
       "h": 300,
       "type": "industrial",
@@ -601,14 +628,14 @@
         ]
       ],
       "outerDistrict": "processing_starboard_B",
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
     },
     {
       "id": "fiber_resin_processing",
       "name": "植物繊維・樹脂加工区",
-      "x": -1030,
-      "y": -560,
+      "x": -975,
+      "y": -575,
       "w": 400,
       "h": 300,
       "type": "industrial",
@@ -653,14 +680,14 @@
         ]
       ],
       "outerDistrict": "processing_port_B",
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
     },
     {
       "id": "middle_material_processing",
       "name": "植物資源加工施設",
-      "x": -530,
-      "y": -570,
+      "x": -465,
+      "y": -640,
       "w": 450,
       "h": 300,
       "type": "industrial",
@@ -705,14 +732,14 @@
         ]
       ],
       "outerDistrict": "processing_port_B",
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
     },
     {
       "id": "ecosystem_greenhouses",
       "name": "生態系再現温室群",
-      "x": -990,
-      "y": -105,
+      "x": -1320,
+      "y": 0,
       "w": 600,
       "h": 420,
       "type": "nature",
@@ -764,7 +791,7 @@
           -150
         ]
       ],
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
     },
     {
@@ -815,7 +842,7 @@
           115
         ]
       ],
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
     },
     {
@@ -866,14 +893,14 @@
           90
         ]
       ],
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
     },
     {
       "id": "bio_material_greenhouse",
       "name": "バイオ素材研究温室",
-      "x": -1450,
-      "y": -260,
+      "x": -840,
+      "y": -245,
       "w": 300,
       "h": 250,
       "type": "nature",
@@ -925,18 +952,18 @@
           -85
         ]
       ],
-      "stage1Layout": "efficiency_B",
+      "stage1Layout": "efficiency_B_dual_town",
       "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
     },
     {
       "id": "middle_cargo_inspection",
       "name": "中層貨物検査区",
-      "x": -440,
-      "y": -75,
+      "x": -405,
+      "y": 0,
       "w": 220,
-      "h": 150,
+      "h": 240,
       "type": "industrial",
-      "detail": "ターミナル船尾側の貨物検査区。左右の加工施設から貨物を集約し、専用搬送経路へ仕分けする。",
+      "detail": "リンクターミナル船尾側の貨物検査・仕分け区。紫の大型機専用通路と貨物荷役は立体分離し、一般旅客動線と交差させない。",
       "sourceSection": "6.2",
       "sourcePosition": [
         -450,
@@ -983,8 +1010,10 @@
         ]
       ],
       "outerDistrict": "middle_terminal_freight_entry_B",
-      "stage1Layout": "efficiency_B",
-      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。"
+      "stage1Layout": "efficiency_B_dual_town",
+      "facilityLayoutNote": "GitHub中層B案の仮配置。道路と貨物ゲートの正式接続は未検証。",
+      "access": "freight_authorized",
+      "stackedTransportRole": "cargo_level_separate_from_large_machine_purple_passage"
     },
     {
       "id": "middle_weapon_operation_field",
@@ -1009,6 +1038,52 @@
       ],
       "draftRepositioned": true,
       "draftRegion": true
+    },
+    {
+      "id": "stern_core_shell_town",
+      "name": "船尾タウン〈下位区〉",
+      "short": "船尾下位タウン",
+      "type": "town",
+      "x": -360,
+      "y": 350,
+      "w": 180,
+      "h": 180,
+      "zoneOutline": true,
+      "socialTier": "lower",
+      "districtSide": "stern",
+      "stage1Layout": "efficiency_B_dual_town",
+      "detail": "リンクターミナル船尾側の下位タウン。休止・充電・生活物資・市場・現場作業者の生活を支える。"
+    },
+    {
+      "id": "stern_refine_lab_district",
+      "name": "船尾工房・ラボ区〈下位区〉",
+      "short": "船尾下位ラボ区",
+      "type": "workshop",
+      "x": -360,
+      "y": -350,
+      "w": 180,
+      "h": 180,
+      "zoneOutline": true,
+      "socialTier": "lower",
+      "districtSide": "stern",
+      "stage1Layout": "efficiency_B_dual_town",
+      "detail": "リンクターミナル船尾側の下位技術地区。修理・素材試験・装備改良・小工房を担う。"
+    },
+    {
+      "id": "stern_equipment_lab",
+      "name": "船尾実用技術ラボ〈下位区〉",
+      "short": "船尾実用ラボ",
+      "type": "workshop",
+      "x": -365,
+      "y": -355,
+      "w": 90,
+      "h": 80,
+      "containedIn": "stern_refine_lab_district",
+      "showLabel": false,
+      "socialTier": "lower",
+      "districtSide": "stern",
+      "stage1Layout": "efficiency_B_dual_town",
+      "detail": "船尾工房・ラボ区にある実用研究室。機体部品の改良・修復試験を担う。"
     }
   ],
   "roads": [
@@ -1035,7 +1110,8 @@
       "notionshape": "中心半径650m",
       "geometryStatus": "draft_continuous_ring_through_guild_central_corridor",
       "r": 650,
-      "status": "draft_route_requires_review"
+      "status": "draft_route_requires_review",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns"
     },
     {
       "id": "middle_core_prom_enable",
@@ -1044,7 +1120,7 @@
       "width": 8,
       "color": "#69b9e5",
       "kind": "line",
-      "geometryStatus": "draft_reroute_around_resist_dome",
+      "geometryStatus": "stale_after_dual_towns",
       "connection": "コアシェルの歩行通路。ドーム内側ではコンコース沿いに迂回する配置案",
       "notionshape": "半径430～560m",
       "points": [
@@ -1321,7 +1397,8 @@
           210
         ]
       ],
-      "status": "draft_route_requires_review"
+      "status": "draft_route_requires_review",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns"
     },
     {
       "id": "middle_refine_service_road",
@@ -1355,7 +1432,8 @@
       "connection": "コアシェルタウン→リファインバレーを同じ街路で連絡。",
       "notionshape": "[-500,-400]→[0,-650]→[500,-400]",
       "status": "draft_route_requires_review",
-      "geometryStatus": "draft_central_access"
+      "geometryStatus": "stale_after_dual_towns",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns"
     },
     {
       "id": "middle_mission_avenue",
@@ -1484,60 +1562,52 @@
       "connection": "温室、管理、水・土壌、研究温室",
       "notionshape": "[-850,700]→[-700,1,100]→[500,1,100]→[650,750]→閉路",
       "sourceNotionGeometry": "[-850,700]→[-700,1,100]→[500,1,100]→[650,750]→閉路",
-      "geometryStatus": "draft_arbora_loop_pending_redraw",
-      "reviewStatus": "stale_old_outline_do_not_use_as_valid_access",
+      "geometryStatus": "stale_after_dual_towns",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns",
       "status": "draft_route_requires_review"
     },
     {
       "id": "middle_industrial_freight_road",
-      "name": "中層工業貨物幹線",
+      "name": "左舷加工・貨物専用幹線",
       "roadType": "重貨物道路",
-      "width": 48,
+      "width": 32,
       "color": "#e4ac6a",
       "layer": "freight",
       "kind": "line",
       "points": [
         [
-          -1030,
-          -560
+          -805,
+          -425
         ],
         [
-          -800,
-          -560
+          -805,
+          -445
         ],
         [
-          -530,
-          -570
+          -600,
+          -445
         ],
         [
-          -530,
-          -420
+          -600,
+          -80
         ],
         [
-          -500,
-          -300
-        ],
-        [
-          -440,
-          -185
-        ],
-        [
-          -440,
-          -75
+          -405,
+          -80
         ]
       ],
-      "connection": "左舷加工施設から貨物検査区へ向かう密閉貨物経路の大枠案。一般通行不可。",
+      "connection": "繊維樹脂加工区の荷役口候補から左舷の専用貨物路へ。大型機通路と分離。",
       "notionshape": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
       "sourceNotionGeometry": "[-650,250]→[-1,050,400]→[-1,400,450]→[-1,150,750]→[-1,100,1,000]",
-      "geometryStatus": "draft_middle_freight_B",
-      "reviewStatus": "pending_gate_and_intersection_audit",
+      "geometryStatus": "draft_parallel_freight_B",
+      "reviewStatus": "pending_separate_gate_and_grade_check",
       "status": "draft_route_requires_review",
       "routeRole": "middle_freight_B",
       "access": "freight_authorized"
     },
     {
       "id": "middle_cargo_tunnel",
-      "name": "中層貨物トンネル",
+      "name": "ターミナル貨物専用接続（仮）",
       "roadType": "貨物トンネル",
       "width": 32,
       "color": "#e4ac6a",
@@ -1549,26 +1619,35 @@
       "kind": "line",
       "points": [
         [
-          -440,
-          -75
+          -405,
+          80
         ],
         [
-          -355,
-          -75
+          -295,
+          80
         ],
         [
-          -270,
-          -75
+          -230,
+          80
         ]
       ],
-      "connection": "貨物検査からターミナル船尾側の貨物専用入口候補へ向かうトンネル。最終的な入口・貨物リフト接続は未確定。",
+      "connection": "貨物検査区の荷役階から貨物リフト入口候補へ。紫通路とは立体分離。",
       "notionshape": "[-450,0]→[-800,250]→[-1,200,500]",
       "sourceNotionGeometry": "[-450,0]→[-800,250]→[-1,200,500]",
-      "geometryStatus": "draft_middle_freight_B",
-      "reviewStatus": "pending_gate_and_intersection_audit",
+      "geometryStatus": "draft_parallel_freight_B",
+      "reviewStatus": "pending_separate_gate_and_grade_check",
       "status": "draft_route_requires_review",
       "routeRole": "middle_freight_B",
-      "access": "freight_authorized"
+      "access": "freight_authorized",
+      "stackedTransportRole": "separate_freight_tube",
+      "gate": {
+        "point": [
+          -245,
+          80
+        ],
+        "access": "freight_authorized",
+        "status": "candidate_not_validated"
+      }
     },
     {
       "id": "middle_botanical_service_tunnel",
@@ -1603,8 +1682,8 @@
       "connection": "水・土壌、温室、生物管理、研究温室",
       "notionshape": "[-650,900]→[-200,900]→[450,900]",
       "sourceNotionGeometry": "[-650,900]→[-200,900]→[450,900]",
-      "geometryStatus": "draft_redraw",
-      "reviewStatus": "draft",
+      "geometryStatus": "stale_after_dual_towns",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns",
       "status": "draft_route_requires_review"
     },
     {
@@ -1623,7 +1702,8 @@
       "connection": "中層中央環状路に沿った周回線。ドーム中央通過路と駅接続する検討案（駅位置未設定）",
       "notionshape": "中央環状路沿い",
       "r": 670,
-      "status": "draft_route_requires_review"
+      "status": "draft_route_requires_review",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns"
     },
     {
       "id": "middle_emergency_bypass",
@@ -2045,51 +2125,44 @@
           220
         ]
       ],
-      "geometryStatus": "draft_continuous_emergency_outer_bypass",
-      "status": "draft_route_requires_review"
+      "geometryStatus": "stale_after_dual_towns",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns"
     },
     {
       "id": "draft_industrial_starboard",
-      "name": "右舷側の加工区貨物道路（案）",
+      "name": "右舷加工・貨物専用幹線",
       "kind": "line",
       "roadType": "重貨物道路",
-      "width": 48,
+      "width": 32,
       "color": "#e4ac6a",
       "layer": "freight",
       "points": [
         [
-          -985,
-          590
+          -740,
+          400
         ],
         [
-          -745,
-          590
+          -740,
+          425
         ],
         [
-          -485,
-          600
+          -600,
+          425
         ],
         [
-          -485,
-          420
+          -600,
+          80
         ],
         [
-          -500,
-          300
-        ],
-        [
-          -450,
-          100
-        ],
-        [
-          -440,
-          -75
+          -405,
+          80
         ]
       ],
-      "reviewStatus": "pending_gate_and_intersection_audit",
-      "geometryStatus": "draft_middle_freight_B",
+      "reviewStatus": "pending_separate_gate_and_grade_check",
+      "geometryStatus": "draft_parallel_freight_B",
       "status": "draft_route_requires_review",
-      "connection": "右舷加工施設から貨物検査区へ向かう専用搬送路の大枠案。一般通行不可。",
+      "connection": "燃料工場荷役口候補から右舷の専用貨物路へ。紫の大型機通路は利用しない。",
       "routeRole": "middle_freight_B",
       "access": "freight_authorized"
     },
@@ -2149,12 +2222,29 @@
         [
           -520,
           0
+        ],
+        [
+          -600,
+          0
+        ],
+        [
+          -660,
+          0
+        ],
+        [
+          -800,
+          0
+        ],
+        [
+          -990,
+          0
         ]
       ],
       "access": "large_machine_authorized",
       "status": "draft_route_requires_review",
-      "geometryStatus": "draft_central_access",
-      "connection": "大型機乗降区→ギルド環状施設の専用隔離開口→船尾の管理動線。貨物トンネルと直接接続しない。"
+      "geometryStatus": "draft_purple_machine_axis",
+      "connection": "紫の大型機専用通路。船尾の工業集積を通るが貨物専用路とは隔壁分離し、自然区の輸送切欠きへ接続する。",
+      "reviewStatus": "pending_separate_gate_and_grade_check"
     },
     {
       "id": "draft_middle_city_starboard_access",
@@ -2199,8 +2289,9 @@
       ],
       "access": "public",
       "status": "draft_route_requires_review",
-      "geometryStatus": "draft_central_access",
-      "connection": "リンクターミナル中心→右舷の一般専用開口→コンコース→タウン・工房街。"
+      "geometryStatus": "stale_after_dual_towns",
+      "connection": "リンクターミナル中心→右舷の一般専用開口→コンコース→タウン・工房街。",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns"
     },
     {
       "id": "draft_middle_city_port_access",
@@ -2241,8 +2332,9 @@
       ],
       "access": "public",
       "status": "draft_route_requires_review",
-      "geometryStatus": "draft_central_access",
-      "connection": "リンクターミナル中心→左舷の一般専用開口→コンコース→左舷街路。"
+      "geometryStatus": "stale_after_dual_towns",
+      "connection": "リンクターミナル中心→左舷の一般専用開口→コンコース→左舷街路。",
+      "reviewStatus": "superseded_alignment_pending_reroute_after_two_towns"
     },
     {
       "id": "draft_middle_alchimeria_service",
@@ -2253,18 +2345,179 @@
       "color": "#b0d2e1",
       "points": [
         [
-          -260,
-          560
+          430,
+          -480
         ],
         [
-          -260,
-          660
+          430,
+          -445
         ]
       ],
       "access": "public",
       "status": "draft_route_requires_review",
       "geometryStatus": "draft_central_access",
-      "connection": "リファインバレー工房街→アルキメリア装備開発ラボ入口。"
+      "connection": "船首上位ラボ区にあるアルキメリア装備開発ラボの搬入口候補",
+      "reviewStatus": "pending_separate_gate_and_grade_check"
+    },
+    {
+      "kind": "line",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_gate_audit",
+      "id": "draft_oil_industrial_feeder",
+      "name": "植物油加工区貨物取付路",
+      "roadType": "重貨物取付道路",
+      "width": 24,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "access": "freight_authorized",
+      "geometryStatus": "draft_parallel_freight_B",
+      "points": [
+        [
+          -580,
+          500
+        ],
+        [
+          -600,
+          500
+        ],
+        [
+          -600,
+          425
+        ]
+      ],
+      "connection": "植物油加工区から右舷貨物幹線へ"
+    },
+    {
+      "kind": "line",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_gate_audit",
+      "id": "draft_material_industrial_feeder",
+      "name": "植物資源加工区貨物取付路",
+      "roadType": "重貨物取付道路",
+      "width": 24,
+      "color": "#e4ac6a",
+      "layer": "freight",
+      "access": "freight_authorized",
+      "geometryStatus": "draft_parallel_freight_B",
+      "points": [
+        [
+          -600,
+          -490
+        ],
+        [
+          -600,
+          -445
+        ]
+      ],
+      "connection": "植物資源加工施設から左舷貨物幹線へ"
+    },
+    {
+      "kind": "line",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_gate_audit",
+      "id": "draft_bow_town_access",
+      "name": "船首上位タウン入口",
+      "roadType": "一般道路",
+      "width": 20,
+      "color": "#88cde6",
+      "access": "public",
+      "geometryStatus": "draft_central_access",
+      "points": [
+        [
+          205,
+          205
+        ],
+        [
+          270,
+          265
+        ],
+        [
+          430,
+          255
+        ]
+      ],
+      "connection": "ターミナルコンコースから街区入口候補まで。通行ゲート未検証。"
+    },
+    {
+      "kind": "line",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_gate_audit",
+      "id": "draft_bow_lab_access",
+      "name": "船首上位ラボ区入口",
+      "roadType": "一般道路",
+      "width": 20,
+      "color": "#88cde6",
+      "access": "public",
+      "geometryStatus": "draft_central_access",
+      "points": [
+        [
+          205,
+          -205
+        ],
+        [
+          270,
+          -265
+        ],
+        [
+          430,
+          -255
+        ]
+      ],
+      "connection": "ターミナルコンコースから街区入口候補まで。通行ゲート未検証。"
+    },
+    {
+      "kind": "line",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_gate_audit",
+      "id": "draft_stern_town_access",
+      "name": "船尾下位タウン入口",
+      "roadType": "一般道路",
+      "width": 20,
+      "color": "#88cde6",
+      "access": "public",
+      "geometryStatus": "draft_central_access",
+      "points": [
+        [
+          -205,
+          205
+        ],
+        [
+          -260,
+          250
+        ],
+        [
+          -360,
+          260
+        ]
+      ],
+      "connection": "ターミナルコンコースから街区入口候補まで。通行ゲート未検証。"
+    },
+    {
+      "kind": "line",
+      "status": "draft_route_requires_review",
+      "reviewStatus": "pending_gate_audit",
+      "id": "draft_stern_lab_access",
+      "name": "船尾下位ラボ区入口",
+      "roadType": "一般道路",
+      "width": 20,
+      "color": "#88cde6",
+      "access": "public",
+      "geometryStatus": "draft_central_access",
+      "points": [
+        [
+          -205,
+          -205
+        ],
+        [
+          -260,
+          -250
+        ],
+        [
+          -360,
+          -260
+        ]
+      ],
+      "connection": "ターミナルコンコースから街区入口候補まで。通行ゲート未検証。"
     }
   ],
   "editorMeta": {
@@ -2274,80 +2527,16 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "efficiency_B_facilities_and_freight_centerlines_applied",
+    "review": "two_tier_B_layout_applied_pending_access_audit",
     "layoutModel": "middle-terminal-internal-guild-v2",
-    "stage1Focus": "B地区・工場・貨物検査・アルボラ大区画を配置データに反映（通路／ゲート検証待ち）"
+    "stage1Focus": "紫大型機通路沿いに加工4件・貨物独立路・船首上位と船尾下位にそれぞれタウン/ラボ"
   },
   "centralUrbanPlan": {
-    "status": "draft_efficiency_B_macro_adopted",
+    "status": "draft_two_social_tiers_with_separated_industry",
     "terminalRadiusM": 250,
     "guildRadiusInnerM": 130,
     "guildRadiusOuterM": 210,
-    "urbanBlocks": [
-      {
-        "id": "town_market",
-        "name": "市場・物資店",
-        "x": 170,
-        "y": 475,
-        "w": 70,
-        "h": 45,
-        "role": "town"
-      },
-      {
-        "id": "town_lounge",
-        "name": "休止・交流",
-        "x": -85,
-        "y": 480,
-        "w": 60,
-        "h": 45,
-        "role": "town"
-      },
-      {
-        "id": "town_residence",
-        "name": "居住・充電",
-        "x": 190,
-        "y": 650,
-        "w": 70,
-        "h": 60,
-        "role": "town"
-      },
-      {
-        "id": "town_supplies",
-        "name": "補給・商店",
-        "x": 90,
-        "y": 650,
-        "w": 70,
-        "h": 60,
-        "role": "town"
-      },
-      {
-        "id": "town_medical",
-        "name": "診断・救護",
-        "x": -10,
-        "y": 660,
-        "w": 65,
-        "h": 60,
-        "role": "town"
-      },
-      {
-        "id": "refine_small_workshop",
-        "name": "個人工房群",
-        "x": -135,
-        "y": 645,
-        "w": 55,
-        "h": 55,
-        "role": "workshop"
-      },
-      {
-        "id": "refine_maintenance",
-        "name": "修理工房",
-        "x": -330,
-        "y": 625,
-        "w": 55,
-        "h": 45,
-        "role": "workshop"
-      }
-    ],
+    "urbanBlocks": [],
     "largeMachineSeparated": true,
     "sizeInterpretation": "街区300～600mは複数建物・道路・柱を含む都市空間。タウン・バレーは単独の巨大建築ではない。",
     "connectionStatus": "中央ターミナルの内部ドームは半径130-210mに内包。中央外周道路と農業・貨物系統との接続は未確定。未登録領域は用地確定不可。",
@@ -2413,6 +2602,86 @@
         "中央区とアルボラ・工業路の用途境界の再監査",
         "重複と緩衝幅を計測し、残りの領域を再分類"
       ]
+    },
+    "urbanBlocksArchivePreSocialTier": [
+      {
+        "id": "town_market",
+        "name": "市場・物資店",
+        "x": 170,
+        "y": 475,
+        "w": 70,
+        "h": 45,
+        "role": "town"
+      },
+      {
+        "id": "town_lounge",
+        "name": "休止・交流",
+        "x": -85,
+        "y": 480,
+        "w": 60,
+        "h": 45,
+        "role": "town"
+      },
+      {
+        "id": "town_residence",
+        "name": "居住・充電",
+        "x": 190,
+        "y": 650,
+        "w": 70,
+        "h": 60,
+        "role": "town"
+      },
+      {
+        "id": "town_supplies",
+        "name": "補給・商店",
+        "x": 90,
+        "y": 650,
+        "w": 70,
+        "h": 60,
+        "role": "town"
+      },
+      {
+        "id": "town_medical",
+        "name": "診断・救護",
+        "x": -10,
+        "y": 660,
+        "w": 65,
+        "h": 60,
+        "role": "town"
+      },
+      {
+        "id": "refine_small_workshop",
+        "name": "個人工房群",
+        "x": -135,
+        "y": 645,
+        "w": 55,
+        "h": 55,
+        "role": "workshop"
+      },
+      {
+        "id": "refine_maintenance",
+        "name": "修理工房",
+        "x": -330,
+        "y": 625,
+        "w": 55,
+        "h": 45,
+        "role": "workshop"
+      }
+    ],
+    "socialTierLayout": {
+      "description": "船首のタウン・ラボを上位、船尾のタウン・ラボを下位とする。詳細な待遇・通行資格は未設定。",
+      "bow": {
+        "tier": "upper",
+        "town": "core_shell_town",
+        "labDistrict": "refine_valley",
+        "lab": "alchimeria_lab"
+      },
+      "stern": {
+        "tier": "lower",
+        "town": "stern_core_shell_town",
+        "labDistrict": "stern_refine_lab_district",
+        "lab": "stern_equipment_lab"
+      }
     }
   },
   "stage1Skeleton": {
@@ -2428,35 +2697,35 @@
       "industrialGroups": [
         {
           "id": "processing_starboard",
-          "name": "右舷・燃料／油加工帯",
+          "name": "右舷・燃料/油加工",
           "sector": "industrial",
           "factoryIds": [
             "standard_fuel_factory",
             "plant_oil_processing"
           ],
+          "status": "two_independent_facilities",
           "bounds": {
-            "xMin": -1235,
-            "xMax": -285,
-            "yMin": 390,
-            "yMax": 790
-          },
-          "status": "B_layout_factory_group_geometry_not_one_building"
+            "xMin": -1180,
+            "xMax": -190,
+            "yMin": 400,
+            "yMax": 800
+          }
         },
         {
           "id": "processing_port",
-          "name": "左舷・繊維／素材加工帯",
+          "name": "左舷・繊維/資源加工",
           "sector": "industrial",
           "factoryIds": [
             "fiber_resin_processing",
             "middle_material_processing"
           ],
+          "status": "two_independent_facilities",
           "bounds": {
-            "xMin": -1230,
-            "xMax": -305,
-            "yMin": -720,
-            "yMax": -410
-          },
-          "status": "B_layout_factory_group_geometry_not_one_building"
+            "xMin": -1175,
+            "xMax": -240,
+            "yMin": -790,
+            "yMax": -425
+          }
         }
       ],
       "cargoInspectionId": "middle_cargo_inspection",
@@ -2474,15 +2743,15 @@
         "旧工業幹線・貨物トンネル・アルボラ大通りの経路引直し",
         "船殻保守区・構造柱との詳細な実寸離隔"
       ],
-      "note": "中層B案の正式な検討用座標は facilities、arbora_sector.footprint と stage1Skeleton.efficiencyFirst を参照。",
-      "status": "superseded_by_actual_B_macro_geometry"
+      "note": "facilities、roads、stage1Skeleton.efficiencyFirstを参照",
+      "status": "superseded_by_B_two_tiers"
     },
     "revisedAt": "2026-11-08",
     "phase": 1,
     "preferredOption": "B",
-    "stage1Decision": "B案の考え方を採用して効率優先で設計中。個別施設寸法・座標は未確定のため据え置く。",
+    "stage1Decision": "工業施設は紫の大型機専用通路沿線に集約し、貨物は並行の独立路へ。船首上位・船尾下位の生活/ラボ両セットを設ける。",
     "efficiencyFirst": {
-      "status": "stage1_B_applied_to_floor_draft_pending_route_verification",
+      "status": "B_social_tier_layout_applied_routes_and_gates_pending",
       "designPriority": "貨物リフトへの実移動距離・積み替え・交差の少なさを優先。一般生活区と危険物の分離は必須。",
       "operationalChain": [
         "アルボラ栽培／育苗",
@@ -2494,15 +2763,15 @@
       ],
       "conceptLayout": {
         "arbora": {
-          "type": "stepped_polygon",
+          "type": "notched_stepped_polygon",
           "polygon": [
             [
               -660,
-              -360
+              -380
             ],
             [
               -1250,
-              -360
+              -380
             ],
             [
               -1250,
@@ -2527,15 +2796,31 @@
             [
               -660,
               360
+            ],
+            [
+              -660,
+              115
+            ],
+            [
+              -1000,
+              115
+            ],
+            [
+              -1000,
+              -115
+            ],
+            [
+              -660,
+              -115
             ]
           ],
-          "areaSqM": 979600,
-          "note": "通常マップの実データへ反映済み。大枠は仮決定、詳細安全検証は未完了"
+          "areaSqM": 913200,
+          "note": "大型機と貨物系統のため、先端に封鎖輸送帯を確保した人工自然区"
         },
         "processingBelts": [
           {
             "id": "processing_starboard",
-            "name": "右舷の燃料・油加工帯",
+            "name": "右舷・燃料/油加工",
             "factoryIds": [
               "standard_fuel_factory",
               "plant_oil_processing"
@@ -2543,7 +2828,7 @@
           },
           {
             "id": "processing_port",
-            "name": "左舷の繊維・資源加工帯",
+            "name": "左舷・繊維/資源加工",
             "factoryIds": [
               "fiber_resin_processing",
               "middle_material_processing"
@@ -2552,85 +2837,93 @@
         ],
         "cargoInspection": {
           "id": "middle_cargo_inspection",
-          "x": -440,
-          "y": -75,
+          "x": -405,
+          "y": 0,
           "w": 220,
-          "h": 150,
-          "note": "仮の専用貨物入口候補に接続する位置"
+          "h": 240,
+          "note": "大型機通路とは立体分離する貨物検査候補"
         },
         "cargoFlowIndicative": [
           [
             [
-              -985,
-              590
+              -740,
+              400
             ],
             [
-              -745,
-              590
+              -740,
+              425
             ],
             [
-              -485,
-              600
+              -600,
+              425
             ],
             [
-              -485,
-              420
+              -600,
+              80
             ],
             [
-              -500,
-              300
-            ],
-            [
-              -450,
-              100
-            ],
-            [
-              -440,
-              -75
+              -405,
+              80
             ]
           ],
           [
             [
-              -1030,
-              -560
+              -805,
+              -425
             ],
             [
-              -800,
-              -560
+              -805,
+              -445
             ],
             [
-              -530,
-              -570
+              -600,
+              -445
             ],
             [
-              -530,
-              -420
+              -600,
+              -80
             ],
             [
-              -500,
-              -300
-            ],
-            [
-              -440,
-              -185
-            ],
-            [
-              -440,
-              -75
+              -405,
+              -80
             ]
           ],
           [
             [
-              -440,
-              -75
+              -580,
+              500
             ],
             [
-              -355,
-              -75
+              -600,
+              500
             ],
             [
-              -270,
-              -75
+              -600,
+              425
+            ]
+          ],
+          [
+            [
+              -600,
+              -490
+            ],
+            [
+              -600,
+              -445
+            ]
+          ],
+          [
+            [
+              -405,
+              80
+            ],
+            [
+              -295,
+              80
+            ],
+            [
+              -230,
+              80
             ]
           ]
         ],
@@ -2638,62 +2931,76 @@
           {
             "id": "arbora_forest",
             "name": "森林・樹木区",
-            "x": -990,
-            "y": -105,
-            "w": 620,
-            "h": 460
+            "x": -1330,
+            "y": 0,
+            "w": 580,
+            "h": 450
+          },
+          {
+            "id": "arbora_wetland",
+            "name": "湿地・水循環区",
+            "x": -1460,
+            "y": 480,
+            "w": 280,
+            "h": 310
+          },
+          {
+            "id": "arbora_dry",
+            "name": "乾燥・高温区",
+            "x": -1450,
+            "y": -510,
+            "w": 290,
+            "h": 300
           },
           {
             "id": "arbora_nursery",
             "name": "育苗・栽培区",
-            "x": -1160,
-            "y": 250,
-            "w": 250,
-            "h": 180
+            "x": -1110,
+            "y": 290,
+            "w": 200,
+            "h": 120
+          },
+          {
+            "id": "arbora_research",
+            "name": "調査・培養区",
+            "x": -840,
+            "y": -245,
+            "w": 320,
+            "h": 240
           },
           {
             "id": "arbora_watch",
             "name": "監視・生物管理区",
             "x": -850,
             "y": 245,
-            "w": 280,
-            "h": 200
-          },
-          {
-            "id": "arbora_wetland",
-            "name": "湿地・水循環区",
-            "x": -1460,
-            "y": 465,
-            "w": 300,
-            "h": 380
-          },
-          {
-            "id": "arbora_research",
-            "name": "調査・培養区",
-            "x": -1450,
-            "y": -235,
-            "w": 320,
-            "h": 310
-          },
-          {
-            "id": "arbora_dry",
-            "name": "乾燥・高温区",
-            "x": -1460,
-            "y": -565,
-            "w": 300,
-            "h": 260
+            "w": 270,
+            "h": 190
           }
         ]
       },
       "inspectionPending": [
-        "ターミナルの貨物専用ゲート・貨物リフト実接続が未確定",
-        "新しい加工道路と生活・ポッド・一般道路の交差／立体分離を検証",
-        "アルボラ内の環境隔壁・消防・人工降雨の流路と管理道路を検証",
-        "施設入口と車両転回幅・構造柱との離隔の実寸検証",
-        "貨物が通るトンネルは一般・大型機通路とは無条件に接続しない"
+        "貨物検査区と紫通路の立体交差・防火隔壁・安全クリアランス",
+        "ターミナル貨物リフト入口と搬入可能なゲート",
+        "街区と加工帯の騒音・排熱・公共道路交差",
+        "旧中央環状路とポッド環状線の再接続",
+        "アルボラ環境区と密閉通路の換気・水循環分離"
       ],
-      "note": "A/C案と比較してB案を優先。ここでは施設の実際のx/y/w/h、既存道路points、Notionは変更しない。地図のマクロ区画だけの優先候補"
+      "note": "A/C案と比較してB案を優先。ここでは施設の実際のx/y/w/h、既存道路points、Notionは変更しない。地図のマクロ区画だけの優先候補",
+      "layoutPolicy": {
+        "purpleMachineRoadId": "draft_middle_terminal_large_stern",
+        "purpleAccess": "large_machine_authorized",
+        "freightParallel": true,
+        "freightRoadIds": [
+          "draft_industrial_starboard",
+          "middle_industrial_freight_road",
+          "draft_oil_industrial_feeder",
+          "draft_material_industrial_feeder",
+          "middle_cargo_tunnel"
+        ],
+        "cargoLiftGate": "candidate_only",
+        "status": "pending_structural_grade_separation"
+      }
     },
-    "layoutReflection": "B案の地区外形・工場・貨物検査・自然区主要4施設・主要貨物経路を実際のfacilities/roadsに反映。内部6大区画はarbora_sector.macroZonesに保持。"
+    "layoutReflection": "2026-11-08: 中層B新案を実施設座標・道路・タウンラボ2系統へ反映。Notion未変更。"
   }
 }
