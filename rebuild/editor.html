@@ -88,6 +88,22 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    </div>
    <label class="switches"><span style="display:flex;align-items:center;gap:6px"><input id="building-parent-selected" type="checkbox" checked> 選択中の区画・施設を親にする</span></label>
    <button id="building-add" type="button">建物をまとめて追加</button>
+   <div class="fieldset">
+    <h3>自作建物テンプレート</h3>
+    <p class="note">マップで選んだ建物と、その子の壁・家具・階段をひとまとめに保存。保存したテンプレートは選択欄から再配置できます。</p>
+    <div class="col2">
+     <label>保存名<input id="building-template-name" placeholder="例：機械充電休止所"></label>
+     <label>テンプレートID<input id="building-template-id" placeholder="例：my_charge_house"></label>
+    </div>
+    <button id="building-capture" type="button">選択中の建物をテンプレート登録</button>
+    <div class="actions">
+     <button id="building-export" type="button">自作テンプレートをJSON保存</button>
+     <button id="building-import" type="button">テンプレートJSONを読み込む</button>
+     <input id="building-import-file" type="file" accept=".json,application/json" hidden>
+    </div>
+    <p class="note">ブラウザー内にも保持しますが、別端末での再利用やバックアップにはJSON保存を使ってください。</p>
+   </div>
+
    <p class="note">配置開始位置はマップ画面の中心。現在のグリッド間隔とスナップを利用。保存前なら「戻す」で一括取消できます。大量追加時の重なりは事前に確認してください。</p>
   </section>
   <section class="panel" id="editor-grid-panel">
@@ -211,8 +227,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </section>
  </aside>
 </main>
-<script src="./map-viewer.js?v=indoor-shapes-v2"></script>
+<script src="./map-viewer.js?v=machine-furniture-v1"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
-<script src="./building-templates.js?v=building-formats-v1"></script>
-<script src="./map-editor.js?v=building-formats-v1"></script>
+<script src="./building-templates.js?v=machine-templates-v1"></script>
+<script src="./map-editor.js?v=custom-building-v1"></script>
 </body></html>
