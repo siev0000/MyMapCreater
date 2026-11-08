@@ -582,7 +582,7 @@
     {
       "id": "plant_oil_processing",
       "name": "植物油加工区",
-      "x": -390,
+      "x": -340,
       "y": 650,
       "w": 400,
       "h": 300,
@@ -686,7 +686,7 @@
     {
       "id": "middle_material_processing",
       "name": "植物資源加工施設",
-      "x": -465,
+      "x": -290,
       "y": -640,
       "w": 450,
       "h": 300,
@@ -1576,16 +1576,12 @@
       "kind": "line",
       "points": [
         [
-          -805,
-          -425
-        ],
-        [
-          -805,
-          -445
+          -775,
+          -575
         ],
         [
           -600,
-          -445
+          -575
         ],
         [
           -600,
@@ -2139,16 +2135,16 @@
       "layer": "freight",
       "points": [
         [
-          -740,
-          400
-        ],
-        [
-          -740,
-          425
+          -680,
+          600
         ],
         [
           -600,
-          425
+          600
+        ],
+        [
+          -600,
+          500
         ],
         [
           -600,
@@ -2373,16 +2369,12 @@
       "geometryStatus": "draft_parallel_freight_B",
       "points": [
         [
-          -580,
+          -540,
           500
         ],
         [
           -600,
           500
-        ],
-        [
-          -600,
-          425
         ]
       ],
       "connection": "植物油加工区から右舷貨物幹線へ"
@@ -2401,12 +2393,16 @@
       "geometryStatus": "draft_parallel_freight_B",
       "points": [
         [
-          -600,
-          -490
+          -515,
+          -640
         ],
         [
           -600,
-          -445
+          -640
+        ],
+        [
+          -600,
+          -575
         ]
       ],
       "connection": "植物資源加工施設から左舷貨物幹線へ"
@@ -2703,10 +2699,10 @@
             "standard_fuel_factory",
             "plant_oil_processing"
           ],
-          "status": "two_independent_facilities",
+          "status": "two_independent_factories",
           "bounds": {
             "xMin": -1180,
-            "xMax": -190,
+            "xMax": -140,
             "yMin": 400,
             "yMax": 800
           }
@@ -2719,10 +2715,10 @@
             "fiber_resin_processing",
             "middle_material_processing"
           ],
-          "status": "two_independent_facilities",
+          "status": "two_independent_factories",
           "bounds": {
             "xMin": -1175,
-            "xMax": -240,
+            "xMax": -65,
             "yMin": -790,
             "yMax": -425
           }
@@ -2846,16 +2842,16 @@
         "cargoFlowIndicative": [
           [
             [
-              -740,
-              400
-            ],
-            [
-              -740,
-              425
+              -680,
+              600
             ],
             [
               -600,
-              425
+              600
+            ],
+            [
+              -600,
+              500
             ],
             [
               -600,
@@ -2868,16 +2864,12 @@
           ],
           [
             [
-              -805,
-              -425
-            ],
-            [
-              -805,
-              -445
+              -775,
+              -575
             ],
             [
               -600,
-              -445
+              -575
             ],
             [
               -600,
@@ -2890,26 +2882,26 @@
           ],
           [
             [
-              -580,
+              -540,
               500
             ],
             [
               -600,
               500
-            ],
-            [
-              -600,
-              425
             ]
           ],
           [
             [
-              -600,
-              -490
+              -515,
+              -640
             ],
             [
               -600,
-              -445
+              -640
+            ],
+            [
+              -600,
+              -575
             ]
           ],
           [
