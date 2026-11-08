@@ -66,7 +66,7 @@ function showObjects(){
   item.setAttribute("aria-current",String(state.selectedId===o.id));
   const name=document.createElement("span");
   name.textContent=(o.name||o.id)+(o.visible===false?" [非表示]":"");
-  const meta=document.createElement("span");meta.className="meta";meta.textContent=o.level||o.objectType||"";
+  const meta=document.createElement("span");meta.className="meta";meta.textContent="Lv"+(o.displayLevel??1)+" · "+(o.objectType||"object");
   item.append(name,meta);
   item.addEventListener("click",()=>viewer.selectItemById(o.id,{focus:true,force:true}));
   fragment.append(item);
@@ -130,7 +130,6 @@ function renderSelected(){
  if(!obj){buttonStatus();return}
  $("obj-id").value=obj.id;
  $("obj-name").value=obj.name||"";
- $("obj-level").value=obj.level||"facility";
   $("obj-display-level").value=obj.displayLevel??"";
  $("obj-type").value=obj.objectType||"";
  const opts=[["","（親なし）"],...data.objects.filter(o=>o.id!==obj.id).map(o=>[o.id,o.name||o.id])];
@@ -192,7 +191,7 @@ function changeObject(callback){
 }
 function bind(id,callback,event="change"){$(id).addEventListener(event,callback)}
 function changeString(id,key){bind(id,()=>changeObject(o=>{o[key]=input(id)}))}
-changeString("obj-name","name");changeString("obj-level","level");
+changeString("obj-name","name");
 bind("obj-display-level",()=>{
  const value=Number(input("obj-display-level"));
  if(!Number.isSafeInteger(value)||value<1){notice("表示Lvは1以上の整数を指定してください","error");renderSelected();return}
@@ -242,7 +241,6 @@ bind("add-object",()=>{
  const [x,y]=viewer.screenToWorld(box.width/2,box.height/2);
  const id=uniqueId("shape",scene.objects);
  const kind=input("new-role")||"object";
- const level=input("new-level")||"object";
  const layer=input("new-layer")||"objects";
  const index=scene.layers?.find(l=>l.id===layer)?.zIndex;
  const g=shapeOf(gtype,[x,y]);
@@ -253,9 +251,9 @@ bind("add-object",()=>{
   return;
  }
  const parent=scene.objects.find(o=>o.id===parentId);
- const parentLv=Number.isSafeInteger(parent?.displayLevel)?parent.displayLevel:(parent?.level==="large"?1:parent?.level==="medium"?2:parent?.level==="small"?3:null);
- const displayLevel=parentLv?parentLv+1:(level==="large"?1:level==="medium"?2:level==="small"?3:1);
- const obj={id,name:labelText,parentId,level,displayLevel,objectType:kind,layer,
+ const parentLv=Number.isSafeInteger(parent?.displayLevel)?parent.displayLevel:null;
+ const displayLevel=parentLv?parentLv+1:1;
+ const obj={id,name:labelText,parentId,displayLevel,objectType:kind,layer,
   zIndex:Number.isFinite(index)?index:20,
   visible:true,selectable:true,geometry:g,
   style:{fill:gtype==="none"||gtype==="polyline"?null:"rgba(79,145,168,.22)",stroke:"#98d5df",strokeWidth:1.5},
