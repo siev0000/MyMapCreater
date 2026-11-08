@@ -86,7 +86,7 @@ function create(opts){
  const memory=new Map(),pointers=new Map();
  let scene=null,selected=null,sceneKey="",request=0,projection=null;
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
- let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={};
+ let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null;
  try{legendEnabled=localStorage.getItem("aa-map-legend")==="true"}catch(_){}
  function getAxes(){
   return [scene?.coordinateSystem?.horizontal||[1,0],scene?.coordinateSystem?.vertical||[0,1]];
@@ -247,9 +247,9 @@ function create(opts){
   const assigned=new Set([...large.map(o=>o.id),...large.flatMap(o=>o.children.map(v=>v.id))]);
   return{large,unassigned:scene.objects.filter(o=>o.level==="facility"&&!assigned.has(o.id)).map(o=>({id:o.id,name:o.name}))};
  }
- function selectItemById(id,{focus=true}={}){
+ function selectItemById(id,{focus=true,force=false}={}){
   const obj=scene?.objects.find(o=>o.id===id);
-  if(!obj||obj.selectable===false)return false;
+  if(!obj||(!force&&obj.selectable===false))return false;
   if(focus){
    const g=obj.geometry||{};
    let p=obj.label?.position||g.center||[0,0];
@@ -264,6 +264,41 @@ function create(opts){
    panX=-(u-cu)*scale();panY=-(v-cv)*scale();
   }
   showDetails(obj);return true;
+ }
+ function clone(obj){return JSON.parse(JSON.stringify(obj))}
+ function getScene(){return scene?clone(scene):null}
+ function getSelected(){return selected?clone(selected):null}
+ function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;return editMode}
+ function replaceScene(next,{preserveView=true,selectedId=null}={}){
+  const valid=sceneCheck(clone(next));
+  ++request;scene=valid;objectDrag=null;
+  if(!preserveView){initialScale=computeScale();zoom=1;panX=0;panY=0}
+  else initialScale=computeScale();
+  setupModes();
+  const id=selectedId||selected?.id;
+  selected=id?scene.objects.find(o=>o.id===id)||null:null;
+  if(opts.info)opts.info.hidden=!selected;
+  if(selected&&opts.infoTitle){
+   opts.infoTitle.textContent=selected.name||selected.id;
+   opts.infoMeta.textContent=[selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean).join(" ｜ ");
+   opts.infoText.textContent=selected.detail||"説明は登録されていません。";
+  }
+  renderLegend();draw();
+  if(typeof opts.onLayoutLoaded==="function")opts.onLayoutLoaded(sceneKey,scene);
+  if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(sceneKey,selected);
+  return true;
+ }
+ function translateObject(obj,dx,dy){
+  const geom=obj.geometry||{type:"none"};
+  if(geom.type==="rect"){geom.x+=dx;geom.y+=dy}
+  else if(geom.type==="polygon"||geom.type==="polyline"){
+   for(const p of geom.points||[]){p[0]+=dx;p[1]+=dy}
+  }else if(geom.type==="circle"||geom.type==="ring"){
+   geom.center[0]+=dx;geom.center[1]+=dy;
+  }
+  if(Array.isArray(obj.label?.position)){
+   obj.label.position[0]+=dx;obj.label.position[1]+=dy;
+  }
  }
  function pick(px,py){
   if(!scene)return null;
@@ -399,7 +434,11 @@ function create(opts){
   canvas.setPointerCapture(e.pointerId);
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   dragged=false;dragStart={x,y};
-  if(pointers.size===2){
+  if(editMode&&selected&&selected.selectable!==false&&
+   contains(selected,...worldAt(x,y),8/scale())){
+   objectDrag={id:selected.id,x,y,moved:false};
+  }
+  if(pointers.size===2){objectDrag=null;
    const list=[...pointers.values()],a=list[0],b=list[1];
    pinch={x:(a.x+b.x)/2,y:(a.y+b.y)/2,dist:Math.hypot(a.x-b.x,a.y-b.y)||1};
   }
@@ -408,7 +447,13 @@ function create(opts){
   const old=pointers.get(e.pointerId);if(!old)return;
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   if(dragStart&&Math.hypot(x-dragStart.x,y-dragStart.y)>4)dragged=true;
-  if(pointers.size===2){
+  if(objectDrag&&pointers.size===1&&selected?.id===objectDrag.id){
+   const [ax,ay]=worldAt(old.x,old.y),[bx,by]=worldAt(x,y);
+   if(Math.hypot(x-objectDrag.x,y-objectDrag.y)>4){
+    const dx=bx-ax,dy=by-ay;
+    if(dx||dy){translateObject(selected,dx,dy);objectDrag.moved=true;draw()}
+   }
+  }else if(pointers.size===2){
    const [a,b]=[...pointers.values()],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
    const dist=Math.hypot(a.x-b.x,a.y-b.y)||1;
    if(pinch){zoomAt(dist/pinch.dist,mx,my);panX+=mx-pinch.x;panY+=my-pinch.y;draw()}
@@ -422,11 +467,16 @@ function create(opts){
   pointers.delete(e.pointerId);
   if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
   if(!pointers.size){pinch=null;dragStart=null}
-  if(clicked)showDetails(pick(x,y));
+  const movedObject=objectDrag?.moved&&scene?.objects.find(o=>o.id===objectDrag.id);
+  objectDrag=null;
+  if(movedObject){
+   if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
+  }else if(clicked)showDetails(pick(x,y));
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById};
+ return{show,reset,getHierarchy,selectItemById,getScene,getSelected,replaceScene,setEditMode,
+  screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
 })(window);
