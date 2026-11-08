@@ -107,6 +107,7 @@ function create(opts){
  let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
  let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null;
+ let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
  try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
  function getAxes(){
   return [scene?.coordinateSystem?.horizontal||[1,0],scene?.coordinateSystem?.vertical||[0,1]];
@@ -298,6 +299,34 @@ function create(opts){
   }
   ctx.restore();
  }
+ function setEditorGrid(config){
+  editorGrid={...editorGrid,...config};draw();
+ }
+ function snapWorld(value,axis){
+  if(!editorGrid.snap)return value;
+  const step=editorGrid.spacing*editorGrid.fraction;
+  if(!(step>0))return value;
+  const origin=axis===0?editorGrid.originX:editorGrid.originY;
+  return origin+Math.round((value-origin)/step)*step;
+ }
+ function drawEditorGrid(){
+  if(!editorGrid.visible||!scene)return;
+  const spacing=editorGrid.spacing;
+  if(!(spacing>0)||spacing*scale()<5)return;
+  const corners=[[0,0],[width,0],[0,height],[width,height]].map(([x,y])=>worldAt(x,y));
+  const xx=corners.map(c=>c[0]),yy=corners.map(c=>c[1]);
+  const minX=Math.min(...xx),maxX=Math.max(...xx),minY=Math.min(...yy),maxY=Math.max(...yy);
+  if((maxX-minX)/spacing>600||(maxY-minY)/spacing>600)return;
+  ctx.save();ctx.strokeStyle="rgba(157,221,236,.38)";ctx.lineWidth=1/scale();ctx.beginPath();
+  const x0=editorGrid.originX,y0=editorGrid.originY;
+  for(let i=Math.ceil((minX-x0)/spacing);i<=(maxX-x0)/spacing;i++){
+   const x=x0+i*spacing;ctx.moveTo(x,minY);ctx.lineTo(x,maxY);
+  }
+  for(let i=Math.ceil((minY-y0)/spacing);i<=(maxY-y0)/spacing;i++){
+   const y=y0+i*spacing;ctx.moveTo(minX,y);ctx.lineTo(maxX,y);
+  }
+  ctx.stroke();ctx.restore();
+ }
  function drawGrid(){
   const grid=scene?.grid;if(!grid?.visible)return;
   const b=bounds(),spacing=Math.max(1,finite(grid.spacing,100));
@@ -347,6 +376,7 @@ function create(opts){
    else traceStroke(pass.obj,false);
   }
   if(selected&&visible(selected))traceStroke(selected,true);
+  drawEditorGrid();
   drawLabels(list);
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
  }
@@ -693,6 +723,10 @@ function create(opts){
   if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
   if(!pointers.size){pinch=null;dragStart=null}
   const movedObject=objectDrag?.moved&&scene?.objects.find(o=>o.id===objectDrag.id);
+  if(movedObject&&editorGrid.snap){
+   const g=movedObject.geometry||{},point=g.type==="rect"?[g.x,g.y]:g.center||g.points?.[0];
+   if(point){const dx=snapWorld(point[0],0)-point[0],dy=snapWorld(point[1],1)-point[1];translateObject(movedObject,dx,dy);draw()}
+  }
   objectDrag=null;
   if(movedObject){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
@@ -703,7 +737,7 @@ function create(opts){
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
+ return{show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,setEditorGrid,snapPoint:([x,y])=>[snapWorld(x,0),snapWorld(y,1)],
   getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
