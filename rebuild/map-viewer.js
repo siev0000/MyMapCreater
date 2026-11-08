@@ -22,7 +22,7 @@ const ROAD_GRAY="#929da5";
 // Only key transport routes appear on the first view. Other source routes remain intact.
 const PRIMARY_ROAD_TYPES=new Set(["主要幹線道路","大型機用主要通路","重貨物道路","貨物トンネル"]);
 const ROAD_DISPLAY_MODES=["main","all","off"];
-const RENDER_REVISION="中層描画 v5";
+const RENDER_REVISION="中層描画 v6";
 // Display hierarchy only. No mutation of data/middle-layout-draft.json.
 const DISPLAY_MEDIUM_CHILDREN=Object.freeze({
  arbora_sector:Object.freeze([
@@ -148,6 +148,7 @@ function create(opts){
  }
  function isArboraMedium(f){return Boolean(f&&DISPLAY_MEDIUM_CHILDREN.arbora_sector.includes(f.id))}
  function arboraParent(){return data?.facilities.find(f=>f.id==="arbora_sector")||null}
+ // Displayed district sizes do not depend on click state. Clicks change detail only.
  function isArboraOpen(){return selected?.id==="arbora_sector"||isArboraMedium(selected)}
  function getSelectionPath(){
   if(!data||!selected)return {district:null,medium:null};
@@ -308,6 +309,12 @@ function create(opts){
   };
   const {district,medium}=getSelectionPath();
   for(const f of data.facilities.filter(f=>f.mediumZones?.length||f.id==="arbora_sector")){
+   // The large district title must exist from the very first overview.
+   // Use its own label placement rather than replacing it with children labels.
+   if(f.id==="arbora_sector"){
+    label(f.name,f.x-f.w*.36,f.y,Math.max(124,250*scale()),selected?.id===f.id);
+    continue;
+   }
    if(district?.id===f.id)continue;
    const p=f.mapLabelPosition||[f.x,f.y];
    label(f.districtMapLabel||f.short||f.name,p[0],p[1],Math.max(60,235*scale()),false);
@@ -378,9 +385,10 @@ function create(opts){
      for(const m of d.mediumZones)if(m.id!==medium?.id)drawMedium(m);
     }
     if(medium)for(const item of medium.smallZones||[])drawSmall(item);
-    // Macro environment areas overlap the physical buildings, so keep them as
-    // source metadata until a separate optional environmental layer is designed.
-    if(isArboraOpen())for(const f of presentationChildren("arbora_sector"))drawArboraMedium(f);
+    // Arbora is always a large frame; its four registered physical facilities
+    // are always medium frames, exactly like mediumZones in the other districts.
+    // The six overlapping macro environment areas stay out of this drawing layer.
+    for(const f of presentationChildren("arbora_sector"))drawArboraMedium(f);
    },
    terminal:drawTerminal,
    roads:()=>{for(const r of visibleRoads())drawRoad(r)},
@@ -412,8 +420,12 @@ function create(opts){
   const {district,medium}=getSelectionPath();
   if(medium)for(const s of medium.smallZones||[])if(contains(s,x,y))return s;
   if(district)for(const m of district.mediumZones||[])if(contains(m,x,y))return m;
-  // Hidden macro environment zones must not intercept clicks on visible medium facilities.
-  // Arbora medium frames are selectable only after the sector is selected.
+  // On an overview, first click anywhere inside Arbora (even on a child or road)
+  // selects its large district. A second click can select a medium facility.
+  const arbora=arboraParent();
+  if(arbora&&!isArboraOpen()&&contains(arbora,x,y))return arbora;
+  // The physical medium frames are visible from the start, but drill down only
+  // once the large district has been selected. No hidden macro zones are pickable.
   if(isArboraOpen())for(const f of [...presentationChildren("arbora_sector")].reverse()){
    if(contains(f,x,y))return f;
   }
@@ -435,7 +447,7 @@ function create(opts){
   infoTitle.textContent=selected.name||selected.id;
   const parts=[];
   if(selected.roadType)parts.push(selected.roadType);
-  if(selected.id==="arbora_sector")parts.push("大枠・自然環境地区");
+  if(selected.id==="arbora_sector")parts.push("大枠・自然環境地区／中枠4施設");
   if(isArboraMedium(selected))parts.push("中枠・施設");
   if(selected.status?.startsWith("draft")||selected.draft===true||selected.reviewStatus==="draft")
    parts.push("配置・接続未確定");
