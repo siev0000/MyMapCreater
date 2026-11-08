@@ -76,7 +76,6 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
  </aside>
 </main>
 <footer>船首 +X が上、右舷 +Y が右。船体長4,000m・最大幅2,500m。船体外形は概略です。中層の3案は実寸設計を確定する前の比較図です。</footer>
-<script src="./aa-map-engine.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -2364,12 +2363,8 @@ function draw(){
   if(living){
    addZone('core_shell_refine','生活・整備圏',{tag:'circle',props:circle(living.outerRadius||720),label:pos(175,525),fontSize:16,opacity:.10},colors.shared,placeDescriptions.core_shell_refine);insertToClip();
   }
-  const commonMiddle=window.AAMapEngine.normalizeFloor(dataset);
   const a=plan.arbora;
-  const arboraNode=candidate==='B'?commonMiddle.byId.get('arbora_sector'):null;
-  const shape=arboraNode?
-   {...window.AAMapEngine.svgShape(commonMiddle,arboraNode,pos),fontSize:19,opacity:.32}:
-   a.polygon?
+  const shape=a.polygon?
    {tag:'polygon',props:{points:a.polygon.map(([x,y])=>pos(x,y).join(',')).join(' ')},label:pos(-1050,0),fontSize:19,opacity:.32}:
    {tag:'rect',props:rectBounds(a.x-a.w/2,a.x+a.w/2,a.y-a.h/2,a.y+a.h/2),label:pos(a.x,a.y),fontSize:19,opacity:.3};
   addZone('arbora_sector','アルボラ自然区',shape,colors.nature,placeDescriptions.arbora_sector);insertToClip();
@@ -2377,15 +2372,9 @@ function draw(){
    addZone(b.id,b.name,{tag:'rect',props:rectBounds(b.x-b.w/2,b.x+b.w/2,b.y-b.h/2,b.y+b.h/2),label:pos(b.x,b.y),fontSize:15,opacity:.34},colors.industry,placeDescriptions[b.id]);insertToClip();
   }
 
-  // Candidate B is regenerated from the editable layout, not copied coordinates.
-  const towns=candidate==='B'?commonMiddle.districts.map(n=>({
-   ...n.raw,tier:n.raw.socialTier,
-   polygon:window.AAMapEngine.polygon(commonMiddle,n),
-   labelPos:n.raw.mapLabelPosition||[n.raw.x,n.raw.y]
-  })):plan.towns;
-  if(Array.isArray(towns))for(const t of towns){
+  if(Array.isArray(plan.towns))for(const t of plan.towns){
    const upper=t.tier==='upper';
-   const title=candidate==='B'?(t.districtMapLabel||t.short||t.name):(upper?'上位 ':'下位 ')+(t.id.includes('town')?'タウン':'ラボ区');
+   const title=t.id==='stern_core_shell_town'?'船尾タウン街区':t.id==='stern_refine_lab_district'?'船尾工房・研究街区':(upper?'上位 ':'下位 ')+(t.id.includes('town')?'タウン':'ラボ区');
    const shape=t.polygon?.length>=3?
      {tag:'polygon',props:{points:t.polygon.map(([x,y])=>pos(x,y).join(',')).join(' ')},label:pos(...(t.labelPos||[t.x,t.y])),fontSize:14,opacity:.12}:
      {tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:13,opacity:.20};
@@ -2394,34 +2383,34 @@ function draw(){
   }
 
   if(candidate==='B'){
-   const hierarchy=window.AAMapEngine.middleState(commonMiddle,selected);
-   for(const parent of commonMiddle.districts){
-    const active=hierarchy.district?.id===parent.id;
-    for(const medium of window.AAMapEngine.childrenOf(commonMiddle,parent.id,'medium')){
-     if(active&&hierarchy.medium?.id===medium.id)continue;
-     const geom=window.AAMapEngine.svgShape(commonMiddle,medium,pos);
-     if(!geom)continue;
-     addZone(medium.id,medium.name,{
-      ...geom,fontSize:11,opacity:.12,hierarchyLevel:'medium',
-      parentId:parent.id,interactive:active
-     },'#d2dce1',medium.raw.detail);insertToClip();
+   for(const parent of dataset.facilities.filter(f=>f.mediumZones?.length)){
+    const active=parent.id===selected||parent.mediumZones.some(m=>
+      m.id===selected||(m.smallZones||[]).some(z=>z.id===selected));
+    const mediumSelected=active?parent.mediumZones.find(m=>
+      m.id===selected||(m.smallZones||[]).some(z=>z.id===selected)):null;
+    for(const medium of parent.mediumZones){
+     // Facility outlines always remain on the map, except the selected
+     // medium whose interior is now being inspected.
+     if(mediumSelected?.id!==medium.id){
+      addZone(medium.id,medium.name,{
+       tag:'rect',props:rectBounds(medium.x-medium.w/2,medium.x+medium.w/2,medium.y-medium.h/2,medium.y+medium.h/2),
+       label:pos(medium.x,medium.y),fontSize:11,opacity:.12,
+       hierarchyLevel:'medium',parentId:parent.id,interactive:active
+      },'#d2dce1',medium.detail);insertToClip();
+     }
     }
-    if(active&&hierarchy.medium){
-     for(const small of window.AAMapEngine.childrenOf(commonMiddle,hierarchy.medium.id,'small')){
-      const geom=window.AAMapEngine.svgShape(commonMiddle,small,pos);
-      if(!geom)continue;
-      addZone(small.id,small.name,{...geom,fontSize:10,opacity:.14,hierarchyLevel:'small'},
-       '#e5e2cf',small.raw.detail);insertToClip();
+    if(mediumSelected){
+     for(const small of mediumSelected.smallZones||[]){
+      addZone(small.id,small.name,{
+       tag:'rect',props:rectBounds(small.x-small.w/2,small.x+small.w/2,small.y-small.h/2,small.y+small.h/2),
+       label:pos(small.x,small.y),fontSize:10,opacity:.14,hierarchyLevel:'small'
+      },'#e5e2cf',small.detail);insertToClip();
      }
     }
    }
   }
   if(Array.isArray(plan.factories))for(const plant of plan.factories){
-   const f=candidate==='B'?commonMiddle.byId.get(plant.id):null;
-   const geom=f?window.AAMapEngine.svgShape(commonMiddle,f,pos):null;
-   addZone(plant.id,plant.label,geom?{...geom,fontSize:12,opacity:.65}:
-    {tag:'rect',props:rectBounds(plant.x-plant.w/2,plant.x+plant.w/2,plant.y-plant.h/2,plant.y+plant.h/2),
-     label:pos(plant.x,plant.y),fontSize:12,opacity:.65},colors.industry,placeDescriptions[plant.id]);insertToClip();
+   addZone(plant.id,plant.label,{tag:'rect',props:rectBounds(plant.x-plant.w/2,plant.x+plant.w/2,plant.y-plant.h/2,plant.y+plant.h/2),label:pos(plant.x,plant.y),fontSize:12,opacity:.65},colors.industry,placeDescriptions[plant.id]);insertToClip();
   }
   if(plan.relay){
    const t=plan.relay;
@@ -2441,33 +2430,14 @@ function draw(){
     insertToClip();
    }
   };
-  if(candidate==='B'){
-   for(const r of dataset.roads.filter(r=>r.kind==='line'&&
-    ['draft_central_access','draft_purple_machine_axis','draft_parallel_freight_B','draft_arbora_B_access'].includes(r.geometryStatus))){
-    const machine=r.geometryStatus==='draft_purple_machine_axis';
-    const freight=r.geometryStatus==='draft_parallel_freight_B';
-    const blockers=dataset.facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&!f.areaFrame&&f.type!=='terminal')
-      .map(f=>window.AAMapEngine.polygon(commonMiddle,commonMiddle.byId.get(f.id)));
-    for(const segment of window.AAMapEngine.visiblePolyline(r.points,blockers))
-      thinRoute(segment,machine?'#d3b4ee':freight?'#e4ac6a':r.color||'#a0eddb',machine||freight);
-   }
-  }else{
-   if(Array.isArray(plan.purplePassage))thinRoute(plan.purplePassage,'#d3b4ee',true);
-   if(Array.isArray(plan.cargoFlow))plan.cargoFlow.forEach((flow,i)=>{
-    const main=Array.isArray(plan.purplePassage)&&(i<2||i===plan.cargoFlow.length-1);
-    thinRoute(flow,plan.purplePassage?'#e4ac6a':'#a0eddb',main);
-   });
-  }
-  // Macro areas on candidate B use the same source geometry as the map/editor.
-  const interiorZones=candidate==='B'?
-    dataset.facilities.find(f=>f.id==='arbora_sector')?.macroZones||[]:plan.interior||[];
-  if(expandedArbora)for(const z of interiorZones){
-   const node=candidate==='B'?commonMiddle.byId.get(z.id):null;
-   const geometry=node?window.AAMapEngine.svgShape(commonMiddle,node,pos):null;
-   addZone(z.id,z.name,geometry?{...geometry,fontSize:12,opacity:.26,parentId:'arbora_sector'}:
-     {tag:'rect',props:rectBounds(z.x-z.w/2,z.x+z.w/2,z.y-z.h/2,z.y+z.h/2),
-      label:pos(z.x,z.y),fontSize:12,opacity:.3},
-     colors.nature,placeDescriptions[z.id]);insertToClip();
+  if(Array.isArray(plan.purplePassage))thinRoute(plan.purplePassage,'#d3b4ee',true);
+  if(Array.isArray(plan.cargoFlow))plan.cargoFlow.forEach((flow,i)=>{
+   const main=Array.isArray(plan.purplePassage)&&(i<2||i===plan.cargoFlow.length-1);
+   thinRoute(flow,plan.purplePassage?'#e4ac6a':'#a0eddb',main);
+  });
+  // Major environmental units, not small rooms: show only when Arbora is selected.
+  if(expandedArbora&&Array.isArray(plan.interior))for(const z of plan.interior){
+   addZone(z.id,z.name,{tag:'rect',props:rectBounds(z.x-z.w/2,z.x+z.w/2,z.y-z.h/2,z.y+z.h/2),label:pos(z.x,z.y),fontSize:12,opacity:.52},colors.nature,placeDescriptions[z.id]);insertToClip();
   }
  }else{
   const ring=get('last_hub');if(ring){
