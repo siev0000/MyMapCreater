@@ -141,7 +141,7 @@ function create(opts){
  }
  function zoomAt(factor,x,y){
   const point=worldAt(x,y);
-  zoom=clamp(zoom*factor,1,24);
+  zoom=clamp(zoom*factor,1,30);
   const after=screenAt(...point);
   panX+=x-after[0];panY+=y-after[1];draw();
  }
@@ -343,7 +343,7 @@ function create(opts){
    const g=obj.geometry||{};
    if(Array.isArray(obj.floors)&&obj.floors.length&&g.type==="rect"){
     const targetScale=Math.min(width/Math.max(1,g.width*1.75),height/Math.max(1,g.height*1.75));
-    zoom=Math.min(24,Math.max(zoom,targetScale/Math.max(initialScale,.000001)));
+    zoom=Math.min(30,Math.max(zoom,targetScale/Math.max(initialScale,.000001)));
    }
    let p=obj.label?.position||g.center||[0,0];
    if(g.type==="rect")p=[g.x+g.width/2,g.y+g.height/2];
