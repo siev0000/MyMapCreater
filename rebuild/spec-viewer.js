@@ -101,7 +101,12 @@ function close(){
  request++;modal.hidden=true;document.body.classList.remove("spec-open");
  if(priorFocus?.focus)priorFocus.focus();
 }
-$("open-specs").addEventListener("click",()=>open(current));
+$("open-specs").addEventListener("click",()=>{
+ const menu=$("map-menu-popover"),button=$("map-menu-button");
+ if(menu)menu.hidden=true;
+ if(button)button.setAttribute("aria-expanded","false");
+ open(current);
+});
 $("spec-close").addEventListener("click",close);
 picker.addEventListener("change",()=>open(picker.value));
 modal.addEventListener("pointerdown",e=>{if(e.target===modal)close()});
