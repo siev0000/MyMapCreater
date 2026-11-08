@@ -2430,8 +2430,7 @@ function draw(){
  }
  const inner=E('circle',{...circle(330),fill:'none',stroke:'#e6ce92','stroke-width':2,'stroke-dasharray':'8 6'});svg.append(inner);
  const hub=E('circle',{...circle(250),fill:'#42788f','fill-opacity':.94,stroke:'#b8edff','stroke-width':3});svg.append(hub);
- const title=E('text',{x:450,y:711,'font-size':19,'text-anchor':'middle'});title.textContent='中央ターミナル';svg.append(title);
- const sub=E('text',{x:450,y:734,'font-size':15,'text-anchor':'middle'});sub.textContent='直径500m';svg.append(sub);
+ // The terminal stays visible by shape; names and dimensions appear only on selection.
  const tip=E('text',{x:450,y:28,'font-size':17,'text-anchor':'middle'});tip.textContent='▲ 船首 +X';svg.append(tip);
  document.getElementById('status').textContent=floor==='middle'?candidates[candidate].title+'｜配置イメージ・未確定':'階層の大枠・検討中';
 }
