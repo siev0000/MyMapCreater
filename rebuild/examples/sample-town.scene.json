@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 2,
+  "id": "sample-town",
+  "name": "汎用サンプル：町",
+  "description": "汎用マップ動作確認用の架空の町。プロジェクト世界設定ではない。",
+  "coordinateSystem": {
+    "horizontal": [
+      1,
+      0
+    ],
+    "vertical": [
+      0,
+      1
+    ],
+    "bounds": {
+      "minX": 0,
+      "maxX": 800,
+      "minY": 0,
+      "maxY": 500
+    },
+    "background": "#101f2a"
+  },
+  "grid": {
+    "visible": true,
+    "spacing": 50,
+    "stroke": "rgba(150,195,205,.15)",
+    "strokeWidth": 0.5
+  },
+  "layers": [
+    {
+      "id": "background",
+      "zIndex": 0
+    },
+    {
+      "id": "areas",
+      "zIndex": 10
+    },
+    {
+      "id": "routes",
+      "zIndex": 20
+    },
+    {
+      "id": "rooms",
+      "zIndex": 30
+    },
+    {
+      "id": "walls",
+      "zIndex": 40
+    },
+    {
+      "id": "labels",
+      "zIndex": 50
+    }
+  ],
+  "settings": {
+    "labelDefaults": {
+      "fontSize": 13,
+      "color": "#eaf2ef",
+      "stroke": "#09232b",
+      "strokeWidth": 3
+    },
+    "selectionZoom": {
+      "large": 1.3,
+      "medium": 2
+    },
+    "visibilityGroups": {
+      "routes": {
+        "default": "main",
+        "options": [
+          {
+            "id": "main",
+            "label": "主要のみ"
+          },
+          {
+            "id": "all",
+            "label": "全案を表示"
+          },
+          {
+            "id": "off",
+            "label": "非表示"
+          }
+        ]
+      }
+    }
+  },
+  "objects": [
+    {
+      "id": "town-area",
+      "name": "広場地区",
+      "parentId": null,
+      "level": "large",
+      "objectType": "region",
+      "layer": "areas",
+      "zIndex": 10,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            100,
+            70
+          ],
+          [
+            690,
+            70
+          ],
+          [
+            720,
+            440
+          ],
+          [
+            80,
+            440
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(78,139,118,.25)",
+        "stroke": "#7ebcaa",
+        "strokeWidth": 1.5
+      },
+      "label": {
+        "visible": true,
+        "text": "広場地区",
+        "position": [
+          390,
+          95
+        ],
+        "fontSize": 15
+      },
+      "detail": "架空の町の大枠"
+    },
+    {
+      "id": "workshop",
+      "name": "作業棟",
+      "parentId": "town-area",
+      "level": "medium",
+      "objectType": "facility",
+      "layer": "rooms",
+      "zIndex": 30,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "rect",
+        "x": 130,
+        "y": 160,
+        "width": 210,
+        "height": 180
+      },
+      "style": {
+        "fill": "rgba(117,119,156,.45)",
+        "stroke": "#b0b4e0",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "作業棟",
+        "position": [
+          235,
+          245
+        ]
+      },
+      "detail": "大枠の子施設"
+    },
+    {
+      "id": "main-path",
+      "name": "広場通路",
+      "level": "route",
+      "objectType": "route",
+      "layer": "routes",
+      "zIndex": 20,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            90,
+            380
+          ],
+          [
+            680,
+            380
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "#929da5",
+        "strokeWidth": 1.2
+      },
+      "visibility": {
+        "modeGroup": "routes",
+        "modes": [
+          "main",
+          "all"
+        ]
+      },
+      "label": {
+        "visible": false
+      },
+      "metadata": {
+        "roadWidthM": 10
+      },
+      "detail": "描画と実幅が独立した通路"
+    },
+    {
+      "id": "wall-a",
+      "name": "独立した壁",
+      "level": "wall",
+      "objectType": "wall",
+      "layer": "walls",
+      "zIndex": 40,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            130,
+            160
+          ],
+          [
+            130,
+            340
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "#f5dfac",
+        "strokeWidth": 4
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "区画外枠とは別の壁オブジェクト"
+    },
+    {
+      "id": "optional-label",
+      "name": "非表示ラベル",
+      "level": "annotation",
+      "objectType": "label",
+      "layer": "labels",
+      "zIndex": 50,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {},
+      "label": {
+        "visible": false,
+        "text": "非表示のはず",
+        "position": [
+          390,
+          245
+        ]
+      }
+    }
+  ]
+}

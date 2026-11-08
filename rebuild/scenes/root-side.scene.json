@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 2,
+  "id": "root-side",
+  "name": "アポクリファ＝アーカイブ・側面",
+  "coordinateSystem": {
+    "horizontal": [
+      1,
+      0
+    ],
+    "vertical": [
+      0,
+      1
+    ],
+    "bounds": {
+      "minX": 0,
+      "maxX": 4000,
+      "minY": 0,
+      "maxY": 2500
+    },
+    "background": "#0b1d27"
+  },
+  "grid": {
+    "visible": false
+  },
+  "layers": [
+    {
+      "id": "background",
+      "zIndex": 0
+    },
+    {
+      "id": "labels",
+      "zIndex": 50
+    }
+  ],
+  "settings": {
+    "routeMode": "all"
+  },
+  "objects": [
+    {
+      "id": "pending-side",
+      "name": "側面図は未登録",
+      "level": "annotation",
+      "selectable": false,
+      "visible": true,
+      "layer": "labels",
+      "zIndex": 50,
+      "geometry": {
+        "type": "none"
+      },
+      "label": {
+        "visible": true,
+        "text": "側面図は未登録",
+        "position": [
+          2000,
+          1250
+        ],
+        "fontSize": 16,
+        "color": "#aac6cf"
+      }
+    }
+  ]
+}
