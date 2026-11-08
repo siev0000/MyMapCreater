@@ -40,6 +40,19 @@ function shapeOf(type,p){
  if(type==="polygon")return{type,points:[[x-75,y-45],[x+75,y-45],[x+75,y+45],[x-75,y+45]]};
  return{type:"none"};
 }
+function showNewLayerChoices(){
+ const data=sceneNow(),picker=$("new-layer");
+ if(!data||!picker)return;
+ const previous=picker.value;
+ const entries=(data.layers||[]).map(x=>[x.id,x.id+" (z:"+String(number(x.zIndex,0))+")"]);
+ if(!entries.length)entries.push(["objects","objects"]);
+ const defaultLayer=entries.find(x=>x[0]===previous)?.[0]||
+  entries.find(x=>{
+   const layer=data.layers?.find(l=>l.id===x[0]);
+   return number(layer?.zIndex,0)>=10;
+  })?.[0]||entries[0][0];
+ fillSelect(picker,entries,defaultLayer);
+}
 function showObjects(){
  const list=$("objects"),data=sceneNow();
  list.replaceChildren();
@@ -162,7 +175,7 @@ function applyScene(scene,selectedId,{record=true,resetView=false}={}){
   state.scene=viewer.getScene();
   state.selectedId=selectedId||null;
   $("scene-name").textContent=scene.name||"マップ";
-  renderSelected();showObjects();
+  renderSelected();showObjects();showNewLayerChoices();
   if(!record)setDirty(false);else setDirty(true);
   notice("JSONの設定を反映しました（未保存）","success");
   return true;
@@ -222,11 +235,14 @@ bind("add-object",()=>{
  const box=$("map-canvas").getBoundingClientRect();
  const [x,y]=viewer.screenToWorld(box.width/2,box.height/2);
  const id=uniqueId("shape",scene.objects);
- const kind=gtype==="polyline"?"route":gtype==="none"?"annotation":gtype==="ring"?"region":"facility";
- const level=kind==="route"?"route":kind==="annotation"?"annotation":"facility";
+ const kind=input("new-role")||"object";
+ const level=input("new-level")||"object";
+ const layer=input("new-layer")||"objects";
+ const index=scene.layers?.find(l=>l.id===layer)?.zIndex;
  const g=shapeOf(gtype,[x,y]);
  const labelText="新しい図形";
- const obj={id,name:labelText,parentId:null,level,objectType:kind,layer:scene.layers?.find(l=>l.id===kind+"s")?.id||"structures",zIndex:30,
+ const obj={id,name:labelText,parentId:null,level,objectType:kind,layer,
+  zIndex:Number.isFinite(index)?index:20,
   visible:true,selectable:true,geometry:g,
   style:{fill:gtype==="none"||gtype==="polyline"?null:"rgba(79,145,168,.22)",stroke:"#98d5df",strokeWidth:1.5},
   label:{visible:true,text:labelText,position:[x,y],fontSize:12},detail:""};
@@ -311,7 +327,7 @@ viewer=window.AAMapViewer.create({
   }
   if(data)$("scene-name").textContent=data.name||data.id;
   else $("scene-name").textContent="マップ";
-  showObjects();renderSelected();
+  showObjects();renderSelected();showNewLayerChoices();
  },
  onLayoutError:(_map,error)=>notice("読み込みエラー："+error,"error"),
  onSelectionChanged:(_map,obj)=>{
