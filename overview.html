@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AA｜第1段階 全体骨格レビュー</title>
+<title>AA｜3階層の骨格と中層配置案</title>
 <style>
 :root{font-family:system-ui,"Noto Sans JP",sans-serif;color-scheme:dark;--bg:#0b1923;--panel:#152d39;--line:#3c6274;--fg:#eef7fb;--muted:#b5cbd7;--accent:#91e0f1}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg)}
@@ -35,7 +35,7 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
 </head>
 <body>
 <header>
- <div><h1>AA｜全体骨格レビュー</h1><p>制作工程①｜地区・中央ターミナル・隔離境界の関係だけを確認。内部施設や受付は描きません。</p></div>
+ <div><h1>AA｜全体骨格レビュー</h1><p>3階層の大枠。中層はA・B・Cを直接切り替えて、場所を比べられます。</p></div>
  <div><a href="./index.html">詳細マップ</a>　<a href="./editor.html">配置エディター</a>　<a href="./docs/aa-map-production-workflow-v1.md">制作ルール</a></div>
 </header>
 <main>
@@ -44,13 +44,14 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
    <button type="button" data-floor="upper" aria-pressed="false">上層</button>
    <button type="button" data-floor="middle" aria-pressed="true">中層</button>
    <button type="button" data-floor="lower" aria-pressed="false">下層</button>
-   <label>表示資料<select id="source">
-    <option value="draft">GitHub配置案</option>
-    <option value="base">Notion由来・比較用JSON</option>
-   </select></label>
+   <div id="candidateControls" class="controls" aria-label="中層の配置案切替">
+    <button type="button" data-candidate="A" aria-pressed="false">A｜外周加工</button>
+    <button type="button" data-candidate="B" aria-pressed="false">B｜中央加工</button>
+    <button type="button" data-candidate="C" aria-pressed="true">C｜併用案</button>
+   </div>
   </div>
   <div id="status" role="status">マップ情報を取得中です…</div>
-  <svg id="map" viewBox="0 0 900 1440" role="img" aria-label="AA階層の全体骨格比較図"></svg>
+  <svg id="map" viewBox="0 0 900 1440" role="img" aria-label="階層の全体骨格と中層の配置案"></svg>
   <div class="legend">
    <span><i style="background:#75b5cb"></i>中央ターミナル</span>
    <span><i style="background:#83c39d"></i>生活・共通</span>
@@ -61,28 +62,42 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
   <div id="detail" aria-live="polite"><h3>施設・地区を選択</h3><p>選択した施設・地区の説明を表示します。</p></div>
  </section>
  <aside class="panel">
-  <h2>今回確認する大枠</h2>
+  <h2>配置の考え方</h2>
   <div id="notes"></div>
-  <h2>未決定・要調整</h2>
+  <h2>確認すること</h2>
   <ul id="issues"></ul>
-  <p><span class="pill">GitHub作業案・未承認</span></p>
-  <p style="font-size:.85rem;line-height:1.6;color:var(--muted)">座標は設計図の比較用です。地区の塗りは用途領域の概略を示し、確定した隔壁・建物外壁・通行可能範囲ではありません。比較用JSONと最新Notionに差がある場合はNotionを正本とします。</p>
+  <p><span class="pill">配置検討中・未確定</span></p>
+  <p style="font-size:.85rem;line-height:1.6;color:var(--muted)">A・B・Cは配置を考えるためのイメージです。道路や隔壁・施設の正確な寸法は未確定。ここで案を切り替えても、配置データにはまだ反映されません。</p>
  </aside>
 </main>
-<footer>船首 +X が上、右舷 +Y が右。船体長4,000m・最大幅2,500m。船体外形の曲線はGitHub側の概略図であり、構造設計確定値ではありません。Notion未変更。</footer>
+<footer>船首 +X が上、右舷 +Y が右。船体長4,000m・最大幅2,500m。船体外形は概略です。中層の3案は実寸設計を確定する前の比較図です。</footer>
 <script>
 (()=>{
 'use strict';
 const svg=document.getElementById('map'),NS='http://www.w3.org/2000/svg';
-let floor='middle',source='draft',dataset=null,selected=null;
+let floor='middle',candidate='C',dataset=null,selected=null;
 const areas={
- upper:{title:'上層｜研究区の左右分離と共通交通',summary:'中央共有区を挟み、左舷マギテック／右舷エイドロン。研究側には別々の認証門を経由する。',
-  issues:['上層GitHub案の認証門と認証通路は未接続。修正は工程③で行う。','中央共有区・左右研究区の初期境界はNotionにあるが、実際の隔壁位置は未確定。','船殻外周の推進・整備設備は専用認証経路のみ。']},
- middle:{title:'中層｜一体の生活圏と自然・工業の区分',summary:'リンクターミナルを生活・整備の核とし、内部にレジストリンク・ドームを含む。アルボラ自然区と燃料・植物加工は生活区から分離。',
-  issues:['GitHub案ではアルボラセクターを船尾中央へ再配置し、加工施設4件とは簡易矩形上の重複を解消しました。Notion初期配置とは異なり未承認です。','自然区と左右舷加工帯の間は最小20mの仮の間隔であり、安全な防火・環境隔壁幅はまだ確定していません。','中層貨物検査区も自然区から移しましたが、既存の貨物トンネル・工業幹線の旧ルートは再接続が必要です。','船首の武装運用区はGitHubにだけある未承認候補です。生活圏とアルボラ・工業区の道路は工程③で確認します。']},
- lower:{title:'下層｜生活区・再処理・隔離・搬入の分離',summary:'ラストハブが中央交通の周囲を占め、再処理・腐食危険区・バイオ再生・資源搬入の役割を分ける。',
-  issues:['マテリアル・ホローなどの配置はNotion初期座標とGitHub案で大きく異なる。工程①の検討対象。','船首 X=+700m以降の上層専用出撃区はGitHub下書きの境界案。下層通常通路と接続しない。','危険区・有機物処理・貨物輸送・ラストハブ生活動線の分離を維持する。']}
+ upper:{summary:'中央共有区を挟み、左舷マギテック・右舷エイドロンの研究区に分かれています。',issues:['研究区の認証門と道路接続を確認する必要があります。','共有・研究区の隔壁位置はまだ検討中です。']},
+ middle:{summary:'自然区・加工施設・貨物中継の配置を比べられます。',issues:[]},
+ lower:{summary:'ラストハブを中心に再処理・危険物管理・資源搬入区が分かれています。',issues:['資源搬入と船首専用出撃区の境界を調整します。','生活・危険物・貨物の通路を分離します。']}
 };
+// All shapes are non-persistent, indicative concept footprints (not facility edits).
+const candidates={
+ A:{title:'A｜アルボラ外周で加工',summary:'船尾のアルボラを広く確保し、左右外縁で直接、素材を加工する案。',
+  arbora:{x:-1060,y:0,w:1160,h:980},
+  belts:[{id:'processing_starboard',name:'燃料・油加工',x:-1070,y:660,w:900,h:220},{id:'processing_port',name:'繊維・樹脂加工',x:-1080,y:-660,w:900,h:220}],
+  issues:['栽培区から加工施設まで近い一方、湿度や排熱の分離が必要です。','船体の左右幅に加工施設と搬送路が本当に収まるかを確認します。']},
+ B:{title:'B｜ターミナル船尾側に加工',summary:'加工施設を中央のターミナル付近に集め、自然区と加工区を離す案。',
+  arbora:{x:-1110,y:0,w:1060,h:940},
+  belts:[{id:'processing_starboard',name:'燃料・油加工',x:-300,y:655,w:530,h:280},{id:'processing_port',name:'繊維・樹脂加工',x:-300,y:-655,w:530,h:280}],
+  issues:['製品搬送は短くなるものの、生活街区との騒音・排熱の干渉が懸念です。','自然区から工場への原材料の専用輸送路が必要です。']},
+ C:{title:'C｜外周加工＋中央貨物中継',summary:'アルボラ外周で加工し、ターミナル船尾側には貨物検査・仕分けの中継施設だけ置く案。',
+  arbora:{x:-1060,y:0,w:1160,h:980},
+  belts:[{id:'processing_starboard',name:'燃料・油加工',x:-1070,y:660,w:900,h:220},{id:'processing_port',name:'繊維・樹脂加工',x:-1080,y:-660,w:900,h:220}],
+  relay:{x:-350,y:-360,w:180,h:160},
+  issues:['工場と生活圏を分離しやすい一方、貨物中継とターミナル周辺の動線整理が必要です。','加工帯から貨物中継までの道路とゲートはまだ引いていません。']}
+};
+
 const colors={hub:'#75b5cb',shared:'#83c39d',research:'#e0ba72',nature:'#87a1cf',industry:'#dcb474',danger:'#cf8cab',restricted:'#bb85d9'};
 const E=(tag,props={})=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(props))e.setAttribute(k,String(v));return e};
 const pos=(x,y)=>[450+y*.36,720-x*.36];
@@ -138,35 +153,27 @@ function draw(){
  // Draw in a separate group so large functional regions remain within the draft hull.
  const fullSVG=svg; const activeGroup=clipped;
  function insertToClip(){while(svg.lastChild&&svg.lastChild!==clipped){clipped.append(svg.lastChild)}}
- const common=areas[floor];document.getElementById('notes').textContent=common.summary;
- document.getElementById('issues').innerHTML='';for(const n of common.issues){const li=document.createElement('li');li.textContent=n;document.getElementById('issues').append(li)}
+ const common=areas[floor],plan=floor==='middle'?candidates[candidate]:null;
+ document.getElementById('notes').textContent=plan?plan.title+'：'+plan.summary:common.summary;
+ document.getElementById('issues').innerHTML='';for(const n of plan?plan.issues:common.issues){const li=document.createElement('li');li.textContent=n;document.getElementById('issues').append(li)}
  if(floor==='upper'){
   addZone('upper_shared','中央共有区',{tag:'rect',props:rectBounds(-1500,1500,-250,250),label:pos(-950,0),fontSize:19},colors.shared,'Notion初期配置：共通ターミナル、共同管制、情報記録、共有物流が集まる中央共有区。研究区への入場は認証門が必要。');insertToClip();
   addZone('magitech','マギテック側',{tag:'rect',props:rectBounds(-1650,1700,-1150,-250),label:pos(-150,-810),fontSize:21},colors.research,'左舷側の研究・創造・更新・試験施設群。認証門の位置・接続はGitHub案で未解決。');insertToClip();
   addZone('eidolon','エイドロン側',{tag:'rect',props:rectBounds(-1650,1700,250,1150),label:pos(-150,805),fontSize:21},'#aaa7eb','右舷側の研究・信仰・聖結界・試験施設群。認証門の位置・接続はGitHub案で未解決。');insertToClip();
  } else if(floor==='middle'){
-  const ring=get('core_shell_refine');if(ring){
-   const out=ring.outerRadius||720;
-   addZone('core_shell_refine','生活・整備圏',{tag:'circle',props:circle(out),label:pos(-400,380),fontSize:17,opacity:.16},colors.shared,'リンクターミナル周囲のコアシェルタウンとリファインバレーは一体の街。アルキメリアラボは工房街の内部。大円は単一建築物ではない。');insertToClip();
+  const plan=candidates[candidate],living=get('core_shell_refine');
+  if(living){
+   addZone('core_shell_refine','生活・整備圏',{tag:'circle',props:circle(living.outerRadius||720),label:pos(175,525),fontSize:16,opacity:.10},colors.shared,placeDescriptions.core_shell_refine);insertToClip();
   }
-  majorFacility('arbora_sector','アルボラ自然区',colors.nature,'栽培・人工自然・水循環・温室等の管理地区。GitHub案では船尾中央の幅1250×740mの検討用矩形に調整し、加工施設4件との簡易矩形重なりを解消。内部の温室等4施設を包含。ただしNotion初期位置とは異なり、環境隔壁幅と道路接続は未確定。',source==='draft'?'現行Notionと異なる':'');insertToClip();
-  const groups=source==='draft'?dataset.stage1Skeleton?.arboraAndProcessing?.industrialGroups:null;
-  if(groups?.length){
-   for(const g of groups){
-    const b=g.bounds,cx=(b.xMin+b.xMax)/2,cy=(b.yMin+b.yMax)/2;
-    const name=g.id==='processing_starboard'?'右舷・燃料／油加工帯':'左舷・繊維／素材加工帯';
-    const desc='GitHub大枠検討案：'+g.factoryIds.map(id=>get(id)?.name||id).join('・')+'をまとめた加工施設群。矩形は複数施設の占有範囲の集合を示す概略枠で、1棟の建物ではありません。自然区との境界・輸送路は要調整。';
-    addZone(g.id,name,{tag:'rect',props:rectBounds(b.xMin,b.xMax,b.yMin,b.yMax),label:pos(cx,cy),fontSize:15,opacity:.20},colors.industry,desc,'');insertToClip();
-   }
-   majorFacility('middle_cargo_inspection','貨物検査区（仮）',colors.industry,'アルボラの外側へ移動したGitHub配置案。貨物トンネルとの正式な接続は工程③で再検証。','',true);insertToClip();
-  }else{
-   const plants=['standard_fuel_factory','plant_oil_processing','fiber_resin_processing','middle_material_processing'].map(get).filter(Boolean);
-   if(plants.length){
-    const xa=plants.map(f=>f.x),ya=plants.map(f=>f.y),p=pos(xa.reduce((a,b)=>a+b,0)/plants.length,ya.reduce((a,b)=>a+b,0)/plants.length);
-    addZone('industry_group','燃料・素材加工群',{tag:'circle',props:{cx:p[0],cy:p[1],r:32},label:[p[0],p[1]+54],fontSize:17,opacity:.66},colors.industry,'Notion初期配置の加工施設4件の平均中心を示す位置マーカー。円は加工区の外形・実際の占有面積ではありません。','');insertToClip();
-   }
+  const a=plan.arbora;
+  addZone('arbora_sector','アルボラ自然区',{tag:'rect',props:rectBounds(a.x-a.w/2,a.x+a.w/2,a.y-a.h/2,a.y+a.h/2),label:pos(a.x,a.y),fontSize:19,opacity:.3},colors.nature,placeDescriptions.arbora_sector);insertToClip();
+  for(const b of plan.belts){
+   addZone(b.id,b.name,{tag:'rect',props:rectBounds(b.x-b.w/2,b.x+b.w/2,b.y-b.h/2,b.y+b.h/2),label:pos(b.x,b.y),fontSize:15,opacity:.34},colors.industry,placeDescriptions[b.id]);insertToClip();
   }
-  if(source==='draft')majorFacility('middle_weapon_operation_field','武装運用区案',colors.research,'GitHub配置案だけにある未承認候補。Notionの確定施設ではない。','GitHub案のみ');insertToClip();
+  if(plan.relay){
+   const t=plan.relay;
+   addZone('middle_cargo_inspection','貨物中継',{tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:14,opacity:.65},colors.hub,placeDescriptions.middle_cargo_inspection);insertToClip();
+  }
  }else{
   const ring=get('last_hub');if(ring){
    addZone('last_hub','ラストハブ生活区',{tag:'circle',props:circle(ring.outerRadius||650),label:pos(-310,330),fontSize:18,opacity:.16},colors.shared,'中央ターミナルの周りに連続する中古部品市場・住居・充電・現地修理の生活区。');insertToClip();
@@ -174,8 +181,8 @@ function draw(){
   majorFacility('reclaim_belt','再処理区',colors.industry,'リクレイムベルト。廃材の選別・分解・再精錬を行う。実際の搬送区画との重なりは工程②で検証。');insertToClip();
   majorFacility('acid_zone_s9','S9腐食区',colors.danger,'腐食性廃液・危険物処理。一般生活区からの直接通行は認めない。');insertToClip();
   majorFacility('bioreactor','有機再生区',colors.nature,'バイオリアクター。有機残渣やバイオ燃料・肥料を中層アルボラ系統へ返す。');insertToClip();
-  majorFacility('material_hollow','資源搬入区',colors.research,'マテリアル・ホロー。外部資源の取り入れ。GitHub案とNotion初期座標に差がある。',source==='draft'?'Notionと座標差':'');insertToClip();
-  if(source==='draft'&&Array.isArray(dataset.restrictedZones)){
+  majorFacility('material_hollow','資源搬入区',colors.research,'マテリアル・ホロー。外部資源を船内に取り入れる設備。','');insertToClip();
+  if(Array.isArray(dataset.restrictedZones)){
    for(const z of dataset.restrictedZones){
     const b=z.bounds;addZone(z.id,z.name,{tag:'rect',props:rectBounds(b.xMin,b.xMax,b.yMin,b.yMax),label:pos(1480,(b.yMin+b.yMax)/2),fontSize:16,opacity:.12},colors.restricted,'下層マップ内の上層専用出撃区（GitHub境界案）。下層一般動線とは接続しない。','GitHub未承認');insertToClip();
    }
@@ -186,10 +193,10 @@ function draw(){
  const title=E('text',{x:450,y:711,'font-size':19,'text-anchor':'middle'});title.textContent='中央ターミナル';svg.append(title);
  const sub=E('text',{x:450,y:734,'font-size':15,'text-anchor':'middle'});sub.textContent='直径500m';svg.append(sub);
  const tip=E('text',{x:450,y:28,'font-size':17,'text-anchor':'middle'});tip.textContent='▲ 船首 +X';svg.append(tip);
- document.getElementById('status').textContent=(source==='draft'?'GitHub配置案':'Notion由来の比較用JSON')+'｜'+dataset.facilities.length+'施設のうち主要地区のみ表示・未承認';
+ document.getElementById('status').textContent=floor==='middle'?candidates[candidate].title+'｜配置イメージ・未確定':'階層の大枠・検討中';
 }
 async function refresh(){
- const url='./data/'+floor+(source==='draft'?'-layout-draft':'')+'.json';
+ const url='./data/'+floor+'-layout-draft.json';
  document.getElementById('status').textContent='読み込み中：'+url;
  try{
   const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);
@@ -199,8 +206,13 @@ async function refresh(){
   draw();
  }catch(e){document.getElementById('status').textContent='読み込みに失敗しました：'+String(e.message)}
 }
-document.querySelectorAll('[data-floor]').forEach(b=>b.addEventListener('click',()=>{floor=b.dataset.floor;document.querySelectorAll('[data-floor]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()}));
-document.getElementById('source').addEventListener('change',e=>{source=e.target.value;refresh()});
+document.querySelectorAll('[data-floor]').forEach(b=>b.addEventListener('click',()=>{floor=b.dataset.floor;document.getElementById('candidateControls').hidden=floor!=='middle';document.querySelectorAll('[data-floor]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()}));
+document.querySelectorAll('[data-candidate]').forEach(b=>b.addEventListener('click',()=>{
+ candidate=b.dataset.candidate;
+ document.querySelectorAll('[data-candidate]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+ selected=null;document.getElementById('detail').innerHTML='<h3>施設・地区を選択</h3><p>選択すると施設の説明が表示されます。</p>';
+ if(floor==='middle')draw();
+}));
 refresh();
 })();
 </script>
