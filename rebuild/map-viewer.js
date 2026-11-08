@@ -24,9 +24,28 @@ function sceneCheck(scene){
   if(obj.style?.opacity!==undefined&&(!Number.isFinite(obj.style.opacity)||obj.style.opacity<0||obj.style.opacity>1))throw Error("透過率が不正です: "+obj.id);
   if(obj.style?.strokeWidth!==undefined&&(!Number.isFinite(obj.style.strokeWidth)||obj.style.strokeWidth<0))throw Error("線幅が不正です: "+obj.id);
  }
+ const lookup=new Map(scene.objects.map(o=>[o.id,o]));
  for(const obj of scene.objects){
   if(obj.parentId&&!ids.has(obj.parentId))throw Error("存在しない親ID: "+obj.id);
-  const seen=new Set(),lookup=new Map(scene.objects.map(o=>[o.id,o]));
+  if(obj.floors!==undefined){
+   if(!Array.isArray(obj.floors)||!obj.floors.length)throw Error("フロア一覧が不正です: "+obj.id);
+   const floorIds=new Set();
+   for(const f of obj.floors){
+    if(!f||typeof f.id!=="string"||!f.id||floorIds.has(f.id))throw Error("フロアIDが不正・重複: "+obj.id);
+    floorIds.add(f.id);
+   }
+  }
+  if(obj.floorId!==undefined){
+   let current=lookup.get(obj.parentId),owner=null;
+   const visited=new Set();
+   while(current&&!visited.has(current.id)){
+    visited.add(current.id);
+    if(Array.isArray(current.floors)){owner=current;break}
+    current=lookup.get(current.parentId);
+   }
+   if(!owner||!owner.floors.some(f=>f.id===obj.floorId))throw Error("所属階が不正です: "+obj.id);
+  }
+  const seen=new Set();
   let current=obj;
   while(current?.parentId){
    if(seen.has(current.id))throw Error("親子関係が循環しています: "+obj.id);
