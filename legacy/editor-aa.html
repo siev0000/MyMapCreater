@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ja"><head><base href="../"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AAマップ配置エディター｜MyMapCreater</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,"Noto Sans JP",sans-serif;font-size:14px}
+*{box-sizing:border-box}body{margin:0;background:#0b1520;color:#e7f0f5}button,input,textarea,select{font:inherit}
+.app{max-width:1510px;margin:auto;padding:18px}header{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:22px;margin:0}h2{font-size:16px;margin:0 0 10px}h3{font-size:14px;margin:0 0 8px}
+a{color:#96d9f4;text-decoration:none}a:hover{text-decoration:underline}
+.note{color:#a9bfcc;font-size:12px;line-height:1.6}.tag{font-size:11px;padding:4px 9px;background:#5e4f30;color:#fff0c5;border-radius:20px}
+nav,.toolbar,.editKind{display:flex;flex-wrap:wrap;gap:7px}
+nav{border:1px solid #364f60;background:#142330;border-radius:12px;padding:7px;margin-bottom:12px}
+button{background:#20384b;border:1px solid #486477;color:#e4f2fa;border-radius:8px;padding:8px 11px;cursor:pointer}
+button.active{background:#28647b;border-color:#94d5ef}button:hover:not(:disabled){border-color:#b5e4f8}button:disabled{opacity:.38;cursor:not-allowed}
+nav button{flex:1;min-width:88px;font-weight:700;padding:11px}
+.toolbar{margin:10px 0 14px}.toolbar button{font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 335px;gap:16px}
+.mapwrap{padding:12px;background:#111f2b;border:1px solid #37566b;border-radius:12px;min-width:0}
+canvas{display:block;width:100%;max-width:610px;margin:auto;aspect-ratio:5 / 8;background:#10212b;touch-action:none;cursor:crosshair;border:1px solid #46677e}
+.mapmeta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:9px;color:#acc5d2;font-size:12px}
+.sidebar{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{padding:14px;background:#132431;border:1px solid #375369;border-radius:11px}
+#items{max-height:245px;overflow:auto;display:flex;flex-direction:column;gap:4px;margin-top:9px}
+.item{display:flex;text-align:left;align-items:center;gap:8px;width:100%;padding:7px 8px;background:#172d3b}
+.item.selected{background:#31566c;border-color:#e5d98c}.item small{display:block;color:#91b0c0;font-size:10px;margin-top:3px}
+.item em{font-size:10px;color:#ffe2a2;margin-left:auto}
+.dot{display:inline-block;width:9px;height:9px;min-width:9px;border-radius:50%}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fields label:first-child{grid-column:span 2}
+label{display:flex;flex-direction:column;gap:5px;margin:8px 0;color:#bed3df;font-size:12px}
+input,textarea,select{width:100%;padding:8px;color:#eff7fc;background:#0e1c28;border:1px solid #486074;border-radius:7px;min-width:0}
+input:focus,textarea:focus,select:focus{outline:2px solid #6fa9c6}textarea{resize:vertical}
+.value-id{font-size:10px;color:#a5c0cf;overflow-wrap:anywhere;padding:6px;background:#0d202b;border-radius:6px}
+.hint{color:#a6bbcb;font-size:12px;line-height:1.7}
+.danger{color:#ffcece;border-color:#8b5050;background:#47242d;margin-top:10px}
+.addbar{display:flex;gap:7px;margin-top:8px}.addbar button{flex:1}
+.points{display:flex;flex-direction:column;gap:5px}.point{display:grid;grid-template-columns:25px 1fr 1fr 30px;gap:4px;align-items:center}.point input{padding:6px}.point button{padding:5px}
+#warnings{font-size:12px;line-height:1.55;color:#bce4cb}#warnings.warn{color:#f3ca8c}
+#warnings ul{padding-left:17px;max-height:160px;overflow:auto}
+#message{font-size:12px;color:#a6d9e9;padding:10px 14px;background:#142c3a;border:1px solid #32556c;border-radius:10px;margin:12px 0}
+#message.warn{color:#ffd7a3}
+#loading{border:1px solid #436273;border-radius:10px;padding:18px;margin:20px 0}
+footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
+@media(max-width:940px){.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}.app{padding:10px}h1{font-size:19px}}
+@media(max-width:520px){nav button{font-size:12px;padding:10px 3px}.toolbar button{padding:8px}.sidebar{display:flex}}
+</style></head><body>
+<div class="app">
+<header><div><h1>AA マップ配置エディター <span class="tag">下書き専用</span></h1><p class="note">中層・下層には再配置案を読み込みます。下層の船首左右は上層専用出撃区（境界は仮）で、下層施設は配置不可です。Notion現行設定は維持されます。</p></div>
+<a href="./index.html">← 閲覧マップへ戻る</a></header>
+<div id="loading">施設・道路JSONを読み込み中…</div>
+<div id="workspace" hidden>
+<nav aria-label="階層選択"><button data-floor="upper">上層</button><button data-floor="middle" class="active">中層</button><button data-floor="lower">下層</button></nav>
+<div class="toolbar">
+<button id="overlay" class="active">中層⇄下層 重ね表示</button>
+<button id="snap" class="active">10mスナップ</button>
+<button id="grid" class="active">グリッド</button><button id="gridSize">10m四方（50mへ切替）</button>
+<button id="labels" class="active">施設名</button>
+<button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
+<button id="saveLocal" style="background:#28664b;border-color:#83c5a1;font-weight:700">この端末に保存</button><button id="saveGithub" style="background:#24597b;border-color:#91c9e3;font-weight:700">GitHubに下書きを保存</button><button id="export">JSONを書き出す</button><button id="clearLocal">端末の保存を破棄</button><button id="resetFloor">Notion現行配置を読み込む</button><button id="import">JSONを読み込む</button>
+<input id="importFile" type="file" accept=".json,application/json" hidden>
+</div>
+<details id="githubAuthHelp" class="panel" style="margin:0 0 14px">
+<summary style="cursor:pointer;font-weight:700">GitHubに直接保存するための認証設定</summary>
+<p class="note">GitHub Pagesにはログイン用サーバーがないため、ここでは期間・対象リポジトリを限定した Fine-grained personal access token を使用します。GitHubの通常ログイン連携とは異なります。</p>
+<p class="note">GitHubで <strong>Only select repositories → siev0000/MyMapCreater → Contents: Read and write</strong> を選び、期限を短めに設定してください。トークンをチャットやJSON、GitHubのファイルに貼り付けないでください。</p>
+<label>保存時に使うGitHubトークン（保存後に入力欄を消去・端末に記憶しません）
+<input id="githubToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_..." inputmode="text"></label>
+<p class="note"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Fine-grained token を作成</a>　｜　保存先は <code>data/upper-layout-draft.json</code> など、各階層の配置案専用ファイルです。</p>
+</details>
+<div class="layout">
+<section class="mapwrap"><h2 id="floorText">中層</h2>
+<canvas id="map" width="1000" height="1600" aria-label="施設のドラッグ移動と道路編集が可能なマップ"></canvas>
+<div class="mapmeta"><span>船首＝上／左舷＝左／基本25×40（100m四方）・詳細50×80（50m四方）／船体表示範囲 X ±2,000m・Y ±1,250m</span><span id="cursor">X 0m / Y 0m</span></div>
+<p class="note">施設を選んでドラッグすると移動、右下の黄色い四角を引くとサイズ変更。道路は頂点をドラッグ。環状路は線をドラッグして半径を変更できます。<strong>塗りのない領域は通行可能な空き地を意味しません。</strong></p>
+</section>
+<aside class="sidebar">
+<div class="panel"><h2>編集対象</h2><div class="editKind"><button data-kind="facility" class="active">施設・区画</button><button data-kind="road">道路・通路</button></div>
+<div class="addbar"><button id="addFacility">＋施設追加</button><button id="addRoad">＋道路追加</button></div>
+<label>施設・道路を検索<input id="search" placeholder="名前またはID"></label><div class="note">登録件数: <strong id="itemCount">0</strong></div><div id="items"></div></div>
+<div class="panel"><h2>選択項目の編集</h2><div id="detail"><p class="hint">施設・道路を選択してください。</p></div></div>
+<div class="panel"><h2>チェック結果</h2><div id="warnings">確認中…</div><p class="hint">重なりが意図された親地区と内部施設は警告から除きます。道路の接続・隔壁・上下の移送可否は、現行Notionを確認して別途確定してください。</p></div>
+</aside></div></div>
+<div id="saveState" role="status" style="color:#b9e1ce;padding:6px 4px;font-size:12px">保存状態：読み込み中</div><div id="message" role="status">準備中…</div>
+<footer>編集内容はこのブラウザに自動保存され、同じ端末・ブラウザから再開できます。GitHubへは「GitHubに下書きを保存」を押したときだけ更新されます。Notionや確定JSONは変更しません。別端末へ移す・GitHubへ反映する場合はJSONを書き出してください。ブラウザのデータ削除・プライベートモードでは保存が失われる場合があります。世界設定の正本はNotionです。</footer>
+</div>
+<script src="./middle-central-ring.js"></script>
+<script src="./aa-terminal-interior.js"></script>
+<script>(function editorApp(){
+  "use strict";
+  const F=["upper","middle","lower"], LABEL={upper:"上層",middle:"中層",lower:"下層"};
+  const COLORS={terminal:"#66c9e5",town:"#8bc8e2",workshop:"#d5a9f5",guild:"#f6d08e",nature:"#7fd8a8",industrial:"#e3b374",shared:"#9fd3e7",security:"#d2bcf4",magitech:"#88baff",eidolon:"#d8adfc",living:"#a7d4df",recycling:"#d4b67d",hazard:"#f2a09b"};
+  const $=id=>document.getElementById(id);
+  const canvas=$("map"),ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height,SC=.4;
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const clone=x=>JSON.parse(JSON.stringify(x));
+  const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
+  const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
+  const snap=n=>state.snap?Math.round(n/10)*10:Math.round(n);
+  let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0},interiorPreview=null;
+  const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
+  const state={snap:true,grid:true,overlay:false,labels:true};let gridMeters=10;
+  function current(){return floors[active]}
+  function valid(d,floor){
+    if(!d||d.schemaVersion!==1||d.floor!==floor||!Array.isArray(d.facilities)||!Array.isArray(d.roads)||!d.facilities.length)throw Error(floor+" の形式が不正です");
+    const facilityIds=new Set(),roadIds=new Set();
+    for(const f of d.facilities){
+      if(!f||typeof f.id!=="string"||!f.id||facilityIds.has(f.id)||typeof f.name!=="string"||![f.x,f.y,f.w,f.h].every(Number.isFinite)||f.w<=0||f.h<=0)throw Error("施設データが不正です: "+f?.id);
+      facilityIds.add(f.id);
+    }
+    for(const r of d.roads){
+      if(!r||typeof r.id!=="string"||!r.id||roadIds.has(r.id)||!Number.isFinite(r.width)||r.width<=0||!["line","ring","internal"].includes(r.kind))throw Error("道路データが不正です");
+      if(r.kind==="line"&&(!Array.isArray(r.points)||r.points.length<2||!r.points.every(p=>p.length===2&&p.every(Number.isFinite))))throw Error("道路の座標が不正です: "+r.id);
+      if(r.kind==="ring"&&!Number.isFinite(r.r))throw Error("環状道路の半径が不正です: "+r.id);
+      roadIds.add(r.id);
+    }
+    return clone(d);
+  }
+  function saveSnapshot(){
+    const h=history[active];
+    h.push(JSON.stringify(current()));
+    if(h.length>80)h.shift();
+    future[active]=[];
+    dirty.add(active);
+    unsavedLocal.add(active);
+  }
+  function restore(which){
+    const src=which==="undo"?history[active]:future[active],target=which==="undo"?future[active]:history[active];
+    if(!src.length)return;
+    target.push(JSON.stringify(current()));
+    floors[active]=JSON.parse(src.pop());
+    dirty.add(active);
+    unsavedLocal.add(active);
+    if(selection&&!items().some(x=>x.id===selection.id))selection=null;
+    render();
+  }
+  function items(){const d=current();return !d?[]:kind==="facility"?d.facilities:d.roads}
+  function selectedItem(){return selection?items().find(x=>x.id===selection.id)||null:null}
+  function showStatus(msg,warning=false){$("message").textContent=msg;$("message").classList.toggle("warn",warning)}
+  const LOCAL_PREFIX="aa-my-map-creater-editor-polygon-v2-";
+  function readLocalDraft(f){
+    try{
+      const raw=localStorage.getItem(LOCAL_PREFIX+f);
+      if(!raw)return null;
+      const payload=JSON.parse(raw);
+      if(payload.version!==1||payload.floor!==f)throw Error("保存形式の不一致");
+      const data=valid(payload.data,f);
+      // アプリ更新で出撃禁止区が追加された場合は、現行の制限を優先する。
+      if(f==="lower"&&initialFloors.lower?.restrictedZones?.length){
+        data.restrictedZones=clone(initialFloors.lower.restrictedZones);
+      }
+      savedLocal.add(f);
+      return data;
+    }catch(error){
+      console.warn("端末内の作業保存を復元できません",f,error);
+      return null;
+    }
+  }
+  function saveLocal(f=active){
+    if(!floors[f])return false;
+    try{
+      const payload={version:1,floor:f,updatedAt:new Date().toISOString(),data:floors[f]};
+      localStorage.setItem(LOCAL_PREFIX+f,JSON.stringify(payload));
+      savedLocal.add(f);unsavedLocal.delete(f);
+      if(f===active)$("saveState").textContent="保存状態：この端末に保存済み（GitHub・Notionは未反映）";
+      return true;
+    }catch(error){
+      console.warn("端末への保存に失敗",f,error);
+      if(f===active)$("saveState").textContent="保存状態：端末へ保存できません。JSONを書き出してください。";
+      return false;
+    }
+  }
+  function clearLocal(){
+    if(!initialFloors[active])return;
+    if(!confirm(floorName()+"のこの端末の作業データを削除して、GitHubの初期配置案へ戻しますか？\n必要なら先にJSONを書き出してください。"))return;
+    try{localStorage.removeItem(LOCAL_PREFIX+active)}
+    catch(error){showStatus("保存データを削除できません: "+error.message,true);return}
+    floors[active]=clone(initialFloors[active]);
+    savedLocal.delete(active);unsavedLocal.delete(active);dirty.delete(active);
+    history[active]=[];future[active]=[];selection=null;drag=null;
+    render();showStatus("この端末の作業保存を消去し、GitHubに登録された初期配置案へ戻しました。");
+  }
+  async function load(){
+    try{
+      const values=await Promise.all(F.map(async f=>{
+        const res=await fetch("./data/"+f+".json",{cache:"no-cache"});
+        if(!res.ok)throw Error(f+".json を取得できません（HTTP "+res.status+"）");
+        return valid(await res.json(),f);
+      }));
+      const drafts=await Promise.all(F.map(async f=>{
+        const res=await fetch("./data/"+f+"-layout-draft.json",{cache:"no-cache"});
+        if(!res.ok)return null;
+        const d=valid(await res.json(),f);
+        if(d.editorMeta?.status!=="draft")throw Error(f+" の下書き状態が不正です");
+        return d;
+      }));
+      F.forEach((f,i)=>{
+        sourceFloors[f]=clone(values[i]);
+        initialFloors[f]=clone(drafts[i]||values[i]);
+        const stored=readLocalDraft(f);
+        floors[f]=stored||clone(initialFloors[f]);
+        if(drafts[i])draftFloors.add(f);
+        if(stored)dirty.add(f);
+      });
+      for(const f of F){const previous=active;active=f;baselineWarnings[f]=diagnostics();active=previous;}
+      $("loading").hidden=true;
+      $("workspace").hidden=false;
+      showStatus(savedLocal.size?"前回の作業データをこの端末から復元しました。GitHub・Notionには未反映です。":"上・中・下層の多角形配置案を読み込みました。編集するとこの端末に自動保存します。");
+      render();
+    }catch(e){$("loading").textContent="地図データの読み込みに失敗しました: "+e.message+"。GitHub Pagesで開いてください。";showStatus(e.message,true)}
+  }
+  function floorName(){return LABEL[active]}
+  function switchFloor(f){
+    if(!floors[f])return;
+    active=f;selection=null;interiorPreview=null;drag=null;
+    render();
+  }
+  function rect(f){
+    const {px,py}=worldToPixel(f.x,f.y);
+    return {left:px-f.h*SC/2,top:py-f.w*SC/2,right:px+f.h*SC/2,bottom:py+f.w*SC/2,cx:px,cy:py};
+  }
+  function facilityShape(f){
+    if(f.footprint?.length>=3)return f.footprint.map(([x,y])=>worldToPixel(f.x+x,f.y+y));
+    const b=rect(f);return [{px:b.left,py:b.top},{px:b.right,py:b.top},{px:b.right,py:b.bottom},{px:b.left,py:b.bottom}];
+  }
+  function traceShape(f){
+    const pts=facilityShape(f);ctx.beginPath();pts.forEach((v,i)=>i?ctx.lineTo(v.px,v.py):ctx.moveTo(v.px,v.py));ctx.closePath();
+  }
+  function withinShape(f,p){
+    const a=facilityShape(f);let hit=false;
+    for(let i=0,j=a.length-1;i<a.length;j=i++){const u=a[i],v=a[j];if((u.py>p.py)!==(v.py>p.py)&&p.px<(v.px-u.px)*(p.py-u.py)/(v.py-u.py)+u.px)hit=!hit}
+    return hit;
+  }
+  function shapeOverlaps(a,b){
+    // All supported edited polygons are tested as polygons, not just their bounding rectangles.
+    const A=facilityShape(a),B=facilityShape(b);
+    const cross=(p,q,r)=>(q.px-p.px)*(r.py-p.py)-(q.py-p.py)*(r.px-p.px);
+    for(let i=0;i<A.length;i++)for(let j=0;j<B.length;j++){
+      const a0=A[i],a1=A[(i+1)%A.length],b0=B[j],b1=B[(j+1)%B.length];
+      if(cross(a0,a1,b0)*cross(a0,a1,b1)<0&&cross(b0,b1,a0)*cross(b0,b1,a1)<0)return true;
+    }
+    const inside=(p,poly)=>{
+      let ok=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+        const v=poly[i],w=poly[j];if((v.py>p.py)!==(w.py>p.py)&&p.px<(w.px-v.px)*(p.py-v.py)/(w.py-v.py)+v.px)ok=!ok;
+      }return ok;
+    };
+    return inside(A[0],B)||inside(B[0],A);
+  }
+  function createShape(f,kind){
+    if(kind==='rect'){delete f.footprint;f.draftShape='rect';return}
+    const w=f.w,h=f.h,x=w/2,y=h/2,c=Math.max(10,Math.round(Math.min(w,h)*.14/10)*10);
+    f.footprint=kind==='L'&&w>=80&&h>=80?
+      [[-x,-y],[x,-y],[x,y-c],[x-c,y-c],[x-c,y],[-x,y]]:
+      [[-x+c,-y],[x-c,-y],[x,-y+c],[x,y-c],[x-c,y],[-x+c,y],[-x,y-c],[-x,-y+c]];
+    f.draftShape=kind;
+  }
+  function drawAnnulus(f,color,alpha){
+    const c=worldToPixel(f.x,f.y),outer=(f.outerRadius||Math.max(f.w,f.h)/2)*SC,inner=(f.innerRadius||0)*SC;
+    ctx.save();ctx.beginPath();ctx.arc(c.px,c.py,outer,0,Math.PI*2);
+    if(inner)ctx.arc(c.px,c.py,inner,0,Math.PI*2,true);
+    ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.fill("evenodd");
+    ctx.globalAlpha=alpha*1.4;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([8,6]);
+    for(const r of [outer,inner].filter(Boolean)){ctx.beginPath();ctx.arc(c.px,c.py,r,0,Math.PI*2);ctx.stroke()}
+    ctx.restore();
+  }
+  function roadPath(r){
+    if(r.kind==="internal")return false;
+    ctx.beginPath();
+    if(r.kind==="ring"){ctx.arc(W/2,H/2,r.r*SC,0,Math.PI*2);return true}
+    if(r.kind==="line"){r.points.forEach((p,i)=>{const c=worldToPixel(p[0],p[1]);i?ctx.lineTo(c.px,c.py):ctx.moveTo(c.px,c.py)});return true}
+    return false;
+  }
+  // Map presentation line thickness is not equivalent to road width in metres.
+  function editorDrawThinMiddleRoad(r){
+    const purple=r.geometryStatus==="draft_purple_machine_axis";
+    const freight=r.geometryStatus==="draft_parallel_freight_B";
+    const trunk=purple||["draft_industrial_starboard","middle_industrial_freight_road","middle_cargo_tunnel"].includes(r.id);
+    ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.strokeStyle=purple?"#d3b4ee":freight?"#e4ac6a":r.color||"#a5b8c8";
+    const pts=(r.points||[]).map(([x,y])=>{const p=worldToPixel(x,y);return[p.px,p.py]});
+    if(r.kind==="ring"){if(roadPath(r)){ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.stroke()}return;}
+    if(pts.length<2)return;
+    for(const off of trunk?[-2.7,2.7]:[0]){
+      ctx.beginPath();
+      pts.forEach(([x,y],i)=>{
+        const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+        const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;
+        const px=x-off*dy/l,py=y+off*dx/l;
+        if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+      });
+      ctx.lineWidth=trunk?1.55:1.65;ctx.setLineDash([]);ctx.stroke();
+    }
+  }
+  function drawRoad(r,alpha=1){
+    ctx.save();ctx.globalAlpha=alpha;
+    if(active==="middle")editorDrawThinMiddleRoad(r);
+    else if(roadPath(r)){
+      ctx.strokeStyle=r.color||"#a5b8c8";ctx.lineWidth=Math.max(2,r.width*SC);
+      ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash(r.dash||[]);ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawCompound(f){
+    if(f.ringComplex&&window.AAMiddleCentral){
+      window.AAMiddleCentral.drawGuild(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},f,{labels:state.labels,roads:true,zoom:1.8,chosen:selectedItem()});
+      return;
+    }
+    const box=rect(f),color=COLORS[f.type]||"#f6d08e";
+    ctx.save();
+    ctx.fillStyle="rgba(220,179,102,.05)";
+    ctx.fillRect(box.left,box.top,box.right-box.left,box.bottom-box.top);
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.setLineDash([10,6]);
+    ctx.strokeRect(box.left,box.top,box.right-box.left,box.bottom-box.top);ctx.setLineDash([]);
+    const entries=new Map((f.internalFacilities||[]).map(c=>[c.id,worldToPixel(f.x+c.dx,f.y+c.dy)]));
+    if(f.internalEntrance)entries.set(f.internalEntrance.id,worldToPixel(f.x+f.internalEntrance.dx,f.y+f.internalEntrance.dy));
+    ctx.strokeStyle="#e2d1b0";ctx.lineWidth=2;ctx.setLineDash([5,5]);
+    for(const [source,dest] of f.internalConnections||[]){
+      const p=entries.get(source),q=entries.get(dest);if(!p||!q)continue;
+      ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(q.px,q.py);ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    for(const c of f.internalFacilities||[]){
+      const inner=rect({x:f.x+c.dx,y:f.y+c.dy,w:c.w,h:c.h});
+      ctx.fillStyle="rgba(137,107,64,.67)";ctx.fillRect(inner.left,inner.top,inner.right-inner.left,inner.bottom-inner.top);
+      ctx.strokeStyle="#f7dab0";ctx.lineWidth=1.6;ctx.strokeRect(inner.left,inner.top,inner.right-inner.left,inner.bottom-inner.top);
+    }
+    ctx.restore();
+  }
+  function intersectsRestrictedFacility(f){
+    if(active!=="lower"||f.ringDistrict)return false;
+    return (current().restrictedZones||[]).some(z=>{
+      const b=z.bounds;
+      return f.x+f.w/2>b.xMin&&f.x-f.w/2<b.xMax&&f.y+f.h/2>b.yMin&&f.y-f.h/2<b.yMax;
+    });
+  }
+  function pointInRestricted(x,y){
+    return active==="lower"&&(current().restrictedZones||[]).some(z=>x>=z.bounds.xMin&&x<=z.bounds.xMax&&y>=z.bounds.yMin&&y<=z.bounds.yMax);
+  }
+  function drawAccessControls(){
+    if(active!=="lower"||!current().routePolicy)return;
+    ctx.save();
+    const left=worldToPixel(700,-900),right=worldToPixel(700,900);
+    ctx.strokeStyle="#ff9da8";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(left.px,left.py);ctx.lineTo(right.px,right.py);ctx.stroke();
+    ctx.fillStyle="#ffe6eb";ctx.font="bold 15px system-ui";ctx.textAlign="center";
+    ctx.fillText("船首区隔壁・下層から通行不可",W/2,left.py+27);
+    for(const r of current().roads){if(!r.gate?.point)continue;const p=worldToPixel(...r.gate.point);
+      ctx.save();ctx.translate(p.px,p.py);ctx.rotate(Math.PI/4);
+      ctx.fillStyle=r.access==="hazard_authorized"?"#e9a573":r.access==="bio_authorized"?"#7bd7b9":"#a9c8e0";
+      ctx.fillRect(-5,-5,10,10);ctx.strokeStyle="#152837";ctx.lineWidth=2;ctx.strokeRect(-5,-5,10,10);ctx.restore();
+    }
+    ctx.restore();
+  }
+  function drawSortieRestrictions(){
+    if(active!=="lower")return;
+    const zones=current().restrictedZones||[];
+    ctx.save();
+    for(const z of zones){
+      const b=z.bounds,p1=worldToPixel(b.xMax,b.yMin),p2=worldToPixel(b.xMin,b.yMax);
+      const x=Math.min(p1.px,p2.px),y=Math.min(p1.py,p2.py),w=Math.abs(p2.px-p1.px),h=Math.abs(p2.py-p1.py);
+      ctx.fillStyle="rgba(102,58,121,.72)";ctx.fillRect(x,y,w,h);
+      ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.strokeStyle="rgba(226,165,240,.24)";ctx.lineWidth=2;
+      for(let k=-h;k<w+h;k+=24){ctx.beginPath();ctx.moveTo(x+k,y);ctx.lineTo(x+k+h,y+h);ctx.stroke()}
+      ctx.restore();
+      ctx.strokeStyle="#e4b6ec";ctx.lineWidth=3;ctx.setLineDash([9,7]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);
+      ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="bold 21px system-ui";ctx.fillStyle="#f8eaff";ctx.strokeStyle="#2d173c";ctx.lineWidth=4;
+      const side=z.id.endsWith("port")?"左舷":"右舷";
+      ctx.strokeText("上層専用・"+side+"出撃区",x+w/2,y+h/2-10,w-22);
+      ctx.fillText("上層専用・"+side+"出撃区",x+w/2,y+h/2-10,w-22);
+      ctx.font="15px system-ui";ctx.strokeText("下層配置不可｜船外接続",x+w/2,y+h/2+24,w-22);
+      ctx.fillText("下層配置不可｜船外接続",x+w/2,y+h/2+24,w-22);
+    }
+    ctx.restore();
+  }
+  function editorMiddleFrames(){
+ if(active!=="middle")return;
+ const parent=kind==="facility"&&selectedItem()?.mediumZones?.length?selectedItem():null;
+ const medium=parent?.mediumZones?.find(z=>z.id===interiorPreview?.mediumId)||null;
+ ctx.save();ctx.lineJoin="round";
+ for(const district of current().facilities.filter(f=>f.mediumZones?.length)){
+  for(const zone of district.mediumZones){
+   if(district.id===parent?.id&&zone.id===medium?.id)continue;
+   const r=rect(zone);
+   ctx.fillStyle="rgba(222,225,229,.085)";
+   ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+   ctx.lineWidth=1.65;ctx.strokeStyle="#d8e1e5";ctx.setLineDash([6,4]);
+   ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+  }
+ }
+ if(medium)for(const z of medium.smallZones||[]){
+  const r=rect(z);
+  ctx.fillStyle=interiorPreview?.smallId===z.id?"rgba(255,237,166,.25)":"rgba(234,232,230,.11)";
+  ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+  ctx.lineWidth=interiorPreview?.smallId===z.id?3:1.5;
+  ctx.strokeStyle=interiorPreview?.smallId===z.id?"#fff3af":"#c2cbd0";ctx.setLineDash([]);
+  ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+ }
+ if(state.labels){
+  const txt=(text,x,y,size,color)=>{
+   const p=worldToPixel(x,y);
+   ctx.font="bold "+size+"px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.lineWidth=size>14?4.5:3;ctx.strokeStyle="#12222b";ctx.strokeText(text,p.px,p.py);
+   ctx.fillStyle=color;ctx.fillText(text,p.px,p.py);
+  };
+  for(const district of current().facilities.filter(f=>f.mediumZones?.length)){
+   if(district.id===parent?.id)continue;
+   const [x,y]=district.mapLabelPosition||[district.x,district.y];
+   txt(district.districtMapLabel||district.name,x,y,16,"#fff4d7");
+  }
+  if(medium){
+   for(const z of medium.smallZones||[])
+    txt(z.name,z.x,z.y,11,interiorPreview?.smallId===z.id?"#fff4a4":"#ebf0f1");
+  }else if(parent){
+   for(const z of parent.mediumZones)txt(z.name,z.x,z.y,12,"#edf2f5");
+  }else{
+   const selected=kind==="facility"?selectedItem():null;
+   if(selected&&!selected.mediumZones?.length)
+    txt(selected.name,selected.x,selected.y,15,"#fff4d7");
+  }
+ }
+ ctx.restore();
+}
+  function draw(){
+    ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
+    drawSortieRestrictions();
+    if(state.grid){const cols=2500/gridMeters,rows=4000/gridMeters;ctx.save();ctx.strokeStyle="#6b91a525";ctx.lineWidth=.6;for(let col=0;col<=cols;col++){ctx.beginPath();ctx.moveTo(col*W/cols,0);ctx.lineTo(col*W/cols,H);ctx.stroke()}for(let row=0;row<=rows;row++){ctx.beginPath();ctx.moveTo(0,row*H/rows);ctx.lineTo(W,row*H/rows);ctx.stroke()}ctx.restore()}
+    if(state.overlay&&active!=="upper"){
+      const other=floors[active==="middle"?"lower":"middle"];
+      if(other){
+        for(const f of other.facilities){
+          if(f.ringDistrict){drawAnnulus(f,"#e9a2bb",.11);continue}
+          const b=rect(f);ctx.save();ctx.strokeStyle="#ef99b8";ctx.globalAlpha=.37;ctx.lineWidth=1.5;ctx.setLineDash([8,6]);ctx.strokeRect(b.left,b.top,b.right-b.left,b.bottom-b.top);ctx.restore();
+        }
+      }
+    }
+    for(const f of current().facilities.filter(f=>f.ringDistrict))drawAnnulus(f,"#63a5a1",.22);
+    if(active==="middle"&&window.AAMiddleCentral&&current().centralUrbanPlan){
+      window.AAMiddleCentral.drawUrbanBlocks(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},current().centralUrbanPlan,{labels:state.labels,zoom:1.35});
+    }
+    for(const f of [...current().facilities.filter(f=>f.zoneOutline),...current().facilities.filter(f=>!f.zoneOutline)]){
+      if(f.ringDistrict)continue;
+      if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
+      if(f.type==="terminal"&&current().editorMeta?.status==="draft"){
+        const c=worldToPixel(f.x,f.y),r=250*SC;
+        ctx.save();ctx.beginPath();ctx.arc(c.px,c.py,r,0,Math.PI*2);
+        ctx.fillStyle="rgba(52,110,135,.78)";ctx.strokeStyle="#9adbef";ctx.lineWidth=3;
+        ctx.fill();ctx.stroke();ctx.restore();
+        if(active!=="middle"&&window.AATerminalInterior)
+          window.AATerminalInterior.draw(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},f,{labels:state.labels,roads:true,zoom:1.8,chosen:selectedItem()});
+        continue;
+      }
+      const b=rect(f),color=COLORS[f.type]||"#b3c6d2";
+      ctx.save();
+      if(active==="middle"&&f.id==="arbora_sector"&&f.footprint?.length>=3){
+        traceShape(f);
+        ctx.fillStyle="rgba(70,150,108,.24)";ctx.fill();ctx.strokeStyle="#91dcb0";ctx.lineWidth=2.8;ctx.setLineDash([8,5]);ctx.stroke();ctx.setLineDash([]);
+        if(selectedItem()?.id===f.id||selectedItem()?.parentId===f.id){
+          for(const z of f.macroZones||[]){
+            const p=worldToPixel(z.x,z.y),w=z.h*SC,h=z.w*SC;
+            ctx.fillStyle="rgba(89,180,132,.22)";ctx.fillRect(p.px-w/2,p.py-h/2,w,h);
+            ctx.lineWidth=1.5;ctx.strokeStyle="#a4e9b5";ctx.strokeRect(p.px-w/2,p.py-h/2,w,h);
+            if(state.labels&&selectedItem()?.id===z.id){ctx.font="11px system-ui";ctx.fillStyle="#e5fce6";ctx.fillText(z.name,p.px,p.py,Math.max(75,w));}
+          }
+        }
+      }else if(active==="middle"&&f.zoneOutline&&f.socialTier){
+        const bow=f.socialTier==="upper",town=f.type==="town";
+        if(f.footprint?.length>=3)traceShape(f);
+        else{ctx.beginPath();ctx.rect(b.left,b.top,b.right-b.left,b.bottom-b.top);}
+        ctx.fillStyle=bow
+          ?(town?"rgba(52,148,192,.39)":"rgba(135,98,187,.36)")
+          :(town?"rgba(178,130,66,.38)":"rgba(162,102,119,.37)");
+        ctx.fill();
+        ctx.strokeStyle=bow?(town?"#8eeaff":"#dcc1ff"):(town?"#ffd18c":"#f6b9bd");
+        ctx.lineWidth=2.6;ctx.setLineDash([10,5]);ctx.stroke();ctx.setLineDash([]);
+      }else if(f.draftRegion||f.zoneOutline){
+        ctx.beginPath();ctx.arc(b.cx,b.cy,15,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle="#e7ded0";ctx.lineWidth=2;ctx.stroke();
+      }else{traceShape(f);ctx.fillStyle=color+"55";ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke()}
+      ctx.restore();
+    }
+    if(active==="middle"){
+      for(const r of current().roads.filter(r=>r.kind==="line"&&["draft_central_access","draft_purple_machine_axis","draft_parallel_freight_B","draft_arbora_B_access"].includes(r.geometryStatus)))drawRoad(r,.9);
+    }else if(current().editorMeta?.revision!=='polygon-packed-10m-v2'||current().editorMeta?.routingRevision){
+      for(const r of current().roads)drawRoad(r,.9);
+    }
+    drawAccessControls();
+    editorMiddleFrames();
+    if(state.labels&&active!=="middle"){
+      ctx.save();ctx.font="bold 14px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+      for(const f of current().facilities){
+        if(f.showLabel===false||f.ringDistrict)continue;
+        if(f.areaFrame&&Array.isArray(f.internalFacilities)){
+          if(f.ringComplex&&f.containedIn==="middle_terminal"){
+            const at=worldToPixel(f.x+228,f.y+40);
+            ctx.lineJoin="round";ctx.lineWidth=3;ctx.strokeStyle="#101e29";
+            ctx.strokeText("レジストリンク・ドーム〈ターミナル内〉",at.px,at.py-8,240);
+            ctx.fillStyle="#f9dfad";ctx.fillText("レジストリンク・ドーム〈ターミナル内〉",at.px,at.py-8,240);
+            continue;
+          }
+          const bounds=rect(f),center=worldToPixel(f.x,f.y);
+          ctx.strokeStyle="#0e202a";ctx.lineWidth=4;
+          ctx.strokeText(f.name+"〈複合区〉",center.px,bounds.top-13,270);
+          ctx.fillStyle="#f3daa9";ctx.fillText(f.name+"〈複合区〉",center.px,bounds.top-13,270);
+          for(const child of f.internalFacilities){
+            const p=worldToPixel(f.x+child.dx,f.y+child.dy);
+            ctx.font="bold 10px system-ui,sans-serif";ctx.strokeStyle="#0e202a";ctx.lineWidth=3;
+            ctx.strokeText(child.short||child.name,p.px,p.py,95);
+            ctx.fillStyle="#fff4e0";ctx.fillText(child.short||child.name,p.px,p.py,95);
+          }
+          ctx.font="bold 14px system-ui,sans-serif";
+          continue;
+        }
+        if(f.type==="terminal"&&current().editorMeta?.status==="draft")continue;
+        if(active==="middle"&&f.zoneOutline&&f.socialTier){
+          const names={core_shell_town:"上位タウン",refine_valley:"上位ラボ・工房",
+           stern_core_shell_town:"下位タウン",stern_refine_lab_district:"下位ラボ・工房"};
+          const p=worldToPixel(...(f.mapLabelPosition||[f.x,f.y]));
+          ctx.save();
+          ctx.font="bold 21px system-ui";ctx.lineWidth=5;ctx.strokeStyle="#13222a";ctx.fillStyle="#f6fbff";
+          ctx.strokeText(names[f.id]||f.name,p.px,p.py);
+          ctx.fillText(names[f.id]||f.name,p.px,p.py);
+          ctx.font="bold 13px system-ui";ctx.lineWidth=3;ctx.fillStyle="#f3f1e5";
+          for(const part of f.mapDisplaySubzones||[]){
+           const z=worldToPixel(part.x,part.y);
+           ctx.strokeText(part.name,z.px,z.py);
+           ctx.fillText(part.name,z.px,z.py);
+          }
+          ctx.restore();continue;
+        }
+        const c=worldToPixel(...(f.mapLabelPosition||[f.x,f.y])),label=f.short||f.name;
+        ctx.strokeStyle="#0e202a";ctx.lineWidth=4;ctx.strokeText(label,c.px,c.py-12,230);
+        ctx.fillStyle="#e4f1f9";ctx.fillText(label,c.px,c.py-12,230);
+      }
+      ctx.restore();
+    }
+    const item=selectedItem();
+    if(item&&selection?.kind===kind){
+      ctx.save();ctx.strokeStyle="#fff29c";ctx.lineWidth=4;ctx.setLineDash([]);
+      if(kind==="facility"){
+        if(item.ringDistrict||item.ringComplex){const c=worldToPixel(item.x,item.y),r=item.ringComplex?.outerRadius||item.outerRadius||720;
+          ctx.beginPath();ctx.arc(c.px,c.py,r*SC,0,Math.PI*2);ctx.stroke()}
+        else if(active==="middle"&&item.zoneOutline&&item.socialTier&&item.footprint?.length>=3){
+          traceShape(item);ctx.stroke();
+        }else {
+          const b=rect(item);ctx.strokeRect(b.left-3,b.top-3,b.right-b.left+6,b.bottom-b.top+6);
+          ctx.fillStyle="#fff29c";ctx.fillRect(b.right-8,b.bottom-8,16,16);
+        }
+      }else{
+        if(roadPath(item))ctx.stroke();
+        if(item.kind==="line"){item.points.forEach(p=>{const c=worldToPixel(p[0],p[1]);ctx.beginPath();ctx.fillStyle="#fff29c";ctx.arc(c.px,c.py,8,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#16222c";ctx.lineWidth=2;ctx.stroke()})}
+      }
+      ctx.restore();
+    }
+    ctx.save();ctx.fillStyle="#f1f7f9";ctx.textAlign="center";ctx.font="bold 18px sans-serif";
+    ctx.fillText("▲ 船首 +X",500,24);ctx.fillText("船尾 −X ▼",500,H-16);
+    ctx.translate(20,H/2);ctx.rotate(-Math.PI/2);ctx.fillText("左舷 −Y",0,0);
+    ctx.restore();
+    ctx.save();ctx.fillStyle="#f1f7f9";ctx.textAlign="center";ctx.font="bold 18px sans-serif";ctx.translate(W-19,H/2);ctx.rotate(Math.PI/2);ctx.fillText("右舷 +Y",0,0);ctx.restore();
+  }
+  function diagnostics(){
+    const d=current(),warn=[];
+    if(!d)return warn;
+    const facilities=d.facilities.filter(f=>!f.ringDistrict&&!f.zoneOutline&&!f.areaFrame);
+    for(const f of facilities){
+      if(f.x-f.w/2< -2000||f.x+f.w/2>2000||f.y-f.h/2< -1250||f.y+f.h/2>1250)warn.push("範囲外: "+f.name);
+      if(intersectsRestrictedFacility(f))warn.push("上層専用出撃区に侵入: "+f.name);
+    }
+    if(active==="lower"&&d.routePolicy){
+      const ids=new Set(d.roads.filter(r=>r.connectsFacility).map(r=>r.connectsFacility));
+      for(const f of facilities){
+        if(f.type==="terminal")continue;
+        if(!ids.has(f.id))warn.push("取付通路が未設定: "+f.name);
+        const road=d.roads.find(r=>r.connectsFacility===f.id);
+        const end=road?.entrance;
+        if(end){
+          const dx=Math.max(0,Math.abs(end[0]-f.x)-f.w/2),dy=Math.max(0,Math.abs(end[1]-f.y)-f.h/2);
+          if(Math.hypot(dx,dy)>45)warn.push("取付通路の再接続が必要: "+f.name);
+        }
+      }
+    }
+    if(active==="lower"&&(d.restrictedZones||[]).length)for(const r of d.roads){
+      if(r.kind==="line"&&r.points.some(([x,y])=>pointInRestricted(x,y)))warn.push("上層専用出撃区を通る道路: "+r.name);
+      if(r.kind==="ring"&&r.r>d.restrictedZones[0].bounds.xMin)warn.push("上層専用出撃区に達する環状路: "+r.name);
+    }
+    for(let i=0;i<facilities.length;i++)for(let j=i+1;j<facilities.length;j++){
+      const a=facilities[i],b=facilities[j];
+      const overlapX=Math.min(a.x+a.w/2,b.x+b.w/2)-Math.max(a.x-a.w/2,b.x-b.w/2),
+            overlapY=Math.min(a.y+a.h/2,b.y+b.h/2)-Math.max(a.y-a.h/2,b.y-b.h/2);
+      if(overlapX>12&&overlapY>12){
+        const aInB=a.x-a.w/2>=b.x-b.w/2&&a.x+a.w/2<=b.x+b.w/2&&a.y-a.h/2>=b.y-b.h/2&&a.y+a.h/2<=b.y+b.h/2;
+        const bInA=b.x-b.w/2>=a.x-a.w/2&&b.x+b.w/2<=a.x+a.w/2&&b.y-b.h/2>=a.y-a.h/2&&b.y+b.h/2<=a.y+a.h/2;
+        if(!aInB&&!bInA&&shapeOverlaps(a,b))warn.push("施設重複の可能性: "+a.name+" / "+b.name);
+      }
+    }
+    return warn;
+  }
+  function renderList(){
+    const q=$("search").value.toLowerCase().trim();
+    const x=items().filter(i=>(i.name||"").toLowerCase().includes(q)||(i.id||"").toLowerCase().includes(q));
+    $("items").innerHTML=x.map(i=>`<button type="button" data-pick="${esc(i.id)}" class="item ${selection?.id===i.id?"selected":""}"><span class="dot" style="background:${esc(kind==="facility"?COLORS[i.type]||"#aabfca":i.color||"#aabfca")}"></span><span>${esc(i.name)}<small>${esc(i.id)}</small></span>${i.reviewStatus==="draft"?"<em>仮</em>":""}</button>`).join("")||'<p class="hint">対象がありません。</p>';
+    $("itemCount").textContent=String(items().length);
+  }
+  function field(label,name,value,type="text",extra=""){
+    return `<label>${esc(label)}<input type="${type}" data-field="${esc(name)}" value="${esc(value)}" ${extra}></label>`;
+  }
+  function renderDetail(){
+    const item=selectedItem(),e=$("detail");
+    if(interiorPreview&&item?.id===interiorPreview.districtId){
+      const mid=item.mediumZones?.find(z=>z.id===interiorPreview.mediumId);
+      const small=mid?.smallZones?.find(z=>z.id===interiorPreview.smallId);
+      const v=small||mid;
+      if(v){
+       e.innerHTML='<h3>'+esc(v.name)+'</h3><p>'+esc(v.detail||"仮の施設区画")+'</p>'+
+         '<p class="hint">これは編集前の区画構成案です。室内設備や部屋数を確定したものではありません。</p>'+
+         '<button type="button" id="closeInteriorPreview">大枠へ戻る</button>';
+       return;
+      }
+    }
+    if(!item){e.innerHTML='<p class="hint">地図や一覧で施設・道路を選択してください。</p>';return}
+    const typeOptions=Object.keys(COLORS).map(t=>`<option value="${t}" ${t===item.type?"selected":""}>${esc(t)}</option>`).join("");
+    const common=`<div class="value-id">ID: ${esc(item.id)}</div>`;
+    if(kind==="facility"){
+      const isRing=item.ringDistrict===true;
+      const chosenShape=item.draftShape||(item.footprint?.length===6?"L":item.footprint?.length===8?"chamfer":"rect");
+      e.innerHTML=`${common}<div class="fields">
+        ${field("施設名","name",item.name)}
+        <label>施設分類<select data-field="type">${typeOptions}</select></label>
+        ${field("X / 船首・船尾 (m)","x",item.x,"number",isRing?"disabled":"step='10'")}
+        ${field("Y / 左右舷 (m)","y",item.y,"number",isRing?"disabled":"step='10'")}
+        ${field("X方向の長さ (m)","w",item.w,"number",isRing?"disabled min='1'":"min='1' step='10'")}
+        ${field("Y方向の長さ (m)","h",item.h,"number",isRing?"disabled min='1'":"min='1' step='10'")}
+        </div><label>施設の外形<select data-shape><option value="chamfer" ${chosenShape==="chamfer"?"selected":""}>角落ち（八角形）</option><option value="L" ${chosenShape==="L"?"selected":""}>L字型</option><option value="rect" ${chosenShape==="rect"?"selected":""}>長方形</option></select></label><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
+        ${isRing?'<p class="hint">円環地区の形状・中心は既存設定で固定しています。通常の矩形施設とは別に扱います。</p>':`<button type="button" class="danger" id="delete">この施設を削除（下書き）</button>`}
+        <p class="hint">既存の施設IDは維持。編集内容はJSON書き出しまで確定されません。</p>`;
+    }else{
+      const pts=item.kind==="line"?(item.points||[]):[];
+      e.innerHTML=`${common}<div class="fields">
+        ${field("道路名","name",item.name)}
+        ${field("道路幅 (m)","width",item.width,"number","min='1' step='1'")}
+        ${item.kind==="ring"?field("中心半径 (m)","r",item.r,"number","min='10' step='10'"):""}
+        </div><p class="hint">経路種別: ${esc(item.roadType||item.kind)}。${item.kind==="internal"?"位置がNotionで未指定のため描画していません。":"黄色い頂点はドラッグできます。"}</p>
+        ${item.kind==="line"?`<h4>道路の頂点</h4><div class="points">${pts.map((p,i)=>`<div class="point"><strong>${i+1}</strong><input aria-label="頂点${i+1} X" type="number" data-vertex="${i}" data-axis="0" value="${p[0]}"><input aria-label="頂点${i+1} Y" type="number" data-vertex="${i}" data-axis="1" value="${p[1]}"><button data-delete-point="${i}" title="頂点削除" ${pts.length<=2?"disabled":""}>×</button></div>`).join("")}</div><button type="button" id="addPoint">頂点を追加</button>`:""}
+        <button type="button" class="danger" id="delete">この道路を削除（下書き）</button>`;
+    }
+  }
+  function render(){
+    if(!current())return;
+    document.querySelectorAll("[data-floor]").forEach(b=>{const ok=b.dataset.floor===active;b.classList.toggle("active",ok);b.setAttribute("aria-pressed",String(ok))});
+    document.querySelectorAll("[data-kind]").forEach(b=>b.classList.toggle("active",b.dataset.kind===kind));
+    $("floorText").textContent=floorName()+(dirty.has(active)?" — 編集中":draftFloors.has(active)?" — 配置案を読み込み":" — Notion現行を読み込み");
+    $("overlay").disabled=active==="upper";
+    $("saveGithub").disabled=false;
+    for(const [id,enabled] of [["overlay",state.overlay],["snap",state.snap],["grid",state.grid],["labels",state.labels]])$(id).classList.toggle("active",enabled);
+    $("undo").disabled=history[active].length===0;$("redo").disabled=future[active].length===0;
+    if(unsavedLocal.has(active))saveLocal(active);
+    else $("saveState").textContent=savedLocal.has(active)?"保存状態：この端末に保存済み（GitHub・Notionは未反映）":"保存状態：GitHubの初期配置案を表示中（編集すると端末に自動保存）";
+    const warnings=diagnostics(),base=baselineWarnings[active]||[],fresh=warnings.filter(x=>!base.includes(x));
+    $("warnings").innerHTML=(fresh.length
+      ? `<strong>新たな位置の要確認: ${fresh.length} 件</strong><ul>${fresh.slice(0,8).map(w=>`<li>${esc(w)}</li>`).join("")}</ul>`
+      : '<span>編集中に新しく発生した配置警告はありません。</span>')
+      +(base.length?`<details style="margin-top:9px"><summary>初期配置の要確認候補: ${base.length} 件（Notion由来）</summary><ul>${base.slice(0,20).map(w=>`<li>${esc(w)}</li>`).join("")}</ul></details>`:"");
+    $("warnings").classList.toggle("warn",fresh.length>0);
+        renderList();renderDetail();draw();
+  }
+  function localPos(e){const r=canvas.getBoundingClientRect();return {px:(e.clientX-r.left)/r.width*W,py:(e.clientY-r.top)/r.height*H}}
+  function distanceToSeg(px,py,a,b){
+    const dx=b.px-a.px,dy=b.py-a.py,t=Math.max(0,Math.min(1,((px-a.px)*dx+(py-a.py)*dy)/(dx*dx+dy*dy||1)));
+    return Math.hypot(px-(a.px+t*dx),py-(a.py+t*dy));
+  }
+  function pickFacility(p){
+    if(selection&&kind==="facility"){
+      const curr=selectedItem();
+      if(curr&&!curr.ringDistrict){const b=rect(curr);if(Math.hypot(p.px-b.right,p.py-b.bottom)<18)return {item:curr,mode:"resize"}}
+    }
+    for(const f of [...items()].reverse()){
+      if(f.ringDistrict)continue;
+      const b=rect(f);
+      if(withinShape(f,p))return {item:f,mode:"move"};
+    }
+    return null;
+  }
+  function pickRoad(p){
+    let best=null,bd=15,vertex=null;
+    for(const r of items()){
+      if(r.kind==="internal")continue;
+      if(r.kind==="line"){
+        r.points.forEach((node,i)=>{const c=worldToPixel(node[0],node[1]),dd=Math.hypot(p.px-c.px,p.py-c.py);if(dd<bd){best=r;bd=dd;vertex=i}});
+      }
+    }
+    if(vertex!==null)return {item:best,mode:"vertex",index:vertex};
+    best=null;bd=15;
+    for(const r of items()){
+      if(r.kind==="ring"){
+        const d=Math.abs(Math.hypot(p.px-W/2,p.py-H/2)-r.r*SC);
+        if(d<bd){bd=d;best={item:r,mode:"radius"}}
+      }else if(r.kind==="line"){
+        for(let i=1;i<r.points.length;i++){
+          const a=worldToPixel(...r.points[i-1]),b=worldToPixel(...r.points[i]),d=distanceToSeg(p.px,p.py,a,b);
+          if(d<bd){bd=d;best={item:r,mode:"select"}}
+        }
+      }
+    }
+    return best;
+  }
+  function down(e){
+    if(e.button!==0||!current())return;
+    const p=localPos(e),w=pixelToWorld(p.px,p.py);cursorWorld=w;
+    if(active==="middle"&&kind==="facility"&&selectedItem()?.mediumZones?.length){
+      const district=selectedItem(),medium=district.mediumZones.find(z=>interiorPreview?.mediumId===z.id);
+      const hitSmall=medium?.smallZones?.find(z=>Math.abs(w.x-z.x)<=z.w/2&&Math.abs(w.y-z.y)<=z.h/2);
+      const hitMedium=district.mediumZones.find(z=>Math.abs(w.x-z.x)<=z.w/2&&Math.abs(w.y-z.y)<=z.h/2);
+      if(hitSmall||hitMedium){
+       interiorPreview={districtId:district.id,mediumId:hitSmall?medium.id:hitMedium.id,smallId:hitSmall?.id||null};
+       renderDetail();draw();e.preventDefault();return;
+      }
+    }
+    interiorPreview=null;
+    const hit=kind==="facility"?pickFacility(p):pickRoad(p);
+    if(!hit){selection=null;render();if(pointInRestricted(w.x,w.y))showStatus("ここは上層専用の出撃区です。下層の通常施設・道路を配置できません。",true);return}
+    selection={id:hit.item.id,kind};
+    drag={pointerId:e.pointerId,start:p,world:w,mode:hit.mode,index:hit.index,itemId:hit.item.id,initial:clone(hit.item),saved:false};
+    canvas.setPointerCapture(e.pointerId);
+    render();
+    e.preventDefault();
+  }
+  function move(e){
+    const p=localPos(e),w=pixelToWorld(p.px,p.py);cursorWorld=w;
+    $("cursor").textContent=`X ${Math.round(w.x)}m / Y ${Math.round(w.y)}m`;
+    if(!drag||drag.pointerId!==e.pointerId)return;
+    if(Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<3&&!drag.saved)return;
+    if(!drag.saved){saveSnapshot();drag.saved=true}
+    const obj=items().find(x=>x.id===drag.itemId);if(!obj)return;
+    const previous=kind==="facility"?{x:obj.x,y:obj.y,w:obj.w,h:obj.h}:null;
+    if(kind==="facility"){
+      if(drag.mode==="move"){
+        obj.x=snap(drag.initial.x+w.x-drag.world.x);
+        obj.y=snap(drag.initial.y+w.y-drag.world.y);
+      }else if(drag.mode==="resize"){
+        const c=worldToPixel(obj.x,obj.y);
+        obj.w=Math.max(30,snap(Math.max(30,(p.py-c.py)*5)));
+        obj.h=Math.max(30,snap(Math.max(30,(p.px-c.px)*5)));
+        if(obj.footprint)createShape(obj,obj.draftShape||(obj.footprint.length===6?"L":"chamfer"));
+      }
+      if(intersectsRestrictedFacility(obj)){
+        Object.assign(obj,previous);
+        showStatus("下層の船首出撃区は上層専用です。施設をその中へ配置できません。",true);
+        draw();renderDetail();return;
+      }
+    }else if(drag.mode==="vertex"){
+      const nx=snap(drag.initial.points[drag.index][0]+w.x-drag.world.x),ny=snap(drag.initial.points[drag.index][1]+w.y-drag.world.y);
+      if(pointInRestricted(nx,ny)){showStatus("下層の道路を上層専用出撃区へ引くことはできません。",true);return}
+      obj.points[drag.index]=[nx,ny];
+    }else if(drag.mode==="radius"){
+      const radius=Math.max(25,snap(Math.hypot(p.px-W/2,p.py-H/2)/SC));
+      if(active==="lower"&&(current().restrictedZones||[]).length&&radius>current().restrictedZones[0].bounds.xMin){showStatus("環状路が出撃区に入るため拡大できません。",true);return}
+      obj.r=radius;
+    }
+    draw();renderDetail();$("floorText").textContent=floorName()+" — 編集中";
+    $("undo").disabled=false;
+  }
+  function up(e){
+    if(!drag||drag.pointerId!==e.pointerId)return;
+    if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
+    drag=null;render();
+  }
+  function detailChange(e){
+    const item=selectedItem(),target=e.target;if(!item||!target)return;
+    if(target.dataset.shape){if(kind!=="facility")return;saveSnapshot();createShape(item,target.value);render();return}
+    if(target.dataset.field){
+      const key=target.dataset.field,value=target.type==="number"?Number(target.value):target.value;
+      if(target.type==="number"&&!Number.isFinite(value)){renderDetail();return}
+      if(["w","h","width","r"].includes(key)&&value<=0){renderDetail();return}
+      if(item[key]===value)return;
+      if(kind==="facility"&&intersectsRestrictedFacility({...item,[key]:value})){showStatus("下層の施設は上層専用出撃区へ配置できません。",true);renderDetail();return}
+      if(kind==="road"&&key==="r"&&active==="lower"&&(current().restrictedZones||[]).length&&value>current().restrictedZones[0].bounds.xMin){showStatus("環状路を出撃区へ通せません。",true);renderDetail();return}
+      saveSnapshot();item[key]=value;if(kind==="facility"&&["w","h"].includes(key)&&item.footprint)createShape(item,item.draftShape||(item.footprint.length===6?"L":"chamfer"));render();
+    }else if(target.dataset.vertex!==undefined){
+      const idx=Number(target.dataset.vertex),axis=Number(target.dataset.axis),v=Number(target.value);
+      if(!Number.isFinite(v))return;
+      const point=[...item.points[idx]];point[axis]=v;
+      if(pointInRestricted(point[0],point[1])){showStatus("出撃区へ道路の頂点を移せません。",true);renderDetail();return}
+      saveSnapshot();item.points[idx][axis]=v;render();
+    }
+  }
+  function newFacility(){
+    const d=current();if(!d)return;
+    saveSnapshot();
+    let n=1,id;do{id="draft_facility_"+n++}while(d.facilities.some(f=>f.id===id));
+    const x=active==="lower"&&d.restrictedZones?.length?Math.min(600,snap(cursorWorld.x)):snap(cursorWorld.x),y=snap(cursorWorld.y);
+    d.facilities.push({id,name:"新規施設（仮）",x,y,w:200,h:200,type:"industrial",detail:"位置・用途を検討中。Notionへは未反映。",reviewStatus:"draft"});
+    kind="facility";selection={id,kind};render();
+  }
+  function newRoad(){
+    const d=current();if(!d)return;
+    saveSnapshot();
+    let n=1,id;do{id="draft_road_"+n++}while(d.roads.some(r=>r.id===id));
+    const x=active==="lower"&&d.restrictedZones?.length?Math.min(500,snap(cursorWorld.x)):snap(cursorWorld.x),y=snap(cursorWorld.y);
+    d.roads.push({id,name:"新規道路（仮）",kind:"line",roadType:"一般道路",points:[[x,y],[x+150,y]],width:24,color:"#a8b5bd",reviewStatus:"draft"});
+    kind="road";selection={id,kind};render();
+  }
+  function deleteItem(){
+    const item=selectedItem();if(!item)return;
+    if(item.ringDistrict){showStatus("円環地区は個別削除できません。",true);return}
+    if(!confirm(`「${item.name}」を編集中データから削除しますか？（元のJSONとNotionは変わりません）`))return;
+    saveSnapshot();
+    const arr=items(),idx=arr.findIndex(x=>x.id===item.id);if(idx>=0)arr.splice(idx,1);
+    selection=null;render();
+  }
+  function addPoint(){
+    const r=selectedItem();if(!r||r.kind!=="line")return;
+    saveSnapshot();
+    const last=r.points.at(-1);r.points.push([last[0]+125,last[1]]);render();
+  }
+  function removePoint(i){
+    const r=selectedItem();if(!r||r.kind!=="line"||r.points.length<=2)return;
+    saveSnapshot();r.points.splice(i,1);render();
+  }
+  function resetToNotion(){
+    if(!sourceFloors[active])return;
+    if(!confirm(floorName()+"の編集内容をNotion現行の座標に戻しますか？（GitHubのJSONは変更されません）"))return;
+    saveSnapshot();
+    floors[active]=clone(sourceFloors[active]);
+    draftFloors.delete(active);
+    const previous=active;baselineWarnings[active]=diagnostics();active=previous;
+    selection=null;render();showStatus("現行配置を編集中画面へ読み込みました。確定JSONには未反映です。");
+  }
+  async function saveGithub(){
+    const floor=active;
+    if(!["upper","middle","lower"].includes(floor)){
+      showStatus("GitHubへの直接保存は中層・下層の下書きファイルだけに対応しています。",true);return;
+    }
+    const tokenInput=$("githubToken");
+    const token=tokenInput.value.trim();
+    if(!token){
+      $("githubAuthHelp").open=true;
+      tokenInput.focus();
+      showStatus("GitHubへの保存にはFine-grained tokenが必要です。認証設定を開きました。",true);
+      return;
+    }
+    if(!confirm(floorName()+"の編集内容をGitHubの data/"+floor+"-layout-draft.json に保存しますか？\nNotionや確定JSONは変更しません。"))return;
+    tokenInput.value="";
+    $("saveGithub").disabled=true;
+    const output=clone(floors[floor]);
+    output.editorMeta={...(output.editorMeta||{}),status:"draft",editedAt:new Date().toISOString()};
+    const url="https://api.github.com/repos/siev0000/MyMapCreater/contents/data/"+floor+"-draft.json";
+    const headers={
+      "Accept":"application/vnd.github+json",
+      "Authorization":"Bearer "+token,
+      "X-GitHub-Api-Version":"2022-11-28"
+    };
+    try{
+      showStatus("GitHubの最新版を確認しています…");
+      const get=await fetch(url,{method:"GET",headers,cache:"no-store"});
+      if(!get.ok){
+        if(get.status===401||get.status===403||get.status===404)throw Error("認証またはリポジトリ権限を確認してください（HTTP "+get.status+"）。");
+        throw Error("GitHubの下書きを取得できません（HTTP "+get.status+"）。");
+      }
+      const remote=await get.json();
+      if(!remote.sha||remote.type!=="file"||typeof remote.content!=="string")throw Error("GitHub側のファイル形式を確認できません。");
+      const decoded=atob(remote.content.replace(/\s/g,""));
+      const remoteBytes=Uint8Array.from(decoded,c=>c.charCodeAt(0));
+      const remoteData=JSON.parse(new TextDecoder().decode(remoteBytes));
+      const expected=initialFloors[floor];
+      if(!expected||JSON.stringify(remoteData)!==JSON.stringify(expected)){
+        throw Error("GitHubの下書きが読み込み時から更新されています。安全のため上書きしませんでした。この端末の作業内容は保持しています。");
+      }
+      valid(output,floor);
+      if(output.restrictedZones&&floor==="lower"&&initialFloors.lower?.restrictedZones?.length){
+        const protectedZones=initialFloors.lower.restrictedZones;
+        if(JSON.stringify(output.restrictedZones)!==JSON.stringify(protectedZones))throw Error("船首の上層専用区が変更されているため、保存を中止しました。");
+      }
+      const jsonText=JSON.stringify(output,null,2)+"\n";
+      const encoded=new TextEncoder().encode(jsonText);
+      let binary="";
+      for(let i=0;i<encoded.length;i+=8192){
+        binary+=String.fromCharCode(...encoded.subarray(i,i+8192));
+      }
+      const body={message:"Save "+floor+" map layout draft from editor",content:btoa(binary),sha:remote.sha};
+      showStatus("GitHubに下書きJSONを保存しています…");
+      const put=await fetch(url,{method:"PUT",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify(body)});
+      if(!put.ok){
+        if(put.status===409||put.status===422)throw Error("更新が競合したため保存できませんでした（HTTP "+put.status+"）。画面の配置は保持しています。");
+        if(put.status===401||put.status===403)throw Error("認証・書き込み権限を確認してください（HTTP "+put.status+"）。");
+        throw Error("GitHubへの保存に失敗しました（HTTP "+put.status+"）。");
+      }
+      const result=await put.json();
+      if(!result.content?.sha||!result.commit?.sha)throw Error("保存応答に確定情報がありません。GitHubの履歴を確認してください。");
+      floors[floor]=clone(output);
+      initialFloors[floor]=clone(output);
+      draftFloors.add(floor);
+      unsavedLocal.add(floor);
+      saveLocal(floor);
+      showStatus("GitHubに "+floor+"-draft.json を保存しました（コミット "+result.commit.sha.slice(0,8)+"）。Notion・確定JSONは未変更です。");
+      render();
+    }catch(error){
+      console.warn("GitHub下書き保存に失敗",error?.message);
+      showStatus("GitHubへ保存できませんでした: "+error.message+" JSON書き出しで作業を保管できます。",true);
+    }finally{
+      $("saveGithub").disabled=active==="upper";
+    }
+  }
+  function exportJSON(){
+    if(!current())return;
+    const output=clone(current());
+    output.editorMeta={status:"draft",editedAt:new Date().toISOString(),note:"仮配置データ。Notionの確定設定への反映前に確認が必要。"};
+    const blob=new Blob([JSON.stringify(output,null,2)+"\n"],{type:"application/json"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=active+"-draft.json";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showStatus(floorName()+"の下書きJSONを書き出しました。GitHubやNotionは自動変更されません。");
+  }
+  async function importJSON(file){
+    if(!file)return;
+    try{
+      const value=valid(JSON.parse(await file.text()),active);
+      if(!confirm(floorName()+"の編集中データを選択したJSONで置き換えますか？（元の確定データは変更されません）"))return;
+      saveSnapshot();floors[active]=value;selection=null;render();
+      showStatus(file.name+" を下書きとして読み込みました。");
+    }catch(e){showStatus("読み込みに失敗しました: "+e.message,true)}
+  }
+  document.querySelectorAll("[data-floor]").forEach(b=>b.addEventListener("click",()=>switchFloor(b.dataset.floor)));
+  document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>{kind=b.dataset.kind;selection=null;interiorPreview=null;render()}));
+  $("overlay").onclick=()=>{state.overlay=!state.overlay;render()};
+  $("snap").onclick=()=>{state.snap=!state.snap;render()};
+  $("grid").onclick=()=>{state.grid=!state.grid;render()};$("gridSize").onclick=()=>{gridMeters=gridMeters===10?50:10;$("gridSize").textContent=gridMeters+"m四方（"+(gridMeters===10?"50":"10")+"mへ切替）";draw()};
+  $("labels").onclick=()=>{state.labels=!state.labels;render()};
+  $("undo").onclick=()=>restore("undo");$("redo").onclick=()=>restore("redo");
+  $("addFacility").onclick=newFacility;$("addRoad").onclick=newRoad;
+  $("saveLocal").onclick=()=>{if(saveLocal())showStatus(floorName()+"の配置をこのブラウザに保存しました。別端末・GitHubには同期されません。");else showStatus("端末内保存に失敗しました。JSONを書き出してください。",true)};
+  $("clearLocal").onclick=clearLocal;
+  $("saveGithub").onclick=saveGithub;
+  $("export").onclick=exportJSON;$("resetFloor").onclick=resetToNotion;$("import").onclick=()=>$("importFile").click();
+  $("importFile").addEventListener("change",async e=>{await importJSON(e.target.files?.[0]);e.target.value=""});
+  $("search").addEventListener("input",renderList);
+  $("items").addEventListener("click",e=>{const b=e.target.closest("[data-pick]");if(b){selection={id:b.dataset.pick,kind};interiorPreview=null;render()}});
+  $("detail").addEventListener("change",detailChange);
+  $("detail").addEventListener("click",e=>{const p=e.target.closest("[data-delete-point]");if(p){removePoint(+p.dataset.deletePoint);return}if(e.target.id==="addPoint")addPoint();if(e.target.id==="delete")deleteItem();
+  if(e.target.id==="closeInteriorPreview"){interiorPreview=null;render();}
+ });
+  canvas.addEventListener("pointerdown",down);
+  canvas.addEventListener("pointermove",move);
+  canvas.addEventListener("pointerup",up);
+  canvas.addEventListener("pointercancel",up);
+  window.addEventListener("keydown",e=>{
+    if((e.ctrlKey||e.metaKey)&&["z","Z"].includes(e.key)&&!["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){e.preventDefault();restore(e.shiftKey?"redo":"undo")}
+  });
+  window.addEventListener("beforeunload",e=>{for(const f of [...unsavedLocal])saveLocal(f);if(unsavedLocal.size){e.preventDefault();e.returnValue=""}});
+  load();
+})();</script>
+</body></html>
