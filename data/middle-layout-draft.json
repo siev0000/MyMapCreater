@@ -1069,57 +1069,193 @@
       "name": "船尾タウン〈下位・混合街区〉",
       "short": "船尾タウン街区",
       "type": "town",
-      "x": -445,
-      "y": 410,
-      "w": 470,
-      "h": 560,
+      "x": -320,
+      "y": 492.5,
+      "w": 640,
+      "h": 655,
       "zoneOutline": true,
       "socialTier": "lower",
       "districtSide": "stern",
-      "stage1Layout": "stern_mixed_use_territorial_area_v2",
-      "detail": "リンクターミナルの船尾半周に広がる生活・生産混合街区。休止・充電・市場・居住の建物を点在させ、燃料・植物油加工施設も同じ地区内に置く。一般の移動路と貨物荷役は分離する。",
+      "stage1Layout": "aft_broad_half_ring_quarters",
+      "detail": "リンクターミナル船尾半周の右舷側に広がる下位タウン街区。住居・休止・市場・工房・燃料加工・植物油加工が道路や広場を挟んで共存する。",
       "districtRole": "stern_half_ring_mixed_use",
       "draftRepositioned": true,
       "footprint": [
         [
-          145,
-          -250
+          320,
+          327.5
         ],
         [
-          -200,
-          -280
+          289.4127,
+          326.9293
         ],
         [
-          -200,
-          -40
+          258.868,
+          325.2181
         ],
         [
-          -235,
-          -25
+          228.4083,
+          322.3687
         ],
         [
-          -155,
-          130
+          198.0762,
+          318.3851
         ],
         [
-          -35,
-          225
+          167.9138,
+          313.2728
         ],
         [
-          115,
-          280
+          137.963,
+          307.0389
         ],
         [
-          215,
-          190
+          108.2656,
+          299.6922
         ],
         [
-          235,
-          -70
+          78.8629,
+          291.2429
+        ],
+        [
+          49.7959,
+          281.7027
+        ],
+        [
+          21.105,
+          271.0848
+        ],
+        [
+          -7.1699,
+          259.4041
+        ],
+        [
+          -34.9894,
+          246.6769
+        ],
+        [
+          -62.3149,
+          232.9208
+        ],
+        [
+          -89.1081,
+          218.155
+        ],
+        [
+          -115.332,
+          202.4
+        ],
+        [
+          -140.9499,
+          185.6779
+        ],
+        [
+          -165.9262,
+          168.0117
+        ],
+        [
+          -190.2261,
+          149.4262
+        ],
+        [
+          -213.8159,
+          129.9472
+        ],
+        [
+          -236.6627,
+          109.6019
+        ],
+        [
+          -258.7346,
+          88.4184
+        ],
+        [
+          -280.001,
+          66.4264
+        ],
+        [
+          -300.4323,
+          43.6565
+        ],
+        [
+          -320,
+          20.1402
+        ],
+        [
+          -320,
+          -327.5
+        ],
+        [
+          34.2116,
+          -327.5
+        ],
+        [
+          45.615,
+          -309.1618
+        ],
+        [
+          58.1934,
+          -291.6087
+        ],
+        [
+          71.8929,
+          -274.9159
+        ],
+        [
+          86.6548,
+          -259.1548
+        ],
+        [
+          102.4159,
+          -244.3929
+        ],
+        [
+          119.1087,
+          -230.6934
+        ],
+        [
+          136.6618,
+          -218.115
+        ],
+        [
+          155,
+          -206.7116
+        ],
+        [
+          174.0447,
+          -196.532
+        ],
+        [
+          193.7145,
+          -187.6198
+        ],
+        [
+          213.925,
+          -180.0131
+        ],
+        [
+          234.5897,
+          -173.7445
+        ],
+        [
+          255.6202,
+          -168.8409
+        ],
+        [
+          276.9264,
+          -165.3232
+        ],
+        [
+          298.417,
+          -163.2066
+        ],
+        [
+          320,
+          -162.5
         ]
       ],
-      "districtAreaSqM": 195037.5,
-      "districtBoundaryStatus": "draft_urban_quarter_sector_not_single_building",
+      "districtAreaSqM": 326022,
+      "districtBoundaryStatus": "draft_quarter_annular_mixed_use_not_single_building",
       "mixedUseFacilityIds": [
         "plant_oil_processing",
         "standard_fuel_factory"
@@ -1145,57 +1281,193 @@
       "name": "船尾工房・ラボ〈下位・混合街区〉",
       "short": "船尾工房・研究街区",
       "type": "workshop",
-      "x": -445,
-      "y": -410,
-      "w": 470,
-      "h": 560,
+      "x": -320,
+      "y": -492.5,
+      "w": 640,
+      "h": 655,
       "zoneOutline": true,
       "socialTier": "lower",
       "districtSide": "stern",
-      "stage1Layout": "stern_mixed_use_territorial_area_v2",
-      "detail": "リンクターミナルの船尾半周に広がる工房・研究・生産混合街区。実用技術ラボと小工房・整備施設が点在し、繊維・樹脂・素材加工施設も同じ地区内に置く。貨物用の荷役口と生活路は分離する。",
+      "stage1Layout": "aft_broad_half_ring_quarters",
+      "detail": "リンクターミナル船尾半周の左舷側に広がる下位工房・研究街区。個人工房、技術ラボ、修理設備、繊維樹脂・植物資源加工が共存する。",
       "districtRole": "stern_half_ring_mixed_use",
       "draftRepositioned": true,
       "footprint": [
         [
-          235,
-          70
+          320,
+          162.5
         ],
         [
-          215,
-          -190
+          298.417,
+          163.2066
         ],
         [
-          115,
-          -280
+          276.9264,
+          165.3232
         ],
         [
-          -35,
-          -225
+          255.6202,
+          168.8409
         ],
         [
-          -155,
-          -130
+          234.5897,
+          173.7445
         ],
         [
-          -235,
-          25
+          213.925,
+          180.0131
         ],
         [
-          -200,
-          40
+          193.7145,
+          187.6198
         ],
         [
-          -200,
-          280
+          174.0447,
+          196.532
         ],
         [
-          145,
-          250
+          155,
+          206.7116
+        ],
+        [
+          136.6618,
+          218.115
+        ],
+        [
+          119.1087,
+          230.6934
+        ],
+        [
+          102.4159,
+          244.3929
+        ],
+        [
+          86.6548,
+          259.1548
+        ],
+        [
+          71.8929,
+          274.9159
+        ],
+        [
+          58.1934,
+          291.6087
+        ],
+        [
+          45.615,
+          309.1618
+        ],
+        [
+          34.2116,
+          327.5
+        ],
+        [
+          -320,
+          327.5
+        ],
+        [
+          -320,
+          -20.1402
+        ],
+        [
+          -300.4323,
+          -43.6565
+        ],
+        [
+          -280.001,
+          -66.4264
+        ],
+        [
+          -258.7346,
+          -88.4184
+        ],
+        [
+          -236.6627,
+          -109.6019
+        ],
+        [
+          -213.8159,
+          -129.9472
+        ],
+        [
+          -190.2261,
+          -149.4262
+        ],
+        [
+          -165.9262,
+          -168.0117
+        ],
+        [
+          -140.9499,
+          -185.6779
+        ],
+        [
+          -115.332,
+          -202.4
+        ],
+        [
+          -89.1081,
+          -218.155
+        ],
+        [
+          -62.3149,
+          -232.9208
+        ],
+        [
+          -34.9894,
+          -246.6769
+        ],
+        [
+          -7.1699,
+          -259.4041
+        ],
+        [
+          21.105,
+          -271.0848
+        ],
+        [
+          49.7959,
+          -281.7027
+        ],
+        [
+          78.8629,
+          -291.2429
+        ],
+        [
+          108.2656,
+          -299.6922
+        ],
+        [
+          137.963,
+          -307.0389
+        ],
+        [
+          167.9138,
+          -313.2728
+        ],
+        [
+          198.0762,
+          -318.3851
+        ],
+        [
+          228.4083,
+          -322.3687
+        ],
+        [
+          258.868,
+          -325.2181
+        ],
+        [
+          289.4127,
+          -326.9293
+        ],
+        [
+          320,
+          -327.5
         ]
       ],
-      "districtAreaSqM": 195037.5,
-      "districtBoundaryStatus": "draft_urban_quarter_sector_not_single_building",
+      "districtAreaSqM": 326022,
+      "districtBoundaryStatus": "draft_quarter_annular_mixed_use_not_single_building",
       "mixedUseFacilityIds": [
         "fiber_resin_processing",
         "middle_material_processing",
@@ -2713,12 +2985,12 @@
     "revision": "polygon-packed-10m-v2",
     "description": "重複しない独立施設の多角形・L字型配置案（10m単位）。正式な道路接続は未確認。Notion未反映。",
     "sourceFile": "data/middle-draft.json",
-    "review": "widened_stern_districts_not_buildings_and_kept_factories_fixed",
+    "review": "wide_aft_half_ring_dual_districts_preserve_factory_data_thin_double_roads",
     "layoutModel": "middle-terminal-internal-guild-v2",
     "stage1Focus": "船尾側半周は各約19.5万m²のタウン・ラボ混合街区に拡大し、工場の現行小型寸法は維持"
   },
   "centralUrbanPlan": {
-    "status": "aft_large_half_ring_mixed_use_districts_applied",
+    "status": "stern_full_half_ring_social_districts",
     "terminalRadiusM": 250,
     "guildRadiusInnerM": 130,
     "guildRadiusOuterM": 210,
@@ -2894,7 +3166,13 @@
           "stern_core_shell_town",
           "stern_refine_lab_district"
         ],
-        "note": "下位タウンと下位ラボ区は単独180×170mの建物ではなく、各約19.5万m²の用途街区として広がる。工場は独立した小規模建物として地区内に存在する。"
+        "note": "船尾半周の2大街区で、道路と小型加工4棟を含む用途地区。単一のタウン棟／ラボ棟の面積ではない。",
+        "outerRadiusM": 820,
+        "expandedHalfRingSectorIds": [
+          "stern_core_shell_town",
+          "stern_refine_lab_district"
+        ],
+        "coveredLandAreaSqM": 652044
       },
       "planningPrinciple": "船首の上位タウン・ラボは維持し、船尾半周の下位タウン・ラボ・加工施設を機能的に混在させる。厳密な用途分離ではなく、危険な荷役・熱・騒音の経路だけを確実に隔離する。"
     }
@@ -3243,8 +3521,8 @@
         },
         "compactFactoryDimensionsStatus": "draft_proposal_pending_production_capacity_validation",
         "sternExpandedDistricts": {
-          "status": "applied_to_draft",
-          "concept": "quarter_annular_polygons",
+          "status": "draft_polygon_applied",
+          "geometry": "two_annular_quarters_x_greater_than_minus_640",
           "sectors": [
             {
               "id": "stern_core_shell_town",
@@ -3264,7 +3542,10 @@
               ]
             }
           ],
-          "note": "加工施設4件のサイズと座標は変更しない。半環状の用途地区は単一建築物ではない。"
+          "outerRadiusM": 820,
+          "innerRadiusM": 330,
+          "frontOpeningToTerminal": true,
+          "note": "船尾半周を見た目にも大きな街区に。工場4件は現在の小型寸法・位置・footprintを変えない。"
         }
       }
     },
