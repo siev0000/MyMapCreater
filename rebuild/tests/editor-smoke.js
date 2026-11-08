@@ -12,7 +12,7 @@ const draw={strokes:[],labels:[]},ctx=new Proxy({strokeStyle:"",fillStyle:"",lin
 },set(t,k,v){t[k]=v;return true}});
 function makeElement(tag="div"){
  const el={tag,hidden:false,textContent:"",value:"",checked:false,disabled:false,style:{},children:[],listeners:{},attributes:{},
-  classList:{add(){},remove(){},toggle(){}},
+  classList:{add(){},remove(){},toggle(){},contains(){return false}},
   append(...items){for(const item of items)if(item.tag==="fragment")this.children.push(...item.children);else this.children.push(item)},
   replaceChildren(...items){this.children=[];this.append(...items)},
   setAttribute(key,value){this.attributes[key]=value},addEventListener(key,fn){this.listeners[key]=fn},
@@ -33,7 +33,7 @@ const ids=[
 "obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
-"apply-json","new-shape","new-role","new-level","new-layer","add-object","move-mode","open-json","file-input","download"
+"apply-json","new-shape","new-role","new-level","new-layer","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
 ];
 const el=Object.fromEntries(ids.map(id=>[id,makeElement(id)]));
 el["new-shape"].value="rect";
@@ -113,6 +113,15 @@ async function main(){
  el.undo.click();
  const restoredX=Number(el["geometry-fields"].children[0].children[0].children[0].value);
  assert(Math.abs(restoredX-130)<.00001,"Drag undo failed "+restoredX);
- console.log("PASS generic editor: imported map, labels, wall, rename, undo, redo, add ring, parent, level, clone, delete, export, drag + undo");
+ const all=JSON.parse(JSON.stringify(sample));
+ all.name="JSONで編集した町";
+ all.coordinateSystem.background="#222a33";
+ all.layers.push({id:"new-layer",zIndex:70});
+ el["scene-json-text"].value=JSON.stringify(all);
+ el["apply-scene-json"].click();
+ assert.equal(el["scene-name"].textContent,"JSONで編集した町");
+ el.undo.click();
+ assert.equal(el["scene-name"].textContent,"汎用サンプル：町");
+ console.log("PASS generic editor: labels, walls, rename, undo/redo, arbitrary shapes/roles, export, drag, full-scene JSON + undo");
 }
 main().catch(error=>{console.error(error);process.exitCode=1});
