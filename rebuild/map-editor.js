@@ -180,6 +180,65 @@ function renderGeometry(obj){
   target.append(p);
  }
 }
+function initBuildingTemplates(){
+ const list=window.AAMapBuildingTemplates?.presets||[];
+ fillSelect($("building-template"),list.map(t=>[t.id,t.name]),list[0]?.id||"");
+ function describe(){
+  const t=list.find(t=>t.id===input("building-template"));
+  if(!t)return;
+  const [w,h]=t.cells;
+  $("building-template-description").textContent=t.description+"｜"+w+"×"+h+"マス（"+(w*.5)+"×"+(h*.5)+"m）｜"+t.floors+"階";
+  $("building-base-name").value=t.name;
+ }
+ bind("building-template",describe);
+ describe();
+}
+function addBuildingTemplates(){
+ const scene=sceneNow(),library=window.AAMapBuildingTemplates;
+ if(!scene||!library){notice("建物テンプレートを読み込めません","error");return}
+ const t=library.presets.find(t=>t.id===input("building-template"));
+ const count=Number(input("building-count")),columns=Number(input("building-columns")),gap=Number(input("building-gap"));
+ if(!t||!Number.isSafeInteger(count)||count<1||count>100||
+    !Number.isSafeInteger(columns)||columns<1||columns>25||
+    !Number.isSafeInteger(gap)||gap<0||gap>200){
+  notice("配置数1～100、横の列数1～25、間隔0～200マスを指定してください","error");return;
+ }
+ const selection=scene.objects.find(o=>o.id===state.selectedId);
+ const parent=checked("building-parent-selected")?selection:null;
+ if(checked("building-parent-selected")&&!parent){notice("親として使う区画・施設を選択するか、親にする設定を解除してください","error");return}
+ if(parent&&!["region","facility"].includes(parent.objectType)){
+  notice("建物の親には区画または施設を選択してください","error");return;
+ }
+ const spacing=gridState.spacing;
+ const box=$("map-canvas").getBoundingClientRect(),p=snapPoint(viewer.screenToWorld(box.width/2,box.height/2));
+ const gapDistance=gap*spacing,baseName=input("building-base-name").trim()||t.name;
+ const next=copy(scene),taken=new Set(next.objects.map(o=>o.id));
+ const idBase="building_"+t.id;
+ let nextIndex=1;
+ const prefix=()=>{
+  while(taken.has(idBase+"_"+nextIndex))nextIndex++;
+  const value=idBase+"_"+nextIndex++;taken.add(value);return value;
+ };
+ let firstId=null;
+ try{
+  for(let i=0;i<count;i++){
+   const col=i%columns,row=Math.floor(i/columns);
+   const x=p[0]+col*(t.cells[0]*spacing+gapDistance);
+   const y=p[1]+row*(t.cells[1]*spacing+gapDistance);
+   const name=count===1?baseName:baseName+" "+(i+1);
+   const id=prefix();
+   if(!firstId)firstId=id;
+   const generated=library.generate(t.id,{
+    prefix:id,parentId:parent?.id||null,
+    displayLevel:parent?.displayLevel+1||viewer.initialDisplayLevel(),
+    x,y,spacing,baseName:name
+   });
+   next.objects.push(...generated.objects);
+  }
+  if(applyScene(next,firstId)){viewer.selectItemById(firstId,{focus:true,force:true});notice(count+"棟の建物を追加しました。保存して確定してください（未保存）","success")}
+ }catch(error){notice("建物を追加できません："+error.message,"error")}
+}
+bind("building-add",addBuildingTemplates,"click");
 function supplyCatalog(){return window.AAMapObjectCatalog.entries(sceneNow())}
 function supplyOptions(){
  const picker=$("supply-preset"),last=picker.value;
@@ -503,6 +562,7 @@ viewer=window.AAMapViewer.create({
  }
 });
 setGridInputs(gridDefaults);
+initBuildingTemplates();
 async function init(){
  try{
   const response=await fetch("./map-tree.json",{cache:"no-store"});
