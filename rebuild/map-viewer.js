@@ -387,31 +387,41 @@ function create(opts){
  function getVisibilityGroups(){
   return groupIds().map(id=>({id,...modeConfig(id),current:groupModes[id]}));
  }
+ function readPath(obj,path){
+  if(!path)return undefined;
+  return String(path).split(".").reduce((v,key)=>v==null?undefined:v[key],obj);
+ }
  function renderLegend(){
-  if(!opts.legendContent)return;
-  const container=opts.legendContent;container.replaceChildren();
+  const host=opts.legendContent;if(!host)return;
+  host.replaceChildren();
   if(!scene)return;
-  const build=(title,list,shape)=>{
-   if(!list.length)return;
+  // JSON decides which objects and labels belong to each legend section.
+  for(const config of scene.settings?.legendGroups||[]){
+   const filter=config.filter||{},seen=new Set();
+   const entries=scene.objects.filter(o=>{
+    if(filter.visibleOnly&& !visible(o))return false;
+    if(Array.isArray(filter.levels)&&!filter.levels.includes(o.level))return false;
+    if(Array.isArray(filter.objectTypes)&&!filter.objectTypes.includes(o.objectType))return false;
+    if(Array.isArray(filter.layers)&&!filter.layers.includes(o.layer))return false;
+    const key=readPath(o,config.uniqueBy)||o.id;
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+   });
+   if(!entries.length)continue;
    const row=document.createElement("div");row.className="legend-section";
-   const heading=document.createElement("strong");heading.textContent=title;row.append(heading);
+   const heading=document.createElement("strong");heading.textContent=config.title||"凡例";row.append(heading);
    const items=document.createElement("div");items.className="legend-items";
-   for(const obj of list){
-    const entry=document.createElement("span");entry.className="legend-item";
-    const sw=document.createElement("i");sw.className=shape==="line"?"legend-line":"legend-swatch";
-    sw.style.backgroundColor=obj.style?.stroke||obj.style?.fill||"#929da5";
-    const txt=document.createElement("span");txt.textContent=obj.name;
-    entry.append(sw,txt);items.append(entry);
-   }row.append(items);container.append(row);
-  };
-  build("大枠",scene.objects.filter(o=>o.level==="large"),"box");
-  const routes=scene.objects.filter(o=>o.objectType==="route"&&visible(o));
-  const seen=new Set();
-  build("経路",routes.filter(o=>{
-   const name=o.metadata?.roadType||o.name;
-   if(seen.has(name))return false;
-   seen.add(name);return true;
-  }).map(o=>({...o,name:o.metadata?.roadType||o.name})),"line");
+   for(const o of entries){
+    const span=document.createElement("span");span.className="legend-item";
+    const swatch=document.createElement("i");
+    swatch.className=config.swatch==="line"?"legend-line":"legend-swatch";
+    swatch.style.backgroundColor=o.style?.stroke||o.style?.fill||"#929da5";
+    const txt=document.createElement("span");
+    txt.textContent=String(readPath(o,config.displayField)||o.name||o.id);
+    span.append(swatch,txt);items.append(span);
+   }
+   row.append(items);host.append(row);
+  }
  }
  function setLegend(value){
   legendEnabled=Boolean(value);
