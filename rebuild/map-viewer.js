@@ -12,7 +12,16 @@ function sceneCheck(scene){
  for(const obj of scene.objects){
   if(!obj||typeof obj.id!=="string"||!obj.id||ids.has(obj.id))throw Error("オブジェクトIDが不正・重複しています");
   ids.add(obj.id);
-  if(obj.geometry&&!["none","rect","polygon","polyline","circle","ring"].includes(obj.geometry.type))throw Error("未対応の形状: "+obj.geometry.type);
+  const g=obj.geometry||{type:"none"};
+  if(!["none","rect","polygon","polyline","circle","ring"].includes(g.type))throw Error("未対応の形状: "+g.type);
+  const point=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite);
+  if(["polygon","polyline"].includes(g.type)&&(!Array.isArray(g.points)||g.points.length<(g.type==="polygon"?3:2)||!g.points.every(point)))throw Error("形状の座標が不正です: "+obj.id);
+  if(g.type==="rect"&&(![g.x,g.y,g.width,g.height].every(Number.isFinite)||g.width<0||g.height<0))throw Error("四角形が不正です: "+obj.id);
+  if(g.type==="circle"&&(!point(g.center)||!Number.isFinite(g.radius)||g.radius<=0))throw Error("円が不正です: "+obj.id);
+  if(g.type==="ring"&&(!point(g.center)||![g.innerRadius,g.outerRadius].every(Number.isFinite)||g.innerRadius<0||g.outerRadius<=g.innerRadius))throw Error("環状図形が不正です: "+obj.id);
+  if(obj.label?.position&&!point(obj.label.position))throw Error("文字位置が不正です: "+obj.id);
+  if(obj.style?.opacity!==undefined&&(!Number.isFinite(obj.style.opacity)||obj.style.opacity<0||obj.style.opacity>1))throw Error("透過率が不正です: "+obj.id);
+  if(obj.style?.strokeWidth!==undefined&&(!Number.isFinite(obj.style.strokeWidth)||obj.style.strokeWidth<0))throw Error("線幅が不正です: "+obj.id);
  }
  for(const obj of scene.objects){
   if(obj.parentId&&!ids.has(obj.parentId))throw Error("存在しない親ID: "+obj.id);
