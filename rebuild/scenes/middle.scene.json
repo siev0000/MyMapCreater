@@ -10990,7 +10990,7 @@
         "opacity": 0.93
       },
       "label": {
-        "visible": true,
+        "visible": false,
         "text": "収納棚（仮）",
         "position": [
           600.15,
@@ -11030,7 +11030,7 @@
         "opacity": 0.93
       },
       "label": {
-        "visible": true,
+        "visible": false,
         "text": "作業机（仮）",
         "position": [
           623.15,
@@ -11070,7 +11070,7 @@
         "opacity": 0.93
       },
       "label": {
-        "visible": true,
+        "visible": false,
         "text": "梱包物資（仮）",
         "position": [
           622.15,
@@ -11110,7 +11110,7 @@
         "opacity": 0.93
       },
       "label": {
-        "visible": true,
+        "visible": false,
         "text": "寝具（仮）",
         "position": [
           601.65,
@@ -11150,7 +11150,7 @@
         "opacity": 0.93
       },
       "label": {
-        "visible": true,
+        "visible": false,
         "text": "収納庫（仮）",
         "position": [
           624.65,
@@ -11190,7 +11190,7 @@
         "opacity": 0.93
       },
       "label": {
-        "visible": true,
+        "visible": false,
         "text": "バッテリー（仮）",
         "position": [
           624.15,
