@@ -46,8 +46,8 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
    <button type="button" data-floor="lower" aria-pressed="false">下層</button>
    <div id="candidateControls" class="controls" aria-label="中層の配置案切替">
     <button type="button" data-candidate="A" aria-pressed="false">A｜外周加工</button>
-    <button type="button" data-candidate="B" aria-pressed="false">B｜中央加工</button>
-    <button type="button" data-candidate="C" aria-pressed="true">C｜併用案</button>
+    <button type="button" data-candidate="B" aria-pressed="true">B｜中央加工</button>
+    <button type="button" data-candidate="C" aria-pressed="false">C｜併用案</button>
    </div>
   </div>
   <div id="status" role="status">マップ情報を取得中です…</div>
@@ -67,6 +67,7 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
   <h2>確認すること</h2>
   <ul id="issues"></ul>
   <p><span class="pill">配置検討中・未確定</span></p>
+  <p style="font-size:.85rem;line-height:1.6;color:var(--muted)">B案でアルボラを選択すると、森林・湿地・育苗・調査・監視の大区画が表示されます。</p>
   <p style="font-size:.85rem;line-height:1.6;color:var(--muted)">A・B・Cは配置を考えるためのイメージです。道路や隔壁・施設の正確な寸法は未確定。ここで案を切り替えても、配置データにはまだ反映されません。</p>
  </aside>
 </main>
@@ -75,7 +76,7 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
 (()=>{
 'use strict';
 const svg=document.getElementById('map'),NS='http://www.w3.org/2000/svg';
-let floor='middle',candidate='C',dataset=null,selected=null;
+let floor='middle',candidate='B',dataset=null,selected=null,expandedArbora=false;
 const areas={
  upper:{summary:'中央共有区を挟み、左舷マギテック・右舷エイドロンの研究区に分かれています。',issues:['研究区の認証門と道路接続を確認する必要があります。','共有・研究区の隔壁位置はまだ検討中です。']},
  middle:{summary:'自然区・加工施設・貨物中継の配置を比べられます。',issues:[]},
@@ -87,10 +88,20 @@ const candidates={
   arbora:{x:-1060,y:0,w:1160,h:980},
   belts:[{id:'processing_starboard',name:'燃料・油加工',x:-1070,y:660,w:900,h:220},{id:'processing_port',name:'繊維・樹脂加工',x:-1080,y:-660,w:900,h:220}],
   issues:['栽培区から加工施設まで近い一方、湿度や排熱の分離が必要です。','船体の左右幅に加工施設と搬送路が本当に収まるかを確認します。']},
- B:{title:'B｜ターミナル船尾側に加工',summary:'加工施設を中央のターミナル付近に集め、自然区と加工区を離す案。',
-  arbora:{x:-1110,y:0,w:1060,h:940},
-  belts:[{id:'processing_starboard',name:'燃料・油加工',x:-300,y:655,w:530,h:280},{id:'processing_port',name:'繊維・樹脂加工',x:-300,y:-655,w:530,h:280}],
-  issues:['製品搬送は短くなるものの、生活街区との騒音・排熱の干渉が懸念です。','自然区から工場への原材料の専用輸送路が必要です。']},
+ B:{title:'B｜効率重視：アルボラ→加工→貨物リフト',
+ summary:'船尾に広い人工自然区を確保。加工施設をターミナル船尾側に近づけ、専用貨物入口へ短距離で集約します。',
+ arbora:{polygon:[[-660,-400],[-1250,-400],[-1250,-730],[-1630,-730],[-1630,730],[-1250,730],[-1250,400],[-660,400]],areaSqM:1026800},
+ belts:[{id:'processing_starboard',name:'燃料・油加工帯',x:-800,y:615,w:830,h:370},{id:'processing_port',name:'繊維・樹脂加工帯',x:-800,y:-615,w:830,h:370}],
+ relay:{x:-375,y:0,w:160,h:140},
+ cargoFlow:[ [[-760,0],[-520,0],[-375,0],[-250,0]], [[-800,615],[-520,615],[-500,280],[-375,0]], [[-800,-615],[-520,-615],[-500,-280],[-375,0]] ],
+ interior:[
+  {id:'arbora_nursery',name:'育苗・栽培区',x:-930,y:230,w:290,h:220},
+  {id:'arbora_forest',name:'森林・樹木区',x:-990,y:-190,w:330,h:260},
+  {id:'arbora_research',name:'調査・培養区',x:-1200,y:0,w:250,h:160},
+  {id:'arbora_wetland',name:'湿地・水循環区',x:-1460,y:270,w:270,h:350},
+  {id:'arbora_dry',name:'乾燥・高温区',x:-1450,y:-265,w:260,h:310},
+  {id:'arbora_watch',name:'監視・生物管理区',x:-1500,y:575,w:230,h:150}],
+ issues:['アルボラは概算約1.03km²で、現在の矩形案約0.925km²より広く確保します。各環境区の面積配分は仮です。','左右加工帯に既存4工場の全寸法・搬入路を収められるかは未検証です。','点線は貨物の流れを示す検討線です。道路・ゲート・専用貨物リフトの実接続はまだ確定していません。']},
  C:{title:'C｜外周加工＋中央貨物中継',summary:'アルボラ外周で加工し、ターミナル船尾側には貨物検査・仕分けの中継施設だけ置く案。',
   arbora:{x:-1060,y:0,w:1160,h:980},
   belts:[{id:'processing_starboard',name:'燃料・油加工',x:-1070,y:660,w:900,h:220},{id:'processing_port',name:'繊維・樹脂加工',x:-1080,y:-660,w:900,h:220}],
@@ -114,7 +125,13 @@ const placeDescriptions={
  processing_starboard:'標準燃料の生産と植物性油の加工を行う施設群。',
  processing_port:'植物繊維・樹脂と植物由来素材を加工する施設群。',
  industry_group:'植物性燃料や植物油、繊維、樹脂などを生産・加工する施設群。',
- middle_cargo_inspection:'中層の貨物の搬入・検査・仕分けを担う施設。',
+ middle_cargo_inspection:'中層の貨物を検査・仕分けし、工業区や他階層への輸送を取り次ぐ施設。',
+ arbora_nursery:'苗木・挿し木・草本植物を育成する栽培区。',
+ arbora_forest:'樹木・燃料植物などを育て、樹皮や繊維を生産する自然区。',
+ arbora_research:'植物素材や生態環境を調べ、培養・試験を行う研究区。',
+ arbora_wetland:'湿地環境を保ち、人工降雨・排水・水循環の一部を担う区画。',
+ arbora_dry:'乾燥・高温環境に適した植物の栽培・観測区。',
+ arbora_watch:'生物の一時保管と異常の監視・管理を担う区画。',
  middle_weapon_operation_field:'武装の運用・試験を行う区画として構想されている領域。',
  last_hub:'下層の生活地区。休止・充電設備、中古部品・廃材の市場、小工房、現地修理施設が集まる。',
  reclaim_belt:'廃機体・廃部品・回収資源を解体、選別、再利用する再処理区。',
@@ -132,7 +149,16 @@ function addZone(id,name,geom,color,desc,flag=''){
  const txt=E('text',{x:lx,y:ly,'text-anchor':'middle','font-size':geom.fontSize||17});
  txt.textContent=name;g.append(txt);
  if(flag){const alert=E('text',{x:lx,y:ly+18,'text-anchor':'middle','font-size':12,fill:'#ffe7a1'});alert.textContent='（位置確認）';g.append(alert)}
- const choose=()=>{selected=id;for(const p of svg.querySelectorAll('.zone'))p.classList.toggle('selected',p.dataset.id===id);const target=document.getElementById('detail');target.innerHTML='';const title=document.createElement('h3');title.textContent=name;const text=document.createElement('p');text.textContent=placeDescriptions[id]||'施設の説明はまだ登録されていません。';target.append(title,text)};
+ const choose=()=>{
+ selected=id;
+ expandedArbora=floor==='middle'&&candidate==='B'&&(id==='arbora_sector'||id.startsWith('arbora_'));
+ draw();
+ for(const p of svg.querySelectorAll('.zone'))p.classList.toggle('selected',p.dataset.id===id);
+ const target=document.getElementById('detail');target.innerHTML='';
+ const title=document.createElement('h3');title.textContent=name;
+ const text=document.createElement('p');text.textContent=placeDescriptions[id]||'施設の説明はまだ登録されていません。';
+ target.append(title,text);
+};
  g.addEventListener('click',choose);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}});svg.append(g);
 }
 function rectBounds(x0,x1,y0,y1){const [a,b]=pos(x1,y0),[c,d]=pos(x0,y1);return {x:Math.min(a,c),y:Math.min(b,d),width:Math.abs(c-a),height:Math.abs(d-b),rx:6}}
@@ -166,13 +192,24 @@ function draw(){
    addZone('core_shell_refine','生活・整備圏',{tag:'circle',props:circle(living.outerRadius||720),label:pos(175,525),fontSize:16,opacity:.10},colors.shared,placeDescriptions.core_shell_refine);insertToClip();
   }
   const a=plan.arbora;
-  addZone('arbora_sector','アルボラ自然区',{tag:'rect',props:rectBounds(a.x-a.w/2,a.x+a.w/2,a.y-a.h/2,a.y+a.h/2),label:pos(a.x,a.y),fontSize:19,opacity:.3},colors.nature,placeDescriptions.arbora_sector);insertToClip();
+  const shape=a.polygon?
+   {tag:'polygon',props:{points:a.polygon.map(([x,y])=>pos(x,y).join(',')).join(' ')},label:pos(-1050,0),fontSize:19,opacity:.32}:
+   {tag:'rect',props:rectBounds(a.x-a.w/2,a.x+a.w/2,a.y-a.h/2,a.y+a.h/2),label:pos(a.x,a.y),fontSize:19,opacity:.3};
+  addZone('arbora_sector','アルボラ自然区',shape,colors.nature,placeDescriptions.arbora_sector);insertToClip();
   for(const b of plan.belts){
    addZone(b.id,b.name,{tag:'rect',props:rectBounds(b.x-b.w/2,b.x+b.w/2,b.y-b.h/2,b.y+b.h/2),label:pos(b.x,b.y),fontSize:15,opacity:.34},colors.industry,placeDescriptions[b.id]);insertToClip();
   }
   if(plan.relay){
    const t=plan.relay;
    addZone('middle_cargo_inspection','貨物中継',{tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:14,opacity:.65},colors.hub,placeDescriptions.middle_cargo_inspection);insertToClip();
+  }
+  if(Array.isArray(plan.cargoFlow))for(const flow of plan.cargoFlow){
+   const d='M'+flow.map(([x,y])=>pos(x,y).map(n=>n.toFixed(1)).join(',')).join('L');
+   svg.append(E('path',{d,fill:'none',stroke:'#a0eddb','stroke-width':3,'stroke-dasharray':'8 6','pointer-events':'none',opacity:.8}));insertToClip();
+  }
+  // Major environmental units, not small rooms: show only when Arbora is selected.
+  if(expandedArbora&&Array.isArray(plan.interior))for(const z of plan.interior){
+   addZone(z.id,z.name,{tag:'rect',props:rectBounds(z.x-z.w/2,z.x+z.w/2,z.y-z.h/2,z.y+z.h/2),label:pos(z.x,z.y),fontSize:12,opacity:.52},colors.nature,placeDescriptions[z.id]);insertToClip();
   }
  }else{
   const ring=get('last_hub');if(ring){
@@ -201,14 +238,14 @@ async function refresh(){
  try{
   const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);
   const d=await r.json();if(d.floor!==floor||!Array.isArray(d.facilities))throw Error('形式不一致');
-  dataset=d;selected=null;
+  dataset=d;selected=null;expandedArbora=false;
   document.getElementById('detail').innerHTML='<h3>施設・地区を選択</h3><p>選択した施設・地区の説明を表示します。</p>';
   draw();
  }catch(e){document.getElementById('status').textContent='読み込みに失敗しました：'+String(e.message)}
 }
-document.querySelectorAll('[data-floor]').forEach(b=>b.addEventListener('click',()=>{floor=b.dataset.floor;document.getElementById('candidateControls').hidden=floor!=='middle';document.querySelectorAll('[data-floor]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()}));
+document.querySelectorAll('[data-floor]').forEach(b=>b.addEventListener('click',()=>{floor=b.dataset.floor;expandedArbora=false;document.getElementById('candidateControls').hidden=floor!=='middle';document.querySelectorAll('[data-floor]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()}));
 document.querySelectorAll('[data-candidate]').forEach(b=>b.addEventListener('click',()=>{
- candidate=b.dataset.candidate;
+ candidate=b.dataset.candidate;expandedArbora=false;
  document.querySelectorAll('[data-candidate]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
  selected=null;document.getElementById('detail').innerHTML='<h3>施設・地区を選択</h3><p>選択すると施設の説明が表示されます。</p>';
  if(floor==='middle')draw();
