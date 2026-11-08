@@ -2446,7 +2446,10 @@ function draw(){
     ['draft_central_access','draft_purple_machine_axis','draft_parallel_freight_B','draft_arbora_B_access'].includes(r.geometryStatus))){
     const machine=r.geometryStatus==='draft_purple_machine_axis';
     const freight=r.geometryStatus==='draft_parallel_freight_B';
-    thinRoute(r.points,machine?'#d3b4ee':freight?'#e4ac6a':r.color||'#a0eddb',machine||freight);
+    const blockers=dataset.facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&!f.areaFrame&&f.type!=='terminal')
+      .map(f=>window.AAMapEngine.polygon(commonMiddle,commonMiddle.byId.get(f.id)));
+    for(const segment of window.AAMapEngine.visiblePolyline(r.points,blockers))
+      thinRoute(segment,machine?'#d3b4ee':freight?'#e4ac6a':r.color||'#a0eddb',machine||freight);
    }
   }else{
    if(Array.isArray(plan.purplePassage))thinRoute(plan.purplePassage,'#d3b4ee',true);
