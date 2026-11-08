@@ -21,7 +21,7 @@ const DISTRICT_COLORS={
 const ROAD_GRAY="#929da5";
 const TUNNEL_MARK="#d5dde0";
 function isTunnel(r){return /トンネル|tunnel/i.test(r.roadType||"") || /tunnel/i.test(r.subtype||"")}
-function roadWidthPixels(r){return Math.min(8,Math.max(3,2.2+(Number(r.width)||16)/12))}
+// Road widths remain in the source JSON. The overview draws only a fixed-width centerline.
 const shipProfile=[[0,.39],[.035,.63],[.12,.83],[.22,.94],[.40,1],[.68,.99],[.82,.97],[.94,.91],[1,.81]];
 const q=id=>document.getElementById(id);
 function hullWidth(t){
@@ -184,8 +184,8 @@ function create(opts){
  }
  function tunnelHatching(r,pxWidth){
   if(!isTunnel(r)||r.kind!=="line"||!Array.isArray(r.points))return;
-  ctx.save();ctx.strokeStyle=TUNNEL_MARK;ctx.lineWidth=.8/scale();ctx.setLineDash([]);
-  const step=14/scale(),half=(pxWidth/2+.2)/scale(),slant=2.2/scale();
+  ctx.save();ctx.strokeStyle=TUNNEL_MARK;ctx.lineWidth=.65/scale();ctx.setLineDash([]);
+  const step=18/scale(),half=1.6/scale(),slant=.6/scale();
   for(let i=1;i<r.points.length;i++){
    const a=r.points[i-1],b=r.points[i],dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
    if(len<step)continue;
@@ -200,11 +200,11 @@ function create(opts){
  }
  function drawRoad(r){
   if(r.kind==="internal")return;
-  const pxWidth=roadWidthPixels(r)+(selected?.id===r.id?1.5:0);
+  const pxWidth=selected?.id===r.id?2.1:1.35;
   ctx.save();ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash([]);
   if(!traceRoad(r)){ctx.restore();return}
-  // Roads use one flat gray stroke, without a dark casing.
-  // Tunnels retain a sparse hatch mark; selected roads can highlight.
+  // Thin gray centerline, regardless of road width data; no dark casing.
+  // Tunnels add small sparse hatches without becoming thick bands.
   ctx.strokeStyle=selected?.id===r.id?"#fff0ac":ROAD_GRAY;
   ctx.lineWidth=pxWidth/scale();ctx.stroke();
   tunnelHatching(r,pxWidth);
@@ -243,28 +243,60 @@ function create(opts){
   }
   ctx.restore();
  }
+ function drawSelectionOutline(){
+  if(!selected||data?.roads.some(r=>r.id===selected.id))return;
+  // The selected outline is drawn AFTER routes, so roads cannot hide it.
+  ctx.save();ctx.strokeStyle="#fff2a6";ctx.lineWidth=2.4/scale();
+  ctx.setLineDash([]);
+  if(selected.ringDistrict){
+   for(const r of [selected.innerRadius,selected.outerRadius]){
+    ctx.beginPath();ctx.arc(selected.x,selected.y,r,0,Math.PI*2);ctx.stroke();
+   }
+  }else if(selected.id==="middle_terminal"){
+   ctx.beginPath();ctx.arc(selected.x,selected.y,250,0,Math.PI*2);ctx.stroke();
+  }else{
+   polygon(selected);ctx.stroke();
+  }
+  ctx.restore();
+ }
+ // Painter order, from back to front. This is the single map layer priority.
+ const WORLD_LAYER_ORDER=Object.freeze([
+  "hull","grid","districts","facilities","subzones","terminal","roads","selection"
+ ]);
  function drawWorld(){
   const s=scale();
   ctx.setTransform(0,-dpr*s,dpr*s,0,dpr*(width/2+offsetX),dpr*(height/2+offsetY));
-  drawHull();drawGrid();
-  if(!data)return;
-  for(const f of data.facilities.filter(f=>f.ringDistrict))drawRing(f);
-  for(const f of data.facilities.filter(f=>f.zoneOutline&&!f.ringDistrict))drawDistrict(f);
-  for(const r of data.roads)drawRoad(r);
-  for(const f of data.facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&f.type!=="terminal")){
-   const arboraChildren=["ecosystem_greenhouses","water_soil_cycle","biological_management","bio_material_greenhouse"];
-   if(arboraChildren.includes(f.id)&&selected?.id!=="arbora_sector"&&
-     selected?.id!==f.id&&!data.facilities.find(d=>d.id==="arbora_sector")?.macroZones?.some(z=>z.id===selected?.id))continue;
-   drawFacility(f);
-  }
-  const {district,medium}=getSelectionPath();
-  for(const d of data.facilities.filter(f=>f.mediumZones?.length)){
-   for(const m of d.mediumZones)if(m.id!==medium?.id)drawMedium(m);
-  }
-  if(medium)for(const item of medium.smallZones||[])drawSmall(item);
-  if(selected?.id==="arbora_sector"||data.facilities.find(f=>f.id==="arbora_sector")?.macroZones?.some(z=>z.id===selected?.id))
-   for(const z of data.facilities.find(f=>f.id==="arbora_sector")?.macroZones||[])drawZone(z);
-  drawTerminal();
+  const passes={
+   hull:drawHull,
+   grid:drawGrid,
+   districts:()=>{
+    for(const f of data.facilities.filter(f=>f.ringDistrict))drawRing(f);
+    for(const f of data.facilities.filter(f=>f.zoneOutline&&!f.ringDistrict))drawDistrict(f);
+   },
+   facilities:()=>{
+    for(const f of data.facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&f.type!=="terminal")){
+     const arboraChildren=["ecosystem_greenhouses","water_soil_cycle","biological_management","bio_material_greenhouse"];
+     if(arboraChildren.includes(f.id)&&selected?.id!=="arbora_sector"&&
+       selected?.id!==f.id&&!data.facilities.find(d=>d.id==="arbora_sector")?.macroZones?.some(z=>z.id===selected?.id))continue;
+     drawFacility(f);
+    }
+   },
+   subzones:()=>{
+    const {medium}=getSelectionPath();
+    for(const d of data.facilities.filter(f=>f.mediumZones?.length)){
+     for(const m of d.mediumZones)if(m.id!==medium?.id)drawMedium(m);
+    }
+    if(medium)for(const item of medium.smallZones||[])drawSmall(item);
+    if(selected?.id==="arbora_sector"||data.facilities.find(f=>f.id==="arbora_sector")?.macroZones?.some(z=>z.id===selected?.id))
+     for(const z of data.facilities.find(f=>f.id==="arbora_sector")?.macroZones||[])drawZone(z);
+   },
+   terminal:drawTerminal,
+   roads:()=>{for(const r of data.roads)drawRoad(r)},
+   selection:drawSelectionOutline
+  };
+  // The outer hull must remain visible even when floor data has not loaded.
+  if(!data){drawHull();drawGrid();return}
+  for(const layer of WORLD_LAYER_ORDER)passes[layer]();
  }
  function draw(){
   if(!width||!height)return;
