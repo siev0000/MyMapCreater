@@ -8,7 +8,7 @@
     "section": "6.2-6.3",
     "status": "Notionの現行初期配置から作成した再配置検討案（未確定）"
   },
-  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。 計画線は貨物専用ルートの仮敷設であり、交通ゲートは未承認。 2026-11-08: 二階級地区配置と工業貨物路の効率化案を実配置に反映。Notion未変更。 2026-11-08: タウン・ラボ・加工施設をリンクターミナル船尾半周に混在配置。工場寸法は仮縮小、貨物路は暫定線。Notion未変更。 2026-11-08: 下位タウン・下位工房ラボの外形を各19.5万m²の混合街区へ拡張。工場サイズ・個別座標は変更せず。",
+  "note": "GitHub中層表示案（Notion未反映）：リンクターミナルφ500mの内部にレジストリンク環状ギルド施設（r130–210m）。受付8か所・小作戦室・大型機と一般機の分離通路。タウン・工房・ラボは近接生活圏。船外・外周道路との接続は再監査待ち。 中層の新しい空き領域は未登録地・建築可能地と同義ではないため、生活/交通/環境/産業/設備緩衝に分類して要確認として管理。 第1段階の大枠整理：アルボラ自然区と左右舷の工業加工施設を位置分離。小区画と既存道路は未確定のまま。 2026-11-08: 中層B案の施設・自然区の外形と貨物動線をGitHubの通常マップ用配置データへ反映。Notion未変更。 計画線は貨物専用ルートの仮敷設であり、交通ゲートは未承認。 2026-11-08: 二階級地区配置と工業貨物路の効率化案を実配置に反映。Notion未変更。 2026-11-08: タウン・ラボ・加工施設をリンクターミナル船尾半周に混在配置。工場寸法は仮縮小、貨物路は暫定線。Notion未変更。 2026-11-08: 下位タウン・下位工房ラボの外形を各19.5万m²の混合街区へ拡張。工場サイズ・個別座標は変更せず。 2026-11-08: アルボラ内部の生態系再現温室群の輪郭を干渉回避の凹形状へ試験補正（中心・外接寸法保持）。マクロ区画と内部施設の表示階層を分離。試験案・Notion未反映。",
   "facilities": [
     {
       "id": "middle_terminal",
@@ -2236,19 +2236,27 @@
           -210
         ],
         [
-          240,
+          100,
           -210
         ],
         [
-          300,
-          -150
+          100,
+          -115
         ],
         [
           300,
-          150
+          -115
         ],
         [
-          240,
+          300,
+          140
+        ],
+        [
+          140,
+          140
+        ],
+        [
+          140,
           210
         ],
         [
@@ -2265,7 +2273,54 @@
         ]
       ],
       "stage1Layout": "efficiency_B_dual_town",
-      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
+      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。",
+      "containedIn": "arbora_sector",
+      "mapDisplayParentId": "arbora_forest",
+      "autoShapeCorrection": {
+        "status": "draft_preview_needs_user_review",
+        "kind": "contour_notches",
+        "reason": "既存の生体管理施設および生体素材温室との輪郭重複を解消",
+        "originalFootprint": [
+          [
+            -240,
+            -210
+          ],
+          [
+            240,
+            -210
+          ],
+          [
+            300,
+            -150
+          ],
+          [
+            300,
+            150
+          ],
+          [
+            240,
+            210
+          ],
+          [
+            -240,
+            210
+          ],
+          [
+            -300,
+            150
+          ],
+          [
+            -300,
+            -150
+          ]
+        ],
+        "preserves": [
+          "center",
+          "bounding_size",
+          "arbora_sector_boundary",
+          "independent_factory_positions"
+        ]
+      }
     },
     {
       "id": "water_soil_cycle",
@@ -2316,7 +2371,9 @@
         ]
       ],
       "stage1Layout": "efficiency_B_dual_town",
-      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
+      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。",
+      "containedIn": "arbora_sector",
+      "mapDisplayParentId": "arbora_wetland"
     },
     {
       "id": "biological_management",
@@ -2367,7 +2424,9 @@
         ]
       ],
       "stage1Layout": "align_with_full_stern_urban_half_circle",
-      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
+      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。",
+      "containedIn": "arbora_sector",
+      "mapDisplayParentId": "arbora_watch"
     },
     {
       "id": "bio_material_greenhouse",
@@ -2426,7 +2485,9 @@
         ]
       ],
       "stage1Layout": "align_with_full_stern_urban_half_circle",
-      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。"
+      "facilityLayoutNote": "アルボラの新しい段状区画内へ仮配置。",
+      "containedIn": "arbora_sector",
+      "mapDisplayParentId": "arbora_research"
     },
     {
       "id": "middle_cargo_inspection",
