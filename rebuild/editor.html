@@ -80,10 +80,24 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <div class="row"><input id="object-search" placeholder="名前・IDで検索" aria-label="オブジェクトを検索">
     <button id="clear-search">消去</button></div>
    <div id="objects" role="list"></div>
-   <div class="row"><select id="new-shape" aria-label="追加する図形">
-    <option value="rect">四角形</option><option value="polygon">多角形</option><option value="polyline">線</option>
-    <option value="circle">円</option><option value="ring">環状</option><option value="none">文字のみ</option>
-   </select><button id="add-object">＋ 追加</button></div>
+   <div class="col2">
+    <label>形状<select id="new-shape" aria-label="追加する図形">
+     <option value="rect">四角形</option><option value="polygon">多角形</option><option value="polyline">線</option>
+     <option value="circle">円</option><option value="ring">環状</option><option value="none">文字のみ</option>
+    </select></label>
+    <label>役割<select id="new-role">
+     <option value="object">一般オブジェクト</option><option value="region">区画</option><option value="facility">施設</option>
+     <option value="route">道路・経路</option><option value="wall">壁</option><option value="door">扉</option>
+     <option value="annotation">注記</option>
+    </select></label>
+    <label>階層<select id="new-level">
+     <option value="object">一般</option><option value="large">大枠</option><option value="medium">中枠</option>
+     <option value="small">小枠</option><option value="facility">施設</option><option value="route">経路</option>
+     <option value="wall">壁</option><option value="annotation">注記</option>
+    </select></label>
+    <label>レイヤー<select id="new-layer"></select></label>
+   </div>
+   <button id="add-object">＋ 指定した形状・役割で追加</button>
    <div class="actions"><button id="clone-object" disabled>複製</button><button id="delete-object" class="danger" disabled>削除</button></div>
    <label class="switches"><span style="display:flex;gap:6px;align-items:center"><input id="move-mode" type="checkbox"> 選択中の図形をドラッグ移動</span></label>
    <p class="note">道路・壁・区画は同じ図形エンジンで編集できます。図形を作成しても自動で壁・道路には変換しません。</p>
