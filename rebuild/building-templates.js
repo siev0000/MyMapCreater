@@ -120,6 +120,22 @@ const mechanical=[
 ];
 for(const [id,name,cells,floors,layout,description,category] of mechanical)
  presets.push({id,name,cells,floors,layout,description,category,worldStyle:"machine",entranceSide:"center"});
+// Mechanical housing and high-density dormancy are reusable layout proposals.
+// A pod is an individually selectable object; no actual residents are auto-created.
+const communalLayouts=[
+ ["machine_apartment_small","機械共同住宅・小型",[22,18],2,"split","個室と共用充電・登録設備を備える小型集合住居","machine_housing","housing",2],
+ ["machine_apartment_block","機械共同住宅・中型",[32,24],3,"cross","複数区画と各階の共有設備を持つ集合住居","machine_housing","housing",4],
+ ["machine_residence_tower","機械居住塔・高層",[36,28],5,"cross","多層居住区と共用休止・補給設備","machine_housing","housing",6],
+ ["machine_pod_unit","個人休眠ポッド区画",[18,14],1,"open","少数の個人休眠ポッドと管理端末","machine_dormancy","pods",4],
+ ["machine_pod_hall","量産型休眠ホール",[34,24],1,"open","ポッド列と中央通路を備える量産型休眠区画","machine_dormancy","pods",16],
+ ["machine_pod_block","休眠ポッド棟",[36,28],3,"open","複数階の休眠ポッドと保守・管理スペース","machine_dormancy","pods",20],
+ ["machine_pod_tower","高密度休眠施設",[40,32],5,"open","大量ポッドを持つ多階層休眠施設","machine_dormancy","pods",28],
+ ["machine_fuel_station_large","大型燃料補給所",[32,24],1,"front","補給列と制御端末を備える大型施設","machine_support","fuel",0],
+ ["machine_terminal_center","端末・登録センター",[30,22],2,"cross","登録・通信・状態照会の端末を備える施設","machine_support","terminal",0],
+ ["machine_charge_center","共用充電センター",[32,24],1,"open","多数の充電台と管理端末を持つ施設","machine_support","charging",0]
+];
+for(const [id,name,cells,floors,layout,description,category,facilityMode,podsPerFloor] of communalLayouts)
+ presets.push({id,name,cells,floors,layout,description,category,facilityMode,podsPerFloor,worldStyle:"machine",entranceSide:"center"});
 const copy=x=>JSON.parse(JSON.stringify(x));
 function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
@@ -205,7 +221,7 @@ function generate(templateId,options={}){
     base("bed_"+f,"ベッド","object",rect(2,2,3,5),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"bed"});
   }
-  if(template.worldStyle==="machine"){
+  if(template.worldStyle==="machine"&&!template.facilityMode){
    const devices=template.id==="machine_fuel"?[
     ["fuel_station","燃料補給機",2,2,5,4,"fuel_dispenser"],["terminal","登録端末",nX-6,2,4,3,"terminal_device"]]:
     template.id==="machine_terminal"?[
@@ -220,6 +236,62 @@ function generate(templateId,options={}){
    for(const [deviceId,name,px,py,pw,ph,shapePresetId] of devices)
     base("device_"+deviceId+"_"+f,name,"object",rect(px,py,pw,ph),f,
      {fill:"#294d5d",stroke:"#9fc9d8",strokeWidth:1.2},{shapePresetId});
+  }
+  if(template.facilityMode){
+   const addDevice=(key,name,px,py,pw,ph,shapePresetId,extra={})=>
+    base("system_"+key+"_"+f,name,"object",rect(px,py,pw,ph),f,
+     {fill:"#294d5d",stroke:"#9fc9d8",strokeWidth:1.2},
+     {shapePresetId,metadata:{templateId:template.id,generated:true,role:"facility-device"},...extra});
+   const mode=template.facilityMode;
+   if(mode==="housing"||mode==="pods"){
+    const reservedRight=stair?8:2;
+    const podW=2.2,podH=3.3,stepX=3,stepY=4.8;
+    const left=2,right=nX-reservedRight-2;
+    // Keep the centre aisle clear: alternating banks at front/back.
+    const bankTop=2,bankBottom=Math.round(nY*.55);
+    const available=Math.max(1,Math.floor((right-left-podW)/stepX)+1);
+    const desired=template.podsPerFloor;
+    let number=0;
+    for(const [bank,rowY] of [["front",bankTop],["rear",bankBottom]]){
+     for(let col=0;col<available&&number<desired;col++){
+      const px=left+col*stepX,py=rowY;
+      if(py+podH>nY-4||px+podW>right)break;
+      number++;
+      const group=bank+"_"+f;
+      base("pod_"+f+"_"+String(number).padStart(3,"0"),
+       "個人休眠ポッド "+number,"object",rect(px,py,podW,podH),f,
+       {fill:"#244c59",stroke:"#9fc9d8",strokeWidth:1},
+       {shapePresetId:"dormancy_pod",podGroup:group,
+        metadata:{templateId:template.id,generated:true,role:"dormancy-pod",podIndex:number}});
+     }
+    }
+    if(mode==="pods"&&number<desired){
+     // Longer facility templates may use further banks, preserving a walking strip.
+     const nextY=Math.min(nY-7,Math.round(nY*.32));
+     for(let col=0;col<available&&number<desired;col++){
+      const px=left+col*stepX;
+      if(nextY+podH>=bankBottom-1||px+podW>right)break;
+      number++;
+      base("pod_"+f+"_"+String(number).padStart(3,"0"),
+       "個人休眠ポッド "+number,"object",rect(px,nextY,podW,podH),f,
+       {fill:"#244c59",stroke:"#9fc9d8",strokeWidth:1},
+       {shapePresetId:"dormancy_pod",podGroup:"middle_"+f,
+        metadata:{templateId:template.id,generated:true,role:"dormancy-pod",podIndex:number}});
+     }
+    }
+    addDevice("management","休眠管理端末",nX-6,2,3,3,"terminal_device");
+    // Fuel/charging are separate systems and not embedded in each dormancy pod.
+    if(mode==="housing")addDevice("charging","共用充電設備",nX-7,nY-10,3,3,"charging_station");
+   }else{
+    const kind=mode==="fuel"?"fuel_dispenser":mode==="charging"?"charging_station":"terminal_device";
+    const cols=mode==="terminal"?3:4;
+    const rows=mode==="terminal"?2:2;
+    for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+      const px=2+col*5,py=2+row*6;
+      addDevice("station_"+row+"_"+col,mode==="fuel"?"燃料補給機":mode==="charging"?"充電設備":"登録端末",px,py,3,4,kind);
+    }
+    addDevice("management","管理端末",nX-7,2,4,3,"terminal_device");
+   }
   }
  }
  return{template:copy(template),objects};
