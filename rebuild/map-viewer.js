@@ -483,13 +483,15 @@ function create(opts){
   opts.hint.hidden=!message;
  }
  function resize(){
-  const rect=host.getBoundingClientRect();
+  // Map canvas can occupy only part of its host (e.g. a reserved detail footer).
+  // Always use canvas client dimensions for drawing and pointer coordinates.
+  const rect=canvas.getBoundingClientRect();
   width=Math.max(1,rect.width);height=Math.max(1,rect.height);dpr=Math.min(2,global.devicePixelRatio||1);
   canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
   initialScale=computeScale();
   draw();
  }
- const observer=new ResizeObserver(resize);observer.observe(host);resize();
+ const observer=new ResizeObserver(resize);observer.observe(host);observer.observe(canvas);resize();
  const pos=e=>{const r=canvas.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
  canvas.addEventListener("wheel",e=>{e.preventDefault();const [x,y]=pos(e);zoomAt(e.deltaY<0?1.15:1/1.15,x,y)},{passive:false});
  canvas.addEventListener("pointerdown",e=>{
