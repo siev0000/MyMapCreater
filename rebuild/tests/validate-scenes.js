@@ -83,9 +83,9 @@ for(const floor of ["upper","middle","lower"]){
  }
  counts.push({floor,facilities:original.facilities.length,roads:original.roads.length,objects:scene.objects.length});
 }
-const sample=validate(read("rebuild/examples/sample-town.scene.json"));
+const sample=validate(read("rebuild/examples/sample-town.scene.json"),{migrated:true});
 assert(sample.objects.some(o=>o.objectType==="wall"&&o.geometry.type==="polyline"));
-assert(sample.objects.some(o=>o.level==="medium"&&o.parentId)); // legacy sample remains readable
+assert(sample.objects.some(o=>o.displayLevel===2&&o.parentId));
 const renderer=fs.readFileSync(path.join(root,"rebuild/map-viewer.js"),"utf8");
 for(const forbidden of ["arbora_sector","middle_terminal","core_shell_town","automaton_ship","shipProfile","hullWidth"]){
  assert(!renderer.includes(forbidden),"World-specific ID in generic renderer: "+forbidden);
