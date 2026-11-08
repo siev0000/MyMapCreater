@@ -520,6 +520,10 @@ function create(opts){
  // the corresponding facility; repeated selections reuse the cached payload.
  async function ensureInterior(obj){
   if(!obj?.interiorSource||!scene||interiorLoaded.has(obj.id))return;
+  // Freshly generated buildings already have their child objects in the editor.
+  if(scene.objects.some(child=>child.parentId===obj.id)){
+   interiorLoaded.add(obj.id);return;
+  }
   const source=obj.interiorSource,key=sceneKey+"::"+obj.id,active=request;
   if(interiorPending.has(key))return interiorPending.get(key);
   const task=(async()=>{
