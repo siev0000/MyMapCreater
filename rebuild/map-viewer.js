@@ -240,13 +240,23 @@ function create(opts){
   if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(sceneKey,selected);
  }
  function getHierarchy(){
-  if(!scene)return{large:[],unassigned:[]};
-  const large=scene.objects.filter(o=>o.level==="large").map(o=>({
-   id:o.id,name:o.name,
-   children:scene.objects.filter(v=>v.parentId===o.id&&v.level==="medium").map(v=>({id:v.id,name:v.name,parentId:o.id}))
-  }));
-  const assigned=new Set([...large.map(o=>o.id),...large.flatMap(o=>o.children.map(v=>v.id))]);
-  return{large,unassigned:scene.objects.filter(o=>o.level==="facility"&&!assigned.has(o.id)).map(o=>({id:o.id,name:o.name}))};
+  if(!scene)return{roots:[]};
+  const candidates=scene.objects.filter(o=>o.objectType==="region"||o.objectType==="facility");
+  const byId=new Map(candidates.map(o=>[o.id,o]));
+  const children=new Map();
+  for(const o of candidates){
+   const parent=byId.has(o.parentId)?o.parentId:null;
+   if(!children.has(parent))children.set(parent,[]);
+   children.get(parent).push(o);
+  }
+  const build=(o,seen=new Set())=>{
+   if(seen.has(o.id))return null;
+   const next=new Set(seen);next.add(o.id);
+   return{id:o.id,name:o.name||o.id,parentId:o.parentId||null,
+    displayLevel:o.displayLevel??null,
+    children:(children.get(o.id)||[]).map(c=>build(c,next)).filter(Boolean)};
+  };
+  return{roots:(children.get(null)||[]).map(o=>build(o)).filter(Boolean)};
  }
  function selectItemById(id,{focus=true,force=false}={}){
   const obj=scene?.objects.find(o=>o.id===id);
@@ -260,7 +270,7 @@ function create(opts){
        g.points.reduce((sum,v)=>sum+v[1],0)/g.points.length];
    }
    const [u,v]=project(p[0],p[1]),[cu,cv]=project(...center());
-   const preferred=scene?.settings?.selectionZoom?.[obj.level];
+   const preferred=scene?.settings?.selectionZoom?.[obj.displayLevel]??scene?.settings?.selectionZoom?.[obj.level];
    if(Number.isFinite(preferred))zoom=Math.max(zoom,preferred);
    panX=-(u-cu)*scale();panY=-(v-cv)*scale();
   }
@@ -281,7 +291,7 @@ function create(opts){
   if(opts.info)opts.info.hidden=!selected;
   if(selected&&opts.infoTitle){
    opts.infoTitle.textContent=selected.name||selected.id;
-   opts.infoMeta.textContent=[selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean).join(" ｜ ");
+   opts.infoMeta.textContent=[selected.displayLevel!==undefined?"表示Lv "+selected.displayLevel:selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean).join(" ｜ ");
    opts.infoText.textContent=selected.detail||"説明は登録されていません。";
   }
   renderLegend();draw();
@@ -411,6 +421,7 @@ function create(opts){
    const filter=config.filter||{},seen=new Set();
    const entries=scene.objects.filter(o=>{
     if(filter.visibleOnly&& !visible(o))return false;
+    if(Array.isArray(filter.displayLevels)&&!filter.displayLevels.includes(o.displayLevel))return false;
     if(Array.isArray(filter.levels)&&!filter.levels.includes(o.level))return false;
     if(Array.isArray(filter.objectTypes)&&!filter.objectTypes.includes(o.objectType))return false;
     if(Array.isArray(filter.layers)&&!filter.layers.includes(o.layer))return false;
