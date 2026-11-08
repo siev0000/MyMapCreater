@@ -949,8 +949,10 @@ function drawMiddleDistrictAndDrafts(){
       const [cx,cy]=xy(zone.x,zone.y),pw=zone.h*.4,ph=zone.w*.4;
       ctx.fillStyle='rgba(185,152,85,.13)';ctx.fillRect(cx-pw/2,cy-ph/2,pw,ph);
       ctx.strokeStyle='rgba(255,211,122,.72)';ctx.lineWidth=2;ctx.setLineDash([9,6]);ctx.strokeRect(cx-pw/2,cy-ph/2,pw,ph);
-      ctx.fillStyle='#f7ddb0';ctx.font='12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.lineWidth=3;ctx.strokeStyle='#12212d';ctx.strokeText(zone.name,cx,cy);ctx.fillText(zone.name,cx,cy);
+      if(state.labels&&chosen?.id===zone.id){
+       ctx.fillStyle='#f7ddb0';ctx.font='12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+       ctx.lineWidth=3;ctx.strokeStyle='#12212d';ctx.strokeText(zone.name,cx,cy);ctx.fillText(zone.name,cx,cy);
+      }
    }
    ctx.restore();
  }
@@ -1095,6 +1097,12 @@ function findFacility(id){
   if(child)return virtualChild(parent,child);
   const macro=parent.macroZones?.find(c=>c.id===id);
   if(macro)return {...macro,type:parent.type,parentId:parent.id,compoundChild:true};
+  const medium=parent.mediumZones?.find(c=>c.id===id);
+  if(medium)return {...medium,type:parent.type,parentId:parent.id,compoundChild:true};
+  for(const item of parent.mediumZones||[]){
+   const small=item.smallZones?.find(c=>c.id===id);
+   if(small)return {...small,type:parent.type,parentId:item.id,districtParentId:parent.id,compoundChild:true};
+  }
  }
  return null;
 }
@@ -1118,6 +1126,15 @@ function renderPlaces(){
  const selectedId=chosen?.id;
  const selectedParent=chosen?.parentId;
  document.getElementById('places').innerHTML=facilities.filter(f=>!f.ringDistrict).map(f=>{
+  if(currentMap==='middle'&&showProposal&&Array.isArray(f.mediumZones)&&f.mediumZones.length){
+   const expanded=selectedId===f.id||selectedParent===f.id||chosen?.districtParentId===f.id;
+   const items=expanded?'<div class="placeGroupChildren">'+f.mediumZones.map(m=>{
+     const open=selectedId===m.id||selectedParent===m.id;
+     return '<button class="listbtn" type="button" data-place="'+escHTML(m.id)+'">　'+escHTML(m.name)+'</button>'+
+       (open?m.smallZones.map(c=>'<button class="listbtn" type="button" data-place="'+escHTML(c.id)+'">　　'+escHTML(c.name)+'</button>').join(''):'');
+   }).join('')+'</div>':'';
+   return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="'+escHTML(f.id)+'">'+escHTML(f.name)+'</button>'+items+'</div>';
+  }
   if(currentMap==='middle'&&showProposal&&f.id==='arbora_sector'&&f.macroZones?.length){
    const expanded=selectedId===f.id||selectedParent===f.id;
    return '<div class="placeGroup"><button class="listbtn placeGroupTitle" type="button" data-place="'+escHTML(f.id)+'">'+escHTML(f.name)+'</button>'+
@@ -1332,7 +1349,8 @@ function polygonsOverlap(f,g){
 function drawCompoundFacilities(){
  for(const parent of facilities.filter(f=>f.areaFrame&&Array.isArray(f.internalFacilities))){
   if(parent.ringComplex&&window.AAMiddleCentral){
-   window.AAMiddleCentral.drawGuild(ctx,xy,parent,{zoom:view.zoom,labels:state.labels,roads:state.roads,chosen});
+   window.AAMiddleCentral.drawGuild(ctx,xy,parent,{zoom:view.zoom,labels:state.labels&&(
+   chosen?.id===parent.id||chosen?.parentId===parent.id),roads:state.roads,chosen});
    continue;
   }
   const [cx,cy]=xy(parent.x,parent.y),pw=parent.h*.4,ph=parent.w*.4;
@@ -1568,7 +1586,7 @@ function drawArboraMacroZones(){
   ctx.fillRect(px-w/2,py-h/2,w,h);
   ctx.lineWidth=chosen?.id===z.id?3:1.6;ctx.strokeStyle=chosen?.id===z.id?'#fff5a3':'#a9e6a7';
   ctx.strokeRect(px-w/2,py-h/2,w,h);
-  if(state.labels){
+  if(state.labels&&chosen?.id===z.id){
    ctx.font='bold 11px system-ui';ctx.lineWidth=3;ctx.strokeStyle='#152d28';
    ctx.strokeText(z.name,px,py,Math.min(w+9,130));
    ctx.fillStyle='#e7fbe7';ctx.fillText(z.name,px,py,Math.min(w+9,130));
@@ -1576,26 +1594,43 @@ function drawArboraMacroZones(){
  }
  ctx.restore();
 }
-function drawMiddleDistrictLabels(){
- if(currentMap!=='middle'||!showProposal||!state.districts||!state.labels)return;
- const map={core_shell_town:'上位タウン',refine_valley:'上位ラボ・工房',
-  stern_core_shell_town:'下位タウン',stern_refine_lab_district:'下位ラボ・工房'};
- ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
- for(const f of facilities){
-  if(!map[f.id]||!f.footprint?.length)continue;
-  const bow=f.socialTier==='upper',town=f.type==='town';
-  const [mx,my]=xy(...(f.mapLabelPosition||[f.x,f.y]));
-  ctx.font='bold 21px system-ui';ctx.lineWidth=5;ctx.strokeStyle='#15252e';
-  ctx.strokeText(map[f.id],mx,my);
-  ctx.fillStyle=bow?'#f4fbff':'#fff0dc';ctx.fillText(map[f.id],mx,my);
-  if(view.zoom<.85)continue;
-  ctx.font='bold 13px system-ui';ctx.lineWidth=3.5;
-  ctx.strokeStyle='#12232a';ctx.fillStyle=town?'#eafbe9':'#f6e6ff';
-  for(const z of f.mapDisplaySubzones||[]){
-   const [x,y]=xy(z.x,z.y);
-   ctx.strokeText(z.name,x,y);ctx.fillText(z.name,x,y);
+function drawMiddleHierarchyFrames(){
+ if(currentMap!=='middle'||!showProposal||!state.districts||!chosen)return;
+ const parent=facilities.find(f=>f.mediumZones?.length&&(
+  chosen.id===f.id||chosen.parentId===f.id||chosen.districtParentId===f.id));
+ if(!parent)return;
+ const mediumSelected=parent.mediumZones.find(m=>chosen.id===m.id||chosen.parentId===m.id);
+ ctx.save();ctx.lineJoin='round';
+ for(const z of parent.mediumZones){
+  const [px,py]=xy(z.x,z.y),w=z.h*.4,h=z.w*.4;
+  ctx.beginPath();ctx.rect(px-w/2,py-h/2,w,h);
+  ctx.fillStyle=chosen.id===z.id?'rgba(253,229,154,.22)':'rgba(213,227,237,.10)';
+  ctx.fill();ctx.lineWidth=chosen.id===z.id?3.1:1.9;
+  ctx.strokeStyle=chosen.id===z.id?'#fff3af':'#d6e5ed';
+  ctx.setLineDash(chosen.id===z.id?[]:[6,4]);ctx.stroke();
+ }
+ if(mediumSelected){
+  for(const small of mediumSelected.smallZones||[]){
+   const [x,y]=xy(small.x,small.y),w=small.h*.4,h=small.w*.4;
+   ctx.beginPath();ctx.rect(x-w/2,y-h/2,w,h);
+   ctx.fillStyle=chosen.id===small.id?'rgba(255,244,188,.28)':'rgba(232,232,231,.08)';
+   ctx.fill();ctx.lineWidth=chosen.id===small.id?2.8:1.35;
+   ctx.strokeStyle=chosen.id===small.id?'#fff3af':'#cbd5d9';ctx.setLineDash([]);ctx.stroke();
   }
  }
+ ctx.restore();
+}
+function drawMiddleDistrictLabels(){
+ if(currentMap!=='middle'||!showProposal||!state.labels||!chosen)return;
+ if(chosen.kind==='cell'||chosen.kind==='reserved'||chosen.kind==='concourse')return;
+ const position=chosen.mapLabelPosition||[chosen.x,chosen.y];
+ if(!position.every(Number.isFinite))return;
+ const [x,y]=xy(...position),label=chosen.name;
+ if(!label)return;
+ ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.lineJoin='round';ctx.font='bold 17px system-ui';
+ ctx.lineWidth=4.5;ctx.strokeStyle='#15232a';ctx.strokeText(label,x,y);
+ ctx.fillStyle='#fff4d5';ctx.fillText(label,x,y);
  ctx.restore();
 }
 function draw(){
@@ -1669,7 +1704,7 @@ for(const f of [...facilities.filter(f=>f.zoneOutline),...facilities.filter(f=>!
 if(isProtectedDraft&&currentMap==='middle'&&window.AAMiddleCentral){
  window.AAMiddleCentral.drawUrbanBlocks(ctx,xy,layoutDrafts.middle?.centralUrbanPlan,{zoom:view.zoom,labels:state.labels});
 }
-if(isProtectedDraft&&currentMap==='middle')drawArboraMacroZones();
+if(isProtectedDraft&&currentMap==='middle'){drawArboraMacroZones();drawMiddleHierarchyFrames();}
 if(isProtectedDraft&&currentMap==='middle')drawTerminalTowerBase();
 if(!isProtectedDraft||(currentMap==='lower'&&roads.some(r=>r.geometryStatus==='draft_10m_routed')))for(let r of roads)drawRoad(r);
 else if(isProtectedDraft&&currentMap==='middle')for(const r of roads.filter(r=>r.kind==='line'&&['draft_central_access','draft_purple_machine_axis','draft_parallel_freight_B','draft_arbora_B_access'].includes(r.geometryStatus)))drawRoad(r);
@@ -1685,9 +1720,9 @@ if(isProtectedDraft&&currentMap!=='middle'&&window.AATerminalInterior){
 }
 if(isProtectedDraft&&currentMap==='middle')drawCompoundFacilities();
 for(const f of facilities){if(f.ringDistrict||f.areaFrame||(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier))continue;let [cx,cy]=xy(f.x,f.y);const g=groups[f.type];ctx.fillStyle=g.line;ctx.beginPath();ctx.arc(cx,cy,5.5,0,7);ctx.fill();ctx.strokeStyle='#07151d';ctx.lineWidth=1.5;ctx.stroke();if(chosen?.id===f.id){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.stroke()}}
-if(state.labels){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false&&!(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier));for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft)continue;let [cx,cy]=xy(...(f.mapLabelPosition||[f.x,f.y]));let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
+if(state.labels&&currentMap!=='middle'){ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font='bold 13px system-ui';const ordered=facilities.filter(f=>!f.ringDistrict&&!f.areaFrame&&f.showLabel!==false&&!(isProtectedDraft&&currentMap==='middle'&&f.zoneOutline&&f.socialTier));for(const f of ordered){if(f.type==='terminal'&&isProtectedDraft)continue;let [cx,cy]=xy(...(f.mapLabelPosition||[f.x,f.y]));let label=(f.short||f.name).replace('アルキメリア装備開発ラボ','アルキメリアラボ').replace('レジストリンク・ドーム','レジストリンクドーム').replace('植物資源加工施設','植物資源加工').replace('生態系再現温室群','生態系温室群');if(f.type==='terminal')cy+=18;else cy-=15;ctx.lineWidth=4;ctx.strokeStyle='#101d24';ctx.strokeText(label,cx,cy);ctx.fillStyle='#ecf9fc';ctx.fillText(label,cx,cy)}}
 if(isProtectedDraft)drawMiddleDistrictLabels();
-if(state.labels&&isProtectedDraft){
+if(state.labels&&isProtectedDraft&&currentMap!=='middle'){
  const terminal=facilities[0];
  if(terminal&&(!chosen||chosen.id!==terminal.id)){
   const [lx,ly]=xy(terminal.x,terminal.y);
@@ -1867,6 +1902,26 @@ canvas.addEventListener('click',e=>{
  if(activeWorldId==='dark_world'){darkWorld.selectAt(x,y);return}
  let near=null,dist=35/view.zoom,compoundParent=null,zoneParent=null;
  const wx=(H/2-y)/.4,wy=(x-W/2)/.4;
+ // Drill down: district(big) -> facility(functional medium) -> temporary interior(small).
+ if(currentMap==='middle'&&showProposal&&chosen){
+  const p=facilities.find(f=>f.mediumZones?.length&&(
+   chosen.id===f.id||chosen.parentId===f.id||chosen.districtParentId===f.id));
+  if(p){
+   const active=p.mediumZones.find(z=>chosen.id===z.id||chosen.parentId===z.id);
+   let hit=null;
+   if(active)hit=active.smallZones?.find(z=>Math.abs(wx-z.x)<=z.w/2&&Math.abs(wy-z.y)<=z.h/2);
+   if(hit){
+    chosen={...hit,type:p.type,parentId:active.id,districtParentId:p.id,compoundChild:true};
+   }else{
+    hit=p.mediumZones.find(z=>Math.abs(wx-z.x)<=z.w/2&&Math.abs(wy-z.y)<=z.h/2);
+    if(hit)chosen={...hit,type:p.type,parentId:p.id,compoundChild:true};
+   }
+   if(hit){
+    document.getElementById('selectedPanel').hidden=true;
+    renderPlaces();updateInteriorPanels();renderInfo();draw();return;
+   }
+  }
+ }
  // While Arbora is expanded, its major environmental zones can be selected.
  const arbora=facilities.find(f=>f.id==='arbora_sector');
  const canPickArbora=arbora?.macroZones?.length&&(chosen?.id===arbora.id||chosen?.parentId===arbora.id);
@@ -1893,7 +1948,7 @@ canvas.addEventListener('click',e=>{
    if(near)break;
   }
  }
- if(!near)for(const f of facilities){
+ if(!near)for(const f of [...facilities.filter(f=>!f.zoneOutline),...facilities.filter(f=>f.zoneOutline)]){
   if(f.ringDistrict||f.areaFrame)continue;
   if(f.zoneOutline&&!f.draftRegion&&(f.footprint?.length>=3?pointInsideFacility(f,wx,wy):Math.abs(wx-f.x)<=f.w/2&&Math.abs(wy-f.y)<=f.h/2))zoneParent=f;
   if(f.footprint&&pointInsideFacility(f,wx,wy)){near=f;break}
