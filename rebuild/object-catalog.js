@@ -1,18 +1,8 @@
-/* Generic, user-editable placement icons. Entries are provisional examples, not lore. */
+/* 09: approved 30 supply icons; 10: shape-only placement categories. */
 (function(global){"use strict";
- const defaults=[
-  {id:"storage",name:"物置",icon:"📦",kind:"container",width:12,height:12},
-  {id:"shelf",name:"収納棚",icon:"🗄️",kind:"container",width:8,height:12},
-  {id:"cabinet",name:"収納庫",icon:"🗄️",kind:"container",width:10,height:10},
-  {id:"chest",name:"収納箱",icon:"📦",kind:"container",width:7,height:7},
-  {id:"desk",name:"作業机",icon:"🪑",kind:"object",width:10,height:6},
-  {id:"bed",name:"寝具",icon:"🛏️",kind:"object",width:9,height:14},
-  {id:"battery",name:"バッテリー",icon:"🔋",kind:"object",width:6,height:8},
-  {id:"supplies",name:"物資",icon:"📦",kind:"object",width:8,height:8},
-  {id:"machine",name:"機械設備",icon:"⚙️",kind:"object",width:12,height:10},
-  {id:"terminal",name:"端末",icon:"🖥️",kind:"object",width:8,height:6}
- ];
- function entries(scene){return Array.isArray(scene?.settings?.objectCatalog)?scene.settings.objectCatalog:defaults}
- function get(scene,id){return entries(scene).find(x=>x.id===id)||null}
- global.AAMapObjectCatalog={defaults,entries,get};
+const supplies=[{"id":"supply_box","name":"梱包物資","icon":"📦"},{"id":"tool_kit","name":"工具箱","icon":"🧰"},{"id":"repair_supplies","name":"工具","icon":"🔧"},{"id":"hardware_parts","name":"金属部品","icon":"🔩"},{"id":"machine_parts","name":"機械部品","icon":"⚙️"},{"id":"building_material","name":"建築資材","icon":"🧱"},{"id":"timber","name":"木材","icon":"🪵"},{"id":"raw_stone","name":"鉱石","icon":"🪨"},{"id":"textile_material","name":"糸","icon":"🧵"},{"id":"fiber_bundle","name":"繊維束","icon":"🧶"},{"id":"food","name":"食料","icon":"🍞"},{"id":"preserved_food","name":"保存食","icon":"🥫"},{"id":"drinks","name":"飲料","icon":"🥤"},{"id":"water","name":"水","icon":"💧"},{"id":"bottled_supplies","name":"洗剤","icon":"🧴"},{"id":"hygiene_supplies","name":"衛生用品","icon":"🧻"},{"id":"clothing","name":"衣服","icon":"👕"},{"id":"bedding_supply","name":"寝具","icon":"🛏️"},{"id":"medical_supply","name":"医薬品","icon":"💊"},{"id":"batteries","name":"バッテリー","icon":"🔋"},{"id":"power_parts","name":"電源部品","icon":"🔌"},{"id":"reagent","name":"試薬","icon":"🧪"},{"id":"samples","name":"研究試料","icon":"🧫"},{"id":"magnetic_parts","name":"磁性素材","icon":"🧲"},{"id":"drafting_supplies","name":"製図用品","icon":"📐"},{"id":"data_media","name":"記録媒体","icon":"💾"},{"id":"documents","name":"書類","icon":"📄"},{"id":"books","name":"書籍","icon":"📚"},{"id":"keys","name":"鍵","icon":"🗝️"},{"id":"valuables","name":"金銭・貴重品","icon":"💰"}];
+const shapes=[{"id":"table","name":"机・テーブル"},{"id":"chair","name":"椅子"},{"id":"shelf","name":"棚"},{"id":"bed","name":"ベッド"},{"id":"cabinet","name":"収納庫"},{"id":"counter","name":"カウンター"},{"id":"sink","name":"流し台"},{"id":"generator","name":"発電機"},{"id":"tank","name":"タンク"},{"id":"control_panel","name":"制御盤"},{"id":"workbench","name":"大型作業台"},{"id":"conveyor","name":"搬送装置"},{"id":"storage_container","name":"大型コンテナ"}];
+function entries(scene){return Array.isArray(scene?.settings?.supplyCatalog)?scene.settings.supplyCatalog:supplies}
+function get(scene,id){return entries(scene).find(x=>x.id===id)||null}
+global.AAMapObjectCatalog={supplies,shapes,entries,get};
 })(window);
