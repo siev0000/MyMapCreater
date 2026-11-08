@@ -58,7 +58,7 @@ footer{max-width:1420px;margin:auto;padding:0 20px 25px;color:var(--muted);font-
    <span><i style="background:#87a1cf"></i>環境・資源</span>
    <span><i style="background:#cf8cab"></i>隔離・立入制限</span>
   </div>
-  <div id="detail" aria-live="polite"><h3>地区を選択</h3><p>図中の主要地区を選ぶと、所属と確認事項を表示します。線は確定した道路ではありません。</p></div>
+  <div id="detail" aria-live="polite"><h3>施設・地区を選択</h3><p>選択した施設・地区の説明を表示します。</p></div>
  </section>
  <aside class="panel">
   <h2>今回確認する大枠</h2>
@@ -88,6 +88,27 @@ const E=(tag,props={})=>{const e=document.createElementNS(NS,tag);for(const [k,v
 const pos=(x,y)=>[450+y*.36,720-x*.36];
 const nose=t=>{const profile=[[0,.39],[.035,.63],[.12,.83],[.22,.94],[.40,1],[.68,.99],[.82,.97],[.94,.91],[1,.81]];for(let i=1;i<profile.length;i++){if(t<=profile[i][0]){const [a,b]=profile[i-1],[c,d]=profile[i];return b+(d-b)*(t-a)/(c-a)}}return .81};
 function hullPath(){let left=[],right=[];for(let i=0;i<=100;i++){const t=i/100,y=1440*t,w=445*nose(t);left.push([450-w,y]);right.push([450+w,y])}return 'M'+left.concat(right.reverse()).map(p=>p.join(' ')).join('L')+'Z'}
+// Keep selection details separate from the stage-1 review notes in the right column.
+// A selection describes the place itself, not its coordinates or approval status.
+const placeDescriptions={
+ upper_shared:'上層の共通交通と共同管理を担う地区。ターミナル、情報記録、共同管制、物流設備などが集まる。',
+ magitech:'マギテック側の研究・創造・機体更新・装備開発・試験を行う地区。',
+ eidolon:'エイドロン側の研究・創造・機体更新・装備開発・信仰系研究・試験を行う地区。',
+ core_shell_refine:'中層の生活・技術地区。コアシェルタウンの住居・市場・休止設備と、リファインバレーの修理・装備改修・工房が集まる。',
+ arbora_sector:'植物・樹木・生物を育成、管理する人工自然区。植物性燃料、樹皮、繊維、樹脂などの資源を生産する。',
+ processing_starboard:'標準燃料の生産と植物性油の加工を行う施設群。',
+ processing_port:'植物繊維・樹脂と植物由来素材を加工する施設群。',
+ industry_group:'植物性燃料や植物油、繊維、樹脂などを生産・加工する施設群。',
+ middle_cargo_inspection:'中層の貨物の搬入・検査・仕分けを担う施設。',
+ middle_weapon_operation_field:'武装の運用・試験を行う区画として構想されている領域。',
+ last_hub:'下層の生活地区。休止・充電設備、中古部品・廃材の市場、小工房、現地修理施設が集まる。',
+ reclaim_belt:'廃機体・廃部品・回収資源を解体、選別、再利用する再処理区。',
+ acid_zone_s9:'腐食性廃液や旧配管などを扱う腐食処理区。',
+ bioreactor:'植物・生物由来の廃棄物を燃料・肥料・熱エネルギーなどに再生する施設。',
+ material_hollow:'地上や船外から鉱石・土砂・廃材などを大量に搬入する資源設備。',
+ upper_expedition_port:'上層専用の船外出撃区。下層の一般生活区とは別系統で機体を出撃させる。',
+ upper_expedition_starboard:'上層専用の船外出撃区。下層の一般生活区とは別系統で機体を出撃させる。'
+};
 function addZone(id,name,geom,color,desc,flag=''){
  const g=E('g',{class:'zone',tabindex:0,role:'button','aria-label':name+(flag?'・要確認':''),'data-id':id});
  const shape=E(geom.tag,{...geom.props,class:'shape',fill:color,'fill-opacity':geom.opacity??.28,stroke:color,'stroke-width':2.2,'stroke-dasharray':flag?'9 7':'none'});
@@ -96,7 +117,7 @@ function addZone(id,name,geom,color,desc,flag=''){
  const txt=E('text',{x:lx,y:ly,'text-anchor':'middle','font-size':geom.fontSize||17});
  txt.textContent=name;g.append(txt);
  if(flag){const alert=E('text',{x:lx,y:ly+18,'text-anchor':'middle','font-size':12,fill:'#ffe7a1'});alert.textContent='（位置確認）';g.append(alert)}
- const choose=()=>{selected=id;for(const p of svg.querySelectorAll('.zone'))p.classList.toggle('selected',p.dataset.id===id);const target=document.getElementById('detail');target.innerHTML='';const title=document.createElement('h3');title.textContent=name+(flag?'［要確認］':'');const text=document.createElement('p');text.textContent=desc;target.append(title,text)};
+ const choose=()=>{selected=id;for(const p of svg.querySelectorAll('.zone'))p.classList.toggle('selected',p.dataset.id===id);const target=document.getElementById('detail');target.innerHTML='';const title=document.createElement('h3');title.textContent=name;const text=document.createElement('p');text.textContent=placeDescriptions[id]||'施設の説明はまだ登録されていません。';target.append(title,text)};
  g.addEventListener('click',choose);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}});svg.append(g);
 }
 function rectBounds(x0,x1,y0,y1){const [a,b]=pos(x1,y0),[c,d]=pos(x0,y1);return {x:Math.min(a,c),y:Math.min(b,d),width:Math.abs(c-a),height:Math.abs(d-b),rx:6}}
@@ -174,7 +195,7 @@ async function refresh(){
   const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);
   const d=await r.json();if(d.floor!==floor||!Array.isArray(d.facilities))throw Error('形式不一致');
   dataset=d;selected=null;
-  document.getElementById('detail').innerHTML='<h3>地区を選択</h3><p>大枠だけを確認します。受付・小部屋の配置はまだ行いません。</p>';
+  document.getElementById('detail').innerHTML='<h3>施設・地区を選択</h3><p>選択した施設・地区の説明を表示します。</p>';
   draw();
  }catch(e){document.getElementById('status').textContent='読み込みに失敗しました：'+String(e.message)}
 }
