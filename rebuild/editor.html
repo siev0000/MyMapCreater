@@ -75,6 +75,22 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   <div id="map-hint" hidden></div>
  </section>
  <aside class="side">
+  <section class="panel" id="editor-grid-panel">
+   <h2>共通グリッド・スナップ</h2>
+   <p class="note">建物も道路も同じマップ座標で配置します。1マス＝50cm、補助スナップ＝25cm。座標値と実寸の換算はマップごとに設定してください。</p>
+   <div class="col2">
+    <label>1マスの座標単位<input type="number" id="editor-grid-spacing" min="0.01" step="any" value="2"></label>
+    <label>座標原点 X<input type="number" id="editor-grid-origin-x" step="any" value="0"></label>
+    <label>座標原点 Y<input type="number" id="editor-grid-origin-y" step="any" value="0"></label>
+    <label>補助スナップ<select id="editor-grid-fraction"><option value="1">1マス（50cm）</option><option value="0.5" selected>0.5マス（25cm）</option></select></label>
+   </div>
+   <div class="switches">
+    <label><input id="editor-grid-visible" type="checkbox" checked> 編集グリッドを表示</label>
+    <label><input id="editor-grid-snap" type="checkbox" checked> 作成・移動時にスナップ</label>
+   </div>
+   <button id="editor-grid-save" type="button">グリッド設定をマップJSONに反映</button>
+   <p id="editor-grid-note" class="note">マップの広域表示では、線が密集するのを防ぐためグリッドを自動的に隠します。</p>
+  </section>
   <section class="panel">
    <h2>オブジェクト一覧</h2>
    <div class="row"><input id="object-search" placeholder="名前・IDで検索" aria-label="オブジェクトを検索">
@@ -162,6 +178,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </section>
  </aside>
 </main>
-<script src="./map-viewer.js?v=display-level-v2"></script>
-<script src="./map-editor.js?v=display-level-v2"></script>
+<script src="./map-viewer.js?v=editor-grid-v1"></script>
+<script src="./map-editor.js?v=editor-grid-v1"></script>
 </body></html>
