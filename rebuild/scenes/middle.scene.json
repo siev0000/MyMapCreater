@@ -3529,14 +3529,29 @@
         "fontSize": 11.5,
         "maxWidth": 220
       },
-      "detail": "用途・部屋数を決める前の仮区画。施設内部の詳細設計時に確定する。",
+      "detail": "【仮配置テスト】内部区画Aを2階建てとして使用。1階と2階で異なる設置物を表示する。構成・用途・寸法は未確定。",
       "metadata": {
         "sourceId": "core_shell_town_mid_rest_and_housing_small_a",
         "legacyType": null,
         "reviewStatus": null,
-        "roadType": null
+        "roadType": null,
+        "testOnly": true
       },
-      "displayLevel": 4
+      "displayLevel": 4,
+      "floors": [
+        {
+          "id": "1F",
+          "label": "1階",
+          "elevation": 0,
+          "height": 3
+        },
+        {
+          "id": "2F",
+          "label": "2階",
+          "elevation": 3,
+          "height": 3
+        }
+      ]
     },
     {
       "id": "core_shell_town_mid_rest_and_housing_small_b",
@@ -10948,6 +10963,246 @@
         "status": "draft_route_requires_review"
       },
       "displayLevel": 1
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_shelf",
+      "name": "収納棚（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 591.65,
+        "y": 260,
+        "width": 17,
+        "height": 29
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#688e9b",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": true,
+        "text": "収納棚（仮）",
+        "position": [
+          600.15,
+          274.5
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。",
+      "metadata": {
+        "testOnly": true
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_table",
+      "name": "作業机（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 613.65,
+        "y": 260,
+        "width": 19,
+        "height": 16
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#9f9070",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": true,
+        "text": "作業机（仮）",
+        "position": [
+          623.15,
+          268
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。",
+      "metadata": {
+        "testOnly": true
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_supply",
+      "name": "梱包物資（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "1F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 613.65,
+        "y": 283,
+        "width": 17,
+        "height": 13
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#7b9671",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": true,
+        "text": "梱包物資（仮）",
+        "position": [
+          622.15,
+          289.5
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "1階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。",
+      "metadata": {
+        "testOnly": true
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_bed",
+      "name": "寝具（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 591.65,
+        "y": 260,
+        "width": 20,
+        "height": 31
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#7f88af",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": true,
+        "text": "寝具（仮）",
+        "position": [
+          601.65,
+          275.5
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。",
+      "metadata": {
+        "testOnly": true
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_cabinet",
+      "name": "収納庫（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 616.65,
+        "y": 260,
+        "width": 16,
+        "height": 27
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#809c9b",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": true,
+        "text": "収納庫（仮）",
+        "position": [
+          624.65,
+          273.5
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。",
+      "metadata": {
+        "testOnly": true
+      }
+    },
+    {
+      "id": "core_shell_town_mid_rest_and_housing_small_a_test_battery",
+      "name": "バッテリー（仮）",
+      "parentId": "core_shell_town_mid_rest_and_housing_small_a",
+      "floorId": "2F",
+      "displayLevel": 5,
+      "objectType": "object",
+      "layer": "structures",
+      "zIndex": 45,
+      "geometry": {
+        "type": "rect",
+        "x": 615.65,
+        "y": 296,
+        "width": 17,
+        "height": 13
+      },
+      "visible": true,
+      "selectable": true,
+      "style": {
+        "fill": "#8d9f65",
+        "stroke": "#d5eef0",
+        "strokeWidth": 0.75,
+        "opacity": 0.93
+      },
+      "label": {
+        "visible": true,
+        "text": "バッテリー（仮）",
+        "position": [
+          624.15,
+          302.5
+        ],
+        "fontSize": 8,
+        "color": "#ffffff",
+        "maxWidth": 90
+      },
+      "detail": "2階の仮設置物。実際の施設設定ではなく、フロア切替・表示・選択の動作確認用。",
+      "metadata": {
+        "testOnly": true
+      }
     }
   ]
 }
