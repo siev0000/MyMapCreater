@@ -424,9 +424,10 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         if(selectedItem()?.id===f.id||selectedItem()?.parentId===f.id||selectedItem()?.containedIn===f.id||interiorPreview?.macroId){
           for(const z of f.macroZones||[]){
             if(z.id===interiorPreview?.macroId||z.id===selectedItem()?.mapDisplayParentId)continue;
-            const p=worldToPixel(z.x,z.y),w=z.h*SC,h=z.w*SC;
-            ctx.fillStyle="rgba(89,180,132,.22)";ctx.fillRect(p.px-w/2,p.py-h/2,w,h);
-            ctx.lineWidth=1.5;ctx.strokeStyle="#a4e9b5";ctx.strokeRect(p.px-w/2,p.py-h/2,w,h);
+            const p=worldToPixel(z.x,z.y),w=z.h*SC;
+            traceShape(z);
+            ctx.fillStyle="rgba(89,180,132,.22)";ctx.fill();
+            ctx.lineWidth=1.5;ctx.strokeStyle="#a4e9b5";ctx.stroke();
             if(state.labels&&selectedItem()?.id===z.id){ctx.font="11px system-ui";ctx.fillStyle="#e5fce6";ctx.fillText(z.name,p.px,p.py,Math.max(75,w));}
           }
         }
@@ -684,7 +685,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     // Arbora uses the same progressive drill-down: sector, then functional zone, then interior structure.
     const arbora=kind==='facility'&&selectedItem()?.id==='arbora_sector'?selectedItem():null;
     if(arbora&&!interiorPreview?.macroId){
-      const macro=arbora.macroZones?.find(z=>Math.abs(w.x-z.x)<=z.w/2&&Math.abs(w.y-z.y)<=z.h/2);
+      const macro=arbora.macroZones?.find(z=>withinShape(z,p));
       if(macro){
         interiorPreview={districtId:arbora.id,macroId:macro.id};
         draw();showStatus(macro.name+' の内部構造を表示中。施設を選択すると編集できます。');
