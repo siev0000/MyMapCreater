@@ -19,6 +19,11 @@ const DISTRICT_COLORS={
  "arbora_sector":{fill:"rgba(61,140,102,.23)",line:"#73c99c"}
 };
 const ROAD_GRAY="#929da5";
+// Only key transport routes appear on the first view. Other source routes remain intact.
+const PRIMARY_ROAD_TYPES=new Set(["主要幹線道路","大型機用主要通路","重貨物道路","貨物トンネル"]);
+const ROAD_DISPLAY_MODES=["main","all","off"];
+const RENDER_REVISION="中層描画 v3";
+function primaryRoute(r){return PRIMARY_ROAD_TYPES.has(r.roadType)&&!String(r.geometryStatus||"").startsWith("stale")}
 const TUNNEL_MARK="#d5dde0";
 function isTunnel(r){return /トンネル|tunnel/i.test(r.roadType||"") || /tunnel/i.test(r.subtype||"")}
 // Road widths remain in the source JSON. The overview draws only a fixed-width centerline.
@@ -66,7 +71,8 @@ function create(opts){
  const cache=new Map(),pointers=new Map();
  let floor=null,data=null,selected=null,projection="top",token=0;
  let width=1,height=1,dpr=1,zoom=1,offsetX=0,offsetY=0;
- let legendOn=false,gestureMoved=false,downAt=null,lastPinch=null;
+ let legendOn=false,gestureMoved=false,downAt=null,lastPinch=null,roadMode="main";
+ try{const saved=localStorage.getItem("aa-map-road-mode");if(ROAD_DISPLAY_MODES.includes(saved))roadMode=saved}catch(_){}
  try{legendOn=localStorage.getItem("aa-map-new-legend")==="true"}catch(_){}
  function isMiddle(){return floor==="middle"&&data}
  function setLegend(on){
@@ -77,6 +83,32 @@ function create(opts){
  }
  legendButton.addEventListener("click",()=>setLegend(!legendOn));
  setLegend(legendOn);
+ function visibleRoads(){
+  return !data||roadMode==="off"?[]:data.roads.filter(r=>r.kind!=="internal"&&(roadMode==="all"||primaryRoute(r)));
+ }
+ function roadIsVisible(r){return roadMode!=="off"&&(roadMode==="all"||primaryRoute(r))}
+ function syncRoadButton(){
+  if(!opts.roadButton)return;
+  opts.roadButton.textContent="経路："+({main:"主要のみ",all:"全案を表示",off:"非表示"})[roadMode];
+  opts.roadButton.setAttribute("aria-label","経路表示を切り替え。現在："+roadMode);
+ }
+ function setRoadMode(mode){
+  if(!ROAD_DISPLAY_MODES.includes(mode))return;
+  roadMode=mode;
+  try{localStorage.setItem("aa-map-road-mode",mode)}catch(_){}
+  if(selected?.roadType&&!roadIsVisible(selected)){selected=null;info.hidden=true}
+  syncRoadButton();renderLegend();draw();setCurrentHint();
+ }
+ if(opts.roadButton)opts.roadButton.addEventListener("click",()=>{
+  const next=ROAD_DISPLAY_MODES[(ROAD_DISPLAY_MODES.indexOf(roadMode)+1)%ROAD_DISPLAY_MODES.length];
+  setRoadMode(next);
+ });
+ syncRoadButton();
+ function setCurrentHint(){
+  const n=visibleRoads().length;
+  const label=data?(floor==="middle"?"中層":"階層")+"・配置検討案｜経路"+n+"/"+data.roads.length:"船体表示";
+  hint.textContent=label+"｜"+RENDER_REVISION;
+ }
  function setHint(s){hint.textContent=s||""}
  function baseScale(){return Math.min((width-34)/2500,(height-30)/4000)}
  function scale(){return baseScale()*zoom}
@@ -200,12 +232,13 @@ function create(opts){
  }
  function drawRoad(r){
   if(r.kind==="internal")return;
-  const pxWidth=selected?.id===r.id?2.1:1.35;
+  const pxWidth=selected?.id===r.id?2:1.1;
   ctx.save();ctx.lineCap="round";ctx.lineJoin="round";ctx.setLineDash([]);
   if(!traceRoad(r)){ctx.restore();return}
   // Thin gray centerline, regardless of road width data; no dark casing.
   // Tunnels add small sparse hatches without becoming thick bands.
   ctx.strokeStyle=selected?.id===r.id?"#fff0ac":ROAD_GRAY;
+  ctx.globalAlpha=selected?.id===r.id?1:.84;
   ctx.lineWidth=pxWidth/scale();ctx.stroke();
   tunnelHatching(r,pxWidth);
   ctx.restore();
@@ -260,8 +293,10 @@ function create(opts){
   ctx.restore();
  }
  // Painter order, from back to front. This is the single map layer priority.
+ // Geographical boundaries are not walls. Roads are drawn over district tints,
+ // but under solid structures and the terminal so they cannot cut across them.
  const WORLD_LAYER_ORDER=Object.freeze([
-  "hull","grid","districts","facilities","subzones","terminal","roads","selection"
+  "hull","grid","districts","roads","subzones","facilities","terminal","selection"
  ]);
  function drawWorld(){
   const s=scale();
@@ -291,7 +326,7 @@ function create(opts){
      for(const z of data.facilities.find(f=>f.id==="arbora_sector")?.macroZones||[])drawZone(z);
    },
    terminal:drawTerminal,
-   roads:()=>{for(const r of data.roads)drawRoad(r)},
+   roads:()=>{for(const r of visibleRoads())drawRoad(r)},
    selection:drawSelectionOutline
   };
   // The outer hull must remain visible even when floor data has not loaded.
@@ -325,7 +360,7 @@ function create(opts){
    for(const z of macro)if(contains(z,x,y))return z;
   }
   // Roads need a click tolerance even though they are intentionally drawn as thin lines.
-  for(const r of [...data.roads].reverse()){
+  for(const r of [...visibleRoads()].reverse()){
    if(r.kind==="ring"&&Math.abs(Math.hypot(x,y)-r.r)<tol)return r;
    if(r.kind==="line"&&(r.points||[]).some((p,i,a)=>i&&nearestSegmentDistance(world,a[i-1],p)<tol))return r;
   }
@@ -369,13 +404,13 @@ function create(opts){
    name:f.districtMapLabel||f.short||f.name,
    color:(DISTRICT_COLORS[f.id]||TYPES[f.type]).line,kind:"district"
   }));
-  const roads=data.roads.filter(r=>r.kind!=="internal");
+  const roads=visibleRoads();
   const entries=[];
   if(roads.some(r=>!isTunnel(r)))entries.push({name:"道路・通路（灰色・実線）",color:ROAD_GRAY,kind:"road"});
   if(roads.some(isTunnel))entries.push({name:"トンネル（斜線入り）",color:ROAD_GRAY,kind:"tunnel"});
   section("区画",districts);section("経路",entries);
   const footnote=document.createElement("small");footnote.className="legend-note";
-  footnote.textContent="仮道路・通行条件は選択時に表示。区画境界は壁ではなく、道路の交差も接続確定ではありません。";
+  footnote.textContent="道路は細い灰色の中心線。非表示の仮経路もJSONには保持しています。交差だけでは接続しません。";
   legendContent.append(footnote);
  }
  async function show(mapId,viewId,source){
@@ -397,7 +432,7 @@ function create(opts){
    }
    if(myToken!==token)return;
    data=loaded;renderLegend();draw();
-   setHint((data.floor==="middle"?"中層":"階層")+"／既存配置を読み取り専用で表示 ・ 道路接続は仮");
+   setCurrentHint();
   }catch(e){
    if(myToken!==token)return;
    setHint("マップ読み込みエラー："+e.message);renderLegend();draw();
