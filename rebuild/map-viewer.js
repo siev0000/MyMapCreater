@@ -361,6 +361,14 @@ function create(opts){
    R(.1,.08,.8,.84,"#446a7c");
    R(.2,.13,.6,.18,"#9ab9c6",null);
    R(.15,.4,.7,.43,"#658497");
+  }else if(kind==="dormancy_pod"){
+   // Top-down personal rest pod: chassis, enclosed berth, status/control port.
+   R(.06,.04,.88,.92,"#264a58");
+   R(.18,.1,.64,.72,"#406875");
+   R(.27,.19,.46,.46,"#1a3540");
+   circle(.5,.31,.115,"#90b7c2",null);
+   R(.31,.7,.38,.13,"#73a6ab");
+   circle(.82,.87,.045,"#a7dcaa",null);
   }else if(kind==="charging_station"){
    // Charging cradle: docking rails, charging port and central connector.
    R(.12,.12,.14,.76,"#537b8a");R(.74,.12,.14,.76,"#537b8a");
