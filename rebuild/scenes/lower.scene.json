@@ -940,6 +940,12 @@
         "fill": "#667484",
         "stroke": "#a7bac5",
         "strokeWidth": 2.2
+      },
+      "objectType": "outerHull",
+      "metadata": {
+        "structureRole": "outer-shell",
+        "structuralBoundary": true,
+        "collisionDefined": false
       }
     },
     {
@@ -1766,6 +1772,12 @@
         "fill": "#223d50",
         "stroke": "#a5c9e2",
         "strokeWidth": 1.1
+      },
+      "objectType": "boundary",
+      "metadata": {
+        "structureRole": "nested-outline-1",
+        "structuralBoundary": true,
+        "collisionDefined": false
       }
     },
     {
@@ -2592,6 +2604,12 @@
         "fill": "#52514b",
         "stroke": "#74cce8",
         "strokeWidth": 1.1
+      },
+      "objectType": "boundary",
+      "metadata": {
+        "structureRole": "nested-outline-2",
+        "structuralBoundary": true,
+        "collisionDefined": false
       }
     },
     {
@@ -3418,6 +3436,12 @@
         "fill": "#1b343c",
         "stroke": "#ffda94",
         "strokeWidth": 1.1
+      },
+      "objectType": "boundary",
+      "metadata": {
+        "structureRole": "nested-outline-3",
+        "structuralBoundary": true,
+        "collisionDefined": false
       }
     },
     {
