@@ -159,6 +159,16 @@ main{max-width:none;padding:0}
  .legend-footer{bottom:108px}
 }
 
+/* Canvas aspect-ratio fix: never let the intrinsic 300x150 canvas size
+   participate in CSS Grid sizing. Reserve footer space via absolute geometry. */
+.viewport{display:block;position:relative;height:calc(100dvh - 37px)}
+#map-canvas{position:absolute;inset:0 0 100px 0;width:100%;height:calc(100% - 100px);min-height:0;display:block}
+.map-info-footer{position:absolute;left:0;right:0;bottom:0;height:100px;width:100%;z-index:5}
+@media(max-width:500px){
+ .viewport{height:calc(100dvh - 34px)}
+ #map-canvas{bottom:108px;height:calc(100% - 108px)}
+ .map-info-footer{height:108px}
+}
 </style>
 </head>
 <body>
