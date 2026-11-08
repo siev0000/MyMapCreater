@@ -11,7 +11,8 @@ const specs=[
  ["05-data-and-validation.md","05 JSON・保存"],
  ["06-roadmap-and-acceptance.md","06 開発タスク"],
  ["07-floors-and-interiors.md","07 フロア・内部"],
- ["08-placeable-objects.md","08 家具・設備"]
+ ["08-placeable-objects.md","08 家具・設備"],
+ ["09-indoor-supply-icon-catalog.md","09 物資アイコン一覧"]
 ];
 const names=new Map(specs),cache=new Map();
 let current="README.md",priorFocus=null,request=0;
