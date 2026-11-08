@@ -241,11 +241,17 @@ bind("add-object",()=>{
  const index=scene.layers?.find(l=>l.id===layer)?.zIndex;
  const g=shapeOf(gtype,[x,y]);
  const labelText="新しい図形";
- const obj={id,name:labelText,parentId:null,level,objectType:kind,layer,
+ const parentId=checked("new-parent-selected")?state.selectedId:null;
+ if(checked("new-when-parent-selected")&&!parentId){
+  notice("親を選択したときだけ表示するには、先に親図形を選択し「選択中の図形を親にする」を有効にしてください","error");
+  return;
+ }
+ const obj={id,name:labelText,parentId,level,objectType:kind,layer,
   zIndex:Number.isFinite(index)?index:20,
   visible:true,selectable:true,geometry:g,
   style:{fill:gtype==="none"||gtype==="polyline"?null:"rgba(79,145,168,.22)",stroke:"#98d5df",strokeWidth:1.5},
   label:{visible:true,text:labelText,position:[x,y],fontSize:12},detail:""};
+ if(checked("new-when-parent-selected"))obj.visibility={whenParentSelected:true};
  scene.objects.push(obj);
  applyScene(scene,id);
 },"click");
