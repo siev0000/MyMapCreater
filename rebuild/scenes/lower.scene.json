@@ -62,8 +62,10 @@
   ],
   "settings": {
     "selectionZoom": {
-      "large": 1.45,
-      "medium": 2.25
+      "1": 1.45,
+      "2": 2.25,
+      "3": 2.25,
+      "4": 2.25
     },
     "labelDefaults": {
       "color": "#edf4f1",
@@ -93,10 +95,10 @@
     },
     "legendGroups": [
       {
-        "title": "大枠",
+        "title": "区画",
         "filter": {
-          "levels": [
-            "large"
+          "displayLevels": [
+            1
           ]
         },
         "swatch": "box"
@@ -946,7 +948,8 @@
         "structureRole": "outer-shell",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-1",
@@ -1778,7 +1781,8 @@
         "structureRole": "nested-outline-1",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-2",
@@ -2610,7 +2614,8 @@
         "structureRole": "nested-outline-2",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "base-shape-3",
@@ -3442,13 +3447,13 @@
         "structureRole": "nested-outline-3",
         "structuralBoundary": true,
         "collisionDefined": false
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_terminal",
       "name": "下層ターミナル",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "rect",
@@ -3483,13 +3488,13 @@
         "legacyType": "terminal",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "last_hub",
       "name": "ラストハブ",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "ring",
@@ -3526,13 +3531,13 @@
         "legacyType": "living",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "reclaim_belt",
       "name": "リクレイムベルト",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "rect",
@@ -3567,13 +3572,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "acid_zone_s9",
       "name": "アシッドゾーンS9",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "rect",
@@ -3608,13 +3613,13 @@
         "legacyType": "hazard",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "bioreactor",
       "name": "バイオリアクター",
       "parentId": null,
-      "level": "large",
       "objectType": "region",
       "geometry": {
         "type": "rect",
@@ -3649,13 +3654,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "material_hollow",
       "name": "マテリアル・ホロー",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3720,13 +3725,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "junk_rebuild_tank",
       "name": "ジャンク・リビルド槽",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3783,13 +3788,13 @@
         "legacyType": "recycling",
         "reviewStatus": null,
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_general_processing",
       "name": "一般処理区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3846,13 +3851,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_managed_processing",
       "name": "管理処理区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3917,13 +3922,13 @@
         "legacyType": "hazard",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_hazardous_processing",
       "name": "危険処理区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -3980,13 +3985,13 @@
         "legacyType": "hazard",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_special_isolation",
       "name": "特別隔離区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4051,13 +4056,13 @@
         "legacyType": "hazard",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_emergency_isolation",
       "name": "緊急隔離施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4122,13 +4127,13 @@
         "legacyType": "hazard",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "discard_registration",
       "name": "廃棄物搬入登録区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4193,13 +4198,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "waste_inspection_classification",
       "name": "廃棄物検査・分類区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4256,13 +4261,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "discarded_machine_inspection",
       "name": "廃機体事前検査区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4327,13 +4332,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "parts_recovery_area",
       "name": "部品回収区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4398,13 +4403,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "metal_re_refining_area",
       "name": "金属再精錬区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4469,13 +4474,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "recycled_resource_storage",
       "name": "再生資源倉庫",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4540,13 +4545,13 @@
         "legacyType": "recycling",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "fuel_discharge_neutralization",
       "name": "燃料・電池放電中和施設",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4611,13 +4616,13 @@
         "legacyType": "hazard",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "organic_waste_intake",
       "name": "有機廃棄物搬入口",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4682,13 +4687,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "biological_treatment_tanks",
       "name": "バイオ処理槽",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4745,13 +4750,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "sludge_treatment_area",
       "name": "汚泥処理区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4808,13 +4813,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "reusable_component_recovery",
       "name": "再利用成分回収区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4879,13 +4884,13 @@
         "legacyType": "nature",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "waste_heat_recovery",
       "name": "廃熱回収区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -4950,13 +4955,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "external_resource_intake",
       "name": "外部資源吸収設備",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5013,13 +5018,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "resource_temporary_storage",
       "name": "大型資源仮置場",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5076,13 +5081,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "foreign_object_inspection",
       "name": "異物検査区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5147,13 +5152,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "heavy_machinery_maintenance",
       "name": "重機整備区",
       "parentId": null,
-      "level": "facility",
       "objectType": "facility",
       "geometry": {
         "type": "polygon",
@@ -5218,13 +5223,13 @@
         "legacyType": "industrial",
         "reviewStatus": "draft",
         "roadType": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_terminal_concourse",
       "name": "下層ターミナルコンコース",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "circle",
@@ -5263,13 +5268,13 @@
         "roadType": "一般通路・乗換",
         "roadWidthM": 40,
         "status": null
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_junk_rebuild_tank",
       "name": "ジャンク・リビルド槽取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5317,13 +5322,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_external_resource_intake",
       "name": "外部資源吸収設備取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5367,13 +5372,13 @@
         "roadType": "貨物・機材専用道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_resource_temporary_storage",
       "name": "大型資源仮置場取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5417,13 +5422,13 @@
         "roadType": "貨物・機材専用道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_discard_registration",
       "name": "廃棄物搬入登録区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5479,13 +5484,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_heavy_machinery_maintenance",
       "name": "重機整備区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5533,13 +5538,13 @@
         "roadType": "貨物・機材専用道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_material_hollow",
       "name": "マテリアル・ホロー取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5583,13 +5588,13 @@
         "roadType": "貨物・機材専用道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_foreign_object_inspection",
       "name": "異物検査区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5633,13 +5638,13 @@
         "roadType": "貨物・機材専用道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_organic_waste_intake",
       "name": "有機廃棄物搬入口取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5687,13 +5692,13 @@
         "roadType": "有機・汚染物密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_lower_general_processing",
       "name": "一般処理区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5737,13 +5742,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_lower_managed_processing",
       "name": "管理処理区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5787,13 +5792,13 @@
         "roadType": "危険物専用密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_waste_inspection_classification",
       "name": "廃棄物検査・分類区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5849,13 +5854,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_fuel_discharge_neutralization",
       "name": "燃料・電池放電中和施設取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5907,13 +5912,13 @@
         "roadType": "危険物専用密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_lower_emergency_isolation",
       "name": "緊急隔離施設取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -5957,13 +5962,13 @@
         "roadType": "危険物専用密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_reusable_component_recovery",
       "name": "再利用成分回収区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6011,13 +6016,13 @@
         "roadType": "有機・汚染物密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_parts_recovery_area",
       "name": "部品回収区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6065,13 +6070,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_biological_treatment_tanks",
       "name": "バイオ処理槽取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6119,13 +6124,13 @@
         "roadType": "有機・汚染物密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_discarded_machine_inspection",
       "name": "廃機体事前検査区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6173,13 +6178,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_lower_hazardous_processing",
       "name": "危険処理区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6223,13 +6228,13 @@
         "roadType": "危険物専用密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_waste_heat_recovery",
       "name": "廃熱回収区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6281,13 +6286,13 @@
         "roadType": "貨物・機材専用道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_metal_re_refining_area",
       "name": "金属再精錬区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6335,13 +6340,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_sludge_treatment_area",
       "name": "汚泥処理区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6393,13 +6398,13 @@
         "roadType": "有機・汚染物密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_recycled_resource_storage",
       "name": "再生資源倉庫取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6443,13 +6448,13 @@
         "roadType": "再生区貨物・作業道路",
         "roadWidthM": 12,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     },
     {
       "id": "lower_access_lower_special_isolation",
       "name": "特別隔離区取付通路（配置案）",
       "parentId": null,
-      "level": "route",
       "objectType": "route",
       "geometry": {
         "type": "polyline",
@@ -6505,7 +6510,8 @@
         "roadType": "危険物専用密閉通路",
         "roadWidthM": 10,
         "status": "draft_route_needs_access_review"
-      }
+      },
+      "displayLevel": 1
     }
   ]
 }
