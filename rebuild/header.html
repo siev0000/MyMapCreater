@@ -221,6 +221,19 @@ main{max-width:none;padding:0}
 .map-info-footer .detail-top .detail-actions{margin-left:auto}
 .map-info-footer .detail-top:has(.detail-actions [hidden]){min-height:0}
 @media(max-width:500px){.map-info-footer .detail-path-title{flex-basis:150px;font-size:11px}}
+
+/* Exactly one compact control row; the remaining footer height is for details. */
+.map-info-footer .map-detail{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.map-info-footer .detail-context{display:flex;align-items:center;flex:0 0 27px;flex-wrap:nowrap;gap:5px;margin:0 0 4px;min-height:0;min-width:0;overflow:hidden}
+.map-info-footer .detail-path-title{flex:1 1 auto;min-width:0;min-height:0;display:block;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;font-size:12px;line-height:1.5}
+.map-info-footer .map-level-chip{flex:none;white-space:nowrap}
+.map-info-footer .floor-switch{appearance:auto;position:static;display:block;flex:0 0 auto;width:auto;max-width:95px;min-width:58px;max-height:26px;height:26px;inset:auto;overflow:hidden;padding:2px 4px;border:1px solid #648a98;border-radius:5px;background:#193945;color:#e5f8fa;font-size:11px;line-height:1.3}
+.map-info-footer .detail-close-inline{flex:0 0 25px;width:25px;height:25px;border:1px solid #648a98;border-radius:5px;background:#173846;color:white;padding:0;font-size:16px;line-height:1}
+.map-info-footer .detail-context [hidden]{display:none!important}
+.map-info-footer .detail-meta:empty{display:none}
+.map-info-footer .detail-meta{flex:none;margin:0}
+.map-info-footer .detail-text{flex:1 1 auto;min-height:0;overflow-y:auto;line-height:1.45;margin:0;white-space:pre-wrap}
+@media(max-width:500px){.map-info-footer .detail-context{gap:4px}.map-info-footer .detail-path-title{font-size:11px}.map-info-footer .floor-switch{max-width:75px;min-width:54px}}
 </style>
 </head>
 <body>
@@ -277,14 +290,8 @@ main{max-width:none;padding:0}
     <div class="detail-context">
      <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
      <h2 id="detail-title" class="detail-path-title"></h2>
-     <nav id="floor-switch" class="floor-switch" aria-label="選択した区画の階切替" hidden></nav>
-    </div>
-    <div class="detail-top">
-     <div class="detail-actions">
-      <button type="button" id="go-parent" class="detail-action" hidden>← 親へ戻る</button>
-      
-      <button type="button" id="detail-close" title="説明を閉じる" aria-label="説明を閉じる">×</button>
-     </div>
+     <select id="floor-switch" class="floor-switch" aria-label="表示する階を選択" hidden></select>
+     <button type="button" id="detail-close" class="detail-close-inline" title="説明を閉じる" aria-label="説明を閉じる">×</button>
     </div>
     <p class="detail-meta" id="detail-meta"></p>
     <p class="detail-text" id="detail-text"></p>
@@ -375,12 +382,11 @@ const viewer=window.AAMapViewer.create({
   floorSwitch.replaceChildren();
   if(floors){
    for(const floor of floors.floors){
-    const button=document.createElement('button');
-    button.type='button';button.textContent=floor.label;
-    button.setAttribute('aria-pressed',String(floor.id===floors.selectedFloorId));
-    button.addEventListener('click',()=>viewer.setFloor(floor.id));
-    floorSwitch.append(button);
+    const option=document.createElement('option');
+    option.value=floor.id;option.textContent=floor.label;
+    floorSwitch.append(option);
    }
+   floorSwitch.value=floors.selectedFloorId;
   }
   const navigation=viewer.getSelectionNavigation();
   // Display the full parent path in the existing title, not in a second row.
@@ -390,13 +396,6 @@ const viewer=window.AAMapViewer.create({
    heading.textContent=path.join(' › ');
    heading.title=heading.textContent;
   }
-  const parentBtn=$('go-parent');
-  parentBtn.hidden=!navigation?.parents?.length;
-  parentBtn.textContent='← 親へ戻る';
-  parentBtn.onclick=()=>{
-   const parent=viewer.getSelectionNavigation()?.parents.at(-1);
-   if(parent)viewer.selectItemById(parent.id,{focus:true});
-  };
   $('current-map-title').hidden=false;
   $('detail-placeholder').hidden=Boolean(item);
   renderMapTree();
@@ -404,6 +403,7 @@ const viewer=window.AAMapViewer.create({
 });
 let nodes=new Map(),roots=[],selected=null,viewId='top',selectedObjectId=null,pendingFocus=null;
 const treeExpanded=new Set(),initializedTreeMaps=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
+$('floor-switch').addEventListener('change',e=>viewer.setFloor(e.target.value));
 let defaultMapId=null;
 function validate(data){
  if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップの設定形式が不正です');
