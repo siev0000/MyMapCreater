@@ -22,16 +22,16 @@ This is a generic map drawing app for worlds, towns, buildings, ships and other 
 | settings | labelDefaults, selectionZoom, visibilityGroups |
 | objects | Array of drawable and selectable objects |
 
-Each object supports id, name, parentId, level, optional numeric displayLevel, objectType, geometry, layer, zIndex, visible, selectable, style, label, detail, metadata and visibility.
+Each object supports id, name, parentId, numeric displayLevel, objectType, geometry, layer, zIndex, visible, selectable, style, label, detail, metadata and visibility.
 
-**Incremental migration:** optional `displayLevel` accepts positive integers (1, 2, 3, ... without fixed maximum) and is editable in the inspector. Legacy string `level` remains for current menus and scene files. Existing scenes are **not yet converted**; hierarchy tree and overlap handling are still pending. Do not mistake displayLevel for a physical floor or objectType.
+**Current schema:** `displayLevel` is a positive integer (1, 2, 3, ...). All five existing scenes are migrated. Legacy string `level` is no longer written to these scenes, although older imported data remains readable. Hierarchy follows `parentId` recursively. `objectType` identifies semantics; display levels are not physical floors. Overlap handling is separate.
 
 Geometry types: rect(x,y,width,height), polygon(points), polyline(points), circle(center,radius), ring(center,innerRadius,outerRadius), none.
 
 Style: fill (nullable), stroke (nullable), strokeWidth (pixels), opacity (0..1), dash (array), lineCap and lineJoin.
 Label: visible, text, position, fontSize, color, maxWidth, fontWeight, outline, outlineWidth. label.visible=false MUST suppress the name even for large frames.
 Visibility: whenParentSelected (boolean), modeGroup and modes (array of allowed mode IDs).
-Hierarchy: level=large goes to the big-frame menu. A child object with level=medium and matching parentId goes under that parent. Do not guess parentage from positions.
+Hierarchy: `parentId` controls nesting in the menu, independent of `objectType`. Do not guess parentage from positions.
 Painter: higher zIndex draws later. An object's explicit zIndex overrides its named layer zIndex. Grid also obeys the zIndex configured for the grid layer.
 
 ## Coordinate examples
@@ -41,7 +41,7 @@ A conventional town/map can specify horizontal [1,0], vertical [0,1]. A vertical
 ## Project files
 
 - rebuild/map-viewer.js : generic scene renderer; no hard-coded project facility names or IDs
-- rebuild/header.html : two-row generic root/map navigation and current-map large/medium tree
+- rebuild/header.html : root map selector, left-side view tabs and recursive hierarchy tree
 - rebuild/map-tree.json : root and subordinate maps with scene source paths
 - rebuild/scenes/*.scene.json : standalone drawing JSONs
 - data/*-layout-draft.json : original preserved source JSONs
@@ -50,7 +50,7 @@ A conventional town/map can specify horizontal [1,0], vertical [0,1]. A vertical
 ## Migration decisions and limitations
 
 The v2 scenes are an independent representation of the approved source layout. Source coordinates were not edited. Existing showLabel=false becomes label.visible=false. Unlike the former implementation, large-area labels are NOT forced visible by a special-case renderer.
-Selected known medium-level memberships are expressed by parentId in the scene JSON. Any future hierarchy edits belong in JSON, not in code.
+Selected known memberships are expressed by parentId in the scene JSON. Any future hierarchy edits belong in JSON, not in code.
 Wall and door objects are not invented for maps without such source objects. Unsupported historical internal mechanics are not automatically reconstructed.
 Actual responsive rendering remains subject to real-browser visual QA after structural and syntax validation.
 
@@ -95,7 +95,7 @@ A drawable object joins a group with `visibility: {"modeGroup":"routes","modes":
   "legendGroups": [
     {
       "title": "地区",
-      "filter": {"levels": ["large"]},
+      "filter": {"displayLevels": [1]},
       "swatch": "box"
     },
     {
