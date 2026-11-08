@@ -2464,7 +2464,7 @@ function draw(){
   if(expandedArbora)for(const z of interiorZones){
    const node=candidate==='B'?commonMiddle.byId.get(z.id):null;
    const geometry=node?window.AAMapEngine.svgShape(commonMiddle,node,pos):null;
-   addZone(z.id,z.name,geometry?{...geometry,fontSize:12,opacity:.26,hierarchyLevel:'medium',parentId:'arbora_sector'}:
+   addZone(z.id,z.name,geometry?{...geometry,fontSize:12,opacity:.26,parentId:'arbora_sector'}:
      {tag:'rect',props:rectBounds(z.x-z.w/2,z.x+z.w/2,z.y-z.h/2,z.y+z.h/2),
       label:pos(z.x,z.y),fontSize:12,opacity:.3},
      colors.nature,placeDescriptions[z.id]);insertToClip();
