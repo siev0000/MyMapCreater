@@ -317,7 +317,7 @@ viewer=window.AAMapViewer.create({
  host:$("viewport"),canvas:$("map-canvas"),info:$("detail-panel"),
  infoTitle:$("detail-title"),infoText:$("detail-text"),infoMeta:$("detail-meta"),
  legend:$("legend-footer"),legendContent:$("legend-content"),
- legendButton:$("legend-switch"),roadButton:$("road-switch"),
+ legendButton:$("legend-switch"),visibilityControls:$("visibility-controls"),
  zoomIn:$("zoom-in"),zoomOut:$("zoom-out"),zoomReset:$("zoom-reset"),zoomLabel:$("zoom-label"),
  hint:$("map-hint"),
  onLayoutLoaded:(_map,data)=>{
