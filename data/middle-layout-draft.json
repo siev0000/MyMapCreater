@@ -1133,7 +1133,12 @@
       ],
       "cityLayoutRole": "stern_half_of_link_terminal",
       "showLabel": true,
-      "note": "広い街区であり、建物寸法ではない。工場4棟の個別寸法は維持し、内部で併存させる。"
+      "note": "広い街区であり、建物寸法ではない。工場4棟の個別寸法は維持し、内部で併存させる。",
+      "mapLabelPosition": [
+        -290,
+        555
+      ],
+      "mapLabelReason": "工場のアイコン／名称との重複を避け、街区中央の空いている場所に表示"
     },
     {
       "id": "stern_refine_lab_district",
@@ -1205,7 +1210,12 @@
       ],
       "cityLayoutRole": "stern_half_of_link_terminal",
       "showLabel": true,
-      "note": "広い街区であり、建物寸法ではない。工場4棟の個別寸法は維持し、内部で併存させる。"
+      "note": "広い街区であり、建物寸法ではない。工場4棟の個別寸法は維持し、内部で併存させる。",
+      "mapLabelPosition": [
+        -290,
+        -555
+      ],
+      "mapLabelReason": "工場のアイコン／名称との重複を避け、街区中央の空いている場所に表示"
     },
     {
       "id": "stern_equipment_lab",
