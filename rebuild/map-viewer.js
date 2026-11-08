@@ -22,7 +22,7 @@ const ROAD_GRAY="#929da5";
 // Only key transport routes appear on the first view. Other source routes remain intact.
 const PRIMARY_ROAD_TYPES=new Set(["主要幹線道路","大型機用主要通路","重貨物道路","貨物トンネル"]);
 const ROAD_DISPLAY_MODES=["main","all","off"];
-const RENDER_REVISION="中層描画 v8";
+const RENDER_REVISION="中層描画 v9";
 // Display hierarchy only. No mutation of data/middle-layout-draft.json.
 const DISPLAY_MEDIUM_CHILDREN=Object.freeze({
  arbora_sector:Object.freeze([
@@ -309,16 +309,25 @@ function create(opts){
    ctx.fillStyle=emphasis?"#fff1ad":"#edf4f1";ctx.fillText(txt,px,py,maxWidth);
   };
   const {district,medium}=getSelectionPath();
-  for(const f of data.facilities.filter(f=>f.mediumZones?.length||f.id==="arbora_sector")){
-   // The large district title must exist from the very first overview.
-   // Use its own label placement rather than replacing it with children labels.
-   if(f.id==="arbora_sector"){
-    label(f.name,f.x-f.w*.44,f.y,Math.max(124,250*scale()),selected?.id===f.id);
-    continue;
+  // Large-frame titles share the SAME source as the menu. Never infer "large"
+  // from mediumZones alone (terminals, rings and standalone areas would vanish).
+  // A legacy showLabel:false on a large ring is overridden only in this view;
+  // the source JSON and its historic rendering flag remain unchanged.
+  const byId=new Map(data.facilities.map(f=>[f.id,f]));
+  for(const entry of getHierarchy().large){
+   const f=byId.get(entry.id);
+   if(!f)continue;
+   let anchor=f.mapLabelPosition;
+   if(!Array.isArray(anchor)||anchor.length!==2){
+    if(f.ringDistrict){
+     // Ring and central terminal share coordinates; separate their labels.
+     anchor=[f.x,f.y+((f.innerRadius||0)+(f.outerRadius||0))/2];
+    }else if(f.id==="arbora_sector"){
+     anchor=[f.x-f.w*.44,f.y];
+    }else anchor=[f.x,f.y];
    }
-   if(district?.id===f.id)continue;
-   const p=f.mapLabelPosition||[f.x,f.y];
-   label(f.districtMapLabel||f.short||f.name,p[0],p[1],Math.max(60,235*scale()),false);
+   label(f.districtMapLabel||f.short||f.name,anchor[0],anchor[1],
+    Math.max(115,Math.min(270,350*scale())),selected?.id===f.id);
   }
   if(isArboraOpen()){
    // One label per registered physical facility, no macroZone labels on top.
@@ -331,7 +340,8 @@ function create(opts){
    }else for(const zone of district.mediumZones||[])
     label(zone.name,zone.x,zone.y,Math.max(50,175*scale()),selected?.id===zone.id);
   }
-  if(selected&&!isArboraOpen()&&(!selected.districtMapLabel)&&selected.id!=="middle_terminal"&&!medium?.smallZones?.some(s=>s.id===selected.id)){
+  if(selected&&!getHierarchy().large.some(f=>f.id===selected.id)&&!isArboraOpen()&&
+   (!selected.districtMapLabel)&&!medium?.smallZones?.some(s=>s.id===selected.id)){
    label(selected.name,selected.x,selected.y-60,180,true);
   }
   ctx.restore();
