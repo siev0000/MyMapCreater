@@ -58,7 +58,7 @@ function buttonStatus(){
  document.title=(state.dirty?"● ":"")+(sceneNow()?.name||"マップ")+"｜汎用マップ編集";
 }
 function setDirty(value){state.dirty=Boolean(value);buttonStatus()}
-function pushUndo(value){state.undo.push(copy(value));if(state.undo.length>60)state.undo.shift();state.redo.length=0;setDirty(true)}
+function pushUndo(value){exteriorExported=false;interiorExported.clear();state.undo.push(copy(value));if(state.undo.length>60)state.undo.shift();state.redo.length=0;setDirty(true)}
 function centerOf(geom){
  const g=geom||{type:"none"};
  if(g.type==="rect")return[g.x+g.width/2,g.y+g.height/2];
@@ -561,20 +561,64 @@ async function importFile(file){
 }
 bind("open-json",()=>$("file-input").click(),"click");
 bind("file-input",async()=>{await importFile($("file-input").files?.[0]);$("file-input").value=""});
+// A lazy interior is not part of the exterior scene file. Export it separately
+// so that selecting and editing a building never duplicates its children in town JSON.
+let exteriorExported=false;
+const interiorExported=new Set();
+function externalOwners(data){return data.objects.filter(o=>typeof o.interiorSource==="string"&&o.interiorSource)}
+function belongingTo(data,rootId){
+ const ids=new Set([rootId]);let changed=true;
+ while(changed){changed=false;for(const o of data.objects){
+  if(!ids.has(o.id)&&ids.has(o.parentId)){ids.add(o.id);changed=true}
+ }}
+ return data.objects.filter(o=>o.id!==rootId&&ids.has(o.id));
+}
+function exteriorOnly(data){
+ const exclude=new Set();
+ for(const root of externalOwners(data))for(const o of belongingTo(data,root.id))exclude.add(o.id);
+ return{...data,objects:data.objects.filter(o=>!exclude.has(o.id))};
+}
 function download(){
  const data=sceneNow();if(!data){notice("保存するJSONがありません","error");return}
  try{
-  window.AAMapViewer.sceneCheck(data);
-  const blob=new Blob([JSON.stringify(data,null,2)+"\n"],{type:"application/json"});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement("a");
-  link.href=url;link.download=state.savingName||((data.id||"map")+".scene.json");
-  document.body.append(link);link.click();link.remove();
-  URL.revokeObjectURL(url);
-  setDirty(false);notice("JSONを書き出しました。リポジトリへの反映は別途行ってください。","success");
+  const exterior=exteriorOnly(data);
+  window.AAMapViewer.sceneCheck(exterior);
+  downloadBuildingFile(exterior,state.savingName||((data.id||"map")+".scene.json"));
+  exteriorExported=true;
+  const loaded=externalOwners(data).filter(root=>belongingTo(data,root.id).length);
+  if(!loaded.length){setDirty(false);notice("街マップJSONを保存しました。建物内部は別JSONのまま保持します。","success")}
+  else{
+   if(loaded.every(root=>interiorExported.has(root.id)))setDirty(false);
+   notice("街マップJSONを保存しました。読み込んだ建物の内部JSONは別途保存してください。","success");
+  }
  }catch(error){notice("保存できません："+error.message,"error")}
 }
+function selectedExternalOwner(data){
+ let object=data.objects.find(o=>o.id===state.selectedId);
+ const byId=new Map(data.objects.map(o=>[o.id,o])),seen=new Set();
+ while(object&&!seen.has(object.id)){
+  if(object.interiorSource)return object;
+  seen.add(object.id);object=byId.get(object.parentId);
+ }
+ return null;
+}
+function downloadInterior(){
+ const data=sceneNow();if(!data){notice("建物を選択してください","error");return}
+ const root=selectedExternalOwner(data);
+ if(!root){notice("内部JSON参照がある建物、またはその内部設備を選択してください","error");return}
+ const objects=belongingTo(data,root.id);
+ if(!objects.length){notice("内部データは未読み込みです。建物を選択して読み込み完了後に保存してください","error");return}
+ try{
+  const interior={schemaVersion:2,buildingId:root.id,objects};
+  const name=root.interiorSource.split("/").pop()||root.id+".interior.json";
+  downloadBuildingFile(interior,name);
+  interiorExported.add(root.id);
+  if(exteriorExported&&externalOwners(data).filter(o=>belongingTo(data,o.id).length).every(o=>interiorExported.has(o.id)))setDirty(false);
+  notice("建物内部JSONを保存しました。配置先："+root.interiorSource+"（リポジトリへの反映は別途必要）","success");
+ }catch(error){notice("内部JSONの保存失敗："+error.message,"error")}
+}
 bind("download",download,"click");
+bind("download-interior",downloadInterior,"click");
 bind("show-scene-json",()=>{
  const fields=$("scene-json-fields"),open=fields.classList.contains("hidden");
  fields.classList.toggle("hidden",!open);
@@ -614,6 +658,15 @@ viewer=window.AAMapViewer.create({
   if(data)$("scene-name").textContent=data.name||data.id;
   else $("scene-name").textContent="マップ";
   showObjects();renderSelected();showNewLayerChoices();
+ },
+ onInteriorLoaded:(id,data)=>{
+  state.scene=copy(data);
+  showObjects();renderSelected();
+  notice("建物内部を読み込みました："+(data.objects.find(o=>o.id===id)?.name||id),"success");
+ },
+ onInteriorStatus:(id,status,message)=>{
+  if(status==="loading")notice("建物内部を読み込み中："+id);
+  if(status==="error")notice("建物内部の読込に失敗："+message,"error");
  },
  onLayoutError:(_map,error)=>notice("読み込みエラー："+error,"error"),
  onSelectionChanged:(_map,obj)=>{
