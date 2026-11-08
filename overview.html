@@ -336,7 +336,8 @@ const candidates={
         "y": 350,
         "w": 270,
         "h": 190,
-        "isDistrict": true
+        "isDistrict": true,
+        "labelPos": null
       },
       {
         "id": "refine_valley",
@@ -346,7 +347,8 @@ const candidates={
         "y": -350,
         "w": 270,
         "h": 190,
-        "isDistrict": true
+        "isDistrict": true,
+        "labelPos": null
       },
       {
         "id": "stern_core_shell_town",
@@ -394,7 +396,11 @@ const candidates={
             340
           ]
         ],
-        "isDistrict": true
+        "isDistrict": true,
+        "labelPos": [
+          -290,
+          555
+        ]
       },
       {
         "id": "stern_refine_lab_district",
@@ -442,7 +448,11 @@ const candidates={
             -160
           ]
         ],
-        "isDistrict": true
+        "isDistrict": true,
+        "labelPos": [
+          -290,
+          -555
+        ]
       }
     ],
     "interior": [
@@ -612,7 +622,7 @@ function draw(){
    const upper=t.tier==='upper';
    const title=t.id==='stern_core_shell_town'?'船尾タウン街区':t.id==='stern_refine_lab_district'?'船尾工房・研究街区':(upper?'上位 ':'下位 ')+(t.id.includes('town')?'タウン':'ラボ区');
    const shape=t.polygon?.length>=3?
-     {tag:'polygon',props:{points:t.polygon.map(([x,y])=>pos(x,y).join(',')).join(' ')},label:pos(t.x,t.y),fontSize:14,opacity:.12}:
+     {tag:'polygon',props:{points:t.polygon.map(([x,y])=>pos(x,y).join(',')).join(' ')},label:pos(...(t.labelPos||[t.x,t.y])),fontSize:14,opacity:.12}:
      {tag:'rect',props:rectBounds(t.x-t.w/2,t.x+t.w/2,t.y-t.h/2,t.y+t.h/2),label:pos(t.x,t.y),fontSize:13,opacity:.20};
    addZone(t.id,title,shape,upper?'#9ed7ee':'#c5a079',placeDescriptions[t.id]);insertToClip();
   }
