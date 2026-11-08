@@ -51,3 +51,68 @@ The v2 scenes are an independent representation of the approved source layout. S
 Selected known medium-level memberships are expressed by parentId in the scene JSON. Any future hierarchy edits belong in JSON, not in code.
 Wall and door objects are not invented for maps without such source objects. Unsupported historical internal mechanics are not automatically reconstructed.
 Actual responsive rendering remains subject to real-browser visual QA after structural and syntax validation.
+
+
+## Editing UI
+
+The same scene JSON is now editable in `rebuild/editor.html` using `rebuild/map-editor.js`.
+
+- Shapes (geometry.type) and semantic role (objectType) are **independent**. A line is not automatically a road or a wall; the user chooses its role and layer.
+- Users may add, duplicate, delete, drag and edit any object. Labels, color, opacity, parentId, level, layer and zIndex are separately configurable.
+- The full object JSON can be edited directly for properties not exposed by individual form fields.
+- Undo/Redo covers form changes and completed object drags. Selecting objects does not alter the scene.
+- The editor imports and downloads JSON. GitHub Pages does not allow committing files directly. Downloaded JSON must be added to the corresponding scene path separately.
+- The previous site-specific editor and overview remain under `legacy/` as historical references; primary entrypoints redirect to the generic pages.
+
+## JSON-driven visibility groups
+
+The renderer builds display-mode buttons from `settings.visibilityGroups`, not from hard-coded road names:
+
+```json
+{
+  "visibilityGroups": {
+    "routes": {
+      "label": "経路",
+      "default": "main",
+      "options": [
+        {"id": "main", "label": "主要のみ"},
+        {"id": "all", "label": "全案を表示"},
+        {"id": "off", "label": "非表示"}
+      ]
+    }
+  }
+}
+```
+
+A drawable object joins a group with `visibility: {"modeGroup":"routes","modes":["main","all"]}`. Other arbitrary group keys work identically.
+
+## JSON-driven legend
+
+```json
+{
+  "legendGroups": [
+    {
+      "title": "地区",
+      "filter": {"levels": ["large"]},
+      "swatch": "box"
+    },
+    {
+      "title": "壁",
+      "filter": {"objectTypes": ["wall"], "visibleOnly": true},
+      "swatch": "line"
+    }
+  ]
+}
+```
+
+Optional `uniqueBy` and `displayField` are dotted paths into an object's fields, e.g. `metadata.roadType`. The renderer does not decide that specific object types must appear in the legend.
+
+## Validations
+
+```sh
+node rebuild/tests/validate-scenes.js
+node rebuild/tests/editor-smoke.js
+```
+
+The first test checks schema consistency and unchanged legacy coordinates. The second exercises editing and undo/redo using a fictional town instead of site-specific fixtures.
+
