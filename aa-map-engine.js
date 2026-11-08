@@ -155,10 +155,44 @@ function svgShape(m,n,project){
  if(['rectangle','polygon'].includes(g.kind))return {tag:'polygon',props:{points:polygon(m,n).map(pt=>project(...pt).join(',')).join(' ')},label:project(p.x,p.y)};
  return null;
 }
+// Draw routes around solid structures without implying a confirmed door or connection.
+// The source path remains intact; returned subpaths only omit spans inside buildings.
+function visiblePolyline(points,blockerPolygons){
+ if(!Array.isArray(points)||points.length<2)return [];
+ const blockers=blockerPolygons.filter(p=>Array.isArray(p)&&p.length>=3);
+ if(!blockers.length)return [points.map(p=>[...p])];
+ const result=[];let current=[];
+ const cross=(a,b)=>a[0]*b[1]-a[1]*b[0];
+ const close=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<1e-6;
+ const flush=()=>{if(current.length>=2)result.push(current);current=[]};
+ for(let k=1;k<points.length;k++){
+  const A=points[k-1],B=points[k],delta=[B[0]-A[0],B[1]-A[1]],ts=[0,1];
+  for(const P of blockers)for(let j=0;j<P.length;j++){
+   const C=P[j],D=P[(j+1)%P.length],edge=[D[0]-C[0],D[1]-C[1]];
+   const den=cross(delta,edge);if(Math.abs(den)<1e-9)continue;
+   const ac=[C[0]-A[0],C[1]-A[1]],t=cross(ac,edge)/den,u=cross(ac,delta)/den;
+   if(t>1e-7&&t<1-1e-7&&u>=-1e-7&&u<=1+1e-7)ts.push(t);
+  }
+  ts.sort((a,b)=>a-b);
+  const unique=ts.filter((t,i)=>!i||t-ts[i-1]>1e-7);
+  for(let j=1;j<unique.length;j++){
+   const t0=unique[j-1],t1=unique[j];
+   if(t1-t0<1e-7)continue;
+   const at=t=>[A[0]+delta[0]*t,A[1]+delta[1]*t];
+   const mid=at((t0+t1)/2);
+   if(blockers.some(P=>pointInPolygon(P,mid[0],mid[1]))){flush();continue}
+   const start=at(t0),end=at(t1);
+   if(current.length&&close(current[current.length-1],start))current.push(end);
+   else{flush();current=[start,end]}
+  }
+ }
+ flush();
+ return result;
+}
 function snapshot(m){return{schemaVersion:2,floor:m.floor,unit:m.unit,generator:'aa-map-engine.js: normalizeFloor',
  notes:'Derived preview only; draft roads/rooms/connections do not become confirmed.',
  objects:m.nodes.map(n=>({id:n.id,name:n.name,type:n.type,subtype:n.subtype,parentId:n.parentId,
  position:n.position,rotation:n.rotation,geometry:n.geometry,properties:n.properties}))}};
 global.AAMapEngine=Object.freeze({normalizeFloor,worldPose,polygon,contains,middleState,hitMiddleChild,
- drawMiddleCanvas,childrenOf,svgShape,snapshot});
+ drawMiddleCanvas,childrenOf,svgShape,visiblePolyline,snapshot});
 })(window);
