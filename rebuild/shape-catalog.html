@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>室内図形プリセット・プレビュー</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:#e4f0f4;background:#112a34}
+*{box-sizing:border-box}body{margin:0;padding:14px}h1{font-size:18px;margin:0 0 8px}.intro{color:#b4cbd3;font-size:13px;line-height:1.6;margin:0 0 14px}
+.group{font-size:15px;margin:20px 0 9px;border-bottom:1px solid #456977;padding-bottom:5px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.item{border:1px solid #446879;background:#183540;border-radius:10px;padding:8px;min-width:0}
+.item svg{display:block;width:100%;height:110px;border-radius:7px;background:#0c2028}
+.name{font-size:13px;font-weight:750;margin:8px 0 3px}.detail{font-size:11px;color:#aec8d1;overflow-wrap:anywhere}
+.legend{font-size:12px;color:#b9cfd6;margin-top:15px;line-height:1.6}
+</style></head><body>
+<h1>室内配置用・図形プリセット一覧</h1>
+<p class="intro">文字アイコンが適さない家具・大型設備を、<strong>図形だけ</strong>で表現するための初期案です。プレビューは上から見た平面図。図形は実際にSVGで描画しています。色と寸法は編集可能な初期値として検討中で、マップへの配置機能は未実装です。</p>
+<div id="gallery"></div>
+<p class="legend">※ 物資（📦、🔋など）は別の「09 物資アイコン一覧」で定義します。物資30種に一律に矩形や円を重ねることは必須ではありません。ここに掲載した図形は設置物自体の形状を示し、詳細寸法・通行判定は別設定です。</p>
+<script>
+"use strict";
+const ns="http://www.w3.org/2000/svg";
+const $=tag=>document.createElement(tag);
+const node=(tag,attrs={})=>{const e=document.createElementNS(ns,tag);for(const [key,value] of Object.entries(attrs))e.setAttribute(key,String(value));return e};
+const make=(svg,tag,attrs)=>{const e=node(tag,attrs);svg.append(e);return e};
+const stroke="#92bec8",fill="#355768",light="#789eaa",dark="#17313e";
+const items=[
+ {group:"家具・室内設備",id:"table",name:"机・テーブル",caption:"天板＋脚（矩形）",draw:s=>{make(s,"rect",{x:22,y:25,width:76,height:46,rx:3,fill,stroke});for(const x of [29,91])for(const y of [32,64])make(s,"rect",{x:x-3,y:y-3,width:6,height:6,fill:light})}},
+ {group:"家具・室内設備",id:"chair",name:"椅子",caption:"座面と背もたれ",draw:s=>{make(s,"rect",{x:42,y:34,width:36,height:38,rx:5,fill,stroke});make(s,"rect",{x:38,y:22,width:44,height:13,rx:3,fill:light,stroke});make(s,"path",{d:"M38 45H31V64H38 M82 45H89V64H82",fill:"none",stroke})}},
+ {group:"家具・室内設備",id:"shelf",name:"棚・収納棚",caption:"外枠＋棚板",draw:s=>{make(s,"rect",{x:28,y:12,width:64,height:78,rx:2,fill:dark,stroke, "stroke-width":3});for(const y of [31,52,73])make(s,"line",{x1:28,x2:92,y1:y,y2:y,stroke:light,"stroke-width":5})}},
+ {group:"家具・室内設備",id:"bed",name:"ベッド",caption:"枠＋枕と寝具",draw:s=>{make(s,"rect",{x:33,y:8,width:54,height:88,rx:4,fill,stroke,"stroke-width":2});make(s,"rect",{x:40,y:17,width:40,height:19,rx:4,fill:light});make(s,"rect",{x:39,y:43,width:42,height:42,rx:3,fill:"#456b78",stroke:"#729dab"})}},
+ {group:"家具・室内設備",id:"cabinet",name:"収納庫・ロッカー",caption:"扉2枚＋取っ手",draw:s=>{make(s,"rect",{x:23,y:15,width:74,height:72,rx:2,fill:dark,stroke,"stroke-width":2});make(s,"line",{x1:60,y1:15,x2:60,y2:87,stroke});for(const x of [54,66])make(s,"circle",{cx:x,cy:51,r:2.8,fill:light})}},
+ {group:"家具・室内設備",id:"counter",name:"カウンター",caption:"長い天板＋下部",draw:s=>{make(s,"path",{d:"M12 25H108V40H26V78H12Z",fill,stroke,"stroke-width":2});make(s,"path",{d:"M26 40H98V51H38V78H26Z",fill:dark,stroke:"#668f9e"})}},
+ {group:"家具・室内設備",id:"sink",name:"流し台",caption:"台＋水槽と蛇口",draw:s=>{make(s,"rect",{x:23,y:23,width:74,height:54,rx:4,fill,stroke});make(s,"rect",{x:36,y:33,width:48,height:33,rx:8,fill:dark,stroke:light,"stroke-width":2});make(s,"circle",{cx:60,cy:53,r:4,fill:light});make(s,"path",{d:"M58 25V35H68",fill:"none",stroke:"#d0e7ed","stroke-width":3})}},
+ {group:"大型設備・装置",id:"generator",name:"発電機",caption:"筐体＋冷却グリル",draw:s=>{make(s,"rect",{x:16,y:20,width:88,height:62,rx:5,fill:dark,stroke,"stroke-width":3});for(let x=30;x<=62;x+=8)make(s,"line",{x1:x,y1:31,x2:x,y2:70,stroke:light,"stroke-width":3});make(s,"circle",{cx:86,cy:52,r:12,fill,stroke});make(s,"circle",{cx:86,cy:52,r:4,fill:light})}},
+ {group:"大型設備・装置",id:"tank",name:"タンク",caption:"円筒の平面形",draw:s=>{make(s,"circle",{cx:60,cy:51,r:34,fill,stroke,"stroke-width":3});make(s,"circle",{cx:60,cy:51,r:23,fill:"none",stroke:light,"stroke-dasharray":"5 4"});make(s,"circle",{cx:60,cy:51,r:5,fill:dark,stroke})}},
+ {group:"大型設備・装置",id:"control_panel",name:"制御盤",caption:"操作面＋画面",draw:s=>{make(s,"rect",{x:20,y:19,width:80,height:66,rx:4,fill:dark,stroke,"stroke-width":2});make(s,"rect",{x:30,y:28,width:60,height:29,rx:3,fill:"#2a6671",stroke:light});for(const x of [42,60,78])make(s,"circle",{cx:x,cy:70,r:4,fill:light})}},
+ {group:"大型設備・装置",id:"workbench",name:"大型作業台",caption:"天板＋バイス・作業領域",draw:s=>{make(s,"rect",{x:12,y:29,width:96,height:47,rx:2,fill,stroke,"stroke-width":2});make(s,"rect",{x:18,y:36,width:25,height:29,rx:2,fill:dark,stroke:light});make(s,"line",{x1:52,y1:36,x2:52,y2:68,stroke:light,"stroke-dasharray":"3 4"});make(s,"rect",{x:90,y:22,width:12,height:17,fill:light})}},
+ {group:"大型設備・装置",id:"conveyor",name:"搬送装置",caption:"長方形＋ローラー",draw:s=>{make(s,"rect",{x:12,y:30,width:96,height:41,rx:6,fill:dark,stroke,"stroke-width":2});for(let x=24;x<=96;x+=12)make(s,"line",{x1:x,y1:35,x2:x,y2:66,stroke:light,"stroke-width":4})}},
+ {group:"大型設備・装置",id:"storage_container",name:"大型コンテナ",caption:"箱形＋補強ライン",draw:s=>{make(s,"rect",{x:16,y:22,width:88,height:62,rx:2,fill,stroke,"stroke-width":3});for(const x of [34,51,68,85])make(s,"line",{x1:x,y1:23,x2:x,y2:83,stroke:light,"stroke-width":3})}}
+];
+const groups=[...new Set(items.map(i=>i.group))],root=document.getElementById("gallery");
+for(const group of groups){
+ const header=$("h2");header.className="group";header.textContent=group;root.append(header);
+ const grid=$("div");grid.className="gallery";root.append(grid);
+ for(const item of items.filter(i=>i.group===group)){
+  const box=$("div");box.className="item";const svg=node("svg",{viewBox:"0 0 120 104","role":"img","aria-label":item.name+"の平面図"});
+  item.draw(svg);box.append(svg);
+  const name=$("div");name.className="name";name.textContent=item.name;box.append(name);
+  const caption=$("div");caption.className="detail";caption.textContent=item.caption+"　/　"+item.id;box.append(caption);
+  grid.append(box);
+ }
+}
+</script></body></html>
