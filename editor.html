@@ -276,18 +276,24 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const trunk=purple||["draft_industrial_starboard","middle_industrial_freight_road","middle_cargo_tunnel"].includes(r.id);
     ctx.lineCap="round";ctx.lineJoin="round";
     ctx.strokeStyle=purple?"#d3b4ee":freight?"#e4ac6a":r.color||"#a5b8c8";
-    const pts=(r.points||[]).map(([x,y])=>{const p=worldToPixel(x,y);return[p.px,p.py]});
     if(r.kind==="ring"){if(roadPath(r)){ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.stroke()}return;}
-    if(pts.length<2)return;
-    for(const off of trunk?[-2.7,2.7]:[0]){
-      ctx.beginPath();
-      pts.forEach(([x,y],i)=>{
-        const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
-        const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;
-        const px=x-off*dy/l,py=y+off*dx/l;
-        if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
-      });
-      ctx.lineWidth=trunk?1.55:1.65;ctx.setLineDash([]);ctx.stroke();
+    if(r.kind!=="line")return;
+    const blockers=current().facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&!f.areaFrame&&f.type!=="terminal").map(f=>
+      facilityShape(f).map(p=>{const w=pixelToWorld(p.px,p.py);return [w.x,w.y]}));
+    const segments=window.AAMapEngine.visiblePolyline(r.points||[],blockers);
+    for(const segment of segments){
+      const pts=segment.map(([x,y])=>{const p=worldToPixel(x,y);return[p.px,p.py]});
+      if(pts.length<2)continue;
+      for(const off of trunk?[-2.7,2.7]:[0]){
+        ctx.beginPath();
+        pts.forEach(([x,y],i)=>{
+          const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+          const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;
+          const px=x-off*dy/l,py=y+off*dx/l;
+          if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+        });
+        ctx.lineWidth=trunk?1.55:1.65;ctx.setLineDash(r.status==="draft_route_requires_review"?[7,6]:[]);ctx.stroke();
+      }
     }
   }
   function drawRoad(r,alpha=1){
