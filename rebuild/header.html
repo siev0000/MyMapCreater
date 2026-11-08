@@ -256,7 +256,7 @@ main{max-width:none;padding:0}
     <div class="detail-top"><h2 id="detail-title"></h2>
      <div class="detail-actions">
       <button type="button" id="go-parent" class="detail-action" hidden>← 親へ戻る</button>
-      <button type="button" id="open-children" class="detail-action" hidden aria-expanded="false" aria-controls="child-navigation">内部を見る ▾</button>
+      
       <button type="button" id="detail-close" title="説明を閉じる" aria-label="説明を閉じる">×</button>
      </div>
     </div>
@@ -280,7 +280,7 @@ main{max-width:none;padding:0}
  </section>
 </div>
 <script src="./spec-viewer.js?v=5"></script>
-<script src="./map-viewer.js?v=surrounding-map-v3"></script>
+<script src="./map-viewer.js?v=select-depth-v4"></script>
 <script>
 (()=>{
 'use strict';
@@ -306,12 +306,12 @@ const viewer=window.AAMapViewer.create({
   floorLoadErrors.delete(mapId);
   if(pendingFocus?.floorId===mapId){
    const pending=pendingFocus;pendingFocus=null;
-   viewer.navigateToItem(pending.id);
+   viewer.selectItemById(pending.id,{focus:true});
   }else{
    // Optional deep link to an exact object in the currently loaded scene.
    const objectId=new URLSearchParams(location.search).get('focus');
    if(objectId&&data?.objects?.some(o=>o.id===objectId)){
-    viewer.navigateToItem(objectId);
+    viewer.selectItemById(objectId,{focus:true});
    }
   }
   renderMapTree();
@@ -357,25 +357,17 @@ const viewer=window.AAMapViewer.create({
    }
   }
   const navigation=viewer.getSelectionNavigation();
-  const viewRoot=viewer.getViewRoot();
-  $('current-map-title').hidden=Boolean(viewRoot);
-  const parentBtn=$('go-parent'),childBtn=$('open-children');
-  parentBtn.hidden=!viewRoot;
-  parentBtn.textContent='← 上の階層へ';
-  parentBtn.onclick=()=>viewer.exitItem();
-  const hasChildren=Boolean(navigation?.children?.length);
-  childBtn.hidden=!hasChildren;
-  childBtn.textContent=hasChildren?'区画に拡大 →':'区画に拡大';
-  childBtn.setAttribute('aria-expanded','false');
-
-
+  const parentBtn=$('go-parent');
+  parentBtn.hidden=!navigation?.parents?.length;
+  parentBtn.textContent='← 親へ戻る';
+  parentBtn.onclick=()=>{
+   const parent=viewer.getSelectionNavigation()?.parents.at(-1);
+   if(parent)viewer.selectItemById(parent.id,{focus:true});
+  };
+  $('current-map-title').hidden=false;
   const breadcrumb=$('interior-breadcrumb');
-  breadcrumb.hidden=!viewRoot;
-  if(viewRoot){
-   const path=viewer.getViewRootPath();
-   breadcrumb.textContent='注目中：'+path.map(n=>n.name).join(' › ');
-  }else breadcrumb.textContent='';
-
+  breadcrumb.hidden=!item;
+  breadcrumb.textContent=item?navigation?.parents.concat([navigation.current]).map(n=>n.name).join(' › ')||'':'';
   $('detail-placeholder').hidden=Boolean(item);
   renderMapTree();
  }
@@ -503,10 +495,7 @@ function focusMapItem(floorId,id){
  if(selected!==floorId){
   pendingFocus={floorId,id};select(floorId,null);return;
  }
- const obj=viewer.getScene()?.objects.find(o=>o.id===id);
- const enter=obj?.displayLevel>=viewer.initialDisplayLevel()&&
-  viewer.getScene()?.objects.some(o=>o.parentId===id);
- const ok=enter?viewer.navigateToItem(id):viewer.selectItemById(id,{focus:true});
+ const ok=viewer.selectItemById(id,{focus:true});
  if(!ok)pendingFocus={floorId,id};
  renderMapTree();
 }
@@ -576,7 +565,6 @@ for(const [id,tab] of [['menu-tab-map','map'],['menu-tab-settings','settings']])
   $(next==='map'?'menu-tab-map':'menu-tab-settings').focus();
  });
 }
-$('open-children').addEventListener('click',()=>viewer.enterItem());
 function closeMenu(){
  $('map-menu-popover').hidden=true;
  $('map-menu-button').setAttribute('aria-expanded','false');
