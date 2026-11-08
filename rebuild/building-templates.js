@@ -337,6 +337,7 @@ function capture(scene,rootId,info){
   for(const o of scene.objects)if(!included.has(o.id)&&included.has(o.parentId)){included.add(o.id);added=true}
  }
  for(const o of scene.objects)if(included.has(o.id))subset.push(copy(o));
+ if(root.interiorSource&&subset.length===1)throw Error("建物内部の読み込みが完了してからテンプレート登録してください");
  const id=String(info?.id||"").trim(),name=String(info?.name||root.name||"").trim();
  if(!/^[a-z0-9_-]{3,80}$/i.test(id)||!name)throw Error("英数字ID（3〜80文字）と名称が必要です");
  if(subset.length>500)throw Error("選択した建物には500個超のオブジェクトがあります");
