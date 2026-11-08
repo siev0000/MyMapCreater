@@ -169,6 +169,11 @@ main{max-width:none;padding:0}
  #map-canvas{bottom:108px;height:calc(100% - 108px)}
  .map-info-footer{height:108px}
 }
+/* Selected object's level is a small corner indicator, not a footer row. */
+.map-level-chip{position:absolute;z-index:6;left:9px;bottom:112px;border:1px solid #648a98;border-radius:5px;background:rgba(9,30,40,.9);padding:3px 6px;font-size:11px;font-weight:700;color:#d7f4fa;pointer-events:none}
+.map-level-chip[hidden]{display:none}
+.map-info-footer .detail-meta:empty{display:none}
+@media(max-width:500px){.map-level-chip{left:6px;bottom:119px}}
 </style>
 </head>
 <body>
@@ -207,6 +212,7 @@ main{max-width:none;padding:0}
   <nav class="vertical-map-tabs" aria-label="マップ切替"><div id="view-tabs" class="vertical-map-tab-list"></div></nav>
   <canvas id="map-canvas" aria-label="地図をドラッグで移動、ホイールやボタンで拡大縮小。タップして区画情報を選択"></canvas>
   <div class="map-title-chip" id="current-map-title" aria-live="polite">マップを読み込み中…</div>
+  <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
   <div class="map-hint" id="map-hint" role="status" hidden></div>
   <div class="map-zoom" aria-label="マップの拡大縮小">
    <button type="button" id="zoom-out" title="縮小">−</button>
@@ -270,6 +276,9 @@ const viewer=window.AAMapViewer.create({
  },
  onSelectionChanged:(mapId,item)=>{
   selectedObjectId=item?.id||null;
+  const levelChip=$('selected-display-level');
+  levelChip.hidden=!(item&&Number.isSafeInteger(item.displayLevel));
+  levelChip.textContent=levelChip.hidden?'':'Lv '+item.displayLevel;
   // When the user taps an object directly on the map, open its parents next
   // time the tree is viewed. Do not override manual collapse while menu is open.
   if(item&&$('map-menu-popover').hidden){
