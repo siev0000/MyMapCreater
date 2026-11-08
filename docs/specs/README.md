@@ -24,7 +24,8 @@
 | [06-roadmap-and-acceptance.md](06-roadmap-and-acceptance.md) | 施設内部までの必須機能・優先順位・受け入れ条件 |
 | [07-floors-and-interiors.md](07-floors-and-interiors.md) | 物理フロア、階段、施設内部 |
 | [08-placeable-objects.md](08-placeable-objects.md) | 大型設備・家具などの配置 |
-| [09-indoor-supply-icon-catalog.md](09-indoor-supply-icon-catalog.md) | 室内の物資用文字アイコン候補一覧 |
+| [09-indoor-supply-icon-catalog.md](09-indoor-supply-icon-catalog.md) | 室内物資アイコンの割り当て表 |
+| [10-shape-only-catalog.md](10-shape-only-catalog.md) | 家具・大型設備の図形のみの一覧とSVGプレビュー |
 
 ## 完成範囲の確定
 
