@@ -823,12 +823,13 @@ function switchWorld(id,persist=true){
  if(persist)saveDisplaySettings();
 }
 const DISPLAY_SETTINGS_KEY='aa-map-viewer-display-v1';
+let supportsExplicitlyEnabled=false; // Legacy saved defaults must not re-enable provisional columns.
 const DISPLAY_LAYER_KEYS=['labels','grid','roads','pods','freight','structures','districts','drafts'];
 function saveDisplaySettings(){
  try{
   const layers={};
   for(const key of DISPLAY_LAYER_KEYS)layers[key]=state[key];
-  localStorage.setItem(DISPLAY_SETTINGS_KEY,JSON.stringify({version:1,layers,gridMeters,aaGrids,hull:state.hull,shipView,gridOnTop:state.gridOnTop,showProposal,worldId:activeWorldId,aaFloor:preferredFloor}));
+  localStorage.setItem(DISPLAY_SETTINGS_KEY,JSON.stringify({version:1,layers,gridMeters,aaGrids,hull:state.hull,shipView,gridOnTop:state.gridOnTop,showProposal,supportsExplicitlyEnabled,worldId:activeWorldId,aaFloor:preferredFloor}));
  }catch(error){console.warn('表示設定を保存できませんでした',error)}
 }
 function updateDisplaySettingsButtons(){
@@ -860,6 +861,8 @@ function restoreDisplaySettings(){
    const saved=JSON.parse(raw);
    if(saved&&saved.version===1){
     for(const key of DISPLAY_LAYER_KEYS)if(typeof saved.layers?.[key]==='boolean')state[key]=saved.layers[key];
+    supportsExplicitlyEnabled=saved.supportsExplicitlyEnabled===true;
+    if(!supportsExplicitlyEnabled)state.structures=false; // Existing viewers may have the old default ON cached.
     if([10,50,100].includes(saved.gridMeters))gridMeters=saved.gridMeters;
     if(typeof saved.hull==='boolean')state.hull=saved.hull;
     if(saved.shipView==='side'||saved.shipView==='top')shipView=saved.shipView;
@@ -1951,7 +1954,9 @@ canvas.addEventListener('click',e=>{
  renderPlaces();updateInteriorPanels();renderInfo();draw();
 });
 document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{
- const n=b.dataset.layer;state[n]=!state[n];updateDisplaySettingsButtons();saveDisplaySettings();draw();
+ const n=b.dataset.layer;state[n]=!state[n];
+ if(n==='structures')supportsExplicitlyEnabled=true;
+ updateDisplaySettingsButtons();saveDisplaySettings();draw();
 });
 document.getElementById('gridOnTop').onclick=()=>{state.gridOnTop=!state.gridOnTop;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
 document.getElementById('darkGridToggle').onclick=()=>{state.grid=!state.grid;updateDisplaySettingsButtons();saveDisplaySettings();draw()};
