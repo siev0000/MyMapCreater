@@ -107,7 +107,7 @@ main{max-width:none;padding:0}
      <div id="map-menu-list" class="menu-list" role="group" aria-label="マップ階層一覧"></div>
      <div class="menu-heading">表示設定</div>
      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
-     <button type="button" id="road-switch" class="menu-settings-button" title="主要のみ → 全案 → 非表示">経路：主要のみ</button>
+     <div id="visibility-controls" aria-label="JSONで定義された表示グループ"></div>
      <a id="open-editor-link" class="menu-editor-link" href="./editor.html">現在のマップを編集（JSON）</a>
     </div>
    </div>
@@ -153,7 +153,7 @@ const viewer=window.AAMapViewer.create({
  host:$('viewport'),canvas:$('map-canvas'),
  info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
  infoClose:$('detail-close'),legend:$('legend-footer'),legendContent:$('legend-content'),
- legendButton:$('legend-switch'),roadButton:$('road-switch'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
+ legendButton:$('legend-switch'),visibilityControls:$('visibility-controls'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
  zoomLabel:$('zoom-label'),hint:$('map-hint'),
  onLayoutLoaded:(mapId,data)=>{
   if(data)floorStructures.set(mapId,viewer.getHierarchy());
