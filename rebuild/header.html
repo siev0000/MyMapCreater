@@ -3,156 +3,163 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AAマップ｜新エンジン・ヘッダー試作</title>
+<title>AAマップ｜2行ヘッダー試作</title>
 <style>
-:root{color-scheme:dark;--bg:#08151d;--panel:#101f2c;--line:#304755;--line2:#52758a;--ink:#e9f3f7;--muted:#a7bfca;--accent:#85d2d3;--active:#173e4c}
+:root{color-scheme:dark;--bg:#08151d;--panel:#112834;--line:#35515e;--ink:#e9f3f7;--muted:#a7bfca;--accent:#8bd6d8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--ink)}
-button,select{font:inherit;color:inherit}
-header{position:sticky;top:0;z-index:10;background:#0d202ceF;border-bottom:1px solid var(--line2);backdrop-filter:blur(12px);padding:10px clamp(12px,3vw,28px)}
-.shell{max-width:1240px;margin:auto}
-.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.brand{display:flex;gap:12px;align-items:center;min-width:0}
-.logo{display:grid;place-items:center;flex:none;width:40px;height:40px;border:1px solid #3b8995;border-radius:10px;background:#1b404c;font-size:13px;font-weight:800;letter-spacing:1px}
-.label{font-size:11px;letter-spacing:.11em;color:var(--muted);font-weight:700}
-.title{font-size:17px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stage{font-size:12px;color:#b5d5da;border:1px solid #3c5861;border-radius:20px;padding:5px 11px}
-.breadcrumb{display:flex;align-items:center;gap:5px;overflow:auto;scrollbar-width:thin;margin-top:10px;white-space:nowrap}
-.breadcrumb button{border:0;background:transparent;padding:4px 6px;border-radius:5px;font-size:12px;color:var(--muted);cursor:pointer}
-.breadcrumb button:hover,.breadcrumb button[aria-current="page"]{color:#f4fcff;background:#203845}
-.breadcrumb .sep{color:#65828b}
-.nav-group{border-top:1px solid #263e4b;padding-top:10px;margin-top:8px;display:flex;align-items:center;gap:9px}
-.nav-group .group-label{flex:none;color:#acc4cd;font-size:12px;min-width:47px}
-.nav-items{display:flex;gap:7px;overflow:auto;padding-bottom:3px;scrollbar-width:thin}
-.nav-items button{min-width:86px;border:1px solid #405b69;background:#172b38;padding:9px 15px;border-radius:8px;white-space:nowrap;cursor:pointer;font-weight:700}
-.nav-items button:hover{border-color:#82c6cc}
-.nav-items button[aria-current="page"]{background:var(--active);border-color:#80d3dc;box-shadow:inset 0 -2px 0 #80d3dc;color:#e7fcfb}
-.child-group[hidden]{display:none}
-main{max-width:1240px;margin:0 auto;padding:clamp(14px,3vw,28px)}
-.viewport{min-height:min(68vh,680px);border:1px dashed #4e7585;border-radius:14px;background:linear-gradient(160deg,#102833,#091a24);display:flex;justify-content:center;align-items:center;padding:24px;text-align:center}
-.viewport h1{font-size:clamp(23px,3vw,36px);margin:6px 0}
-.viewport p{color:var(--muted);line-height:1.8;max-width:510px}
-.viewport .type{font-size:12px;font-weight:750;letter-spacing:.08em;color:#8bcfd1}
-.note{font-size:13px;color:#9cb4c1;line-height:1.7;margin-top:12px}
-#error{color:#fac6b5}
-@media(max-width:580px){.title{font-size:15px}.logo{width:35px;height:35px}.stage{display:none}.nav-group .group-label{min-width:33px}.nav-items button{min-width:72px;padding:9px 12px}.viewport{min-height:55vh}}
+button,select{font:inherit;color:inherit}button{cursor:pointer}
+header{position:sticky;top:0;z-index:10;background:#0d202cee;border-bottom:1px solid var(--line);padding:6px clamp(8px,2vw,20px);backdrop-filter:blur(12px)}
+.shell{max-width:1240px;margin:auto;display:grid;grid-template-rows:36px 38px;gap:5px}
+.header-row{display:flex;align-items:center;gap:8px;min-width:0}
+.logo{font-size:13px;font-weight:850;color:#c0eaf0;letter-spacing:1px;flex:none}
+.header-label{font-size:12px;font-weight:700;color:var(--muted);flex:none}
+.map-select{flex:1;max-width:360px;min-width:0;background:#172e3c;border:1px solid #567a8d;border-radius:7px;padding:6px 28px 6px 10px;height:32px}
+.selection-name{margin-left:auto;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.segment-scroll{min-width:0;flex:1;overflow-x:auto;scrollbar-width:none}
+.segment-scroll::-webkit-scrollbar{display:none}
+.segments{display:flex;width:max-content;min-width:100%;gap:4px;align-items:center}
+.segments button{border:1px solid #405d6a;background:#172c39;padding:6px 13px;border-radius:7px;font-size:13px;white-space:nowrap;min-height:32px;font-weight:700}
+.segments button[aria-pressed="true"]{background:#205260;border-color:#8bd6d8;color:#efffff;box-shadow:inset 0 -2px 0 #8bd6d8}
+.segments button:focus-visible,.map-select:focus-visible,.view-select:focus-visible{outline:2px solid #8bd6d8;outline-offset:2px}
+.view-select{display:none;min-width:0;flex:1;background:#172e3c;border:1px solid #567a8d;border-radius:7px;padding:5px 10px;height:33px}
+main{max-width:1240px;margin:0 auto;padding:clamp(12px,3vw,24px)}
+.viewport{min-height:min(75vh,700px);border:1px dashed #527688;border-radius:12px;background:linear-gradient(150deg,#112d37,#0b1a25);display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+.viewport h1{font-size:clamp(20px,3vw,32px);margin:6px 0}
+.viewport p{color:var(--muted);line-height:1.7;max-width:520px}
+.viewport .kind{font-size:12px;font-weight:700;letter-spacing:.08em;color:#8acbd0}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+#error{color:#ffc1ba}
+@media(max-width:500px){.selection-name{display:none}.header-label{font-size:11px}.shell{grid-template-rows:34px 36px;gap:4px}.map-select{max-width:none;height:30px}.segment-scroll{display:none}.view-select{display:block}.logo{font-size:12px}}
 </style>
 </head>
 <body>
 <header>
  <div class="shell">
-  <div class="topline">
-   <div class="brand">
-    <div class="logo" aria-hidden="true">AA</div>
-    <div><div class="label">MAP CREATOR / COMMON ENGINE</div><div class="title">マップ</div></div>
-   </div>
-   <div class="stage">ヘッダー先行実装 ・ 新規構築</div>
+  <div class="header-row" aria-label="大枠マップの切替">
+   <span class="logo" aria-hidden="true">AA</span>
+   <label class="header-label" for="map-select">マップ</label>
+   <select id="map-select" class="map-select" aria-label="大枠マップを選択"></select>
+   <span id="selection-name" class="selection-name" aria-live="polite"></span>
   </div>
-  <nav class="breadcrumb" id="breadcrumb" aria-label="マップの現在位置"></nav>
-  <nav class="nav-group" aria-label="船体マップと階層">
-   <span class="group-label" id="primary-label">マップ</span>
-   <div class="nav-items" id="primary-tabs"></div>
-  </nav>
-  <nav class="nav-group child-group" id="subnav" aria-label="選択マップの内部区画" hidden>
-   <span class="group-label">内部</span>
-   <div class="nav-items" id="subtabs"></div>
+  <nav class="header-row" aria-label="表示方向と階層の切替">
+   <span class="header-label" aria-hidden="true">表示</span>
+   <div class="segment-scroll"><div id="view-tabs" class="segments"></div></div>
+   <select id="view-select" class="view-select" aria-label="表示方向・階層を選択"></select>
   </nav>
  </div>
 </header>
 <main>
- <section class="viewport" id="viewport" aria-live="polite" aria-label="今後マップ本体を描画する領域">
+ <section class="viewport" id="viewport" aria-live="polite">
   <div>
-   <div class="type" id="view-type">MAP</div>
+   <div class="kind" id="view-kind">MAP</div>
    <h1 id="view-name">読み込み中</h1>
-   <p id="view-description">ここには次の工程で共通マップエンジンを接続します。</p>
+   <p id="view-description">ヘッダーの切り替えを試作しています。</p>
    <p id="error" role="alert"></p>
   </div>
  </section>
- <p class="note">現在はヘッダーと階層切替だけの試作です。船全体・上層・中層・下層の位置関係をデータで定義し、地区・施設の既存配置は変更していません。</p>
+ <p class="note">このページは2行ヘッダーの独立試作です。上面・側面・上層・中層・下層の選択で表示先だけが変わります。配置JSONや既存のマップ表示は変更していません。</p>
 </main>
 <script>
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-let nodes=new Map(),selected=null,rootId=null;
+let nodes=new Map(),roots=[],selected=null,viewId='top';
 function validate(data){
- if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップ階層データの形式が不正です');
+ if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップの設定形式が不正です');
  const map=new Map();
  for(const n of data.maps){
-  if(typeof n?.id!=='string'||!n.id||typeof n.name!=='string'||map.has(n.id))throw Error('IDが不正・重複しています');
+  if(typeof n?.id!=='string'||!n.id||typeof n.name!=='string'||map.has(n.id))throw Error('マップIDが不正・重複しています');
   map.set(n.id,n);
  }
- const roots=[...map.values()].filter(n=>n.parentId===null);
- if(roots.length!==1)throw Error('最上位のマップが1件ではありません');
+ const allRoots=[...map.values()].filter(n=>n.parentId===null);
+ if(!allRoots.length)throw Error('大枠マップが存在しません');
  for(const n of map.values()){
-  let next=n,seen=new Set();
-  while(next?.parentId!==null){
-   if(!map.has(next.parentId)||seen.has(next.id))throw Error('階層関係に不整合があります: '+n.id);
-   seen.add(next.id);next=map.get(next.parentId);
+  let current=n;const visited=new Set();
+  while(current.parentId!==null){
+   if(visited.has(current.id)||!map.has(current.parentId))throw Error('親子関係が不正です: '+n.id);
+   visited.add(current.id);current=map.get(current.parentId);
+  }
+  if(n.views){
+   if(!Array.isArray(n.views)||new Set(n.views.map(v=>v.id)).size!==n.views.length||
+      n.views.some(v=>!v.id||!v.name))throw Error('表示方向の設定が不正です: '+n.id);
   }
  }
- return {map,root:roots[0].id};
+ return {map,roots:allRoots};
 }
-function children(id){return [...nodes.values()].filter(n=>n.parentId===id)}
-function trail(id){
- const result=[];let item=nodes.get(id);
- while(item){result.unshift(item);item=item.parentId?nodes.get(item.parentId):null}
+function lineage(id){
+ const result=[];let n=nodes.get(id);
+ while(n){result.unshift(n);n=n.parentId?nodes.get(n.parentId):null}
  return result;
 }
-function tab(id,title,active){
- const b=document.createElement('button');
- b.type='button';b.textContent=title;
- if(active)b.setAttribute('aria-current','page');
- b.addEventListener('click',()=>select(id));
- return b;
+function children(id){return [...nodes.values()].filter(n=>n.parentId===id)}
+function activeRoot(){return lineage(selected)[0]||roots[0]}
+function availableViews(root){
+ const views=(root.views||[{id:'top',name:'上面'},{id:'side',name:'側面'}]).map(v=>({
+  key:root.id+'::'+v.id,name:v.name,mapId:root.id,viewId:v.id}));
+ return [...views,...children(root.id).map(n=>({key:n.id,name:n.name,mapId:n.id,viewId:null}))];
+}
+function selectedKey(){
+ const trail=lineage(selected);
+ return trail.length>=2?trail[1].id:trail[0]?.id+'::'+viewId;
+}
+function persist(){
+ const state=selected===activeRoot().id?selected+'::'+viewId:selected;
+ const hash=encodeURIComponent(state);
+ if(location.hash.slice(1)!==hash)history.replaceState(null,'','#'+hash);
 }
 function render(){
- const active=nodes.get(selected),root=nodes.get(rootId),ancestors=trail(selected);
- if(!active||!root)return;
- const crumbs=$('breadcrumb');crumbs.replaceChildren();
- const lead=document.createElement('span');lead.className='label';lead.textContent='現在位置';crumbs.append(lead);
- for(const [i,n] of ancestors.entries()){
-  const slash=document.createElement('span');slash.className='sep';slash.textContent='›';crumbs.append(slash);
-  crumbs.append(tab(n.id,n.shortName||n.name,i===ancestors.length-1));
+ const root=activeRoot(),active=nodes.get(selected);
+ if(!root||!active)return;
+ const menu=$('map-select');menu.replaceChildren();
+ for(const n of roots){const option=document.createElement('option');option.value=n.id;option.textContent=n.name;menu.append(option)}
+ menu.value=root.id;
+ const options=availableViews(root),key=selectedKey(),tabs=$('view-tabs'),select=$('view-select');
+ tabs.replaceChildren();select.replaceChildren();
+ for(const v of options){
+  const b=document.createElement('button');b.type='button';b.textContent=v.name;
+  b.setAttribute('aria-pressed',String(key===v.key));
+  b.addEventListener('click',()=>choose(v));
+  tabs.append(b);
+  const o=document.createElement('option');o.value=v.key;o.textContent=v.name;select.append(o);
  }
- $('primary-label').textContent='階層';
- const direct=children(root.id),selectedFloor=ancestors[1]?.id||null;
- const primary=$('primary-tabs');primary.replaceChildren();
- primary.append(tab(root.id,'船全体',selected===root.id));
- for(const node of direct)primary.append(tab(node.id,node.name,selectedFloor===node.id));
- // A future child map (district / facility) is automatically displayed here.
- const branch=selected===root.id?[]:children(selected);
- const sub=$('subnav');sub.hidden=branch.length===0;
- const subitems=$('subtabs');subitems.replaceChildren();
- for(const n of branch)subitems.append(tab(n.id,n.name,selected===n.id));
- $('view-type').textContent=active.kind==='root'?'大枠・船体全域':active.kind==='floor'?'第2階層・フロア':'詳細階層';
- $('view-name').textContent=active.name;
- $('view-description').textContent=active.kind==='root'?
-  '船体全域（全長4,000m・最大幅2,500m）。外装甲・機関区・緩衝区も含むマップをここに表示します。':
-  active.kind==='floor'?
-   active.name+'の既存配置データを読み込んで描画する領域です。現在はヘッダーの切替のみ実装しています。':
-   '選択された内部マップを表示します。';
- document.title=active.name+'｜AA マップ新規構築';
+ select.value=key;
+ $('selection-name').textContent=active.id===root.id?root.name:root.name+' / '+active.name;
+ $('view-kind').textContent=active.id===root.id?(viewId==='side'?'船体全域・側面':'船体全域・上面'):'階層マップ';
+ $('view-name').textContent=active.id===root.id?root.name+'｜'+
+  (options.find(v=>v.key===root.id+'::'+viewId)?.name||viewId):active.name;
+ $('view-description').textContent=active.id===root.id?
+  '全長4,000m・最大幅2,500mの船体全域を扱います。上面・側面は表示方向であり、別の船体ではありません。':
+  active.name+'の配置を表示する予定です。現在はヘッダー操作のみ実装しています。';
+ document.title=$('view-name').textContent+'｜AA マップ';
 }
-function select(id){
+function select(id,mode){
  if(!nodes.has(id))return;
  selected=id;
- if(location.hash.slice(1)!==id)history.replaceState(null,'','#'+encodeURIComponent(id));
- render();
+ const root=activeRoot();
+ viewId=mode&&availableViews(root).some(v=>v.mapId===root.id&&v.viewId===mode)?
+  mode:(root.views?.[0]?.id||'top');
+ persist();render();
 }
+function choose(v){select(v.mapId,v.viewId)}
+function restoreState(){
+ const raw=decodeURIComponent(location.hash.slice(1));
+ const split=raw.split('::');
+ if(split.length===2&&nodes.has(split[0])){select(split[0],split[1]);return}
+ select(nodes.has(raw)?raw:roots[0].id,null);
+}
+$('map-select').addEventListener('change',e=>select(e.target.value,null));
+$('view-select').addEventListener('change',e=>{
+ const v=availableViews(activeRoot()).find(item=>item.key===e.target.value);
+ if(v)choose(v);
+});
+window.addEventListener('hashchange',restoreState);
 async function init(){
  try{
-  const response=await fetch('./map-tree.json',{cache:'no-store'});
-  if(!response.ok)throw Error('HTTP '+response.status+'：map-tree.json を読み込めません');
-  const parsed=validate(await response.json());
-  nodes=parsed.map;rootId=parsed.root;
-  const fromHash=decodeURIComponent(location.hash.slice(1));
-  select(nodes.has(fromHash)?fromHash:rootId);
-  window.addEventListener('hashchange',()=>{const id=decodeURIComponent(location.hash.slice(1));if(nodes.has(id)){selected=id;render()}});
- }catch(error){
-  $('view-name').textContent='階層データの読み込みに失敗';
-  $('view-description').textContent='配置データは変更していません。';
-  $('error').textContent=error.message;
- }
+  const r=await fetch('./map-tree.json',{cache:'no-store'});
+  if(!r.ok)throw Error('階層設定を取得できません (HTTP '+r.status+')');
+  const parsed=validate(await r.json());nodes=parsed.map;roots=parsed.roots;
+  restoreState();
+ }catch(error){$('view-name').textContent='設定読込エラー';$('view-description').textContent='既存配置には変更を加えていません。';$('error').textContent=error.message}
 }
 init();
 })();
