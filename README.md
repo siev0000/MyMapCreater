@@ -12,15 +12,15 @@
 
 ## 画面
 
-- **[第1段階｜全体骨格レビュー（overview.html）](./overview.html)** — 上層・中層・下層の主要地区だけを表示し、GitHub配置案とNotion由来の比較用JSONを照合する。
-- **[全体骨格の未解決課題・差分メモ](./docs/aa-stage1-skeleton-review-v2.md)** — 上層認証門、中層アルボラと工業群、下層船首出撃区と資源搬入の競合を整理。
+- **[中層 A・B・C 配置を地図で比較（overview.html）](./overview.html)** — 上層・中層・下層を切り替え。中層では「外周加工」「中央加工」「併用」の3案を同じ船体図で視覚比較する。
+- **[中層の残タスク](./docs/aa-middle-completion-checklist-v1.md)** — 次に確定する地区の大枠、道路接続、施設内区画、完成検証を整理。
 
-- [マップ表示（index.html）](./index.html) — 上層・中層・下層の表示、Notion比較用の配置とGitHub再配置案の切り替え
+- [マップ表示（index.html）](./index.html) — 上層・中層・下層の現行制作案を表示。施設を選択すると用途を案内
 - [配置エディター（editor.html）](./editor.html) — 施設と道路の下書き調整
 
 ## データ
 
-- `data/upper.json`、`data/middle.json`、`data/lower.json`：Notion記載の配置を比較する基準データ（制作中は変更しない）。
+- `data/upper.json`、`data/middle.json`、`data/lower.json`：現行設定を照合するために内部保持する参照データ（通常の画面比較からは除外）。
 - `data/upper-layout-draft.json`、`data/middle-layout-draft.json`、`data/lower-layout-draft.json`：GitHubでの段階的な制作案。
 - `docs/`：制作ルール、検証メモ、変更・確認記録。
 
