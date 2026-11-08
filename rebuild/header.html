@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AAマップ｜2行ヘッダー試作</title>
+<title>マップ表示｜MyMapCreater</title>
 <style>
 :root{color-scheme:dark;--bg:#08151d;--panel:#112834;--line:#35515e;--ink:#e9f3f7;--muted:#a7bfca;--accent:#8bd6d8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:var(--ink)}
@@ -77,6 +77,8 @@ main{max-width:none;padding:0}
 .legend-line{display:block;width:16px;height:3px;border-radius:1px;flex:none}
 .legend-tunnel{width:20px;height:9px;border:1px solid #d9e2e577;border-radius:2px;background-image:repeating-linear-gradient(135deg,transparent 0 4px,#edf4f0 4px 5px,transparent 5px 9px)}
 .legend-note{color:#c9af84;margin-left:54px;display:block;line-height:1.35}
+.menu-editor-link{display:block;margin-top:7px;border:1px solid rgba(137,191,205,.65);border-radius:7px;padding:9px 11px;color:#e2f5f8;background:rgba(22,63,72,.45);text-decoration:none;font-size:12px;font-weight:700}
+.menu-editor-link:hover{background:rgba(38,94,102,.65)}
 .menu-settings-button{display:block;width:100%;background:rgba(27,57,70,.48);color:#eaf8fa;border:1px solid #416476;border-radius:7px;padding:8px 10px;text-align:left;margin-top:4px}
 @media(max-width:500px){
  .viewport{height:calc(100dvh - 65px)}
@@ -106,6 +108,7 @@ main{max-width:none;padding:0}
      <div class="menu-heading">表示設定</div>
      <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
      <button type="button" id="road-switch" class="menu-settings-button" title="主要のみ → 全案 → 非表示">経路：主要のみ</button>
+     <a id="open-editor-link" class="menu-editor-link" href="./editor.html">現在のマップを編集（JSON）</a>
     </div>
    </div>
   </div>
@@ -303,6 +306,7 @@ function render(){
   rootSelect.append(option);
  }
  rootSelect.value=root.id;
+ $('open-editor-link').href="./editor.html#"+encodeURIComponent(active.id===root.id?root.id+"::"+viewId:active.id);
  renderMapTree();
  const options=availableViews(root),key=selectedKey(),tabs=$('view-tabs'),viewPicker=$('view-select');
  tabs.replaceChildren();viewPicker.replaceChildren();
@@ -321,7 +325,7 @@ function render(){
  $('view-kind').textContent=active.kind||'map';
  $('view-name').textContent=active.id===root.id?root.name+'｜'+displayName:active.name;
  $('view-description').textContent=active.description||'';
- document.title=$('view-name').textContent+'｜AA マップ';
+ document.title=$('view-name').textContent+'｜マップ表示';
  const sceneSource=active.id===root.id?
   (root.views||[]).find(v=>v.id===viewId)?.source||active.source||null:active.source||null;
  viewer.show(active.id,active.id===root.id?viewId:null,sceneSource);
