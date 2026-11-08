@@ -730,7 +730,10 @@ function create(opts){
   objectDrag=null;
   if(movedObject){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
-  }else if(clicked)showDetails(pick(x,y));
+  }else if(clicked){
+   const hit=pick(x,y);
+   showDetails(hit||(viewRootId?scene.objects.find(o=>o.id===viewRootId):null));
+  }
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
