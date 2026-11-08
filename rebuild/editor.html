@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>汎用マップ編集｜MyMapCreater</title>
+<style>
+:root{color-scheme:dark;--bg:#091a24;--panel:#142c38;--muted:#a7c2ce;--ink:#f0f7f9;--line:#426778;--accent:#8ad8d8;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}
+button,.fake-button{border:1px solid #4f7887;border-radius:7px;background:#204455;padding:7px 10px;font-size:12px;font-weight:650}
+button:hover:not(:disabled){border-color:#a7e0ed}
+input,textarea,select{border:1px solid #557787;border-radius:6px;background:#091f2b;min-width:0;padding:6px 7px;font-size:12px;width:100%}
+input[type="checkbox"]{width:auto;accent-color:#8ad8d8}input[type="number"]{font-variant-numeric:tabular-nums}textarea{min-height:58px;resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+label{display:grid;gap:4px;color:#b9d6dc;font-size:11px;min-width:0}
+header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 11px;background:#102c3b;border-bottom:1px solid var(--line)}
+.brand{font-size:14px;font-weight:800;white-space:nowrap}a{color:#a8e1e9;text-decoration:none;font-size:12px}
+#scene-select{max-width:320px;min-width:130px;flex:1}.toolbar{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-left:auto}.toolbar button{white-space:nowrap}
+#message{min-height:22px;padding:4px 12px;font-size:11px;color:#b5d7df;background:#10202a}#message.error{color:#ffd1a9}#message.success{color:#acf0ca}
+main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-height:calc(100dvh - 91px)}
+.map-pane{position:relative;min-height:500px;overflow:hidden;background:#0b1d27}
+#detail-panel,#legend-footer,#legend-switch,#visibility-controls{display:none!important}
+#map-hint{position:absolute;top:74px;left:10px;z-index:2;border-radius:6px;background:rgba(8,24,34,.83);padding:7px 9px;font-size:11px;color:#ffe4ae}
+#map-hint[hidden]{display:none}
+#map-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#map-canvas:active{cursor:grabbing}
+.view-tools{position:absolute;right:9px;top:9px;display:flex;gap:4px;background:rgba(10,27,37,.7);padding:5px;border-radius:8px}
+.view-tools button{min-width:29px}
+.name-chip{position:absolute;top:9px;left:10px;max-width:calc(100% - 170px);padding:7px 10px;background:rgba(8,28,40,.61);border:1px solid #7caeba88;border-radius:8px;font-size:12px;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.editor-overlay{position:absolute;top:49px;left:10px;max-width:min(350px,65vw);font-size:11px;color:#c6dce1;background:rgba(9,30,42,.65);padding:7px 9px;border-radius:6px;pointer-events:none}
+.side{background:#102633;border-left:1px solid #365669;overflow-y:auto;max-height:calc(100dvh - 91px)}
+.panel{border-bottom:1px solid #355466;padding:12px;display:grid;gap:9px}.panel h2{font-size:13px;margin:0;color:#e2f4f5}.panel h3{font-size:12px;margin:0}
+.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.row>*{min-width:0}.row select{width:auto;flex:1}
+#objects{max-height:205px;overflow:auto;display:grid;gap:3px}
+.object-entry{display:flex;align-items:center;gap:7px;width:100%;text-align:left;background:#163542;padding:6px 8px;font-size:11px}
+.object-entry[aria-current="true"]{background:#275566;border-color:#9adee2}
+.object-entry .meta{color:#a2bfc9;font-size:10px;margin-left:auto;flex:none}
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.col3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.fieldset{padding:10px;border:1px solid #365c6b;border-radius:8px;display:grid;gap:9px}
+.fieldset legend{font-size:11px;color:#95d4da;font-weight:800;padding:0 5px}
+.switches{display:flex;gap:14px;flex-wrap:wrap}.switches label{display:flex;align-items:center;flex-direction:row;gap:5px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}.actions button{flex:1}
+.danger{border-color:#b96b6b;color:#ffc1bb;background:#482b36}
+.note{font-size:11px;color:#a6c6ce;line-height:1.5;margin:0}.hidden{display:none!important}
+#json-object{min-height:125px}
+@media(max-width:780px){main{grid-template-columns:1fr}.map-pane{height:55dvh;min-height:320px}.side{max-height:none;border-left:0;border-top:1px solid #426778}header{padding:6px}.toolbar{margin:0}#scene-select{max-width:none}}
+</style>
+</head>
+<body>
+<header>
+ <a href="./header.html" title="マップ表示に戻る">‹ 閲覧へ</a>
+ <strong class="brand">汎用マップ編集</strong>
+ <select id="scene-select" aria-label="編集するマップを選択"></select>
+ <div class="toolbar">
+  <button id="open-json">JSONを開く</button><input id="file-input" type="file" accept=".json,application/json" hidden>
+  <button id="undo" title="操作を戻す" disabled>戻す</button>
+  <button id="redo" title="操作を進める" disabled>進める</button>
+  <button id="download">JSONを保存</button>
+ </div>
+</header>
+<div id="message" role="status">シーンJSONを読み込み中…</div>
+<main>
+ <section class="map-pane" id="viewport" aria-label="汎用マップ編集領域">
+  <canvas id="map-canvas" aria-label="クリックして図形を選択。移動モードでは選択中の図形をドラッグできます"></canvas>
+  <div class="name-chip" id="scene-name">マップ</div>
+  <div class="editor-overlay" id="edit-hint">図形を選択して右のパネルで編集してください。</div>
+  <div class="view-tools">
+   <button id="zoom-out" title="縮小">−</button>
+   <span id="zoom-label" style="align-self:center;font-size:11px;min-width:35px;text-align:center">100%</span>
+   <button id="zoom-in" title="拡大">＋</button>
+   <button id="zoom-reset" title="全体に戻す">⌖</button>
+  </div>
+  <aside id="detail-panel" hidden><span id="detail-title"></span><span id="detail-meta"></span><span id="detail-text"></span></aside>
+  <footer id="legend-footer" hidden><div id="legend-content"></div></footer>
+  <button id="legend-switch" hidden>凡例</button>
+  <div id="visibility-controls" hidden></div>
+  <div id="map-hint" hidden></div>
+ </section>
+ <aside class="side">
+  <section class="panel">
+   <h2>オブジェクト一覧</h2>
+   <div class="row"><input id="object-search" placeholder="名前・IDで検索" aria-label="オブジェクトを検索">
+    <button id="clear-search">消去</button></div>
+   <div id="objects" role="list"></div>
+   <div class="col2">
+    <label>形状<select id="new-shape" aria-label="追加する図形">
+     <option value="rect">四角形</option><option value="polygon">多角形</option><option value="polyline">線</option>
+     <option value="circle">円</option><option value="ring">環状</option><option value="none">文字のみ</option>
+    </select></label>
+    <label>役割<select id="new-role">
+     <option value="object">一般オブジェクト</option><option value="region">区画</option><option value="facility">施設</option>
+     <option value="route">道路・経路</option><option value="wall">壁</option><option value="door">扉</option>
+     <option value="annotation">注記</option>
+    </select></label>
+    <label>階層<select id="new-level">
+     <option value="object">一般</option><option value="large">大枠</option><option value="medium">中枠</option>
+     <option value="small">小枠</option><option value="facility">施設</option><option value="route">経路</option>
+     <option value="wall">壁</option><option value="annotation">注記</option>
+    </select></label>
+    <label>レイヤー<select id="new-layer"></select></label>
+   </div>
+   <button id="add-object">＋ 指定した形状・役割で追加</button>
+   <div class="actions"><button id="clone-object" disabled>複製</button><button id="delete-object" class="danger" disabled>削除</button></div>
+   <label class="switches"><span style="display:flex;gap:6px;align-items:center"><input id="move-mode" type="checkbox"> 選択中の図形をドラッグ移動</span></label>
+   <p class="note">道路・壁・区画は同じ図形エンジンで編集できます。図形を作成しても自動で壁・道路には変換しません。</p>
+  </section>
+  <section class="panel" id="object-properties">
+   <h2>選択した図形の設定</h2>
+   <p class="note" id="select-empty">右上の一覧または地図から図形を選択してください。</p>
+   <div id="selected-fields" class="hidden">
+    <div class="col2">
+     <label>ID<input id="obj-id" readonly></label>
+     <label>名前<input id="obj-name"></label>
+     <label>レベル<input id="obj-level" list="level-list"><datalist id="level-list"><option value="large"><option value="medium"><option value="small"><option value="facility"><option value="route"><option value="wall"><option value="annotation"></datalist></label>
+     <label>種類<input id="obj-type" placeholder="region / facility / wall"></label>
+     <label>親オブジェクト<select id="obj-parent"></select></label>
+     <label>レイヤー<input id="obj-layer" list="layer-list"><datalist id="layer-list"></datalist></label>
+     <label>描画順 zIndex<input id="obj-z" type="number" step="1"></label>
+     <label>図形<select id="obj-geometry">
+       <option value="rect">四角形</option><option value="polygon">多角形</option><option value="polyline">線</option>
+       <option value="circle">円</option><option value="ring">環状</option><option value="none">図形なし</option>
+     </select></label>
+    </div>
+    <div class="switches"><label><input id="obj-visible" type="checkbox">図形を表示</label><label><input id="obj-selectable" type="checkbox">選択可能</label></div>
+    <fieldset class="fieldset"><legend>図形の座標・大きさ</legend>
+     <div id="geometry-fields"></div>
+    </fieldset>
+    <fieldset class="fieldset"><legend>色・線</legend>
+     <div class="switches"><label><input id="obj-fill-enabled" type="checkbox">塗りつぶす</label><label><input id="obj-stroke-enabled" type="checkbox">輪郭線を表示</label></div>
+     <div class="col2"><label>塗り色（CSS / rgba）<input id="obj-fill" placeholder="rgba(80,150,180,.25)"></label>
+      <label>線の色<input id="obj-stroke" placeholder="#8ad8d8"></label>
+      <label>線幅（画面px）<input id="obj-stroke-width" type="number" min="0" step="0.1"></label>
+      <label>不透明度（0〜1）<input id="obj-opacity" type="number" min="0" max="1" step="0.05"></label></div>
+    </fieldset>
+    <fieldset class="fieldset"><legend>名前の表示</legend>
+     <div class="switches"><label><input id="obj-label-visible" type="checkbox">ラベル表示</label></div>
+     <label>表示文字<input id="obj-label-text"></label>
+     <div class="col3"><label>位置X<input id="obj-label-x" type="number" step="any"></label>
+      <label>位置Y<input id="obj-label-y" type="number" step="any"></label>
+      <label>文字サイズ<input id="obj-label-size" type="number" min="1" step="1"></label></div>
+    </fieldset>
+    <label>説明<textarea id="obj-detail" rows="3"></textarea></label>
+    <fieldset class="fieldset"><legend>詳細JSON（オブジェクト全体）</legend>
+     <textarea id="json-object" spellcheck="false"></textarea>
+     <button id="apply-json">JSONの変更を適用</button>
+    </fieldset>
+   </div>
+  </section>
+  <section class="panel">
+   <h2>マップ全体の設定（JSON）</h2>
+   <p class="note">マップ名・背景色・座標系・グリッド・レイヤー順・表示グループはこのJSONで編集します。施設・壁・道路の固有名をプログラムに登録する必要はありません。</p>
+   <button type="button" id="show-scene-json">マップ全体のJSONを開く</button>
+   <div id="scene-json-fields" class="hidden">
+    <textarea id="scene-json-text" spellcheck="false" style="min-height:215px" aria-label="マップ全体のJSON"></textarea>
+    <div class="actions">
+     <button type="button" id="reload-scene-json">現在の設定を読み直す</button>
+     <button type="button" id="apply-scene-json">JSONの変更を反映</button>
+    </div>
+   </div>
+  </section>
+  <section class="panel">
+   <h2>ファイルについて</h2>
+   <p class="note">編集内容はこのブラウザー内の作業状態です。「JSONを保存」でファイルを書き出してください。GitHub上のデータには自動で上書きしません。保存したJSONをリポジトリの該当シーンに配置すると表示側にも反映されます。</p>
+  </section>
+ </aside>
+</main>
+<script src="./map-viewer.js?v=generic-editor-v12"></script>
+<script src="./map-editor.js?v=generic-editor-v12"></script>
+</body></html>

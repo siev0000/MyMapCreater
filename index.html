@@ -1,19 +1,8 @@
 <!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
+<html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="0; url=./rebuild/header.html">
-<title>AAマップ｜新しいマップ画面へ移動</title>
-<style>
-body{margin:0;background:#08151d;color:#e9f3f7;font:16px system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}
-a{color:#9ce1e3}
-</style>
-<script>
-/* The previous full map was preserved in backup/live-before-new-header-2026-11-08.
-   The new map engine is being implemented separately; do not load legacy UI here. */
-location.replace(new URL('./rebuild/header.html'+location.hash,location.href));
-</script>
-</head>
-<body><p>新しいマップ画面に移動します。<a href="./rebuild/header.html">2行ヘッダーの画面を開く</a></p></body>
-</html>
+<meta http-equiv="refresh" content="0;url=./rebuild/header.html">
+<title>汎用マップ表示｜MyMapCreater</title>
+<script>location.replace("./rebuild/header.html"+location.search+location.hash);</script>
+<style>body{margin:0;background:#08151d;color:#e8f3f7;font:14px system-ui;display:grid;min-height:100vh;place-items:center}a{color:#9ce1e3}</style>
+</head><body><p>マップ表示画面へ移動します。<a href="./rebuild/header.html">マップを開く</a></p></body></html>

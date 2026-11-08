@@ -79,9 +79,30 @@
             "id": "off",
             "label": "非表示"
           }
-        ]
+        ],
+        "label": "通路"
       }
-    }
+    },
+    "legendGroups": [
+      {
+        "title": "地区",
+        "filter": {
+          "levels": [
+            "large"
+          ]
+        },
+        "swatch": "box"
+      },
+      {
+        "title": "壁",
+        "filter": {
+          "objectTypes": [
+            "wall"
+          ]
+        },
+        "swatch": "line"
+      }
+    ]
   },
   "objects": [
     {

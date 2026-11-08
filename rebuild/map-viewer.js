@@ -1,11 +1,11 @@
 /* Generic JSON scene renderer. No world, character, facility, or map IDs in code. */
 (function(global){
 "use strict";
-const byId=id=>document.getElementById(id);
+
 const finite=(n,fallback=0)=>Number.isFinite(Number(n))?Number(n):fallback;
 const clamp=(x,min,max)=>Math.min(max,Math.max(min,x));
 const htmlColor=(s,defaultValue)=>typeof s==="string"&&s?s:defaultValue;
-const DEFAULT_GROUP_MODES=["main","all","off"];
+
 function sceneCheck(scene){
  if(scene?.schemaVersion!==2||!Array.isArray(scene.objects))throw Error("シーンJSONの形式が不正です（schemaVersion:2 が必要）");
  const ids=new Set();
@@ -86,8 +86,8 @@ function create(opts){
  const memory=new Map(),pointers=new Map();
  let scene=null,selected=null,sceneKey="",request=0,projection=null;
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
- let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={};
- try{legendEnabled=localStorage.getItem("aa-map-legend")==="true"}catch(_){}
+ let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null;
+ try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
  function getAxes(){
   return [scene?.coordinateSystem?.horizontal||[1,0],scene?.coordinateSystem?.vertical||[0,1]];
  }
@@ -146,7 +146,7 @@ function create(opts){
    if(!match&&selected.id!==obj.id)return false;
   }
   if(v.modeGroup&&Array.isArray(v.modes)){
-   const mode=groupModes[v.modeGroup]||scene?.settings?.[v.modeGroup+"Mode"]||"all";
+   const mode=groupModes[v.modeGroup]||modeConfig(v.modeGroup).default;
    if(!v.modes.includes(mode))return false;
   }
   return true;
@@ -247,9 +247,9 @@ function create(opts){
   const assigned=new Set([...large.map(o=>o.id),...large.flatMap(o=>o.children.map(v=>v.id))]);
   return{large,unassigned:scene.objects.filter(o=>o.level==="facility"&&!assigned.has(o.id)).map(o=>({id:o.id,name:o.name}))};
  }
- function selectItemById(id,{focus=true}={}){
+ function selectItemById(id,{focus=true,force=false}={}){
   const obj=scene?.objects.find(o=>o.id===id);
-  if(!obj||obj.selectable===false)return false;
+  if(!obj||(!force&&obj.selectable===false))return false;
   if(focus){
    const g=obj.geometry||{};
    let p=obj.label?.position||g.center||[0,0];
@@ -264,6 +264,41 @@ function create(opts){
    panX=-(u-cu)*scale();panY=-(v-cv)*scale();
   }
   showDetails(obj);return true;
+ }
+ function clone(obj){return JSON.parse(JSON.stringify(obj))}
+ function getScene(){return scene?clone(scene):null}
+ function getSelected(){return selected?clone(selected):null}
+ function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;return editMode}
+ function replaceScene(next,{preserveView=true,selectedId=null}={}){
+  const valid=sceneCheck(clone(next));
+  ++request;scene=valid;objectDrag=null;
+  if(!preserveView){initialScale=computeScale();zoom=1;panX=0;panY=0}
+  else initialScale=computeScale();
+  setupModes();
+  const id=selectedId||selected?.id;
+  selected=id?scene.objects.find(o=>o.id===id)||null:null;
+  if(opts.info)opts.info.hidden=!selected;
+  if(selected&&opts.infoTitle){
+   opts.infoTitle.textContent=selected.name||selected.id;
+   opts.infoMeta.textContent=[selected.level,selected.metadata?.roadType,selected.metadata?.status].filter(Boolean).join(" ｜ ");
+   opts.infoText.textContent=selected.detail||"説明は登録されていません。";
+  }
+  renderLegend();draw();
+  if(typeof opts.onLayoutLoaded==="function")opts.onLayoutLoaded(sceneKey,scene);
+  if(typeof opts.onSelectionChanged==="function")opts.onSelectionChanged(sceneKey,selected);
+  return true;
+ }
+ function translateObject(obj,dx,dy){
+  const geom=obj.geometry||{type:"none"};
+  if(geom.type==="rect"){geom.x+=dx;geom.y+=dy}
+  else if(geom.type==="polygon"||geom.type==="polyline"){
+   for(const p of geom.points||[]){p[0]+=dx;p[1]+=dy}
+  }else if(geom.type==="circle"||geom.type==="ring"){
+   geom.center[0]+=dx;geom.center[1]+=dy;
+  }
+  if(Array.isArray(obj.label?.position)){
+   obj.label.position[0]+=dx;obj.label.position[1]+=dy;
+  }
  }
  function pick(px,py){
   if(!scene)return null;
@@ -284,68 +319,119 @@ function create(opts){
   return candidates[candidates.length-1];
  }
  function modeConfig(group){
-  const declared=scene?.settings?.visibilityGroups?.[group];
-  return declared||{default:"main",options:DEFAULT_GROUP_MODES.map(id=>({id,label:({main:"主要のみ",all:"全案を表示",off:"非表示"})[id]}))};
+  const declared=scene?.settings?.visibilityGroups?.[group]||{};
+  const values=[...new Set((scene?.objects||[])
+   .filter(o=>o.visibility?.modeGroup===group)
+   .flatMap(o=>o.visibility?.modes||[]))];
+  const options=Array.isArray(declared.options)&&declared.options.length?
+   declared.options.map(o=>({id:o.id,label:o.label||o.id})):
+   values.map(id=>({id,label:id}));
+  if(!options.length)options.push({id:"all",label:"すべて"});
+  const allowed=options.map(o=>o.id);
+  const initial=allowed.includes(declared.default)?declared.default:allowed[0];
+  return{label:declared.label||group,default:initial,options};
+ }
+ function groupIds(){
+  return [...new Set([
+   ...Object.keys(scene?.settings?.visibilityGroups||{}),
+   ...(scene?.objects||[]).map(o=>o.visibility?.modeGroup).filter(Boolean)
+  ])];
  }
  function setupModes(){
-  const groups=new Set(scene?.objects?.map(o=>o.visibility?.modeGroup).filter(Boolean));
-  for(const g of groups){
-   let persisted=null;try{persisted=localStorage.getItem("aa-map-mode-"+g)}catch(_){}
-   const conf=modeConfig(g),allowed=conf.options.map(o=>o.id);
-   groupModes[g]=allowed.includes(persisted)?persisted:conf.default;
+  groupModes={};
+  for(const group of groupIds()){
+   const conf=modeConfig(group),allowed=conf.options.map(o=>o.id);
+   let stored=null;
+   try{stored=localStorage.getItem("map-scene-mode:"+scene.id+":"+group)}catch(_){}
+   groupModes[group]=allowed.includes(stored)?stored:conf.default;
   }
-  syncModeButton();
+  renderModeControls();
  }
- function syncModeButton(){
-  if(!roadButton)return;
-  const conf=modeConfig("routes"),selectedMode=groupModes.routes||conf.default;
-  roadButton.disabled=!scene?.objects?.some(o=>o.visibility?.modeGroup==="routes");
-  roadButton.textContent="経路："+(conf.options.find(o=>o.id===selectedMode)?.label||selectedMode);
+ function renderModeControls(){
+  const groups=groupIds();
+  if(opts.visibilityControls){
+   const host=opts.visibilityControls;host.replaceChildren();
+   for(const group of groups){
+    const conf=modeConfig(group);
+    const mode=groupModes[group]||conf.default;
+    const button=document.createElement("button");button.type="button";
+    button.className="menu-settings-button";
+    button.textContent=conf.label+"："+(conf.options.find(o=>o.id===mode)?.label||mode);
+    button.setAttribute("aria-label",conf.label+"の表示切替");
+    button.addEventListener("click",()=>cycleMode(group));
+    host.append(button);
+   }
+  }
+  // Legacy hosts can provide a single button; it controls the first JSON group.
+  if(roadButton){
+   const group=groups[0],conf=group?modeConfig(group):null;
+   const mode=groupModes[group]||conf?.default;
+   roadButton.disabled=!group;
+   roadButton.textContent=conf?conf.label+"："+(conf.options.find(o=>o.id===mode)?.label||mode):"表示切替なし";
+  }
+ }
+ function setVisibilityMode(group,mode){
+  if(!groupIds().includes(group))return false;
+  const conf=modeConfig(group);
+  if(!conf.options.some(o=>o.id===mode))return false;
+  groupModes[group]=mode;
+  try{localStorage.setItem("map-scene-mode:"+scene.id+":"+group,mode)}catch(_){}
+  draw();renderLegend();renderModeControls();return true;
  }
  function cycleMode(group){
   const conf=modeConfig(group),options=conf.options.map(x=>x.id);
-  if(!options.length)return;
+  if(!options.length)return false;
   const current=groupModes[group]||conf.default;
-  const next=options[(Math.max(0,options.indexOf(current))+1)%options.length];
-  groupModes[group]=next;
-  try{localStorage.setItem("aa-map-mode-"+group,next)}catch(_){}
-  draw();renderLegend();syncModeButton();
+  return setVisibilityMode(group,options[(Math.max(0,options.indexOf(current))+1)%options.length]);
+ }
+ function getVisibilityGroups(){
+  return groupIds().map(id=>({id,...modeConfig(id),current:groupModes[id]}));
+ }
+ function readPath(obj,path){
+  if(!path)return undefined;
+  return String(path).split(".").reduce((v,key)=>v==null?undefined:v[key],obj);
  }
  function renderLegend(){
-  if(!opts.legendContent)return;
-  const container=opts.legendContent;container.replaceChildren();
+  const host=opts.legendContent;if(!host)return;
+  host.replaceChildren();
   if(!scene)return;
-  const build=(title,list,shape)=>{
-   if(!list.length)return;
+  // JSON decides which objects and labels belong to each legend section.
+  for(const config of scene.settings?.legendGroups||[]){
+   const filter=config.filter||{},seen=new Set();
+   const entries=scene.objects.filter(o=>{
+    if(filter.visibleOnly&& !visible(o))return false;
+    if(Array.isArray(filter.levels)&&!filter.levels.includes(o.level))return false;
+    if(Array.isArray(filter.objectTypes)&&!filter.objectTypes.includes(o.objectType))return false;
+    if(Array.isArray(filter.layers)&&!filter.layers.includes(o.layer))return false;
+    const key=readPath(o,config.uniqueBy)||o.id;
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+   });
+   if(!entries.length)continue;
    const row=document.createElement("div");row.className="legend-section";
-   const heading=document.createElement("strong");heading.textContent=title;row.append(heading);
+   const heading=document.createElement("strong");heading.textContent=config.title||"凡例";row.append(heading);
    const items=document.createElement("div");items.className="legend-items";
-   for(const obj of list){
-    const entry=document.createElement("span");entry.className="legend-item";
-    const sw=document.createElement("i");sw.className=shape==="line"?"legend-line":"legend-swatch";
-    sw.style.backgroundColor=obj.style?.stroke||obj.style?.fill||"#929da5";
-    const txt=document.createElement("span");txt.textContent=obj.name;
-    entry.append(sw,txt);items.append(entry);
-   }row.append(items);container.append(row);
-  };
-  build("大枠",scene.objects.filter(o=>o.level==="large"),"box");
-  const routes=scene.objects.filter(o=>o.objectType==="route"&&visible(o));
-  const seen=new Set();
-  build("経路",routes.filter(o=>{
-   const name=o.metadata?.roadType||o.name;
-   if(seen.has(name))return false;
-   seen.add(name);return true;
-  }).map(o=>({...o,name:o.metadata?.roadType||o.name})),"line");
+   for(const o of entries){
+    const span=document.createElement("span");span.className="legend-item";
+    const swatch=document.createElement("i");
+    swatch.className=config.swatch==="line"?"legend-line":"legend-swatch";
+    swatch.style.backgroundColor=o.style?.stroke||o.style?.fill||"#929da5";
+    const txt=document.createElement("span");
+    txt.textContent=String(readPath(o,config.displayField)||o.name||o.id);
+    span.append(swatch,txt);items.append(span);
+   }
+   row.append(items);host.append(row);
+  }
  }
  function setLegend(value){
   legendEnabled=Boolean(value);
   opts.legend.hidden=!legendEnabled;
   legendButton.setAttribute("aria-pressed",String(legendEnabled));
   legendButton.textContent="色の凡例："+(legendEnabled?"ON":"OFF");
-  try{localStorage.setItem("aa-map-legend",String(legendEnabled))}catch(_){}
+  try{localStorage.setItem("map-scene-legend",String(legendEnabled))}catch(_){}
  }
  if(legendButton)legendButton.addEventListener("click",()=>setLegend(!legendEnabled));
- if(roadButton)roadButton.addEventListener("click",()=>cycleMode("routes"));
+ if(roadButton)roadButton.addEventListener("click",()=>{const group=groupIds()[0];if(group)cycleMode(group)});
  if(opts.infoClose)opts.infoClose.addEventListener("click",()=>showDetails(null));
  if(opts.zoomIn)opts.zoomIn.addEventListener("click",()=>zoomAt(1.3,width/2,height/2));
  if(opts.zoomOut)opts.zoomOut.addEventListener("click",()=>zoomAt(1/1.3,width/2,height/2));
@@ -399,7 +485,12 @@ function create(opts){
   canvas.setPointerCapture(e.pointerId);
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   dragged=false;dragStart={x,y};
-  if(pointers.size===2){
+  if(editMode&&selected&&selected.selectable!==false&&
+   contains(selected,...worldAt(x,y),8/scale())){
+   objectDrag={id:selected.id,x,y,moved:false};
+   if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
+  }
+  if(pointers.size===2){objectDrag=null;
    const list=[...pointers.values()],a=list[0],b=list[1];
    pinch={x:(a.x+b.x)/2,y:(a.y+b.y)/2,dist:Math.hypot(a.x-b.x,a.y-b.y)||1};
   }
@@ -408,7 +499,13 @@ function create(opts){
   const old=pointers.get(e.pointerId);if(!old)return;
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   if(dragStart&&Math.hypot(x-dragStart.x,y-dragStart.y)>4)dragged=true;
-  if(pointers.size===2){
+  if(objectDrag&&pointers.size===1&&selected?.id===objectDrag.id){
+   const [ax,ay]=worldAt(old.x,old.y),[bx,by]=worldAt(x,y);
+   if(Math.hypot(x-objectDrag.x,y-objectDrag.y)>4){
+    const dx=bx-ax,dy=by-ay;
+    if(dx||dy){translateObject(selected,dx,dy);objectDrag.moved=true;draw()}
+   }
+  }else if(pointers.size===2){
    const [a,b]=[...pointers.values()],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
    const dist=Math.hypot(a.x-b.x,a.y-b.y)||1;
    if(pinch){zoomAt(dist/pinch.dist,mx,my);panX+=mx-pinch.x;panY+=my-pinch.y;draw()}
@@ -422,11 +519,16 @@ function create(opts){
   pointers.delete(e.pointerId);
   if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
   if(!pointers.size){pinch=null;dragStart=null}
-  if(clicked)showDetails(pick(x,y));
+  const movedObject=objectDrag?.moved&&scene?.objects.find(o=>o.id===objectDrag.id);
+  objectDrag=null;
+  if(movedObject){
+   if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
+  }else if(clicked)showDetails(pick(x,y));
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById};
+ return{show,reset,getHierarchy,selectItemById,getScene,getSelected,replaceScene,setEditMode,
+  getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
 })(window);
