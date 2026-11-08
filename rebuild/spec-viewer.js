@@ -92,8 +92,31 @@ async function open(file="README.md"){
    markdown=await res.text();cache.set(file,markdown);
   }
   if(id!==request)return;
-  render(markdown);status.textContent="";content.scrollTop=0;
- }catch(error){if(id!==request)return;status.textContent="仕様書を読み込めませんでした: "+error.message}
+  if(!markdown.trim())throw Error("仕様書ファイルが空です");
+  // Always make readable source content available first. An unexpected parser
+  // failure must never leave the modal completely blank.
+  const raw=document.createElement("pre");
+  raw.className="spec-raw";
+  raw.textContent=markdown;
+  content.replaceChildren(raw);
+  status.textContent="読み込み済み："+markdown.length+"文字";
+  try{
+   render(markdown);
+   // Verify the browser DOM really contains readable text, not just nodes.
+   if(!content.textContent.trim())throw Error("変換結果が空です");
+  }catch(parseError){
+   content.replaceChildren(raw);
+   status.textContent="原文表示（整形エラー）："+parseError.message;
+  }
+  content.scrollTop=0;
+ }catch(error){
+  if(id!==request)return;
+  content.replaceChildren();
+  const msg=document.createElement("p");
+  msg.textContent="仕様書の読み込みに失敗しました。"+error.message;
+  content.append(msg);
+  status.textContent="読み込みエラー";
+ }
  $("spec-close").focus();
 }
 function close(){
