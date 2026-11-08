@@ -22,7 +22,9 @@ This is a generic map drawing app for worlds, towns, buildings, ships and other 
 | settings | labelDefaults, selectionZoom, visibilityGroups |
 | objects | Array of drawable and selectable objects |
 
-Each object supports id, name, parentId, level, objectType, geometry, layer, zIndex, visible, selectable, style, label, detail, metadata and visibility.
+Each object supports id, name, parentId, level, optional numeric displayLevel, objectType, geometry, layer, zIndex, visible, selectable, style, label, detail, metadata and visibility.
+
+**Incremental migration:** optional `displayLevel` accepts positive integers (1, 2, 3, ... without fixed maximum) and is editable in the inspector. Legacy string `level` remains for current menus and scene files. Existing scenes are **not yet converted**; hierarchy tree and overlap handling are still pending. Do not mistake displayLevel for a physical floor or objectType.
 
 Geometry types: rect(x,y,width,height), polygon(points), polyline(points), circle(center,radius), ring(center,innerRadius,outerRadius), none.
 
