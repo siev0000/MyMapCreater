@@ -257,8 +257,8 @@ function renderMapTree(){
    active.source?'配置データを読み込み中…':'このマップには区画データがありません');
   return;
  }
- if(!hierarchy.large.length&&!hierarchy.unassigned.length){
-  message('大枠は未登録です');return;
+ if(!hierarchy.large.length){
+  message('このマップの大枠は未登録です');return;
  }
  // Menu scope is the ACTIVE map only: no root entry and no floor/map entries.
  for(const large of hierarchy.large){
@@ -277,16 +277,7 @@ function renderMapTree(){
     }});
   }
  }
- if(hierarchy.unassigned.length){
-  const key='unassigned:'+active.id,opened=treeExpanded.has(key);
-  item({label:'所属未設定の施設 ('+hierarchy.unassigned.length+')',
-   category:'未分類',depth:0,expanded:opened,hasChildren:true,
-   onClick:()=>{toggle(key);renderMapTree()}});
-  if(opened)for(const f of hierarchy.unassigned){
-   item({label:f.name,category:'施設',depth:1,active:selectedObjectId===f.id,
-    onClick:()=>{focusMapItem(active.id,f.id);closeMenu()}});
-  }
- }
+
 }
 function focusMapItem(floorId,id){
  if(selected!==floorId){
