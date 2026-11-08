@@ -12,7 +12,8 @@ const specs=[
  ["06-roadmap-and-acceptance.md","06 開発タスク"],
  ["07-floors-and-interiors.md","07 フロア・内部"],
  ["08-placeable-objects.md","08 家具・設備"],
- ["09-indoor-supply-icon-catalog.md","09 物資アイコン一覧"]
+ ["09-indoor-supply-icon-catalog.md","09 物資アイコン一覧"],
+ ["__shape_gallery__","10 図形プレビュー"]
 ];
 const names=new Map(specs),cache=new Map();
 let current="README.md",priorFocus=null,request=0;
@@ -86,6 +87,17 @@ async function open(file="README.md"){
  current=file;picker.value=file;content.replaceChildren();status.textContent="読み込み中…";
  const id=++request;
  try{
+  if(file==="__shape_gallery__"){
+   const frame=document.createElement("iframe");
+   frame.src="./shape-catalog.html";
+   frame.title="家具・設備の図形プレビュー一覧";
+   frame.className="spec-gallery-frame";
+   frame.setAttribute("loading","eager");
+   frame.addEventListener("load",()=>{if(id===request)status.textContent="家具・設備13種類の図形プレビュー"});
+   content.replaceChildren(frame);
+   status.textContent="図形一覧を表示しています…";
+   return;
+  }
   let markdown=cache.get(file);
   if(markdown===undefined){
    const res=await fetch("../docs/specs/"+file,{cache:"no-store"});
