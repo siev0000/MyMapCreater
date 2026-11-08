@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "system": "AA common map hierarchy",
-  "description": "Common map grouping. UI reads parentId rather than special-casing upper/middle/lower.",
+  "system": "Generic map scene viewer",
+  "description": "Map menu and scene sources are data-driven; the application supports arbitrary world maps, towns, ships and buildings.",
   "maps": [
     {
       "id": "automaton_ship",
@@ -19,13 +19,15 @@
           "id": "top",
           "name": "上面",
           "kind": "projection",
-          "displayName": "船体上面形状"
+          "displayName": "船体上面形状",
+          "source": "../rebuild/scenes/root-top.scene.json"
         },
         {
           "id": "side",
           "name": "側面",
           "kind": "projection",
-          "displayName": "船体側面形状"
+          "displayName": "船体側面形状",
+          "source": "../rebuild/scenes/root-side.scene.json"
         }
       ]
     },
@@ -34,7 +36,7 @@
       "name": "上層《セントラルコア階層》",
       "kind": "floor",
       "parentId": "automaton_ship",
-      "source": "../data/upper-layout-draft.json",
+      "source": "../rebuild/scenes/upper.scene.json",
       "shortName": "上層"
     },
     {
@@ -42,7 +44,7 @@
       "name": "中層《アームドヴェイン階層》",
       "kind": "floor",
       "parentId": "automaton_ship",
-      "source": "../data/middle-layout-draft.json",
+      "source": "../rebuild/scenes/middle.scene.json",
       "shortName": "中層"
     },
     {
@@ -50,7 +52,7 @@
       "name": "下層《ジェネレートシェル階層》",
       "kind": "floor",
       "parentId": "automaton_ship",
-      "source": "../data/lower-layout-draft.json",
+      "source": "../rebuild/scenes/lower.scene.json",
       "shortName": "下層"
     }
   ]
