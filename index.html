@@ -290,7 +290,10 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
  <section class="panel"><h2>施設一覧</h2><div id="places"></div><p>選択してもメニューは閉じません。該当する場所にズームします。</p></section>
    </div>
    <div id="panelDisplay" class="drawerSection" role="tabpanel" data-menu-panel="display" hidden>
-    <section class="panel"><h2>配置と編集</h2><button id="layoutToggle" class="layoutButton">配置案表示中／Notion現行に切替</button><p>中層・下層の配置案は未確定です。Notion現行設定との比較ができます。</p><a class="editLink" href="./overview.html">▣ 第1段階：全体骨格だけを確認する</a>
+    <section class="panel"><h2>配置と編集</h2>
+    <button id="layoutToggle" class="layoutButton" hidden aria-hidden="true" tabindex="-1">旧表示切替</button>
+    <p>施設・道路は現在GitHubの制作案を表示しています。</p>
+    <a class="editLink" href="./overview.html">▣ 中層A・B・C配置を地図で比較する</a>
     <a class="editLink" href="./editor.html">✎ 施設の配置を編集する（下書き）</a></section>
     <section class="panel"><h2>マス数の設定（現在の階層）</h2>
      <div class="mapGridInputs">
@@ -543,7 +546,7 @@ function setShipView(mode,persist=true){
    const map=mapSets[preferredFloor];
    if(map){title.textContent=map.name;subtitle.textContent=aaCellLabel()+' ・ '+(showProposal&&layoutDrafts[preferredFloor]?'配置案・未確定':map.status)}
    readout.textContent=gridSpec().cols+'×'+gridSpec().rows+'｜'+aaCellLabel();
-   notice.textContent=showProposal&&layoutDrafts[preferredFloor]?'配置検討中・Notion未反映':'Notionの登録座標を表示中';
+   notice.textContent='配置検討中・未確定';
    orientation.textContent='▲ 船首 +X';
   }else{
    title.textContent=mode==='top'?'アポクリファ＝アーカイブ｜船体上面形状':'アポクリファ＝アーカイブ｜船体側面形状';
@@ -872,7 +875,8 @@ function restoreDisplaySettings(){
      for(const id of GRID_FLOOR_IDS)aaGrids[id]={cols:250,rows:400};gridMeters=10;
     }
     if(typeof saved.gridOnTop==='boolean')state.gridOnTop=saved.gridOnTop;
-    if(typeof saved.showProposal==='boolean')showProposal=saved.showProposal;
+    // Always show the active GitHub draft; legacy source comparison is disabled.
+    showProposal=true;
     if(typeof saved.worldId==='string'&&WORLD_CATALOG[saved.worldId])activeWorldId=saved.worldId;
     if(['upper','middle','lower'].includes(saved.aaFloor))preferredFloor=saved.aaFloor;
    }
@@ -1105,8 +1109,8 @@ function facilityInfoHTML(f){
   '<ul class="compoundFunctions">'+f.functions.map(x=>'<li>'+escHTML(x)+'</li>').join('')+'</ul>':'';
  const dimensions=f.compoundChild?'（館内の仮位置）':f.areaFrame?'（大枠）':'';
  const sizeLabel=f.ringComplex?'リンクターミナル内・環状受付｜半径'+f.ringComplex.innerRadius+'～'+f.ringComplex.outerRadius+'m':f.w+'×'+f.h+'m '+dimensions;
- const draftNote=f.sourcePosition?'<p class="compoundNote">10m単位の再配置案。Notion元座標：X '+escHTML(f.sourcePosition[0])+'m / Y '+escHTML(f.sourcePosition[1])+'m、元寸法：'+escHTML(f.sourceSize?.[0])+'×'+escHTML(f.sourceSize?.[1])+'m。形状・寸法は仮調整。'+(currentMap==='middle'&&showProposal?'中央部の道路のみ再配置案として表示。外周道路は未検証。':'道路は再敷設前のため配置案では非表示です。')+'</p>':'';
- return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${escHTML(sizeLabel)}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}${draftNote}`;
+ 
+ return `<h3>${escHTML(f.name)}</h3><div class="meta"><span class="pill">X ${f.x}m / Y ${f.y}m</span><span class="pill">${escHTML(sizeLabel)}</span></div><p>${escHTML(f.detail||'詳細未登録')}</p>${functions}${children}${parentNote}`;
 }
 function renderPlaces(){
  const selectedId=chosen?.id;
@@ -1205,12 +1209,12 @@ async function loadMapDataFromJSON(){
 }
 function switchMap(id){
  const map=mapSets[id];if(!map)return;
- const preview=showProposal&&layoutDrafts[id];
+ const preview=layoutDrafts[id];
  currentMap=id;preferredFloor=id;facilities=preview?preview.facilities:map.facilities;roads=preview?preview.roads:map.roads;chosen=null;resetView();document.getElementById('selectedPanel').hidden=true;
  const toggle=document.getElementById('layoutToggle');
- toggle.hidden=!layoutDrafts[id];
- toggle.textContent=preview?'外壁・緩衝区の再配置案｜Notion現行へ':'Notion現行の配置｜緩衝区を確保した案へ';
- document.getElementById('layoutNotice').textContent=preview?'多重船殻・再配置案／未確定':'Notion現行座標（緩衝区未反映）';
+ toggle.hidden=true;
+ toggle.setAttribute('aria-hidden','true');
+ document.getElementById('layoutNotice').textContent='配置検討中・未確定';
 
  document.getElementById('upperAccessAudit').hidden=!(id==='upper'&&preview);
  document.getElementById('middleCentralLayout').hidden=true;
@@ -1228,7 +1232,7 @@ function switchMap(id){
  '下層：一般・大型機乗降、簡易検査、応急修理・充電、避難誘導。ラストハブ生活区と連絡し、危険物・貨物搬送は別系統。';
  document.getElementById('mapTitle').textContent=map.name;
  document.getElementById('mapSubtitle').textContent=aaCellLabel()+' ・ '+(preview?'配置案・未確定':map.status);
- document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m、'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。'+(preview?'【多重船殻・内側再配置案／Notion未反映】外装甲→機関整備区→隔壁・緩衝区→内部施設の順に分離。10m刻みで施設を再配置し、一部の寸法と外形を多角形・L字型に変更しました。下層は専用通路と封鎖隔壁を仮配置済み。上層の道路は未調整で非表示。中層は中央生活圏の検討用通路のみ表示し、外周道路は未検証です。':'【Notion現行の座標】'+map.description+' 元の配置では一部施設が外殻付近にあるため、多重船殻の区画と重なることがあります。')+' ※隣接のみで移動可能とはなりません。';
+ document.getElementById('mapNotice').textContent='船体本体は全長4,000m×最大幅2,500m。'+gridSpec().cols+'×'+gridSpec().rows+'マス（1マス'+aaCellLabel()+'）。施設配置・道路・隔壁は制作検討中です。';
  document.title='AA '+map.name+'｜'+gridSpec().cols+'×'+gridSpec().rows+'マップ';
  document.querySelectorAll('[data-map]').forEach(b=>{const on=b.dataset.map===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
  updateAAGridInfo();
@@ -1245,7 +1249,7 @@ document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()
  saveDisplaySettings();
 }));
 document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(e.target.value));
-document.getElementById('layoutToggle').onclick=()=>{showProposal=!showProposal;shipView='map';canvas.height=1600;canvas.style.aspectRatio='5/8';fitCanvasToViewport();switchMap(currentMap);setShipView('map',false);saveDisplaySettings()};
+// Legacy baseline/draft toggle removed from the UI; draft remains the displayed map.
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
 function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.access==='hazard_authorized'?'#ef9a72':road.access==='bio_authorized'?'#85dbc0':road.access==='freight_authorized'?'#a8c2dd':road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(3,road.width*.4);ctx.setLineDash(road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function facilityPolygonVertices(f){
