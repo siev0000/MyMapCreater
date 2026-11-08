@@ -312,7 +312,7 @@ function create(opts){
    // The large district title must exist from the very first overview.
    // Use its own label placement rather than replacing it with children labels.
    if(f.id==="arbora_sector"){
-    label(f.name,f.x-f.w*.36,f.y,Math.max(124,250*scale()),selected?.id===f.id);
+    label(f.name,f.x-f.w*.44,f.y,Math.max(124,250*scale()),selected?.id===f.id);
     continue;
    }
    if(district?.id===f.id)continue;
