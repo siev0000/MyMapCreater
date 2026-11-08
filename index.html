@@ -1259,7 +1259,7 @@ document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()
 document.getElementById('worldSelect').addEventListener('change',e=>switchWorld(e.target.value));
 // Legacy baseline/draft toggle removed from the UI; draft remains the displayed map.
 function circle(x,y,r){ctx.beginPath();ctx.ellipse(...xy(x,y),r*.4,r*.4,0,0,Math.PI*2)}
-function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=road.access==='hazard_authorized'?'#ef9a72':road.access==='bio_authorized'?'#85dbc0':road.access==='freight_authorized'?'#a8c2dd':road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(3,road.width*.4);ctx.setLineDash(road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
+function drawRoad(road){if(road.kind==='internal')return;if(road.layer&&!state[road.layer]||!road.layer&&!state.roads)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=currentMap==='middle'&&road.geometryStatus==='draft_parallel_freight_B'?'#e4ac6a':road.access==='hazard_authorized'?'#ef9a72':road.access==='bio_authorized'?'#85dbc0':road.access==='freight_authorized'?'#a8c2dd':road.roadType==='コンコース'?'#e6cd99':road.color;ctx.lineWidth=Math.max(3,road.width*.4);ctx.setLineDash(road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:road.status==='draft_route_requires_review'&&road.kind!=='ring'?[10,7]:road.dash||[]);if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke()}else{ctx.beginPath();road.points.forEach(([x,y],i)=>{const [a,b]=xy(x,y);i?ctx.lineTo(a,b):ctx.moveTo(a,b)});ctx.stroke()}ctx.restore()}
 function facilityPolygonVertices(f){
  if(Array.isArray(f.footprint)&&f.footprint.length>=3)return f.footprint.map(([dx,dy])=>[f.x+dx,f.y+dy]);
  return [[f.x-f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y-f.h/2],[f.x+f.w/2,f.y+f.h/2],[f.x-f.w/2,f.y+f.h/2]];
@@ -1569,8 +1569,17 @@ for(const f of facilities){
    ctx.fillStyle='rgba(61,140,102,.25)';ctx.fill();
    ctx.strokeStyle=chosen?.id===f.id||chosen?.parentId===f.id?'#f6edb5':'#73c99c';
    ctx.lineWidth=chosen?.id===f.id?4:2.5;ctx.setLineDash([9,6]);ctx.stroke();ctx.setLineDash([]);
+  }else if(currentMap==='middle'&&f.socialTier&&state.districts){
+   // Show both bow and stern living/lab districts as accessible footprints.
+   const w=f.h*.4,h=f.w*.4;
+   const bow=f.socialTier==='upper';
+   ctx.fillStyle=bow?'rgba(172,203,228,.20)':'rgba(194,154,106,.20)';
+   ctx.fillRect(cx-w/2,cy-h/2,w,h);
+   ctx.lineWidth=chosen?.id===f.id?4:2.4;
+   ctx.strokeStyle=chosen?.id===f.id?'#fff4a9':bow?'#a9e2fb':'#e3b98a';
+   ctx.setLineDash([7,5]);ctx.strokeRect(cx-w/2,cy-h/2,w,h);ctx.setLineDash([]);
   }else{
-   // Other large districts remain symbolic until their boundaries are decided.
+   // Other unsettled large districts remain symbolic.
    ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);
    ctx.fillStyle=g.fill;ctx.fill();ctx.strokeStyle=g.line;ctx.lineWidth=2.5;ctx.stroke();
    ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#f7f5d7';ctx.fillText('区',cx,cy+4);
@@ -1594,7 +1603,7 @@ if(isProtectedDraft&&currentMap==='middle'&&window.AAMiddleCentral){
 if(isProtectedDraft&&currentMap==='middle')drawArboraMacroZones();
 if(isProtectedDraft&&currentMap==='middle')drawTerminalTowerBase();
 if(!isProtectedDraft||(currentMap==='lower'&&roads.some(r=>r.geometryStatus==='draft_10m_routed')))for(let r of roads)drawRoad(r);
-else if(isProtectedDraft&&currentMap==='middle')for(const r of roads.filter(r=>r.kind==='line'&&(r.geometryStatus==='draft_central_access'||r.geometryStatus==='draft_middle_freight_B'||r.geometryStatus==='draft_arbora_B_access')))drawRoad(r);
+else if(isProtectedDraft&&currentMap==='middle')for(const r of roads.filter(r=>r.kind==='line'&&['draft_central_access','draft_purple_machine_axis','draft_parallel_freight_B','draft_arbora_B_access'].includes(r.geometryStatus)))drawRoad(r);
 if(!(isProtectedDraft&&currentMap==='middle'))drawCompoundFacilities();
 drawCollisionWarnings();
 if(isProtectedDraft&&state.structures&&window.AAStructureOverlay){
