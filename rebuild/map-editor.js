@@ -10,6 +10,45 @@ const checked=id=>$(id).checked;
 const state={scene:null,selectedId:null,options:[],undo:[],redo:[],dragBefore:null,
  savingName:"",dirty:false,internal:false,currentOptionKey:null};
 let viewer;
+const gridDefaults={visible:true,snap:true,spacing:2,fraction:.5,originX:0,originY:0};
+let gridState={...gridDefaults};
+function readGridFields(){
+ const spacing=Number(input("editor-grid-spacing"));
+ const fraction=Number(input("editor-grid-fraction"));
+ const originX=Number(input("editor-grid-origin-x")),originY=Number(input("editor-grid-origin-y"));
+ if(!Number.isFinite(spacing)||spacing<=0||!Number.isFinite(originX)||!Number.isFinite(originY)||![.5,1].includes(fraction)){
+  notice("グリッド値が不正です。マス幅は正の数、原点は数値、補助スナップは0.5または1を指定してください。","error");return null;
+ }
+ return{spacing,fraction,originX,originY,visible:checked("editor-grid-visible"),snap:checked("editor-grid-snap")};
+}
+function setGridInputs(config){
+ gridState={...gridDefaults,...config};
+ $("editor-grid-spacing").value=gridState.spacing;
+ $("editor-grid-fraction").value=String(gridState.fraction);
+ $("editor-grid-origin-x").value=gridState.originX;
+ $("editor-grid-origin-y").value=gridState.originY;
+ $("editor-grid-visible").checked=gridState.visible;
+ $("editor-grid-snap").checked=gridState.snap;
+ viewer?.setEditorGrid(gridState);
+}
+function updateGridPreview(){
+ const value=readGridFields();
+ if(!value)return;
+ gridState=value;viewer?.setEditorGrid(gridState);
+}
+function snapPoint(p){
+ return viewer&&gridState.snap?viewer.snapPoint(p):p;
+}
+function snapGeometry(g){
+ if(!gridState.snap)return g;
+ const step=gridState.spacing*gridState.fraction;
+ const snap=(value,axis)=>{const origin=axis===0?gridState.originX:gridState.originY;return origin+Math.round((value-origin)/step)*step};
+ if(g.type==="rect"){g.x=snap(g.x,0);g.y=snap(g.y,1);g.width=Math.max(step,Math.round(g.width/step)*step);g.height=Math.max(step,Math.round(g.height/step)*step)}
+ else if(g.type==="circle"||g.type==="ring"){g.center=[snap(g.center[0],0),snap(g.center[1],1)]}
+ else if(g.points){g.points=g.points.map(p=>[snap(p[0],0),snap(p[1],1)])}
+ return g;
+}
+
 function sceneNow(){return viewer?.getScene()||state.scene}
 function buttonStatus(){
  $("undo").disabled=!state.undo.length;
@@ -80,6 +119,19 @@ function fillSelect(select,rows,value){
  }
  select.value=value;
 }
+for(const id of ["editor-grid-spacing","editor-grid-fraction","editor-grid-origin-x","editor-grid-origin-y"]){
+ $(id).addEventListener("change",updateGridPreview);
+}
+for(const id of ["editor-grid-visible","editor-grid-snap"]){
+ $(id).addEventListener("change",updateGridPreview);
+}
+$("editor-grid-save").addEventListener("click",()=>{
+ const grid=readGridFields(),scene=sceneNow();
+ if(!grid||!scene)return;
+ const next=copy(scene);next.settings=next.settings||{};
+ next.settings.editorGrid={spacing:grid.spacing,fraction:grid.fraction,originX:grid.originX,originY:grid.originY};
+ if(applyScene(next,state.selectedId))notice("グリッドの座標換算・補助スナップ設定をJSONに反映しました。実寸0.5m/マスです。","success");
+});
 function renderGeometry(obj){
  const g=obj.geometry||{type:"none"},target=$("geometry-fields");
  target.replaceChildren();
@@ -173,6 +225,7 @@ function applyScene(scene,selectedId,{record=true,resetView=false}={}){
   try{viewer.replaceScene(scene,{preserveView:!resetView,selectedId})}
   finally{state.internal=false}
   state.scene=viewer.getScene();
+  if(scene.settings?.editorGrid)setGridInputs({...gridState,...scene.settings.editorGrid});
   state.selectedId=selectedId||null;
   $("scene-name").textContent=scene.name||"マップ";
   renderSelected();showObjects();showNewLayerChoices();
@@ -243,7 +296,7 @@ bind("add-object",()=>{
  const kind=input("new-role")||"object";
  const layer=input("new-layer")||"objects";
  const index=scene.layers?.find(l=>l.id===layer)?.zIndex;
- const g=shapeOf(gtype,[x,y]);
+ const g=snapGeometry(shapeOf(gtype,snapPoint([x,y])));
  const labelText="新しい図形";
  const parentId=checked("new-parent-selected")?state.selectedId:null;
  if(checked("new-when-parent-selected")&&!parentId){
@@ -266,7 +319,7 @@ bind("clone-object",()=>{
  const scene=sceneNow(),id=state.selectedId;if(!scene||!id)return;
  const original=scene.objects.find(o=>o.id===id);if(!original)return;
  const cloned=copy(original);cloned.id=uniqueId(id,scene.objects);cloned.name=(original.name||id)+" の複製";
- const g=cloned.geometry||{},dx=25,dy=25;
+ const g=cloned.geometry||{},dx=gridState.spacing*4,dy=gridState.spacing*4;
  if(g.type==="rect"){g.x+=dx;g.y+=dy}
  else if(g.type==="circle"||g.type==="ring"){g.center[0]+=dx;g.center[1]+=dy}
  else if(g.points)for(const p of g.points){p[0]+=dx;p[1]+=dy}
@@ -360,6 +413,7 @@ viewer=window.AAMapViewer.create({
    state.scene=data?copy(data):null;state.undo.length=0;state.redo.length=0;state.selectedId=null;
    state.savingName=data?(data.id+".scene.json"):"";setDirty(false);
   }
+  if(data)setGridInputs({...gridDefaults,...data.settings?.editorGrid});
   if(data)$("scene-name").textContent=data.name||data.id;
   else $("scene-name").textContent="マップ";
   showObjects();renderSelected();showNewLayerChoices();
@@ -375,6 +429,7 @@ viewer=window.AAMapViewer.create({
   notice("図形の移動を反映しました（未保存）","success");
  }
 });
+setGridInputs(gridDefaults);
 async function init(){
  try{
   const response=await fetch("./map-tree.json",{cache:"no-store"});
