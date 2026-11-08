@@ -185,7 +185,7 @@ function initBuildingTemplates(){
  const picker=$("building-template");picker.replaceChildren();
  for(const category of [...new Set(list.map(t=>t.category))]){
   const group=document.createElement("optgroup");
-  group.label=list.find(t=>t.id===category)?.name||category;
+  group.label=category==="custom"?"自作テンプレート":list.find(t=>t.id===category)?.name||category;
   for(const t of list.filter(t=>t.category===category)){
    const option=document.createElement("option");
    option.value=t.id;option.textContent=t.name;
