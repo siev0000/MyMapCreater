@@ -126,13 +126,13 @@ function draw(ctx,xy,{floor,facilities=[],roads=[]}={}){
   placed.push(point);
   const [x,y]=xy(...point),size=primary?17:13,half=size/2;
   ctx.save();
-  ctx.fillStyle=primary?'rgba(68,151,174,.82)':'rgba(62,128,148,.68)';
-  ctx.strokeStyle=primary?'#d4faff':'#a2d9ea';
+  ctx.fillStyle=primary?'rgba(125,135,143,.88)':'rgba(94,104,112,.74)';
+  ctx.strokeStyle=primary?'#e2e4e7':'#c3c8cc';
   ctx.lineWidth=primary?2:1.5;
   ctx.fillRect(x-half,y-half,size,size);
   ctx.strokeRect(x-half,y-half,size,size);
   // Reinforced core mark makes it recognizable as a post, not a grid cell.
-  if(primary){ctx.fillStyle='#153743';ctx.fillRect(x-2.5,y-2.5,5,5);}
+  if(primary){ctx.fillStyle='#515a60';ctx.fillRect(x-2.5,y-2.5,5,5);}
   ctx.restore();
  }
  for(const gate of data.gateChecks){
