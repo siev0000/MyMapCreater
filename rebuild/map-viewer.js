@@ -437,6 +437,7 @@ function create(opts){
   if(editMode&&selected&&selected.selectable!==false&&
    contains(selected,...worldAt(x,y),8/scale())){
    objectDrag={id:selected.id,x,y,moved:false};
+   if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
   }
   if(pointers.size===2){objectDrag=null;
    const list=[...pointers.values()],a=list[0],b=list[1];
