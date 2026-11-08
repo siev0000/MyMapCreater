@@ -105,10 +105,11 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
 .zoomControls button{min-width:40px;min-height:40px;padding:4px 8px;font-size:20px;font-weight:700;touch-action:manipulation}
 .zoomControls .zoomReset{font-size:12px;min-width:58px}
 @media(max-width:425px){.drawer{width:min(340px,78vw)}.zoomControls{right:8px;bottom:38px;gap:3px}.zoomControls button{min-width:35px;min-height:37px}.zoomControls .zoomReset{min-width:51px}}
-.popupMask{position:absolute;inset:0;background:transparent;display:none;z-index:25;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));cursor:pointer}
+.popupMask{position:absolute;inset:0;background:transparent;display:none;z-index:25;align-items:flex-end;justify-content:flex-start;padding:12px;padding-bottom:102px;pointer-events:none}
 .popupMask.show{display:flex}
-.popupCard{width:min(560px,100%);max-height:72%;overflow-y:auto;background:#152a37;border-radius:16px;border:1px solid #6289a0;padding:17px 18px 13px;box-shadow:0 18px 44px #0009}
+.popupCard{position:relative;width:min(350px,74%);max-height:min(40%,280px);overflow-y:auto;pointer-events:auto;background:#152a37;border-radius:16px;border:1px solid #6289a0;padding:17px 38px 13px 16px;box-shadow:0 18px 44px #0009}
 .popupCard h3{margin:0 0 9px;font-size:18px}
+.popupDismiss{position:absolute;right:6px;top:6px;min-width:30px;min-height:30px;font-size:19px;border-radius:8px;border:1px solid #668697;background:#193542;color:#eff7fa;cursor:pointer}
 .popupCard p{font-size:13px;line-height:1.65;margin:8px 0}
 .popupCard .small,.popupCard .extra{color:#b6d2e1;font-size:12px}
 .meta{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
@@ -341,7 +342,7 @@ button:disabled{opacity:.35;cursor:wait}button:hover:not(:disabled){border-color
   </div>
  </aside>
  <div class="popupMask" id="popupMask" aria-hidden="true">
-  <div class="popupCard" role="dialog" aria-modal="true" aria-label="施設・区画の説明"><div id="info"></div></div>
+  <div class="popupCard" role="dialog" aria-modal="false" aria-label="施設・区画の説明"><button type="button" class="popupDismiss" id="popupDismiss" aria-label="説明を閉じる">×</button><div id="info"></div></div>
  </div>
 </main>
 </div><script src="./dark-world-reference-trace.js"></script><script src="./dark-world.js"></script><script src="./aa-structure-overlay.js"></script><script src="./middle-central-ring.js"></script><script src="./aa-terminal-interior.js"></script><script>
@@ -1595,43 +1596,72 @@ function drawArboraMacroZones(){
  }
  ctx.restore();
 }
+// Middle map hierarchy:
+// big = district (always outlined); medium = facility (always outlined);
+// small = facility interior (drawn only after its medium has been selected).
+function currentMiddleHierarchy(){
+ if(currentMap!=='middle'||!showProposal)return {parent:null,medium:null};
+ const parent=facilities.find(f=>f.mediumZones?.length&&chosen&&(
+  chosen.id===f.id||chosen.parentId===f.id||chosen.districtParentId===f.id))||null;
+ const medium=parent?.mediumZones.find(m=>
+  chosen?.id===m.id||chosen?.parentId===m.id)||null;
+ return {parent,medium};
+}
 function drawMiddleHierarchyFrames(){
- if(currentMap!=='middle'||!showProposal||!state.districts||!chosen)return;
- const parent=facilities.find(f=>f.mediumZones?.length&&(
-  chosen.id===f.id||chosen.parentId===f.id||chosen.districtParentId===f.id));
- if(!parent)return;
- const mediumSelected=parent.mediumZones.find(m=>chosen.id===m.id||chosen.parentId===m.id);
+ if(currentMap!=='middle'||!showProposal||!state.districts)return;
+ const {parent,medium}=currentMiddleHierarchy();
  ctx.save();ctx.lineJoin='round';
- for(const z of parent.mediumZones){
-  const [px,py]=xy(z.x,z.y),w=z.h*.4,h=z.w*.4;
-  ctx.beginPath();ctx.rect(px-w/2,py-h/2,w,h);
-  ctx.fillStyle=chosen.id===z.id?'rgba(253,229,154,.22)':'rgba(213,227,237,.10)';
-  ctx.fill();ctx.lineWidth=chosen.id===z.id?3.1:1.9;
-  ctx.strokeStyle=chosen.id===z.id?'#fff3af':'#d6e5ed';
-  ctx.setLineDash(chosen.id===z.id?[]:[6,4]);ctx.stroke();
+ for(const district of facilities.filter(f=>f.mediumZones?.length)){
+  for(const z of district.mediumZones){
+   // The selected facility frame recedes while its interior is being inspected.
+   if(district.id===parent?.id&&z.id===medium?.id)continue;
+   const [px,py]=xy(z.x,z.y),w=z.h*.4,h=z.w*.4;
+   ctx.beginPath();ctx.rect(px-w/2,py-h/2,w,h);
+   ctx.fillStyle='rgba(223,230,236,.075)';ctx.fill();
+   ctx.lineWidth=1.6;ctx.strokeStyle='#d0d9de';
+   ctx.setLineDash([6,4]);ctx.stroke();
+  }
  }
- if(mediumSelected){
-  for(const small of mediumSelected.smallZones||[]){
-   const [x,y]=xy(small.x,small.y),w=small.h*.4,h=small.w*.4;
-   ctx.beginPath();ctx.rect(x-w/2,y-h/2,w,h);
-   ctx.fillStyle=chosen.id===small.id?'rgba(255,244,188,.28)':'rgba(232,232,231,.08)';
-   ctx.fill();ctx.lineWidth=chosen.id===small.id?2.8:1.35;
-   ctx.strokeStyle=chosen.id===small.id?'#fff3af':'#cbd5d9';ctx.setLineDash([]);ctx.stroke();
+ if(medium){
+  // Interior rooms are not final designs; their outlines and names appear only at this level.
+  for(const small of medium.smallZones||[]){
+   const [px,py]=xy(small.x,small.y),w=small.h*.4,h=small.w*.4;
+   ctx.beginPath();ctx.rect(px-w/2,py-h/2,w,h);
+   ctx.fillStyle=chosen?.id===small.id?'rgba(255,236,172,.31)':'rgba(231,232,225,.13)';
+   ctx.fill();ctx.lineWidth=chosen?.id===small.id?2.7:1.75;
+   ctx.strokeStyle=chosen?.id===small.id?'#fff0a3':'#d6d4cb';
+   ctx.setLineDash([]);ctx.stroke();
   }
  }
  ctx.restore();
 }
 function drawMiddleDistrictLabels(){
- if(currentMap!=='middle'||!showProposal||!state.labels||!chosen)return;
- if(chosen.kind==='cell'||chosen.kind==='reserved'||chosen.kind==='concourse')return;
- const position=chosen.mapLabelPosition||[chosen.x,chosen.y];
- if(!position.every(Number.isFinite))return;
- const [x,y]=xy(...position),label=chosen.name;
- if(!label)return;
- ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
- ctx.lineJoin='round';ctx.font='bold 17px system-ui';
- ctx.lineWidth=4.5;ctx.strokeStyle='#15232a';ctx.strokeText(label,x,y);
- ctx.fillStyle='#fff4d5';ctx.fillText(label,x,y);
+ if(currentMap!=='middle'||!showProposal||!state.districts||!state.labels)return;
+ const {parent,medium}=currentMiddleHierarchy();
+ ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+ const label=(name,x,y,size,color)=>{
+  const [px,py]=xy(x,y);
+  ctx.font='bold '+size+'px system-ui';ctx.strokeStyle='#13212a';ctx.lineWidth=size>=15?4.5:3.1;
+  ctx.strokeText(name,px,py);ctx.fillStyle=color;ctx.fillText(name,px,py);
+ };
+ for(const district of facilities.filter(f=>f.mediumZones?.length)){
+  // All district names show initially. A selected district loses its title
+  // to make visual room for its facility names or interior labels.
+  if(district.id===parent?.id)continue;
+  const [x,y]=district.mapLabelPosition||[district.x,district.y];
+  label(district.districtMapLabel||district.short||district.name,x,y,17,'#fff4d5');
+ }
+ if(medium){
+  for(const small of medium.smallZones||[]){
+   label(small.name,small.x,small.y,10,chosen?.id===small.id?'#fff5a5':'#e9eef1');
+  }
+ }else if(parent){
+  for(const zone of parent.mediumZones){
+   label(zone.name,zone.x,zone.y,12,'#f1f5f7');
+  }
+ }
+ // Other independent named buildings should not flood the overview with labels.
+ // Their names and descriptions remain available in the popup.
  ctx.restore();
 }
 function draw(){
@@ -2010,10 +2040,9 @@ document.querySelectorAll('[data-menu-tab]').forEach(b=>b.addEventListener('clic
 document.getElementById('drawerShade').addEventListener('click',closeDrawer);
 document.getElementById('popupMask').addEventListener('click',e=>{
  const child=e.target.closest?.('[data-place]');
- if(child){
-  closePopup();openDrawer();selectPlace(child.dataset.place);
- }else clearSelected();
+ if(child){closePopup();openDrawer();selectPlace(child.dataset.place);}
 });
+document.getElementById('popupDismiss').addEventListener('click',closePopup);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){clearSelected();closeDrawer()}});
 const darkWorld=window.DarkWorldMap.create({
  canvas,ctx,getView:()=>view,redraw:()=>draw(),
