@@ -1308,14 +1308,19 @@ function drawRoad(road){
  road.access==='hazard_authorized'?'#ef9a72':road.access==='bio_authorized'?'#85dbc0':
  road.access==='freight_authorized'?'#a8c2dd':road.roadType==='コンコース'?'#e6cd99':road.color;
  const isDraft=road.status==='draft_route_requires_review';
- const dash=middle?[]:road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:isDraft&&road.kind!=='ring'?[10,7]:road.dash||[];
+ const dash=middle?(isDraft?[7,6]:[]):road.geometryStatus==='draft_10m_routed'&&road.access!=='public'?[9,5]:isDraft&&road.kind!=='ring'?[10,7]:road.dash||[];
  if(middle){
   ctx.lineWidth=1.65;
   if(road.kind==='ring'){circle(0,0,road.r);ctx.stroke();}
   else{
    const main=road.geometryStatus==='draft_purple_machine_axis'||
     ['draft_industrial_starboard','middle_industrial_freight_road','middle_cargo_tunnel'].includes(road.id);
-   drawThinRoadPolyline(road.points,ctx.strokeStyle,main,dash);
+   // An unconfirmed route ends at the building boundary. It never visually
+   // cuts through a solid factory without a registered doorway.
+   const blockers=facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&!f.areaFrame&&f.type!=='terminal')
+     .map(facilityPolygonVertices);
+   for(const part of window.AAMapEngine.visiblePolyline(road.points,blockers))
+     drawThinRoadPolyline(part,ctx.strokeStyle,main,dash);
   }
  }else{
   ctx.lineWidth=Math.max(3,road.width*.4);ctx.setLineDash(dash);
