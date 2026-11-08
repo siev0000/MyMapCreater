@@ -115,7 +115,8 @@
         "uniqueBy": "metadata.roadType",
         "displayField": "metadata.roadType"
       }
-    ]
+    ],
+    "initialDisplayLevel": 3
   },
   "objects": [
     {
