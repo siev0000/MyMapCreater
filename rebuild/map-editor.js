@@ -686,6 +686,7 @@ viewer=window.AAMapViewer.create({
  hint:$("map-hint"),
  onLayoutLoaded:(_map,data)=>{
   if(!state.internal){
+   exteriorExported=false;interiorExported.clear();
    state.scene=data?copy(data):null;state.undo.length=0;state.redo.length=0;state.selectedId=null;
    state.savingName=data?(data.id+".scene.json"):"";setDirty(false);
   }
