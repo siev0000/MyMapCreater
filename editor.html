@@ -52,7 +52,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <nav aria-label="階層選択"><button data-floor="upper">上層</button><button data-floor="middle" class="active">中層</button><button data-floor="lower">下層</button></nav>
 <div class="toolbar">
 <button id="overlay" class="active">中層⇄下層 重ね表示</button>
-<button id="snap" class="active">10mスナップ</button><button id="editMode" aria-pressed="false">編集モード：OFF（選択・閲覧）</button>
+<button id="snap" class="active">10mスナップ</button>
 <button id="grid" class="active">グリッド</button><button id="gridSize">10m四方（50mへ切替）</button>
 <button id="labels" class="active">施設名</button>
 <button id="undo">↶ 戻す</button><button id="redo">↷ やり直し</button>
@@ -71,7 +71,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <section class="mapwrap"><h2 id="floorText">中層</h2>
 <canvas id="map" width="1000" height="1600" aria-label="施設のドラッグ移動と道路編集が可能なマップ"></canvas>
 <div class="mapmeta"><span>船首＝上／左舷＝左／基本25×40（100m四方）・詳細50×80（50m四方）／船体表示範囲 X ±2,000m・Y ±1,250m</span><span id="cursor">X 0m / Y 0m</span></div>
-<p class="note">通常はタップで選択のみ。「編集モード」をONにするとドラッグ移動・右下のハンドルでサイズ変更・道路の頂点編集ができます。<strong>塗りのない領域は通行可能な空き地を意味しません。</strong></p>
+<p class="note">施設を選んでドラッグすると移動、右下の黄色い四角を引くとサイズ変更。道路は頂点をドラッグ。環状路は線をドラッグして半径を変更できます。<strong>塗りのない領域は通行可能な空き地を意味しません。</strong></p>
 </section>
 <aside class="sidebar">
 <div class="panel"><h2>編集対象</h2><div class="editKind"><button data-kind="facility" class="active">施設・区画</button><button data-kind="road">道路・通路</button></div>
@@ -83,7 +83,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
 <div id="saveState" role="status" style="color:#b9e1ce;padding:6px 4px;font-size:12px">保存状態：読み込み中</div><div id="message" role="status">準備中…</div>
 <footer>編集内容はこのブラウザに自動保存され、同じ端末・ブラウザから再開できます。GitHubへは「GitHubに下書きを保存」を押したときだけ更新されます。Notionや確定JSONは変更しません。別端末へ移す・GitHubへ反映する場合はJSONを書き出してください。ブラウザのデータ削除・プライベートモードでは保存が失われる場合があります。世界設定の正本はNotionです。</footer>
 </div>
-<script src="./middle-central-ring.js"></script><script src="./aa-map-engine.js"></script>
+<script src="./middle-central-ring.js"></script>
 <script src="./aa-terminal-interior.js"></script>
 <script>(function editorApp(){
   "use strict";
@@ -96,7 +96,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   const worldToPixel=(x,y)=>({px:W/2+y*SC,py:H/2-x*SC});
   const pixelToWorld=(px,py)=>({x:(H/2-py)/SC,y:(px-W/2)/SC});
   const snap=n=>state.snap?Math.round(n/10)*10:Math.round(n);
-  let editEnabled=false;let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0},interiorPreview=null;
+  let floors={},sourceFloors={},initialFloors={},draftFloors=new Set(),baselineWarnings={upper:[],middle:[],lower:[]},dirty=new Set(),savedLocal=new Set(),unsavedLocal=new Set(),active="middle",kind="facility",selection=null,drag=null,cursorWorld={x:-1000,y:0},interiorPreview=null;
   const history={upper:[],middle:[],lower:[]},future={upper:[],middle:[],lower:[]};
   const state={snap:true,grid:true,overlay:false,labels:true};let gridMeters=10;
   function current(){return floors[active]}
@@ -246,7 +246,6 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     return inside(A[0],B)||inside(B[0],A);
   }
   function createShape(f,kind){
-    if(kind==='custom'){f.draftShape='custom';return}
     if(kind==='rect'){delete f.footprint;f.draftShape='rect';return}
     const w=f.w,h=f.h,x=w/2,y=h/2,c=Math.max(10,Math.round(Math.min(w,h)*.14/10)*10);
     f.footprint=kind==='L'&&w>=80&&h>=80?
@@ -277,24 +276,18 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const trunk=purple||["draft_industrial_starboard","middle_industrial_freight_road","middle_cargo_tunnel"].includes(r.id);
     ctx.lineCap="round";ctx.lineJoin="round";
     ctx.strokeStyle=purple?"#d3b4ee":freight?"#e4ac6a":r.color||"#a5b8c8";
+    const pts=(r.points||[]).map(([x,y])=>{const p=worldToPixel(x,y);return[p.px,p.py]});
     if(r.kind==="ring"){if(roadPath(r)){ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.stroke()}return;}
-    if(r.kind!=="line")return;
-    const blockers=current().facilities.filter(f=>!f.zoneOutline&&!f.ringDistrict&&!f.areaFrame&&f.type!=="terminal").map(f=>
-      facilityShape(f).map(p=>{const w=pixelToWorld(p.px,p.py);return [w.x,w.y]}));
-    const segments=window.AAMapEngine.visiblePolyline(r.points||[],blockers);
-    for(const segment of segments){
-      const pts=segment.map(([x,y])=>{const p=worldToPixel(x,y);return[p.px,p.py]});
-      if(pts.length<2)continue;
-      for(const off of trunk?[-2.7,2.7]:[0]){
-        ctx.beginPath();
-        pts.forEach(([x,y],i)=>{
-          const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
-          const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;
-          const px=x-off*dy/l,py=y+off*dx/l;
-          if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
-        });
-        ctx.lineWidth=trunk?1.55:1.65;ctx.setLineDash(r.status==="draft_route_requires_review"?[7,6]:[]);ctx.stroke();
-      }
+    if(pts.length<2)return;
+    for(const off of trunk?[-2.7,2.7]:[0]){
+      ctx.beginPath();
+      pts.forEach(([x,y],i)=>{
+        const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+        const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;
+        const px=x-off*dy/l,py=y+off*dx/l;
+        if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+      });
+      ctx.lineWidth=trunk?1.55:1.65;ctx.setLineDash([]);ctx.stroke();
     }
   }
   function drawRoad(r,alpha=1){
@@ -377,23 +370,54 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     }
     ctx.restore();
   }
-  function editorFacilityVisible(f){
-    if(active!=='middle'||!f.mapDisplayParentId)return true;
-    return selectedItem()?.id===f.id||interiorPreview?.macroId===f.mapDisplayParentId;
-  }
   function editorMiddleFrames(){
-    if(active!=='middle')return;
-    const selected=kind==='facility'?selectedItem():null;
-    const targetId=interiorPreview?.smallId||interiorPreview?.mediumId||selected?.id||null;
-    const project=(x,y)=>{const p=worldToPixel(x,y);return [p.px,p.py]};
-    const model=window.AAMapEngine.normalizeFloor(current());
-    window.AAMapEngine.drawMiddleCanvas(ctx,project,model,targetId,{labels:state.labels,bigFont:16});
-    if(state.labels&&selected&&!model.districts.some(n=>n.id===selected.id)){
-      const [px,py]=project(selected.x,selected.y);
-      ctx.save();ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.strokeStyle='#142630';ctx.lineWidth=3;
-      ctx.strokeText(selected.name,px,py);ctx.fillStyle='#fff4d7';ctx.fillText(selected.name,px,py);ctx.restore();
-    }
+ if(active!=="middle")return;
+ const parent=kind==="facility"&&selectedItem()?.mediumZones?.length?selectedItem():null;
+ const medium=parent?.mediumZones?.find(z=>z.id===interiorPreview?.mediumId)||null;
+ ctx.save();ctx.lineJoin="round";
+ for(const district of current().facilities.filter(f=>f.mediumZones?.length)){
+  for(const zone of district.mediumZones){
+   if(district.id===parent?.id&&zone.id===medium?.id)continue;
+   const r=rect(zone);
+   ctx.fillStyle="rgba(222,225,229,.085)";
+   ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+   ctx.lineWidth=1.65;ctx.strokeStyle="#d8e1e5";ctx.setLineDash([6,4]);
+   ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
   }
+ }
+ if(medium)for(const z of medium.smallZones||[]){
+  const r=rect(z);
+  ctx.fillStyle=interiorPreview?.smallId===z.id?"rgba(255,237,166,.25)":"rgba(234,232,230,.11)";
+  ctx.fillRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+  ctx.lineWidth=interiorPreview?.smallId===z.id?3:1.5;
+  ctx.strokeStyle=interiorPreview?.smallId===z.id?"#fff3af":"#c2cbd0";ctx.setLineDash([]);
+  ctx.strokeRect(r.left,r.top,r.right-r.left,r.bottom-r.top);
+ }
+ if(state.labels){
+  const txt=(text,x,y,size,color)=>{
+   const p=worldToPixel(x,y);
+   ctx.font="bold "+size+"px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.lineWidth=size>14?4.5:3;ctx.strokeStyle="#12222b";ctx.strokeText(text,p.px,p.py);
+   ctx.fillStyle=color;ctx.fillText(text,p.px,p.py);
+  };
+  for(const district of current().facilities.filter(f=>f.mediumZones?.length)){
+   if(district.id===parent?.id)continue;
+   const [x,y]=district.mapLabelPosition||[district.x,district.y];
+   txt(district.districtMapLabel||district.name,x,y,16,"#fff4d7");
+  }
+  if(medium){
+   for(const z of medium.smallZones||[])
+    txt(z.name,z.x,z.y,11,interiorPreview?.smallId===z.id?"#fff4a4":"#ebf0f1");
+  }else if(parent){
+   for(const z of parent.mediumZones)txt(z.name,z.x,z.y,12,"#edf2f5");
+  }else{
+   const selected=kind==="facility"?selectedItem():null;
+   if(selected&&!selected.mediumZones?.length)
+    txt(selected.name,selected.x,selected.y,15,"#fff4d7");
+  }
+ }
+ ctx.restore();
+}
   function draw(){
     ctx.fillStyle="#10212b";ctx.fillRect(0,0,W,H);
     drawSortieRestrictions();
@@ -412,7 +436,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       window.AAMiddleCentral.drawUrbanBlocks(ctx,(x,y)=>{const p=worldToPixel(x,y);return[p.px,p.py]},current().centralUrbanPlan,{labels:state.labels,zoom:1.35});
     }
     for(const f of [...current().facilities.filter(f=>f.zoneOutline),...current().facilities.filter(f=>!f.zoneOutline)]){
-      if(f.ringDistrict||!editorFacilityVisible(f))continue;
+      if(f.ringDistrict)continue;
       if(f.areaFrame&&Array.isArray(f.internalFacilities)){drawCompound(f);continue}
       if(f.type==="terminal"&&current().editorMeta?.status==="draft"){
         const c=worldToPixel(f.x,f.y),r=250*SC;
@@ -428,13 +452,11 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(active==="middle"&&f.id==="arbora_sector"&&f.footprint?.length>=3){
         traceShape(f);
         ctx.fillStyle="rgba(70,150,108,.24)";ctx.fill();ctx.strokeStyle="#91dcb0";ctx.lineWidth=2.8;ctx.setLineDash([8,5]);ctx.stroke();ctx.setLineDash([]);
-        if(selectedItem()?.id===f.id||selectedItem()?.parentId===f.id||selectedItem()?.containedIn===f.id||interiorPreview?.macroId){
+        if(selectedItem()?.id===f.id||selectedItem()?.parentId===f.id){
           for(const z of f.macroZones||[]){
-            if(z.id===interiorPreview?.macroId||z.id===selectedItem()?.mapDisplayParentId)continue;
-            const p=worldToPixel(z.x,z.y),w=z.h*SC;
-            traceShape(z);
-            ctx.fillStyle="rgba(89,180,132,.22)";ctx.fill();
-            ctx.lineWidth=1.5;ctx.strokeStyle="#a4e9b5";ctx.stroke();
+            const p=worldToPixel(z.x,z.y),w=z.h*SC,h=z.w*SC;
+            ctx.fillStyle="rgba(89,180,132,.22)";ctx.fillRect(p.px-w/2,p.py-h/2,w,h);
+            ctx.lineWidth=1.5;ctx.strokeStyle="#a4e9b5";ctx.strokeRect(p.px-w/2,p.py-h/2,w,h);
             if(state.labels&&selectedItem()?.id===z.id){ctx.font="11px system-ui";ctx.fillStyle="#e5fce6";ctx.fillText(z.name,p.px,p.py,Math.max(75,w));}
           }
         }
@@ -596,7 +618,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     const common=`<div class="value-id">ID: ${esc(item.id)}</div>`;
     if(kind==="facility"){
       const isRing=item.ringDistrict===true;
-      const chosenShape=item.draftShape||(item.footprint?.length===6?"L":item.footprint?.length===8?"chamfer":item.footprint?.length>=3?"custom":"rect");
+      const chosenShape=item.draftShape||(item.footprint?.length===6?"L":item.footprint?.length===8?"chamfer":"rect");
       e.innerHTML=`${common}<div class="fields">
         ${field("施設名","name",item.name)}
         <label>施設分類<select data-field="type">${typeOptions}</select></label>
@@ -604,7 +626,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         ${field("Y / 左右舷 (m)","y",item.y,"number",isRing?"disabled":"step='10'")}
         ${field("X方向の長さ (m)","w",item.w,"number",isRing?"disabled min='1'":"min='1' step='10'")}
         ${field("Y方向の長さ (m)","h",item.h,"number",isRing?"disabled min='1'":"min='1' step='10'")}
-        </div><label>施設の外形<select data-shape><option value="chamfer" ${chosenShape==="chamfer"?"selected":""}>角落ち（八角形）</option><option value="L" ${chosenShape==="L"?"selected":""}>L字型</option><option value="rect" ${chosenShape==="rect"?"selected":""}>長方形</option><option value="custom" ${chosenShape==="custom"?"selected":""}>自由多角形（現行外形を維持）</option></select></label><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
+        </div><label>施設の外形<select data-shape><option value="chamfer" ${chosenShape==="chamfer"?"selected":""}>角落ち（八角形）</option><option value="L" ${chosenShape==="L"?"selected":""}>L字型</option><option value="rect" ${chosenShape==="rect"?"selected":""}>長方形</option></select></label><label>施設の説明<textarea data-field="detail" rows="3">${esc(item.detail||"")}</textarea></label>
         ${isRing?'<p class="hint">円環地区の形状・中心は既存設定で固定しています。通常の矩形施設とは別に扱います。</p>':`<button type="button" class="danger" id="delete">この施設を削除（下書き）</button>`}
         <p class="hint">既存の施設IDは維持。編集内容はJSON書き出しまで確定されません。</p>`;
     }else{
@@ -648,7 +670,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(curr&&!curr.ringDistrict){const b=rect(curr);if(Math.hypot(p.px-b.right,p.py-b.bottom)<18)return {item:curr,mode:"resize"}}
     }
     for(const f of [...items()].reverse()){
-      if(f.ringDistrict||!editorFacilityVisible(f))continue;
+      if(f.ringDistrict)continue;
       const b=rect(f);
       if(withinShape(f,p))return {item:f,mode:"move"};
     }
@@ -689,22 +711,10 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
        renderDetail();draw();e.preventDefault();return;
       }
     }
-    // Arbora uses the same progressive drill-down: sector, then functional zone, then interior structure.
-    const arbora=kind==='facility'&&selectedItem()?.id==='arbora_sector'?selectedItem():null;
-    if(arbora&&!interiorPreview?.macroId){
-      const macro=arbora.macroZones?.find(z=>withinShape(z,p));
-      if(macro){
-        interiorPreview={districtId:arbora.id,macroId:macro.id};
-        draw();showStatus(macro.name+' の内部構造を表示中。施設を選択すると編集できます。');
-        e.preventDefault();return;
-      }
-    }
-    // Keep preview during picking so the revealed child is selectable.
-    const hit=kind==="facility"?pickFacility(p):pickRoad(p);
     interiorPreview=null;
+    const hit=kind==="facility"?pickFacility(p):pickRoad(p);
     if(!hit){selection=null;render();if(pointInRestricted(w.x,w.y))showStatus("ここは上層専用の出撃区です。下層の通常施設・道路を配置できません。",true);return}
     selection={id:hit.item.id,kind};
-    if(!editEnabled){drag=null;render();e.preventDefault();return}
     drag={pointerId:e.pointerId,start:p,world:w,mode:hit.mode,index:hit.index,itemId:hit.item.id,initial:clone(hit.item),saved:false};
     canvas.setPointerCapture(e.pointerId);
     render();
@@ -717,7 +727,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     if(Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<3&&!drag.saved)return;
     if(!drag.saved){saveSnapshot();drag.saved=true}
     const obj=items().find(x=>x.id===drag.itemId);if(!obj)return;
-    const previous=kind==="facility"?{x:obj.x,y:obj.y,w:obj.w,h:obj.h,footprint:obj.footprint?clone(obj.footprint):undefined}:null;
+    const previous=kind==="facility"?{x:obj.x,y:obj.y,w:obj.w,h:obj.h}:null;
     if(kind==="facility"){
       if(drag.mode==="move"){
         obj.x=snap(drag.initial.x+w.x-drag.world.x);
@@ -726,13 +736,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
         const c=worldToPixel(obj.x,obj.y);
         obj.w=Math.max(30,snap(Math.max(30,(p.py-c.py)*5)));
         obj.h=Math.max(30,snap(Math.max(30,(p.px-c.px)*5)));
-        if(obj.footprint){
-          if(obj.draftShape==='custom'||obj.autoShapeCorrection){
-            obj.footprint=drag.initial.footprint.map(([x,y])=>[
-              x*obj.w/drag.initial.w,y*obj.h/drag.initial.h]);
-            obj.draftShape='custom';
-          }else createShape(obj,obj.draftShape||(obj.footprint.length===6?"L":"chamfer"));
-        }
+        if(obj.footprint)createShape(obj,obj.draftShape||(obj.footprint.length===6?"L":"chamfer"));
       }
       if(intersectsRestrictedFacility(obj)){
         Object.assign(obj,previous);
@@ -766,13 +770,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       if(item[key]===value)return;
       if(kind==="facility"&&intersectsRestrictedFacility({...item,[key]:value})){showStatus("下層の施設は上層専用出撃区へ配置できません。",true);renderDetail();return}
       if(kind==="road"&&key==="r"&&active==="lower"&&(current().restrictedZones||[]).length&&value>current().restrictedZones[0].bounds.xMin){showStatus("環状路を出撃区へ通せません。",true);renderDetail();return}
-      const before={w:item.w,h:item.h};saveSnapshot();item[key]=value;
-      if(kind==="facility"&&["w","h"].includes(key)&&item.footprint){
-        if(item.draftShape==='custom'||item.autoShapeCorrection||![6,8].includes(item.footprint.length)){
-          item.footprint=item.footprint.map(([x,y])=>[x*item.w/before.w,y*item.h/before.h]);
-          item.draftShape='custom';
-        }else createShape(item,item.draftShape||(item.footprint.length===6?"L":"chamfer"));
-      }render();
+      saveSnapshot();item[key]=value;if(kind==="facility"&&["w","h"].includes(key)&&item.footprint)createShape(item,item.draftShape||(item.footprint.length===6?"L":"chamfer"));render();
     }else if(target.dataset.vertex!==undefined){
       const idx=Number(target.dataset.vertex),axis=Number(target.dataset.axis),v=Number(target.value);
       if(!Number.isFinite(v))return;
@@ -841,7 +839,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
     $("saveGithub").disabled=true;
     const output=clone(floors[floor]);
     output.editorMeta={...(output.editorMeta||{}),status:"draft",editedAt:new Date().toISOString()};
-    const url="https://api.github.com/repos/siev0000/MyMapCreater/contents/data/"+floor+"-layout-draft.json";
+    const url="https://api.github.com/repos/siev0000/MyMapCreater/contents/data/"+floor+"-draft.json";
     const headers={
       "Accept":"application/vnd.github+json",
       "Authorization":"Bearer "+token,
@@ -889,7 +887,7 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
       draftFloors.add(floor);
       unsavedLocal.add(floor);
       saveLocal(floor);
-      showStatus("GitHubに "+floor+"-layout-draft.json を保存しました（コミット "+result.commit.sha.slice(0,8)+"）。Notion・確定JSONは未変更です。");
+      showStatus("GitHubに "+floor+"-draft.json を保存しました（コミット "+result.commit.sha.slice(0,8)+"）。Notion・確定JSONは未変更です。");
       render();
     }catch(error){
       console.warn("GitHub下書き保存に失敗",error?.message);
@@ -924,13 +922,6 @@ footer{margin:14px 0 8px;color:#9fb2bf;font-size:12px;line-height:1.8}
   $("grid").onclick=()=>{state.grid=!state.grid;render()};$("gridSize").onclick=()=>{gridMeters=gridMeters===10?50:10;$("gridSize").textContent=gridMeters+"m四方（"+(gridMeters===10?"50":"10")+"mへ切替）";draw()};
   $("labels").onclick=()=>{state.labels=!state.labels;render()};
   $("undo").onclick=()=>restore("undo");$("redo").onclick=()=>restore("redo");
-  $("editMode").onclick=()=>{
-    editEnabled=!editEnabled;drag=null;
-    $("editMode").classList.toggle('active',editEnabled);
-    $("editMode").setAttribute('aria-pressed',String(editEnabled));
-    $("editMode").textContent=editEnabled?'編集モード：ON（ドラッグ編集）':'編集モード：OFF（選択・閲覧）';
-    showStatus(editEnabled?'編集モード：選択した施設・道路を移動・変形できます。':'選択モード：施設・道路を選択してもドラッグでは移動しません。');
-  };
   $("addFacility").onclick=newFacility;$("addRoad").onclick=newRoad;
   $("saveLocal").onclick=()=>{if(saveLocal())showStatus(floorName()+"の配置をこのブラウザに保存しました。別端末・GitHubには同期されません。");else showStatus("端末内保存に失敗しました。JSONを書き出してください。",true)};
   $("clearLocal").onclick=clearLocal;
