@@ -104,7 +104,7 @@ function create(opts){
  const canvas=opts.canvas,host=opts.host,ctx=canvas.getContext("2d");
  const legendButton=opts.legendButton,roadButton=opts.roadButton;
  const memory=new Map(),pointers=new Map();
- let scene=null,selected=null,sceneKey="",request=0,projection=null;
+ let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
  let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null;
  try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
@@ -186,20 +186,70 @@ function create(opts){
   while(o&&!ids.has(o.id)){ids.add(o.id);o=byId.get(o.parentId)}
   return ids;
  }
- function visibleByDepth(obj){
-  const level=Number.isSafeInteger(obj.displayLevel)?obj.displayLevel:1;
-  if(level<=initialDisplayLevel())return true;
-  if(!selected)return false;
-  // Selecting Lv N reveals directly nested Lv N+1, but never grandchildren.
-  const ids=selectionPath(),byId=new Map(scene.objects.map(o=>[o.id,o]));
-  let parent=byId.get(obj.parentId);
+ function isWithin(obj,rootId){
+  if(!obj||!rootId)return false;
+  const byId=new Map(scene.objects.map(o=>[o.id,o]));
   const seen=new Set();
-  while(parent&&!seen.has(parent.id)){
-   seen.add(parent.id);
-   if(ids.has(parent.id)&&level<=parent.displayLevel+1)return true;
-   parent=byId.get(parent.parentId);
+  let o=obj;
+  while(o&&!seen.has(o.id)){
+   if(o.id===rootId)return true;
+   seen.add(o.id);o=byId.get(o.parentId);
   }
   return false;
+ }
+ function visibleByDepth(obj){
+  const level=Number.isSafeInteger(obj.displayLevel)?obj.displayLevel:1;
+  if(viewRootId){
+   const root=scene.objects.find(o=>o.id===viewRootId);
+   if(!root||!isWithin(obj,viewRootId))return false;
+   // Inside a selected room: draw that room and its immediate contents only.
+   return obj.id===viewRootId||obj.parentId===viewRootId;
+  }
+  // Overview never paints the deeper layers on top of the exterior.
+  return level<=initialDisplayLevel();
+ }
+ function fitToObject(obj){
+  const g=obj.geometry||{};
+  let cx=0,cy=0,w=0,h=0;
+  if(g.type==="rect"){cx=g.x+g.width/2;cy=g.y+g.height/2;w=g.width;h=g.height}
+  else if((g.type==="polygon"||g.type==="polyline")&&g.points?.length){
+   const xx=g.points.map(p=>p[0]),yy=g.points.map(p=>p[1]);
+   cx=(Math.min(...xx)+Math.max(...xx))/2;cy=(Math.min(...yy)+Math.max(...yy))/2;
+   w=Math.max(...xx)-Math.min(...xx);h=Math.max(...yy)-Math.min(...yy);
+  }else if(g.center){[cx,cy]=g.center;w=h=(g.outerRadius||g.radius||25)*2}
+  else return;
+  const [a,b]=getAxes();
+  const projectedWidth=Math.max(1,Math.abs(a[0])*w+Math.abs(a[1])*h);
+  const projectedHeight=Math.max(1,Math.abs(b[0])*w+Math.abs(b[1])*h);
+  const wanted=Math.min((width-42)/projectedWidth,(height-42)/projectedHeight);
+  zoom=clamp(wanted/Math.max(initialScale,.000001),1,30);
+  const [u,v]=project(cx,cy),[cu,cv]=project(...center());
+  panX=-(u-cu)*scale();panY=-(v-cv)*scale();
+ }
+ function getViewRoot(){
+  const root=scene?.objects.find(o=>o.id===viewRootId);
+  return root?{id:root.id,name:root.name||root.id,displayLevel:root.displayLevel}:null;
+ }
+ function enterItem(id=selected?.id){
+  const target=scene?.objects.find(o=>o.id===id);
+  if(!target||!scene.objects.some(o=>o.parentId===target.id))return false;
+  viewRootId=target.id;
+  fitToObject(target);
+  showDetails(target);
+  return true;
+ }
+ function exitItem(){
+  if(!viewRootId)return false;
+  const current=scene.objects.find(o=>o.id===viewRootId);
+  const parent=scene.objects.find(o=>o.id===current?.parentId);
+  if(parent&&parent.displayLevel>=initialDisplayLevel()){
+   viewRootId=parent.id;fitToObject(parent);showDetails(parent);
+  }else{
+   viewRootId=null;
+   if(parent){fitToObject(parent);showDetails(parent)}
+   else{zoom=1;panX=0;panY=0;showDetails(null)}
+  }
+  return true;
  }
  function visible(obj){
   if(obj.visible===false||!visibleByDepth(obj))return false;
@@ -267,7 +317,7 @@ function create(opts){
   const defaultStyle=scene?.settings?.labelDefaults||{};
   for(const o of objects){
    const l=o.label||{};
-   if(l.visible===false||!l.text)continue;
+   if(l.visible===false||!l.text||o.id===viewRootId)continue;
    const p=l.position||o.geometry?.center||[0,0];
    const [x,y]=screenAt(p[0],p[1]);
    const fontSize=Math.max(7,finite(l.fontSize,finite(defaultStyle.fontSize,12)));
@@ -299,7 +349,7 @@ function create(opts){
    if(pass.kind==="grid")drawGrid();
    else traceStroke(pass.obj,false);
   }
-  if(selected&&visible(selected))traceStroke(selected,true);
+  if(selected&&visible(selected)&&selected.id!==viewRootId)traceStroke(selected,true);
   drawLabels(list);
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
  }
@@ -339,6 +389,7 @@ function create(opts){
  function selectItemById(id,{focus=true,force=false}={}){
   const obj=scene?.objects.find(o=>o.id===id);
   if(!obj||(!force&&obj.selectable===false))return false;
+  if(viewRootId&&!isWithin(obj,viewRootId))viewRootId=null;
   if(focus){
    const g=obj.geometry||{};
    if(Array.isArray(obj.floors)&&obj.floors.length&&g.type==="rect"){
@@ -384,7 +435,7 @@ function create(opts){
  function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;return editMode}
  function replaceScene(next,{preserveView=true,selectedId=null}={}){
   const valid=sceneCheck(clone(next));
-  ++request;scene=valid;objectDrag=null;
+  ++request;scene=valid;viewRootId=null;objectDrag=null;
   if(!preserveView){initialScale=computeScale();zoom=1;panX=0;panY=0}
   else initialScale=computeScale();
   setupModes();
@@ -564,7 +615,7 @@ function create(opts){
  async function show(mapId,viewId,source){
   const key=[mapId,viewId||"",source||""].join("::");
   if(key===projection&&scene)return;
-  projection=key;sceneKey=mapId;selected=null;scene=null;
+  projection=key;sceneKey=mapId;selected=null;viewRootId=null;scene=null;
   if(opts.info)opts.info.hidden=true;
   reset();
   const myRequest=++request;
@@ -653,7 +704,7 @@ function create(opts){
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
+ return{show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,
   getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
