@@ -182,7 +182,18 @@ function renderGeometry(obj){
 }
 function initBuildingTemplates(){
  const list=window.AAMapBuildingTemplates?.presets||[];
- fillSelect($("building-template"),list.map(t=>[t.id,t.name]),list[0]?.id||"");
+ const picker=$("building-template");picker.replaceChildren();
+ for(const category of [...new Set(list.map(t=>t.category))]){
+  const group=document.createElement("optgroup");
+  group.label=list.find(t=>t.id===category)?.name||category;
+  for(const t of list.filter(t=>t.category===category)){
+   const option=document.createElement("option");
+   option.value=t.id;option.textContent=t.name;
+   group.append(option);
+  }
+  picker.append(group);
+ }
+ picker.value=list[0]?.id||"";
  function describe(){
   const t=list.find(t=>t.id===input("building-template"));
   if(!t)return;
