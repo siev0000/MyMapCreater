@@ -530,7 +530,9 @@ function create(opts){
    const count=Math.max(4,Math.min(12,Math.round((h>=w?h:w)/2)));
    const alongVertical=h>=w;
    for(let i=0;i<count;i++){
-    const depth=side?((side==="top"||side==="left")?i:count-1-i):Math.floor(count/2);
+    const lowAtStart=alongVertical?side==="top":side==="left";
+    const lowAtEnd=alongVertical?side==="bottom":side==="right";
+    const depth=lowAtStart?i:lowAtEnd?count-1-i:Math.floor(count/2);
     const lightness=side?Math.round(45+depth/(count-1)*39):60;
     const fill="hsl(198 24% "+lightness+"% / .36)";
     ctx.fillStyle=fill;
