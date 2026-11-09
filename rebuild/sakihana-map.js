@@ -11,7 +11,8 @@ let DEG_LON=111320*Math.cos(CENTER.lat*Math.PI/180);
 const BOUNDS={minX:-1000,maxX:1000,minY:-1000,maxY:1000};
 function configure({lat,lon,sizeM=500,name="指定地域",id}={}){
  const a=Number(lat),b=Number(lon),size=Number(sizeM);
- if(!Number.isFinite(a)||a<=-85||a>=85||!Number.isFinite(b)||b<-180||b>180)throw Error("緯度・経度が不正です");
+ if(lat===null||lat===undefined||lat===""||lon===null||lon===undefined||lon===""||
+  !Number.isFinite(a)||a<=-85||a>=85||!Number.isFinite(b)||b<-180||b>180)throw Error("緯度・経度が不正です");
  if(!Number.isFinite(size)||size<100||size>2000)throw Error("取得範囲は100〜2000mで指定してください");
  CENTER.lat=a;CENTER.lon=b;HALF_M=size/2;
  DEG_LON=111320*Math.cos(a*Math.PI/180);
