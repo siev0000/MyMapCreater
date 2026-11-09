@@ -100,7 +100,10 @@
   const legendPanel=document.createElement("div");
   previewViewer=global.AAMapViewer.create({
    canvas:$("template-preview-canvas"),host:$("template-preview-large"),
-   legend:legendPanel,legendButton
+   legend:legendPanel,legendButton,
+   infoTitle:document.createElement("span"),
+   infoMeta:document.createElement("span"),
+   infoText:document.createElement("span")
   });
   previewViewer.setEditMode(false);
   return previewViewer;
