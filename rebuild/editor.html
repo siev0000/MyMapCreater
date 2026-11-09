@@ -168,6 +168,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #template-preview-modal #template-preview-picker #template-edit-catalog select{width:100%;max-width:none;min-width:0}
 #template-preview-modal #template-preview-picker #template-edit-catalog button{width:100%;min-height:27px;font-size:11px}
 #template-preview-modal #template-edit-controls .template-edit-object,#template-preview-modal #template-edit-controls .template-edit-save{align-items:center}
+
+#template-preview-modal #template-collision-status,#template-preview-modal #template-area-status{font-size:10px;line-height:1.35;margin:2px 0;max-height:48px;overflow-y:auto}
+#template-preview-modal #template-collision-status[data-has-collision="true"]{color:#ffbd9c;font-weight:650}
+#template-preview-modal .template-preview-large[data-collision="true"]{outline:2px solid #dc7663;outline-offset:-2px}
+#template-preview-modal #template-edit-controls label[hidden],#template-preview-modal #template-edit-controls button[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -464,6 +469,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
       <label>名前 <input id="template-edit-name" placeholder="設置物名"></label>
       <label>説明 <input id="template-edit-detail" placeholder="設置物の説明"></label>
       <label id="template-wall-thickness-label" hidden>壁厚(cm) <input id="template-wall-thickness" type="number" min="1" max="300" step="1" placeholder="10"></label>
+      <label id="template-dim-width-label" hidden>幅(cm) <input id="template-dim-width" type="number" min="1" max="5000" step="1"></label>
+      <label id="template-dim-height-label" hidden>奥行(cm) <input id="template-dim-height" type="number" min="1" max="5000" step="1"></label>
+      <label id="template-dim-rotation-label" hidden>回転(°) <input id="template-dim-rotation" type="number" min="-360" max="360" step="1"></label>
+      <label id="template-opening-width-label" hidden>開口幅(cm) <input id="template-opening-width" type="number" min="25" max="500" step="5"></label>
+      <button type="button" id="template-opening-link" hidden>最寄りの壁へ接続</button>
       <button type="button" id="template-item-apply">選択中に反映</button>
       <button type="button" id="template-item-delete">選択中を削除</button>
       <button type="button" id="template-undo">元に戻す</button>
@@ -475,6 +485,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
       <button type="button" id="template-save-copy">別名で保存</button>
      </div>
      <p class="note" id="template-edit-status">標準テンプレートは保護されています。編集後は別名で保存してください。</p>
+     <p id="template-collision-status" class="note" role="status" aria-live="polite">干渉検査：待機中</p>
+     <p id="template-area-status" class="note" aria-live="polite">有効面積：未計算</p>
     </div>
     <div id="template-preview-large" class="template-preview-large" aria-label="選択階の実際のマップ表示">
      <canvas id="template-preview-canvas" aria-label="建物のマッププレビュー。ドラッグで移動、ホイールやピンチで拡大縮小"></canvas>
@@ -494,10 +506,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </div>
  </section>
 </div>
-<script src="./map-viewer.js?v=template-shared-zoom-v4"></script>
+<script src="./map-viewer.js?v=window-opening-v5"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script src="./building-templates.js?v=wall-thickness-v6"></script>
-<script src="./template-preview.js?v=wall-clearance-v12"></script>
+<script src="./template-preview.js?v=advanced-template-editor-v13"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=wall-thickness-v4"></script>
 </body></html>
