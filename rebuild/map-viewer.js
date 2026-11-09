@@ -302,6 +302,54 @@ function create(opts){
   const [a,b]=points,dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
   if(len<=0)return false;
   const door=obj.door||{};
+  if(door.leafCount===2){
+   // Both leaf types share the same full opening [a,b]; no extra wall gaps or IDs.
+   const vx=dx/len,vy=dy/len,half=len/2;
+   const center=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+   const color=emphasized?(scene?.settings?.selectionStyle?.stroke||"#ffefa7"):
+    (door.type==="sliding"?"#ff9500":(obj.style?.stroke||"#f0be72"));
+   const leaves=door.type==="sliding"
+    ?[[a,[a[0]-dx/2,a[1]-dy/2]],[b,[b[0]+dx/2,b[1]+dy/2]]]
+    :null;
+   ctx.save();ctx.strokeStyle=color;ctx.lineCap="butt";ctx.lineJoin="round";
+   if(leaves){
+    // Two half-width leaves move outwards and overlap the adjoining wall.
+    ctx.lineWidth=(emphasized?4.2:3.2)/scale();
+    for(const [p,q] of leaves){ctx.beginPath();ctx.moveTo(...p);ctx.lineTo(...q);ctx.stroke()}
+    const cap=(emphasized?3.4:2.5)/scale();
+    ctx.lineWidth=(emphasized?1.8:1.4)/scale();
+    ctx.beginPath();
+    for(const [p,q] of leaves)for(const endpoint of [p,q]){
+     ctx.moveTo(endpoint[0]-vy*cap,endpoint[1]+vx*cap);
+     ctx.lineTo(endpoint[0]+vy*cap,endpoint[1]-vx*cap);
+    }
+    ctx.stroke();
+   }else{
+    // Two half-width hinged leaves: hinges at opposite ends, each opens 90 degrees.
+    const side=door.swingSide==="right"?-1:1;
+    const openX=-vy*side,openY=vx*side;
+    ctx.lineCap="round";ctx.lineWidth=(emphasized?2.6:2)/scale();
+    for(const [hinge,dir] of [[a,1],[b,-1]]){
+     const ix=vx*dir,iy=vy*dir;
+     ctx.beginPath();ctx.moveTo(...hinge);
+     ctx.lineTo(hinge[0]+openX*half,hinge[1]+openY*half);ctx.stroke();
+     ctx.lineWidth=(emphasized?1.6:1.1)/scale();
+     ctx.setLineDash([3/scale(),2/scale()]);
+     ctx.beginPath();
+     for(let i=0;i<=16;i++){
+      const t=(Math.PI/2)*i/16;
+      const x=hinge[0]+(ix*Math.cos(t)+openX*Math.sin(t))*half;
+      const y=hinge[1]+(iy*Math.cos(t)+openY*Math.sin(t))*half;
+      if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+     }
+     ctx.stroke();ctx.setLineDash([]);
+     ctx.beginPath();ctx.arc(hinge[0],hinge[1],Math.max(1/scale(),half*.055),0,Math.PI*2);
+     ctx.fillStyle=color;ctx.fill();
+     ctx.lineWidth=(emphasized?2.6:2)/scale();
+    }
+   }
+   ctx.restore();return true;
+  }
   if(door.type==="sliding"){
    // Open sliding leaf runs along, and is drawn over, the linked wall.
    // The two geometry endpoints still describe the actual wall opening.
