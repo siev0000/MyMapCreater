@@ -107,7 +107,7 @@ function create(opts){
  let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
  const interiorCache=new Map(),interiorPending=new Map(),interiorLoaded=new Set();
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
- let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null;
+ let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null,handleDrag=null;
  let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
  try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
  function getAxes(){
@@ -506,6 +506,72 @@ function create(opts){
   }
   ctx.restore();
  }
+ // Screen-space edit handles; only the selected geometry is changed.
+ function editHandles(obj){
+  const g=obj?.geometry||{};
+  if(g.type==="rect"){
+   const x=g.x,y=g.y,w=g.width,h=g.height;
+   return[
+    ["nw",x,y],["n",x+w/2,y],["ne",x+w,y],
+    ["e",x+w,y+h/2],["se",x+w,y+h],["s",x+w/2,y+h],
+    ["sw",x,y+h],["w",x,y+h/2]
+   ].map(([id,px,py])=>({id,point:[px,py]}));
+  }
+  if(["polygon","polyline"].includes(g.type))
+   return(g.points||[]).map((point,i)=>({id:"vertex:"+i,point}));
+  return[];
+ }
+ function hitEditHandle(x,y){
+  if(!editMode||!selected)return null;
+  const items=editHandles(selected);
+  for(let i=items.length-1;i>=0;i--){
+   const [sx,sy]=screenAt(...items[i].point);
+   if(Math.hypot(x-sx,y-sy)<=11)return items[i];
+  }
+  return null;
+ }
+ function applyHandle(obj,handle,x,y){
+  if(!obj||!handle)return false;
+  const [wx,wy]=worldAt(x,y),sx=snapWorld(wx,0),sy=snapWorld(wy,1),g=obj.geometry||{};
+  if(handle.id.startsWith("vertex:")&&g.points){
+   const index=Number(handle.id.slice(7)),pt=g.points[index];
+   if(!pt||pt[0]===sx&&pt[1]===sy)return false;
+   g.points[index]=[sx,sy];return true;
+  }
+  if(g.type!=="rect")return false;
+  const right=g.x+g.width,bottom=g.y+g.height;
+  let left=g.x,top=g.y,r=right,b=bottom;
+  const min=editorGrid.snap?Math.max(.001,editorGrid.spacing*editorGrid.fraction):.001;
+  if(handle.id.includes("w"))left=Math.min(sx,r-min);
+  if(handle.id.includes("e"))r=Math.max(sx,left+min);
+  if(handle.id.includes("n"))top=Math.min(sy,b-min);
+  if(handle.id.includes("s"))b=Math.max(sy,top+min);
+  if(left===g.x&&top===g.y&&r===right&&b===bottom)return false;
+  g.x=left;g.y=top;g.width=r-left;g.height=b-top;
+  // Keep an explicit, centered label anchored to the new geometry.
+  if(Array.isArray(obj.label?.position)&&handleDrag?.startGeometry){
+   const initial=handleDrag.startGeometry;
+   const xRatio=initial.width? (handleDrag.startLabel?.[0]-initial.x)/initial.width:.5;
+   const yRatio=initial.height?(handleDrag.startLabel?.[1]-initial.y)/initial.height:.5;
+   if(handleDrag.startLabel){
+    obj.label.position=[left+g.width*xRatio,top+g.height*yRatio];
+   }
+  }
+  return true;
+ }
+ function drawEditHandles(){
+  if(!editMode||!selected||!visible(selected))return;
+  const handles=editHandles(selected);
+  if(!handles.length)return;
+  ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+  for(const h of handles){
+   const [sx,sy]=screenAt(...h.point);
+   ctx.beginPath();ctx.rect(sx-5,sy-5,10,10);
+   ctx.fillStyle="#f2cb80";ctx.fill();
+   ctx.strokeStyle="#18333d";ctx.lineWidth=1.4;ctx.stroke();
+  }
+  ctx.restore();
+ }
  function draw(){
   if(!canvas.width||!canvas.height)return;
   ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -528,6 +594,7 @@ function create(opts){
   if(selected&&visible(selected))traceStroke(selected,true);
   drawEditorGrid();
   drawLabels(list);
+  drawEditHandles();
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
  }
  // Exterior scene is loaded first. Interiors are fetched only after selecting
@@ -662,10 +729,10 @@ function create(opts){
    parents,children};
  }
 
- function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;return editMode}
+ function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;handleDrag=null;draw();return editMode}
  function replaceScene(next,{preserveView=true,selectedId=null}={}){
   const valid=sceneCheck(clone(next));
-  ++request;scene=valid;viewRootId=null;objectDrag=null;
+  ++request;scene=valid;viewRootId=null;objectDrag=null;handleDrag=null;
   interiorLoaded.clear();
   for(const obj of scene.objects)if(obj.interiorSource&&scene.objects.some(child=>child.parentId===obj.id))interiorLoaded.add(obj.id);
   if(!preserveView){initialScale=computeScale();zoom=1;panX=0;panY=0}
@@ -922,12 +989,18 @@ function create(opts){
   canvas.setPointerCapture(e.pointerId);
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   dragged=false;dragStart={x,y};
-  if(editMode&&selected&&
+  const handle=pointers.size===1?hitEditHandle(x,y):null;
+  if(handle&&selected){
+   handleDrag={id:selected.id,handle,startGeometry:clone(selected.geometry),
+    startLabel:Array.isArray(selected.label?.position)?[...selected.label.position]:null,
+    x,y,moved:false};
+   if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
+  }else if(editMode&&selected&&
    contains(selected,...worldAt(x,y),8/scale())){
    objectDrag={id:selected.id,x,y,moved:false};
    if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
   }
-  if(pointers.size===2){objectDrag=null;
+  if(pointers.size===2){objectDrag=null;handleDrag=null;
    const list=[...pointers.values()],a=list[0],b=list[1];
    pinch={x:(a.x+b.x)/2,y:(a.y+b.y)/2,dist:Math.hypot(a.x-b.x,a.y-b.y)||1};
   }
@@ -936,7 +1009,17 @@ function create(opts){
   const old=pointers.get(e.pointerId);if(!old)return;
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   if(dragStart&&Math.hypot(x-dragStart.x,y-dragStart.y)>4)dragged=true;
-  if(objectDrag&&pointers.size===1&&selected?.id===objectDrag.id){
+  if(handleDrag&&pointers.size===1&&selected?.id===handleDrag.id){
+   if(Math.hypot(x-handleDrag.x,y-handleDrag.y)>3){
+    if(selected.interiorSource&&!interiorLoaded.has(selected.id)&&
+       !scene.objects.some(child=>child.parentId===selected.id)){
+     setHint("建物内部を読み込んでからサイズ変更してください");return;
+    }
+    if(applyHandle(selected,handleDrag.handle,x,y)){
+     handleDrag.moved=true;draw();
+    }
+   }
+  }else if(objectDrag&&pointers.size===1&&selected?.id===objectDrag.id){
    const [ax,ay]=worldAt(old.x,old.y),[bx,by]=worldAt(x,y);
    if(selected.interiorSource&&!interiorLoaded.has(selected.id)&&!scene.objects.some(child=>child.parentId===selected.id)){
     setHint("建物内部の読み込みが完了してから移動してください");
@@ -960,13 +1043,16 @@ function create(opts){
   pointers.delete(e.pointerId);
   if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
   if(!pointers.size){pinch=null;dragStart=null}
+  const editedObject=handleDrag?.moved&&scene?.objects.find(o=>o.id===handleDrag.id);
   const movedObject=objectDrag?.moved&&scene?.objects.find(o=>o.id===objectDrag.id);
   if(movedObject&&editorGrid.snap){
    const g=movedObject.geometry||{},point=g.type==="rect"?[g.x,g.y]:g.center||g.points?.[0];
    if(point){const dx=snapWorld(point[0],0)-point[0],dy=snapWorld(point[1],1)-point[1];translateObject(movedObject,dx,dy);draw()}
   }
-  objectDrag=null;
-  if(movedObject){
+  objectDrag=null;handleDrag=null;
+  if(editedObject){
+   if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(editedObject),getScene());
+  }else if(movedObject){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
   }else if(clicked){
    const hit=pick(x,y);
