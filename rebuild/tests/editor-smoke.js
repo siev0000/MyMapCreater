@@ -30,7 +30,7 @@ const ids=[
 "undo","redo","clone-object","delete-object","selected-fields","select-empty",
 "objects","object-search","clear-search","obj-id","obj-name","obj-display-level","obj-type",
 "obj-parent","layer-list","obj-layer","obj-z","obj-visible","obj-selectable",
-"door-type","door-leaf-count","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
+"stair-direction-fields","stair-low-side","door-type","door-leaf-count","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
 "apply-json","new-shape","new-role","new-layer","new-parent-selected","new-when-parent-selected","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
@@ -111,6 +111,18 @@ async function main(){
  assert.equal(el["obj-type"].value,"wall","Role was incorrectly inferred from geometry");
  assert.equal(Number(el["obj-display-level"].value),1);
  assert.equal(el["obj-geometry"].value,"ring");
+ // Stair low-side is editable, serialized and undoable without changing coordinates.
+ el["new-shape"].value="rect";el["new-role"].value="stair";
+ el["add-object"].click();
+ assert.equal(el["obj-type"].value,"stair");
+ el["stair-low-side"].value="bottom";el["stair-low-side"].listeners.change();
+ assert.equal(JSON.parse(el["json-object"].value).stair.lowSide,"bottom");
+ el.undo.click();assert.equal(JSON.parse(el["json-object"].value).stair?.lowSide,undefined);
+ el.redo.click();assert.equal(JSON.parse(el["json-object"].value).stair.lowSide,"bottom");
+ el.undo.click(); // Restore stair before returning to existing wall test.
+ el.undo.click(); // Remove stair.
+ const ringAgain=el.objects.children.find(item=>item.children[0].textContent=== "壁");
+ if(ringAgain)ringAgain.click();
  const ringId=el["obj-id"].value;
  el["obj-parent"].value="town-area";el["obj-parent"].listeners.change();
  assert.equal(el["obj-parent"].value,"town-area");
