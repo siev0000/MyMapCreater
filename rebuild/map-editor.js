@@ -236,6 +236,7 @@ function updateVertexControls(obj){
    .map(o=>[o.id,o.name||o.id])];
   fillSelect(picker,opts,obj.opening?.wallId||"");
   $("door-type").value=obj.door?.type==="sliding"?"sliding":"hinged";
+  $("door-leaf-count").value=obj.door?.leafCount===2?"2":"1";
   $("door-slide-direction").value=obj.door?.slideDirection==="start"?"start":"end";
   $("door-slide-fields").classList.toggle("hidden",obj.door?.type!=="sliding");
  }
@@ -273,6 +274,14 @@ bind("door-type",()=>{
   if(o.objectType!=="door")return;
   o.door={...o.door,type};
   if(type==="sliding"&&!["start","end"].includes(o.door.slideDirection))o.door.slideDirection="end";
+ });
+});
+bind("door-leaf-count",()=>{
+ const count=Number(input("door-leaf-count"));
+ if(count!==1&&count!==2)return;
+ changeObject(o=>{
+  if(o.objectType!=="door")return;
+  o.door={...o.door,leafCount:count};
  });
 });
 bind("door-slide-direction",()=>{
