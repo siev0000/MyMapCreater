@@ -29,6 +29,10 @@ function sceneCheck(scene){
  const lookup=new Map(scene.objects.map(o=>[o.id,o]));
  for(const obj of scene.objects){
   if(obj.parentId&&!ids.has(obj.parentId))throw Error("存在しない親ID: "+obj.id);
+  if(obj.objectType==="door"&&obj.opening?.wallId){
+   const linked=lookup.get(obj.opening.wallId);
+   if(!linked||linked.objectType!=="wall")throw Error("扉が参照する壁IDが不正です: "+obj.id);
+  }
   if(obj.floors!==undefined){
    if(!Array.isArray(obj.floors)||!obj.floors.length)throw Error("フロア一覧が不正です: "+obj.id);
    const floorIds=new Set();
@@ -423,6 +427,41 @@ function create(opts){
   }
   ctx.restore();return true;
  }
+ // Draw gaps in a linked wall only where the linked door geometry actually
+ // lies on the same segment. Otherwise leave wall unchanged and never infer a gap.
+ function traceWallWithOpenings(target,wall){
+  const g=wall.geometry;
+  if(g?.type!=="polyline"||!Array.isArray(g.points)||g.points.length<2)return trace(target,g);
+  const doors=scene?.objects.filter(o=>o.objectType==="door"&&o.opening?.wallId===wall.id&&
+   o.geometry?.type==="polyline"&&o.geometry.points?.length===2)||[];
+  if(!doors.length)return trace(target,g);
+  const tolerance=Math.max(.05,(wall.wall?.thickness||0)*.5);
+  target.beginPath();
+  for(let i=1;i<g.points.length;i++){
+   const a=g.points[i-1],b=g.points[i],dx=b[0]-a[0],dy=b[1]-a[1],len2=dx*dx+dy*dy;
+   if(len2<=1e-10)continue;
+   const gaps=[];
+   for(const door of doors){
+    const [p,q]=door.geometry.points;
+    const t1=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/len2;
+    const t2=((q[0]-a[0])*dx+(q[1]-a[1])*dy)/len2;
+    if(Math.min(t1,t2)<-1e-5||Math.max(t1,t2)>1+1e-5)continue;
+    if(segmentDistance(p[0],p[1],a,b)>tolerance||
+       segmentDistance(q[0],q[1],a,b)>tolerance)continue;
+    gaps.push([Math.max(0,Math.min(t1,t2)),Math.min(1,Math.max(t1,t2))]);
+   }
+   gaps.sort((a,b)=>a[0]-b[0]);
+   let cursor=0;
+   const line=(start,end)=>{
+    if(end-start<1e-8)return;
+    target.moveTo(a[0]+dx*start,a[1]+dy*start);
+    target.lineTo(a[0]+dx*end,a[1]+dy*end);
+   };
+   for(const [start,end] of gaps){if(start>cursor)line(cursor,start);cursor=Math.max(cursor,end)}
+   if(cursor<1)line(cursor,1);
+  }
+  return true;
+ }
  function traceStroke(obj,emphasized=false){
   const g=obj.geometry;
   if(g?.type==="rect"&&rectRotation(g)){
@@ -442,7 +481,7 @@ function create(opts){
   ctx.globalAlpha=emphasized?1:clamp(finite(st.opacity,1),0,1);
   ctx.lineJoin=st.lineJoin||"round";ctx.lineCap=st.lineCap||"round";
   if(obj.objectType==="door"&&traceDoorSymbol(obj,emphasized)){ctx.restore();return}
-  const ok=trace(ctx,g);
+  const ok=obj.objectType==="wall"?traceWallWithOpenings(ctx,obj):trace(ctx,g);
   if(ok){
    if(!emphasized&&st.fill){ctx.fillStyle=st.fill;ctx.fill(g.type==="ring"?"evenodd":"nonzero")}
    if(emphasized||st.stroke){
@@ -823,8 +862,20 @@ function create(opts){
  }
  function translateObject(obj,dx,dy){
   if(!Number.isFinite(dx)||!Number.isFinite(dy)||(!dx&&!dy))return;
-  translateSingle(obj,dx,dy);
-  for(const child of descendantsOf(obj.id))translateSingle(child,dx,dy);
+  const moved=new Set([obj.id]);
+  const descendants=descendantsOf(obj.id);
+  for(const item of descendants)moved.add(item.id);
+  for(const item of [obj,...descendants])translateSingle(item,dx,dy);
+  // Wall dragging moves linked doors, but never moves a sibling twice
+  // when the whole building containing both wall and door is dragged.
+  const walls=[obj,...descendants].filter(item=>item.objectType==="wall");
+  for(const wall of walls){
+   for(const door of scene.objects){
+    if(door.objectType==="door"&&door.opening?.wallId===wall.id&&!moved.has(door.id)){
+     translateSingle(door,dx,dy);moved.add(door.id);
+    }
+   }
+  }
  }
 
  function pick(px,py){
