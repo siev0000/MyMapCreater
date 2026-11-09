@@ -4,9 +4,34 @@
    OpenStreetMap ODbL attribution: https://www.openstreetmap.org/copyright
    GSI DEM source: https://maps.gsi.go.jp/development/demtile.html */
 (function(global){"use strict";
-const CENTER={lat:37.7351639,lon:139.2909028},HALF_M=250,UNIT=4;
-const DEG_LAT=111132.92,DEG_LON=111320*Math.cos(CENTER.lat*Math.PI/180);
-const BOUNDS={minX:-HALF_M*UNIT,maxX:HALF_M*UNIT,minY:-HALF_M*UNIT,maxY:HALF_M*UNIT};
+const CENTER={lat:37.7351639,lon:139.2909028};
+let HALF_M=250,REGION_NAME="咲花駅周辺",REGION_ID="sakihana_gosen_500m";
+const UNIT=4,DEG_LAT=111132.92;
+let DEG_LON=111320*Math.cos(CENTER.lat*Math.PI/180);
+const BOUNDS={minX:-1000,maxX:1000,minY:-1000,maxY:1000};
+function configure({lat,lon,sizeM=500,name="指定地域",id}={}){
+ const a=Number(lat),b=Number(lon),size=Number(sizeM);
+ if(!Number.isFinite(a)||a<=-85||a>=85||!Number.isFinite(b)||b<-180||b>180)throw Error("緯度・経度が不正です");
+ if(!Number.isFinite(size)||size<100||size>2000)throw Error("取得範囲は100〜2000mで指定してください");
+ CENTER.lat=a;CENTER.lon=b;HALF_M=size/2;
+ DEG_LON=111320*Math.cos(a*Math.PI/180);
+ for(const [key,value] of Object.entries({minX:-HALF_M*UNIT,maxX:HALF_M*UNIT,minY:-HALF_M*UNIT,maxY:HALF_M*UNIT}))BOUNDS[key]=value;
+ REGION_NAME=String(name||"指定地域").slice(0,100);
+ REGION_ID=String(id||("geo_"+a.toFixed(5).replace(".","_")+"_"+b.toFixed(5).replace(".","_")+"_"+size+"m")).replace(/[^a-zA-Z0-9_-]/g,"_");
+ return region();
+}
+function region(){return{lat:CENTER.lat,lon:CENTER.lon,sizeM:HALF_M*2,name:REGION_NAME,id:REGION_ID}}
+async function searchPlace(name){
+ const q=String(name||"").trim();
+ if(q.length<2||q.length>120)throw Error("地名は2〜120文字で指定してください");
+ const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=ja&q="+encodeURIComponent(q);
+ const response=await fetch(url,{headers:{"Accept":"application/json"}});
+ if(!response.ok)throw Error("地名検索に失敗しました（HTTP "+response.status+"）");
+ const results=await response.json();
+ if(!Array.isArray(results))throw Error("検索応答が不正です");
+ return results.map(x=>({name:String(x.display_name||q),lat:Number(x.lat),lon:Number(x.lon)}))
+  .filter(x=>Number.isFinite(x.lat)&&Number.isFinite(x.lon));
+}
 // Try the community instance first; overpass-api.de often returns HTTP 502
 // when its query queue is full. Never hammer a failing host with fast retries.
 const overpassEndpoints=[
@@ -117,20 +142,20 @@ function lineWidthMeters(tags,kind){
 }
 function baseScene(){
  const root={
-  id:"sakihana_station_reference",name:"咲花駅（位置参照点）",objectType:"object",
+  id:REGION_ID==="sakihana_gosen_500m"?"sakihana_station_reference":"geo_center_reference",name:REGION_NAME+"（位置参照点）",objectType:"object",
   layer:"stations",zIndex:70,visible:true,selectable:true,displayLevel:1,
   geometry:{type:"circle",center:[0,0],radius:8},
   style:{fill:"#e8c17a",stroke:"#fff1c0",strokeWidth:1.3},
-  label:{visible:true,text:"咲花駅",position:[0,-25],fontSize:12},
-  detail:"駅の位置参照点。OpenStreetMap の図形は「OSMから取得」で読み込みます。",
-  metadata:{verifiedStationCoordinate:true,source:"station-coordinate",lat:CENTER.lat,lon:CENTER.lon}
+  label:{visible:true,text:REGION_NAME,position:[0,-25],fontSize:12},
+  detail:"検索または座標指定による中心点です。実地物はOSM取得後に追加されます。",
+  metadata:{source:"geographic-center-reference",lat:CENTER.lat,lon:CENTER.lon}
  };
  return{
-  schemaVersion:2,id:"sakihana_gosen_500m",name:"実在地域｜咲花駅周辺（500m四方）",
+  schemaVersion:2,id:REGION_ID,name:"実在地域｜"+REGION_NAME+"（"+(HALF_M*2)+"m四方）",
   coordinateSystem:{horizontal:[1,0],vertical:[0,1],background:"#14202a",bounds:{...BOUNDS}},
   grid:{visible:false,spacing:2,stroke:"rgba(180,202,205,.14)",strokeWidth:.5},
   settings:{initialDisplayLevel:1,editorGrid:{spacing:2,fraction:.5,originX:0,originY:0,visible:true,snap:true},
-   georeference:{center:CENTER,widthM:500,heightM:500,worldUnitsPerMeter:UNIT,
+   georeference:{center:{...CENTER},regionName:REGION_NAME,widthM:HALF_M*2,heightM:HALF_M*2,worldUnitsPerMeter:UNIT,
     source:"OpenStreetMap",copyright:"© OpenStreetMap contributors",license:"ODbL 1.0",
     attributionUrl:"https://www.openstreetmap.org/copyright",
     terrainSource:"国土地理院 基盤地図情報数値標高モデル（取得時のみ）",terrainVerified:false}},
@@ -252,7 +277,7 @@ function elevationFromRgb(r,g,b){
  return Number(((v<8388608?v:v-16777216)*.01).toFixed(2));
 }
 async function elevationGrid(){
- const points=[],step=25,cache=new Map(),missing=[];
+ const step=HALF_M/10,missing=[];
  // Prefer locally available 5m DEM tiles; fallback to 10m DEM rather than fabricate heights.
  for(const [kind,z] of [["dem5a_png",15],["dem5b_png",15],["dem5c_png",15],["dem_png",14]]){
   try{
@@ -308,6 +333,6 @@ function addElevation(scene,data){
  opts.elevationSamplesKnown=data.known;opts.elevationSamplesTotal=data.total;
  return next;
 }
-global.AASakihanaMap={CENTER,HALF_M,UNIT,BOUNDS,fromLonLat,toLonLat,bbox,osmQuery,
+global.AASakihanaMap={CENTER,UNIT,BOUNDS,configure,region,searchPlace,fromLonLat,toLonLat,bbox,osmQuery,
  baseScene,fromOverpass,loadOSM,elevationGrid,addElevation,elevationFromRgb,clipLine,clipPolygon};
 })(window);
