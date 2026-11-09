@@ -29,7 +29,7 @@
    preserveAspectRatio:"xMidYMid meet",role:"img","aria-label":template.name+"、"+floorId+"の間取り"});
   svg.classList.add("template-floorplan");
   svg.append(S("rect",{x:r.x,y:r.y,width:w,height:h,fill:"#294a52",stroke:"#a9cbd0","stroke-width":Math.max(.3,Math.min(w,h)*.015)}));
-  const order={slab:1,room:2,object:3,stair:4,wall:5,door:6};
+  const order={slab:1,room:2,region:2,object:3,stair:4,wall:5,door:6,window:6};
   const visible=objects.filter(o=>o.id!==root.id&&(!o.floorId||o.floorId===floorId)&&o.visible!==false)
    .sort((a,b)=>(order[a.objectType]||3)-(order[b.objectType]||3));
   const strokeWidth=Math.max(.2,Math.min(w,h)*(small?.012:.01));
@@ -37,18 +37,45 @@
    const g=obj.geometry||{},type=obj.objectType;
    let shape=null;
    if(g.type==="rect")shape=S("rect",{x:g.x,y:g.y,width:g.width,height:g.height});
-   else if(g.type==="polyline")shape=S("polyline",{points:(g.points||[]).map(p=>p.join(",")).join(" "),fill:"none"});
+   else if(g.type==="polyline"){
+    if(type==="wall"){
+     // The small thumbnail must reflect real geometric openings too.
+     const linked=objects.filter(o=>["door","window"].includes(o.objectType)&&o.opening?.wallId===obj.id&&o.floorId===floorId);
+     if(linked.length){
+      let d="";
+      for(let i=1;i<g.points.length;i++){
+       const a=g.points[i-1],b=g.points[i],dx=b[0]-a[0],dy=b[1]-a[1],len2=dx*dx+dy*dy;
+       if(len2<=1e-9)continue;
+       const gaps=[];
+       for(const opening of linked){
+        const points=opening.geometry?.points;if(points?.length!==2)continue;
+        const ts=points.map(p=>((p[0]-a[0])*dx+(p[1]-a[1])*dy)/len2);
+        const residual=points.some(p=>Math.abs((p[0]-a[0])*dy-(p[1]-a[1])*dx)/Math.sqrt(len2)>.01);
+        if(!residual&&Math.min(...ts)>=-.001&&Math.max(...ts)<=1.001)
+         gaps.push([Math.max(0,Math.min(...ts)),Math.min(1,Math.max(...ts))]);
+       }
+       gaps.sort((v,w)=>v[0]-w[0]);let pos=0;
+       const seg=(u,v)=>{if(v-u>1e-6)d+="M"+(a[0]+dx*u)+" "+(a[1]+dy*u)+" L"+(a[0]+dx*v)+" "+(a[1]+dy*v)+" "};
+       for(const [start,end] of gaps){seg(pos,start);pos=Math.max(pos,end)}
+       seg(pos,1);
+      }
+      shape=S("path",{d,fill:"none"});
+     }
+    }
+    if(!shape)shape=S("polyline",{points:(g.points||[]).map(p=>p.join(",")).join(" "),fill:"none"});
+   }
    else if(g.type==="polygon")shape=S("polygon",{points:(g.points||[]).map(p=>p.join(",")).join(" ")});
    else if(g.type==="circle")shape=S("circle",{cx:g.center[0],cy:g.center[1],r:g.radius});
    else if(g.type==="ring")shape=S("circle",{cx:g.center[0],cy:g.center[1],r:g.outerRadius,fill:"none"});
    if(!shape)continue;
-   const fill=type==="slab"?"rgba(36,69,80,.66)":type==="wall"?"none":type==="door"?"none":
+   const fill=type==="slab"?"rgba(36,69,80,.66)":type==="wall"?"none":type==="door"||type==="window"?"none":
      type==="stair"?"rgba(93,138,158,.70)":obj.style?.fill||"rgba(103,149,163,.40)";
-   const stroke=type==="wall"?"#dbeded":type==="door"?"#f4bc72":
+   const stroke=type==="wall"?"#dbeded":type==="door"?"#f4bc72":type==="window"?"#80ddf0":
      type==="stair"?"#a9d5e2":type==="slab"?"none":"#93b7c6";
    shape.setAttribute("fill",fill);
    shape.setAttribute("stroke",stroke);
-   shape.setAttribute("stroke-width",String(type==="wall"?strokeWidth*2.1:type==="door"?strokeWidth*1.8:strokeWidth));
+   shape.setAttribute("stroke-width",String(type==="wall"?(obj.wall?.thickness||strokeWidth*2.1):type==="door"||type==="window"?strokeWidth*1.8:strokeWidth));
+   if(type==="wall")shape.setAttribute("stroke-linecap","butt");
    if(g.type==="rect"&&Number.isFinite(g.rotation)&&g.rotation)shape.setAttribute("transform",
     "rotate("+g.rotation+" "+(g.x+g.width/2)+" "+(g.y+g.height/2)+")");
    svg.append(shape);
@@ -311,7 +338,7 @@
   let geometry=key==="wall"||key==="door"||key==="window"?{type:"polyline",points:[[x,y],[x+2*spacing,y]]}:{type:"rect",x,y,width:w,height:h};
   const kind=key==="wall"?"wall":key==="door"?"door":key==="window"?"window":key==="room"?"region":"object";
   const obj={id,name:item[1],parentId:root.id,displayLevel:(root.displayLevel||4)+1,floorId:activeFloor,
-   objectType:kind,layer:["wall","door","window"].includes(kind)?"walls":"structures",zIndex:kind==="wall"?47:kind==="door"||kind==="window"?49:45,
+   objectType:kind,layer:["wall","door","window"].includes(kind)?"walls":"structures",zIndex:kind==="wall"?47:kind==="door"||kind==="window"?49:kind==="region"?31:45,
    visible:true,selectable:true,geometry,
    style:{fill:kind==="object"?"rgba(65,110,130,.65)":null,stroke:kind==="door"?"#e8b97a":"#a8d7dd",strokeWidth:1.5},
    shapePresetId:key,label:{visible:false,text:item[1]},detail:item[1]+"（設置物の説明を編集できます）",
@@ -458,7 +485,12 @@
   const width=length2(points[0]||center,points[1]||center);
   const before=JSON.stringify(obj);
   if(!placeOpening(scene,obj,center,width,true)){
-   if(!fromMove)setEditMessage("壁が近くに見つかりません。扉・窓を壁のそばへ移動してください");
+   if(fromMove&&obj.opening?.wallId){
+    snapshot();
+    delete obj.opening.wallId;
+    updateScene(scene,obj.id);
+    setEditMessage("壁から離れたため、開口の関連付けを解除しました");
+   }else if(!fromMove)setEditMessage("壁が近くに見つかりません。扉・窓を壁のそばへ移動してください");
    return false;
   }
   if(before===JSON.stringify(obj))return true;
