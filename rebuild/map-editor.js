@@ -1328,6 +1328,22 @@ function renderWorldSelection(worldId,selectedKey){
  if(selected)link.href="./header.html#"+encodeURIComponent(selected.projection?selected.id+"::"+selected.projection:selected.id);
  link.title=selected?"閲覧画面｜"+selected.title:"閲覧画面";
 }
+function stageWorldChoice(worldId,desiredKey){
+ const current=state.worlds.find(w=>w.id===worldId)||state.worlds[0];
+ if(!current)return;
+ const choices=worldOptions(current.id);
+ fillSelect($("world-select"),state.worlds.map(w=>[w.id,w.name]),current.id);
+ fillSelect($("world-map-select"),choices.map(o=>[o.key,o.mapTitle||o.title]),desiredKey||choices[0]?.key||"");
+ const hasMap=choices.length>0;
+ $("world-map-open").disabled=!hasMap;
+ $("world-open-status").textContent=hasMap
+  ?"ワールドとマップを選んで「開く」を押してください。現在編集中のマップはまだ変更されません。"
+  :"このワールドには開けるマップが登録されていません。";
+}
+function syncStagedWorldChoice(option){
+ if(!option)return;
+ stageWorldChoice(option.worldId,option.key);
+}
 function optionFromCurrent(){return state.options.find(o=>o.key===state.currentOptionKey)}
 function unsavedOk(){
  return !state.dirty||confirm("現在の編集は未保存です。破棄してマップを切り替えますか？");
@@ -1392,6 +1408,7 @@ async function load(option){
  state.dragBefore=null;state.undo.length=0;state.redo.length=0;state.selectedId=null;
  notice("読み込み中："+option.title);
  renderWorldSelection(option.worldId,option.key);
+ syncStagedWorldChoice(option);
  state.currentOptionKey=option.key;
  state.savingName="";
  if(history.replaceState)history.replaceState(null,"","#"+encodeURIComponent(option.key));
@@ -1410,13 +1427,28 @@ bind("scene-select",async()=>{
  }
  await load(option);
 });
-bind("world-select",async()=>{
+bind("world-select",()=>{
  const wanted=input("world-select");
- if(wanted===state.currentWorldId)return;
- if(!unsavedOk()){$("world-select").value=state.currentWorldId;return}
- const target=worldOptions(wanted)[0];
- if(!target){$("world-select").value=state.currentWorldId;return notice("このワールドにはマップがありません","error")}
- await load(target);
-});
+ stageWorldChoice(wanted);
+},"change");
+bind("world-map-select",()=>{
+ const choice=state.options.find(o=>o.key===input("world-map-select"));
+ $("world-map-open").disabled=!choice;
+ $("world-open-status").textContent=choice
+  ?"選択中："+choice.title+"。「開く」でプレビューに反映します。"
+  :"開くマップを選んでください。";
+},"change");
+bind("world-map-open",async()=>{
+ const wanted=input("world-select"),key=input("world-map-select");
+ const option=worldOptions(wanted).find(o=>o.key===key);
+ if(!option)return notice("ワールド内のマップを選んでください","error");
+ if(option.key===state.currentOptionKey){
+  $("world-open-status").textContent="このマップはすでに開いています。";
+  return;
+ }
+ if(!unsavedOk())return;
+ await load(option);
+ $("world-open-status").textContent="開きました："+option.title;
+},"click");
 init();
 })();
