@@ -73,7 +73,7 @@ async function unpack(data){
   });
  }
  if(scene.objects.length!==488)throw Error("保存された咲花駅の地物件数が一致しません："+scene.objects.length);
- return scene;
+ return window.AASakihanaInteriorDraft?window.AASakihanaInteriorDraft.enrich(scene):scene;
 }
 g.AAMapPackedScene={unpack};
 })(window);
