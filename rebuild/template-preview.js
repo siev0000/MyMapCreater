@@ -289,6 +289,44 @@
   if(entries.some(e=>e.id===previous))$("template-item-choice").value=previous;
   refreshItemList();
  }
+ function paletteShape(item){
+  const outer=T("span","template-item-shape");
+  outer.setAttribute("aria-hidden","true");
+  const ns="http://www.w3.org/2000/svg";
+  const svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 48 40");
+  const add=(tag,attrs)=>{const el=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));svg.appendChild(el);return el};
+  const type=String(item.objectType||item.type||item.id||"").toLowerCase();
+  const name=String(item.name||"");
+  const stroke="#bcdde5",accent="#e6c986",base="#426c7c";
+  if(/door|扉|ドア/.test(type+" "+name)){
+   add("path",{d:"M7 34 V7 H41 V34",fill:"none",stroke, "stroke-width":3});
+   add("path",{d:"M9 34 L9 9 A25 25 0 0 1 34 34",fill:"none",stroke:accent,"stroke-dasharray":"3 2"});
+   add("line",{x1:9,y1:34,x2:9,y2:9,stroke:accent,"stroke-width":2});
+  }else if(/window|窓/.test(type+" "+name)){
+   add("rect",{x:5,y:12,width:38,height:16,fill:base,stroke,"stroke-width":3});
+   add("line",{x1:24,y1:12,x2:24,y2:28,stroke:accent,"stroke-width":2});
+  }else if(/wall|壁/.test(type+" "+name)){
+   add("rect",{x:4,y:14,width:40,height:12,fill:base,stroke,"stroke-width":2});
+   add("line",{x1:20,y1:14,x2:20,y2:26,stroke:accent,"stroke-width":1});
+  }else if(/room|区画/.test(type+" "+name)){
+   add("rect",{x:7,y:5,width:34,height:30,fill:"none",stroke,"stroke-width":2,"stroke-dasharray":"5 2"});
+  }else{
+   add("rect",{x:7,y:8,width:34,height:24,rx:3,fill:base,stroke,"stroke-width":2});
+   add("rect",{x:12,y:13,width:24,height:14,rx:2,fill:"none",stroke:accent,"stroke-width":2});
+  }
+  outer.append(svg);return outer;
+ }
+ function setDetailTab(tab){
+  const settings=tab==="settings";
+  const edit=$("template-edit-controls"),description=$("template-detail-description");
+  if(!edit||!description)return;
+  edit.hidden=!editing||!settings;
+  description.hidden=editing&&settings;
+  $("template-detail-settings-tab").setAttribute("aria-selected",String(editing&&settings));
+  $("template-detail-description-tab").setAttribute("aria-selected",String(!editing||!settings));
+  $("template-detail-settings-tab").hidden=!editing;
+  $("template-detail-description-tab").hidden=!editing;
+ }
  function refreshItemList(){
   const root=$("template-item-list");if(!root)return;
   root.replaceChildren();
@@ -298,7 +336,7 @@
    const button=T("button","template-preview-card template-item-card");
    button.type="button";button.setAttribute("role","option");
    button.setAttribute("aria-selected",String(item.id===selected));
-   button.append(T("strong","",(item.icon?item.icon+" ":"")+item.name),
+   button.append(paletteShape(item),T("strong","",(item.icon?item.icon+" ":"")+item.name),
     T("small","",item.widthCm+" × "+item.depthCm+"cm"));
    button.addEventListener("click",()=>{
     $("template-item-choice").value=item.id;
@@ -328,7 +366,7 @@
   editing=!!value;
   $("template-mode-toggle").setAttribute("aria-pressed",String(editing));
   $("template-mode-toggle").textContent=editing?"プレビューに戻る":"編集モード";
-  $("template-edit-controls").hidden=!editing;
+  setDetailTab(editing?"settings":"description");
   const pickerSide=$("template-preview-picker"),palettePanel=$("template-edit-catalog");
   const houseList=$("template-preview-list"),itemList=$("template-item-list"),filters=$("template-picker-filters");
   pickerSide.dataset.editing=String(editing);
@@ -337,7 +375,7 @@
    pickerSide.insertBefore(palettePanel,itemList);
    refreshItemList();
   }else{
-   $("template-edit-controls").insertBefore(palettePanel,$("template-edit-controls").firstChild);
+   pickerSide.insertBefore(palettePanel,itemList);
   }
   previewViewer?.setEditMode(editing);
   if(editing){syncEditFields(previewViewer?.getSelected());setEditMessage("配置物を選択して編集、保存時は別名で登録します")}
@@ -665,6 +703,8 @@
    $("template-era-filter").addEventListener("change",refresh);
    $("template-use-filter").addEventListener("change",refresh);
    $("template-mode-toggle").addEventListener("click",()=>setMode(!editing));
+   $("template-detail-settings-tab").addEventListener("click",()=>setDetailTab("settings"));
+   $("template-detail-description-tab").addEventListener("click",()=>setDetailTab("description"));
    fillOptions($("template-item-category"),Object.keys(palette()).map(name=>[name,name]));
    updateCatalog();
    $("template-item-category").addEventListener("change",updateCatalog);
