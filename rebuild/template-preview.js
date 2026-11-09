@@ -119,8 +119,9 @@
   if(editing)setMode(false);
   $("template-preview-modal").hidden=false;
   renderCache.clear();refresh();
+  $("template-picker-filters").open=false;
   selectTemplate(picker.value||library.allPresets()[0]?.id);
-  $("template-preview-filter").focus();
+  $("template-mode-toggle").focus();
  }
  function showObjectInfo(obj){
   const t=library?.allPresets().find(item=>item.id===activeId);
@@ -282,7 +283,29 @@
  }
  function updateCatalog(){
   const category=$("template-item-category").value;
-  fillOptions($("template-item-choice"),(palette()[category]||[]).map(a=>[a.id,(a.icon?a.icon+" ":"")+a.name+" · "+a.widthCm+"×"+a.depthCm+"cm"]));
+  const entries=palette()[category]||[];
+  const previous=$("template-item-choice").value;
+  fillOptions($("template-item-choice"),entries.map(a=>[a.id,(a.icon?a.icon+" ":"")+a.name+" · "+a.widthCm+"×"+a.depthCm+"cm"]));
+  if(entries.some(e=>e.id===previous))$("template-item-choice").value=previous;
+  refreshItemList();
+ }
+ function refreshItemList(){
+  const root=$("template-item-list");if(!root)return;
+  root.replaceChildren();
+  const entries=palette()[$("template-item-category").value]||[];
+  const selected=$("template-item-choice").value;
+  for(const item of entries){
+   const button=T("button","template-preview-card template-item-card");
+   button.type="button";button.setAttribute("role","option");
+   button.setAttribute("aria-selected",String(item.id===selected));
+   button.append(T("strong","",(item.icon?item.icon+" ":"")+item.name),
+    T("small","",item.widthCm+" × "+item.depthCm+"cm"));
+   button.addEventListener("click",()=>{
+    $("template-item-choice").value=item.id;
+    for(const card of root.children)card.setAttribute("aria-selected",String(card===button));
+   });
+   root.append(button);
+  }
  }
  function setEditMessage(s){$("template-edit-status").textContent=s}
  function syncEditFields(obj){
@@ -306,9 +329,16 @@
   $("template-mode-toggle").setAttribute("aria-pressed",String(editing));
   $("template-mode-toggle").textContent=editing?"プレビューに戻る":"編集モード";
   $("template-edit-controls").hidden=!editing;
-  const pickerSide=$("template-preview-picker"),palette=$("template-edit-catalog");
-  if(editing)pickerSide.insertBefore(palette,$("template-preview-list"));
-  else $("template-edit-controls").insertBefore(palette,$("template-edit-controls").firstChild);
+  const pickerSide=$("template-preview-picker"),palettePanel=$("template-edit-catalog");
+  const houseList=$("template-preview-list"),itemList=$("template-item-list"),filters=$("template-picker-filters");
+  pickerSide.dataset.editing=String(editing);
+  houseList.hidden=editing;itemList.hidden=!editing;filters.hidden=editing;
+  if(editing){
+   pickerSide.insertBefore(palettePanel,itemList);
+   refreshItemList();
+  }else{
+   $("template-edit-controls").insertBefore(palettePanel,$("template-edit-controls").firstChild);
+  }
   previewViewer?.setEditMode(editing);
   if(editing){syncEditFields(previewViewer?.getSelected());setEditMessage("配置物を選択して編集、保存時は別名で登録します")}
  }
@@ -638,6 +668,7 @@
    fillOptions($("template-item-category"),Object.keys(palette()).map(name=>[name,name]));
    updateCatalog();
    $("template-item-category").addEventListener("change",updateCatalog);
+   $("template-item-choice").addEventListener("change",refreshItemList);
    $("template-item-add").addEventListener("click",addItem);
    $("template-item-apply").addEventListener("click",()=>changeSelected(false));
    $("template-item-delete").addEventListener("click",()=>changeSelected(true));
