@@ -86,6 +86,15 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  #template-preview-modal .template-preview-card-text small{font-size:8px}
 }
 
+#template-preview-modal .template-preview-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+#template-preview-modal .template-preview-toolbar button{padding:4px 9px;min-height:30px}
+#template-preview-modal .template-preview-grid-toggle{display:inline-flex;align-items:center;gap:4px;margin-left:auto;white-space:nowrap}
+#template-preview-modal .template-preview-grid-toggle input{width:auto}
+#template-preview-modal .template-preview-large{position:relative;display:flex;min-height:0;padding:0;overflow:hidden;touch-action:none}
+#template-preview-modal #template-preview-canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#template-preview-modal #template-preview-canvas:active{cursor:grabbing}
+#template-preview-modal .template-preview-help{font-size:10px;color:#a6c4cf}
+@media(max-width:650px){#template-preview-modal .template-preview-toolbar button{padding:3px 6px;font-size:11px}#template-preview-modal .template-preview-help{font-size:9px}}
 </style>
 </head>
 <body>
@@ -349,17 +358,26 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     <p id="template-preview-meta" class="note"></p>
     <label for="template-preview-floor">表示階</label>
     <select id="template-preview-floor" aria-label="プレビューする階層"></select>
-    <div id="template-preview-large" class="template-preview-large" aria-label="選択階の拡大平面図"></div>
+    <div class="template-preview-toolbar" aria-label="マップ表示操作">
+     <button type="button" id="template-preview-zoom-out" title="縮小">−</button>
+     <button type="button" id="template-preview-zoom-in" title="拡大">＋</button>
+     <button type="button" id="template-preview-fit">全体表示</button>
+     <label class="template-preview-grid-toggle"><input type="checkbox" id="template-preview-grid" checked> マス目</label>
+    </div>
+    <div id="template-preview-large" class="template-preview-large" aria-label="選択階の実際のマップ表示">
+     <canvas id="template-preview-canvas" aria-label="建物のマッププレビュー。ドラッグで移動、ホイールやピンチで拡大縮小"></canvas>
+    </div>
+    <p class="template-preview-help">ドラッグ：移動　ホイール・ピンチ：拡大縮小</p>
     <p id="template-preview-description" class="note"></p>
     <div class="actions"><button type="button" id="template-preview-use">このテンプレートを選択</button></div>
    </section>
   </div>
  </section>
 </div>
-<script src="./map-viewer.js?v=compact-floor-ui-v3"></script>
+<script src="./map-viewer.js?v=template-shared-zoom-v4"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script src="./building-templates.js?v=lazy-template-safety-v2"></script>
-<script src="./template-preview.js?v=split-catalog-v2"></script>
+<script src="./template-preview.js?v=shared-scene-preview-v3"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=template-visual-v1"></script>
 </body></html>
