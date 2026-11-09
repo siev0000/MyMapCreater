@@ -281,7 +281,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <p id="editor-grid-note" class="note">マップの広域表示では、線が密集するのを防ぐためグリッドを自動的に隠します。</p>
   </section>
   <section class="panel">
-   <h2>オブジェクト一覧</h2>
+   <h2>マップ構成・オブジェクト一覧</h2>
+   <label>作業対象 <select id="object-category-filter"><option value="all">すべて</option><option value="terrain">地形・標高</option><option value="building">建物・施設</option><option value="road">道路</option><option value="railway">鉄道</option><option value="water">河川・水域</option><option value="other">家具・設備・その他</option></select></label>
    <div class="row"><input id="object-search" placeholder="名前・IDで検索" aria-label="オブジェクトを検索">
     <button id="clear-search">消去</button></div>
    <div class="switches"><label><input id="batch-mode" type="checkbox"> 複数選択モード（一覧から選択）</label></div>
