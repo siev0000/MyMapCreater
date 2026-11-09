@@ -564,11 +564,17 @@ function activeRoot(){return lineage(selected)[0]||roots[0]}
 function availableViews(root){
  const views=(root.views||[]).map(v=>({
   key:root.id+'::'+v.id,name:v.name,displayName:v.displayName||v.name,mapId:root.id,viewId:v.id}));
+ // A root with its own scene and children needs an explicit tab for its overview.
+ if(root.source&&!views.length)views.push({
+  key:root.id+'::default',name:root.shortName||root.name,
+  displayName:root.name,mapId:root.id,viewId:"default"
+ });
  const descendants=children(root.id).map(n=>({
   key:n.id,name:n.shortName||n.name,displayName:n.name,mapId:n.id,viewId:null
  }));
  if(!views.length&&!descendants.length)return [{
-  key:root.id+'::default',name:root.shortName||root.name,displayName:root.name,mapId:root.id,viewId:"default"
+  key:root.id+'::default',name:root.shortName||root.name,
+  displayName:root.name,mapId:root.id,viewId:"default"
  }];
  return [...views,...descendants];
 }
