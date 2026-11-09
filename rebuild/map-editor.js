@@ -235,6 +235,9 @@ function updateVertexControls(obj){
    .filter(o=>o.objectType==="wall"&&(!obj.floorId||o.floorId===obj.floorId))
    .map(o=>[o.id,o.name||o.id])];
   fillSelect(picker,opts,obj.opening?.wallId||"");
+  $("door-type").value=obj.door?.type==="sliding"?"sliding":"hinged";
+  $("door-slide-direction").value=obj.door?.slideDirection==="start"?"start":"end";
+  $("door-slide-fields").classList.toggle("hidden",obj.door?.type!=="sliding");
  }
  $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
  if(obj?.objectType==="wall")$("wall-thickness").value=obj.wall?.thickness??"";
@@ -263,6 +266,22 @@ bind("vertex-delete",()=>{
 bind("obj-rotation",()=>{
  const n=Number(input("obj-rotation"));if(!Number.isFinite(n)){notice("回転角度が不正です","error");return}
  changeObject(o=>{if(o.geometry?.type==="rect")o.geometry.rotation=((n%360)+360)%360});
+});
+bind("door-type",()=>{
+ const type=input("door-type");
+ changeObject(o=>{
+  if(o.objectType!=="door")return;
+  o.door={...o.door,type};
+  if(type==="sliding"&&!["start","end"].includes(o.door.slideDirection))o.door.slideDirection="end";
+ });
+});
+bind("door-slide-direction",()=>{
+ const direction=input("door-slide-direction");
+ if(!["start","end"].includes(direction))return;
+ changeObject(o=>{
+  if(o.objectType!=="door")return;
+  o.door={...o.door,type:"sliding",slideDirection:direction};
+ });
 });
 bind("door-wall-id",()=>{
  const wallId=input("door-wall-id"),data=sceneNow(),wall=data?.objects.find(x=>x.id===wallId);
