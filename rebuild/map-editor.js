@@ -629,7 +629,9 @@ function addBuildingTemplates(){
   notice("建物の親には区画または施設を選択してください","error");return;
  }
  const spacing=gridState.spacing;
- const box=$("map-canvas").getBoundingClientRect(),p=snapPoint(viewer.screenToWorld(box.width/2,box.height/2));
+ const box=$("map-canvas").getBoundingClientRect();
+ const anchorObject=checked("town-building-at-selection")?selection:null;
+ const p=anchorObject?snapPoint(centerOf(anchorObject.geometry)):snapPoint(viewer.screenToWorld(box.width/2,box.height/2));
  const gapDistance=gap*spacing,baseName=input("building-base-name").trim()||t.name;
  const next=copy(scene),taken=new Set(next.objects.map(o=>o.id));
  const idBase="building_"+t.id;
@@ -663,6 +665,35 @@ function addBuildingTemplates(){
  }catch(error){notice("建物を追加できません："+error.message,"error")}
 }
 bind("building-add",addBuildingTemplates,"click");
+bind("town-road-connect",()=>{
+ const scene=sceneNow(),o=scene?.objects.find(x=>x.id===state.selectedId);
+ const meters=Number(input("town-road-distance"));
+ const u=Number(scene?.settings?.georeference?.worldUnitsPerMeter)||gridState.spacing*2;
+ if(!o||o.metadata?.featureKind!=="road")return notice("道路オブジェクトを選択してください","error");
+ if(!Number.isFinite(meters)||meters<0.1||meters>20)return notice("接続距離は0.1～20mの範囲で指定してください","error");
+ try{
+  const result=window.AAMapTownTools.joinRoads(scene,o.id,meters*u);
+  if(!result.connected)return notice("指定距離内に別道路の端点が見つかりません。道路の端点位置を確認してください。","error");
+  if(applyScene(result.scene,o.id)){
+   const d=result.candidate.distanceWorld/u;
+   notice("道路端点を接続しました（変更前の距離："+d.toFixed(2)+"m）。元図形の編集記録を付与しました。","success");
+  }
+ }catch(error){notice("道路接続エラー："+error.message,"error")}
+},"click");
+bind("town-terrain-apply",()=>{
+ const scene=sceneNow(),o=scene?.objects.find(x=>x.id===state.selectedId);
+ if(!o||o.metadata?.featureKind!=="terrain")return notice("地形・標高セルを選択してください","error");
+ const radius=Number(input("town-terrain-radius")),delta=Number(input("town-terrain-delta"));
+ if(!Number.isFinite(radius)||radius<0||radius>500||!Number.isFinite(delta)||delta<-100||delta>100)
+  return notice("半径0～500m、標高変化-100～100mで指定してください","error");
+ const u=Number(scene?.settings?.georeference?.worldUnitsPerMeter)||gridState.spacing*2;
+ try{
+  const result=window.AAMapTownTools.terrainPaint(scene,o.id,radius*u,delta);
+  if(result.count===0)return;
+  if(applyScene(result.scene,o.id))notice(result.count+"セルの標高を"+(delta>=0?"+":"")+delta+"m変更しました。元のDEM値と手入力値は区別して保存します。","success");
+ }catch(error){notice("標高編集エラー："+error.message,"error")}
+},"click");
+
 function supplyCatalog(){return window.AAMapObjectCatalog.entries(sceneNow())}
 function supplyOptions(){
  const picker=$("supply-preset"),last=picker.value;
