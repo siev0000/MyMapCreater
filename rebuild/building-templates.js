@@ -147,7 +147,7 @@ const modernHousing=[
    doors:[["main","hall"],["bath","hall"]],entry:"hall",
    items:[["キッチン","kitchen",.5,.5,3,1],["ベッド","bed",5,1,2,4],
     ["テーブル","table",3,5,2,1.5],["浴槽","bath",.4,8.6,2,2],
-    ["トイレ","toilet",2.55,10.6,.4,1],["玄関収納","cabinet",5.5,10.5,2,1]]}]},
+    ["トイレ","toilet",2.2,10.6,.7,1],["玄関収納","cabinet",5.5,10.5,2,1]]}]},
  {id:"jp_apartment_1k",name:"現代日本・アパート1K",cells:[8,14],floors:1,
   description:"外形約28㎡の1K。居室とキッチン・玄関の区画を分離。",
   plans:[{rooms:[
