@@ -1066,10 +1066,10 @@ function geoButtons(){
  }
 }
 bind("geo-import-toggle",()=>{
- const panel=$("geo-import-panel"),expanded=panel.hidden;
- panel.hidden=!expanded;
- $("geo-import-toggle").setAttribute("aria-expanded",String(expanded));
- if(expanded&&sceneNow()?.settings?.georeference){
+ const panel=$("geo-import-panel");
+ panel.hidden=false;
+ $("geo-import-toggle").setAttribute("aria-expanded","true");
+ if(sceneNow()?.settings?.georeference){
   const gr=sceneNow().settings.georeference;
   $("geo-lat").value=gr.center.lat;
   $("geo-lon").value=gr.center.lon;
@@ -1251,6 +1251,7 @@ async function init(){
   $("scene-select").value=first.key;
   await load(first);
   if(new URLSearchParams(location.search).has("import")){
+   window.AAMapEditorUI?.selectTab("import",true);
    $("geo-import-panel").hidden=false;
    $("geo-import-toggle").setAttribute("aria-expanded","true");
   }
