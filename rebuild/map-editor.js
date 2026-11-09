@@ -143,6 +143,9 @@ function translateSelectedBy(dx,dy){
  const ids=new Set([root.id]);let changed=true;
  while(changed){changed=false;for(const o of next.objects)
   if(!ids.has(o.id)&&ids.has(o.parentId)){ids.add(o.id);changed=true}}
+ // If a wall is moved on its own, move linked doors as well.
+ const walls=new Set([...ids].filter(id=>byId.get(id)?.objectType==="wall"));
+ for(const obj of next.objects)if(obj.objectType==="door"&&walls.has(obj.opening?.wallId))ids.add(obj.id);
  for(const id of ids){
   const o=byId.get(id),g=o.geometry||{};
   if(g.type==="rect"){g.x+=dx;g.y+=dy}
