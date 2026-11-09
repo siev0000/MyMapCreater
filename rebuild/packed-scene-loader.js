@@ -9,8 +9,8 @@ async function unpack(data){
  const raw=Uint8Array.from(atob(data.payload),x=>x.charCodeAt(0));
  const stream=new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate"));
  const pack=JSON.parse(await new Response(stream).text());
- if(!Array.isArray(pack.f)||!Array.isArray(pack.t))throw Error("圧縮地図の地物データが不正です");
- const gr=pack.g||{},size=Number(gr.widthM)||500;
+ if(!Array.isArray(pack.a)||!Array.isArray(pack.t))throw Error("圧縮地図の地物データが不正です");
+ const gr={center:{lat:37.7351639,lon:139.2909028},widthM:500,heightM:500,worldUnitsPerMeter:4,source:"OpenStreetMap",copyright:"© OpenStreetMap contributors",license:"ODbL 1.0",attributionUrl:"https://www.openstreetmap.org/copyright",regionName:"咲花駅周辺",terrainVerified:true,terrainSource:"国土地理院 基盤地図情報数値標高モデル",demLayer:"dem5a_png",demZoom:15,osmTimestamp:"2026-11-09T13:16:52Z",importedAt:"2026-11-09T13:18:40.649Z",demRetrievedAt:"2026-11-09T13:50:37.590Z",minElevationM:21.01,maxElevationM:103.97,elevationSamplesKnown:441,elevationSamplesTotal:441,counts:{road:11,railway:5,building:69,landuse:0,water:1,other:0}},size=500;
  const b=size*2;
  const scene={
   schemaVersion:2,id:"sakihana_gosen_500m",name:"実在地域｜咲花駅周辺（500m四方）",
@@ -24,32 +24,44 @@ async function unpack(data){
   objects:[]
  };
  const kinds={building:"建物",road:"道路",railway:"鉄道",waterway:"水路"};
- for(const [id,name,layer,type,rawGeometry,width,estimated,kind,osmId,levels,height,labelText] of pack.f){
-  const geometry=type==="polyline"||type==="polygon"?{type,points:rawGeometry}
-   :type==="circle"?{type,center:rawGeometry.slice(0,2),radius:rawGeometry[2]}
-   :{type,...rawGeometry};
+ const layerNames={t:"terrain",l:"landuse",w:"water",b:"buildings",r:"roads",s:"stations"};
+ // Railway and road share r initial; infer from each OSM ID classification label.
+ // Categories are restored from featureKind, which is authoritative here.
+ for(const [id,name,layerCode,typeCode,rawGeometry,width,kind,labelText,levels] of pack.a){
+  const layer=kind==="railway"?"railways":kind==="road"?"roads":kind==="waterway"?"water":
+   kind==="building"?"buildings":id.includes("station")||name==="咲花"?"stations":layerNames[layerCode]||"stations";
+  let geometry;
+  if(typeCode==="p"&&Array.isArray(rawGeometry)){
+   const points=[];let x=0,y=0;
+   for(let i=0;i<rawGeometry.length;i+=2){
+    x+=rawGeometry[i];y+=rawGeometry[i+1];points.push([x/10,y/10]);
+   }
+   geometry={type:kind==="building"?"polygon":"polyline",points};
+  }else if(typeCode==="c")geometry={type:"circle",center:[rawGeometry[0]/10,rawGeometry[1]/10],radius:rawGeometry[2]/10};
+  else geometry={type:"none"};
+  // The historical station-reference circle must retain its own metadata and marker.
   const style=layer==="buildings"?{fill:"#647f85",stroke:"#bdd5d6",strokeWidth:1,opacity:1}
    :layer==="roads"?{fill:null,stroke:"#d7d0bd",strokeWidth:1,opacity:1}
    :layer==="railways"?{fill:null,stroke:"#d1b89b",strokeWidth:1,opacity:1}
    :layer==="water"?{fill:null,stroke:"#4a9abf",strokeWidth:1,opacity:1}
    :{fill:"#f1c66d",stroke:"#fff4d8",strokeWidth:1};
-  const metadata={source:id.startsWith("osm_")?"OpenStreetMap":"station-coordinate"};
+  const osmMatch=id.match(/^osm_(?:way|node)_(\d+)/),osmId=osmMatch?Number(osmMatch[1]):null;
+  const metadata={source:osmMatch?"OpenStreetMap":"station-coordinate"};
   if(kind)metadata.featureKind=kind;
   if(Number.isFinite(osmId))metadata.osmId=osmId;
   if(id.startsWith("osm_way_")&&Number.isFinite(osmId))metadata.sourceUrl="https://www.openstreetmap.org/way/"+osmId;
-  if(Number.isFinite(width)){metadata.renderWidthM=width;metadata.renderWidthEstimated=!!estimated}
-  if(Number.isFinite(levels))metadata.buildingLevels=levels;
-  if(Number.isFinite(height))metadata.heightM=height;
-  if(id.startsWith("osm_"))metadata.snapshotReducedMetadata=true;
+  if(Number.isFinite(width)){metadata.renderWidthM=width;metadata.renderWidthEstimated=true}
+  if(Number.isFinite(levels))metadata.buildingLevels=Number(levels);
+  if(osmMatch)metadata.snapshotReducedMetadata=true;
   const obj={id,name,objectType:"object",layer,zIndex:({terrain:4,landuse:12,water:22,buildings:40,roads:55,railways:60,stations:70})[layer]||40,
    displayLevel:1,visible:true,selectable:true,geometry,style,metadata};
-  if(labelText)obj.label={visible:true,text:labelText,position:type==="circle"?[geometry.center[0],geometry.center[1]-14]:[0,0],fontSize:10};
+  if(labelText)obj.label={visible:true,text:labelText,position:typeCode==="c"?[geometry.center[0],geometry.center[1]-14]:[0,0],fontSize:10};
   scene.objects.push(obj);
  }
  const min=Number(gr.minElevationM),max=Number(gr.maxElevationM);
  const tileW=size/20*4;
  for(let j=0;j<20;j++)for(let i=0;i<20;i++){
-  const h=pack.t[j*20+i];if(!Number.isFinite(h))continue;
+  const rawHeight=pack.t[j*20+i],h=rawHeight/10;if(!Number.isFinite(rawHeight))continue;
   const t=Number.isFinite(min)&&Number.isFinite(max)&&max>min?Math.max(0,Math.min(1,(h-min)/(max-min))):0.5;
   const red=Math.round(37+100*t),green=Math.round(75+78*(1-t)),blue=Math.round(63+18*(1-t));
   scene.objects.push({id:"gsi_terrain_"+i+"_"+j,name:"標高 "+h.toFixed(1)+"m",
