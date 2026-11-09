@@ -523,20 +523,44 @@ function create(opts){
     if(horizontal)line(x,y+h*i/n,x+w,y+h*i/n);
     else line(x+w*i/n,y,x+w*i/n,y+h);
    }
-   // One arrow indicates elevation, not the screen-space staircase direction.
-   const destination=stairDestination(obj);
-   const text=destination?destination.symbol+" "+destination.label:"未接続";
-   const fontSize=12/scale(),padX=5/scale(),padY=3/scale();
-   ctx.save();
-   ctx.font="bold "+fontSize+"px system-ui, sans-serif";
-   ctx.textAlign="center";ctx.textBaseline="middle";
-   const tw=ctx.measureText(text)?.width??text.length*fontSize*.7,boxW=tw+2*padX,boxH=fontSize+2*padY;
-   const cx=x+w/2,cy=y+h/2;
-   ctx.fillStyle="rgba(10,32,41,.82)";
-   ctx.fillRect(cx-boxW/2,cy-boxH/2,boxW,boxH);
-   ctx.fillStyle=destination?(destination.symbol==="↑"?"#82d4f5":"#ffcb84"):"#e2bbc2";
-   ctx.fillText(text,cx,cy);
-   ctx.restore();
+   // Slightly raised treads: the low entry end remains distinct from the high end.
+   // For older scenes without a stair.lowSide, do not guess the climbing direction.
+   const lowSide=obj.stair?.lowSide;
+   const side=["top","bottom","left","right"].includes(lowSide)?lowSide:null;
+   const count=Math.max(4,Math.min(12,Math.round((h>=w?h:w)/2)));
+   const alongVertical=h>=w;
+   for(let i=0;i<count;i++){
+    const depth=side?((side==="top"||side==="left")?i:count-1-i):Math.floor(count/2);
+    const lightness=side?Math.round(45+depth/(count-1)*39):60;
+    const fill="hsl(198 24% "+lightness+"% / .36)";
+    ctx.fillStyle=fill;
+    if(alongVertical)ctx.fillRect(x,y+h*i/count,w,h/count);
+    else ctx.fillRect(x+w*i/count,y,w/count,h);
+   }
+   ctx.strokeStyle=accent;ctx.lineWidth=Math.max(1/scale(),.9/scale());
+   for(let i=1;i<count;i++){
+    if(alongVertical)line(x,y+h*i/count,x+w,y+h*i/count);
+    else line(x+w*i/count,y,x+w*i/count,y+h);
+   }
+   if(side){
+    const lowColor="#8fd9e8",highColor="#ffd68c";
+    const cap=Math.max(2/scale(),Math.min(w,h)*.14);
+    ctx.strokeStyle=lowColor;ctx.lineWidth=2.2/scale();
+    ctx.beginPath();
+    if(side==="top"){ctx.moveTo(x,y);ctx.lineTo(x+w,y)}
+    if(side==="bottom"){ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h)}
+    if(side==="left"){ctx.moveTo(x,y);ctx.lineTo(x,y+h)}
+    if(side==="right"){ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h)}
+    ctx.stroke();
+    ctx.strokeStyle=highColor;
+    ctx.beginPath();
+    if(side==="top"){ctx.moveTo(x,y+h-cap/3);ctx.lineTo(x+w,y+h-cap/3)}
+    if(side==="bottom"){ctx.moveTo(x,y+cap/3);ctx.lineTo(x+w,y+cap/3)}
+    if(side==="left"){ctx.moveTo(x+w-cap/3,y);ctx.lineTo(x+w-cap/3,y+h)}
+    if(side==="right"){ctx.moveTo(x+cap/3,y);ctx.lineTo(x+cap/3,y+h)}
+    ctx.stroke();
+   }
+
   }
   ctx.restore();return true;
  }
@@ -661,6 +685,37 @@ function create(opts){
  }
  function getPreviewGridVisible(){
   return previewGridVisible===null?scene?.grid?.visible===true:previewGridVisible;
+ }
+ function drawStairIndicators(objects){
+  // Render elevation symbols in screen coordinates; projected map axes may rotate.
+  ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+  for(const obj of objects){
+   if(obj.objectType!=="stair"&&obj.shapePresetId!=="stair")continue;
+   const g=obj.geometry;if(g?.type!=="rect")continue;
+   const dest=stairDestination(obj);
+   const side=["top","bottom","left","right"].includes(obj.stair?.lowSide)?obj.stair.lowSide:null;
+   const [x,y]=screenAt(g.x+g.width/2,g.y+g.height/2);
+   const symbol=dest?.symbol||"?",floor=dest?.label||"";
+   ctx.font="bold 12px system-ui, sans-serif";
+   const str=symbol+(floor?" "+floor:"");
+   const textWidth=ctx.measureText(str)?.width??str.length*8;
+   const bw=Math.max(28,textWidth+14),bh=24;
+   const px=clamp(x,bw/2+2,Math.max(bw/2+2,width-bw/2-2)),py=clamp(y,bh/2+2,Math.max(bh/2+2,height-bh/2-2));
+   ctx.fillStyle="rgba(8,30,41,.88)";
+   ctx.fillRect(px-bw/2,py-bh/2,bw,bh);
+   ctx.textBaseline="middle";ctx.textAlign="center";
+   ctx.fillStyle=dest?(dest.symbol==="↑"?"#93dfff":"#ffd18a"):"#e6c1c1";
+   ctx.fillText(str,px,py);
+   if(side){
+    // LOW label always points to the actual entry side; elevation arrow is separate.
+    const edge={top:[g.x+g.width/2,g.y],bottom:[g.x+g.width/2,g.y+g.height],
+     left:[g.x,g.y+g.height/2],right:[g.x+g.width,g.y+g.height/2]}[side];
+    const [ex,ey]=screenAt(...edge);
+    ctx.font="bold 9px system-ui, sans-serif";
+    ctx.fillStyle="#a9f3f6";ctx.fillText("入口",ex,ey-9);
+   }
+  }
+  ctx.restore();
  }
  function drawLabels(objects){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.save();
@@ -812,6 +867,7 @@ function create(opts){
   if(selected&&visible(selected))traceStroke(selected,true);
   drawEditorGrid();
   drawLabels(list);
+  drawStairIndicators(list);
   drawEditHandles();
   if(typeof opts.onFloorOverlayChanged==="function")opts.onFloorOverlayChanged(floorOverlayState());
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
