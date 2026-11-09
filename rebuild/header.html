@@ -252,6 +252,16 @@ main{max-width:none;padding:0}
 .map-info-footer .detail-ancestor-trail{display:flex;flex:1 10 0;min-width:0;align-items:baseline;overflow:hidden;white-space:nowrap;color:#96afbc;direction:ltr}
 .map-info-footer .detail-ancestor-segment{display:block;flex:0 1 auto;min-width:0;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
 @media(max-width:500px){.map-info-footer .detail-current-name{font-size:12px}.map-info-footer .detail-ancestor-trail{flex:1 20 0}}
+
+/* Attached, semi-transparent floor navigation above the selected building. */
+.building-floor-overlay{position:absolute;z-index:9;left:50%;top:10px;transform:translate(-50%,-100%);max-width:min(250px,calc(100% - 18px));padding:5px 9px 6px;border:1px solid rgba(141,192,205,.62);border-radius:8px;background:rgba(9,34,45,.69);color:#eafaff;box-shadow:0 2px 9px rgba(0,0,0,.18);backdrop-filter:blur(3px);text-align:center;pointer-events:auto}
+.building-floor-overlay[hidden]{display:none!important}
+.building-floor-overlay .building-floor-title{font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px;margin:0 0 3px}
+.building-floor-overlay .building-floor-actions{display:flex;gap:7px;align-items:center;justify-content:center}
+.building-floor-overlay button{border:1px solid rgba(154,211,223,.5);border-radius:5px;background:rgba(35,86,103,.72);color:white;padding:2px 7px;min-width:25px;min-height:25px;cursor:pointer}
+.building-floor-overlay button:disabled{opacity:.32;cursor:default}
+.building-floor-overlay .building-floor-current{font-size:13px;font-weight:800;min-width:45px}
+@media(max-width:500px){.building-floor-overlay{padding:4px 7px}.building-floor-overlay .building-floor-title{font-size:9px}}
 </style>
 </head>
 <body>
@@ -289,6 +299,14 @@ main{max-width:none;padding:0}
  <section class="viewport" id="viewport" aria-label="マップ描画領域">
   <nav class="vertical-map-tabs" aria-label="マップ切替"><div id="view-tabs" class="vertical-map-tab-list"></div></nav>
   <canvas id="map-canvas" aria-label="地図をドラッグで移動、ホイールやボタンで拡大縮小。タップして区画情報を選択"></canvas>
+  <nav id="building-floor-overlay" class="building-floor-overlay" aria-label="選択した建物の階切替" hidden>
+   <p id="building-floor-title" class="building-floor-title"></p>
+   <div class="building-floor-actions">
+    <button type="button" id="building-floor-prev" aria-label="下の階を表示">◀</button>
+    <span id="building-floor-current" class="building-floor-current" aria-live="polite"></span>
+    <button type="button" id="building-floor-next" aria-label="上の階を表示">▶</button>
+   </div>
+  </nav>
   <div class="map-title-chip" id="current-map-title" aria-live="polite">マップを読み込み中…</div>
   <div class="map-hint" id="map-hint" role="status" hidden></div>
   <div id="map-load-status" class="map-load-status" role="alert" hidden></div>
@@ -332,7 +350,7 @@ main{max-width:none;padding:0}
  </section>
 </div>
 <script src="./spec-viewer.js?v=5"></script>
-<script src="./map-viewer.js?v=wall-vertex-grid-v2"></script>
+<script src="./map-viewer.js?v=building-floor-stair-v1"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script>
 (()=>{
@@ -340,12 +358,30 @@ main{max-width:none;padding:0}
 const $=id=>document.getElementById(id);
 let gridPreference=null;
 try{const v=localStorage.getItem("map-preview-grid-visible");if(v==="true"||v==="false")gridPreference=v==="true"}catch(_){}
+let buildingFloorState=null;
+function updateBuildingFloorOverlay(state){
+ const box=$('building-floor-overlay');
+ buildingFloorState=state||null;
+ box.hidden=!state;
+ if(!state)return;
+ const index=state.floors.findIndex(f=>f.id===state.selectedFloorId);
+ const floor=state.floors[index];
+ if(index<0||!floor){box.hidden=true;return}
+ $('building-floor-title').textContent=state.name+' · 全'+state.floors.length+'階';
+ $('building-floor-title').title=state.name;
+ $('building-floor-current').textContent=floor.label;
+ $('building-floor-prev').disabled=index===0;
+ $('building-floor-next').disabled=index===state.floors.length-1;
+ box.style.left=Math.max(90,Math.min(state.width-90,state.x))+'px';
+ box.style.top=Math.max(50,Math.min(state.height-8,state.y-8))+'px';
+}
 const viewer=window.AAMapViewer.create({
  host:$('viewport'),canvas:$('map-canvas'),
  info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
  legend:$('legend-footer'),legendContent:$('legend-content'),
  legendButton:$('legend-switch'),visibilityControls:$('visibility-controls'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),zoomReset:$('zoom-reset'),
  zoomLabel:$('zoom-label'),hint:$('map-hint'),
+ onFloorOverlayChanged:updateBuildingFloorOverlay,
  onLayoutLoaded:(mapId,data)=>{
   const status=$('map-load-status'),canvas=$('map-canvas');
   const rect=canvas.getBoundingClientRect();
@@ -482,6 +518,14 @@ $('detail-back').addEventListener('click',()=>{
  if(parent)viewer.selectItemById(parent.id,{focus:true});
 });
 $('floor-switch').addEventListener('change',e=>viewer.setFloor(e.target.value));
+function changeAttachedFloor(step){
+ const state=buildingFloorState;if(!state)return;
+ const index=state.floors.findIndex(f=>f.id===state.selectedFloorId);
+ const floor=state.floors[index+step];
+ if(floor)viewer.setFloor(floor.id);
+}
+$('building-floor-prev').addEventListener('click',()=>changeAttachedFloor(-1));
+$('building-floor-next').addEventListener('click',()=>changeAttachedFloor(1));
 let defaultMapId=null;
 function validate(data){
  if(data?.schemaVersion!==1||!Array.isArray(data.maps))throw Error('マップの設定形式が不正です');
