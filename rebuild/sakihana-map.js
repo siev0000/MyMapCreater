@@ -146,7 +146,7 @@ function baseScene(){
   layer:"stations",zIndex:70,visible:true,selectable:true,displayLevel:1,
   geometry:{type:"circle",center:[0,0],radius:8},
   style:{fill:"#e8c17a",stroke:"#fff1c0",strokeWidth:1.3},
-  label:{visible:true,text:REGION_NAME,position:[0,-25],fontSize:12},
+  label:{visible:true,text:REGION_NAME.slice(0,36),position:[0,-25],fontSize:12},
   detail:"検索または座標指定による中心点です。実地物はOSM取得後に追加されます。",
   metadata:{source:"geographic-center-reference",lat:CENTER.lat,lon:CENTER.lon}
  };
@@ -321,7 +321,7 @@ function addElevation(scene,data){
    geometry:{type:"rect",x:-HALF_M*UNIT+i*data.stepM*UNIT,y:-HALF_M*UNIT+j*data.stepM*UNIT,
     width:data.stepM*UNIT,height:data.stepM*UNIT},
    style:{fill:"rgb("+red+","+green+","+blue+")",stroke:null,opacity:.72},
-   detail:"国土地理院 標高タイルから取得した25mセルの平均標高（m）",
+   detail:"国土地理院 標高タイルから取得した"+data.stepM+"mセルの平均標高（m）",
    metadata:{featureKind:"terrain",elevationM:Number(h.toFixed(2)),
     source:"国土地理院 標高タイル",verifiedElevation:true,demLayer:data.source}
   });
