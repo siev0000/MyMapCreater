@@ -43,6 +43,25 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 .note{font-size:11px;color:#a6c6ce;line-height:1.5;margin:0}.hidden{display:none!important}
 #json-object{min-height:125px}
 @media(max-width:780px){main{grid-template-columns:1fr}.map-pane{height:55dvh;min-height:320px}.side{max-height:none;border-left:0;border-top:1px solid #426778}header{padding:6px}.toolbar{margin:0}#scene-select{max-width:none}}
+
+/* Template cards and a read-only floorplan modal. */
+.template-preview-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));max-height:280px;overflow-y:auto;gap:6px;margin:8px 0;padding:2px}
+.template-preview-card{display:flex;gap:8px;align-items:center;min-width:0;padding:5px;text-align:left;border:1px solid #416675;border-radius:7px;background:#163440;color:#e4f1f3;cursor:pointer}
+.template-preview-card:hover,.template-preview-card:focus-visible{border-color:#91cad1;background:#244c58}
+.template-preview-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 50px;width:50px;height:46px;background:#0a252e;border-radius:4px}
+.template-floorplan{display:block;width:100%;height:100%;max-height:100%;overflow:visible}
+.template-preview-card-text{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:11px}
+.template-preview-card-text strong{white-space:normal;line-height:1.25}
+.template-preview-card-text small{font-size:9px;color:#a6c4cf}
+.template-preview-modal{position:fixed;z-index:2000;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,10,16,.68);padding:14px}
+.template-preview-modal[hidden]{display:none!important}
+.template-preview-dialog{width:min(610px,100%);max-height:calc(100dvh - 28px);overflow:auto;border:1px solid #689baa;border-radius:12px;background:#112d38;padding:12px 14px;color:#eaf4f6;box-shadow:0 15px 50px rgba(0,0,0,.4)}
+.template-preview-modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.template-preview-modal-head h2{margin:0;font-size:16px}
+.template-preview-modal-head button{font-size:23px;min-height:28px;min-width:32px}
+.template-preview-large{height:min(52dvh,440px);min-height:180px;margin:10px 0;border:1px solid #426b79;border-radius:7px;background:#0a252e;padding:12px}
+.template-preview-dialog .note{margin:6px 0}
+@media(max-width:500px){.template-preview-list{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));max-height:230px}.template-preview-large{height:min(44dvh,330px)}}
 </style>
 </head>
 <body>
@@ -82,6 +101,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <h2>建物フォーマット・一括配置</h2>
    <p class="note">選択した形式から、床・外壁・入口・間仕切り・階段をまとめて生成します。テンプレートは独立データで、既存建物には影響しません。</p>
    <label>建物テンプレート<select id="building-template"></select></label>
+   <p class="note">下の一覧の平面図を選ぶと、階ごとの間取りを拡大表示できます。</p>
+   <div id="template-preview-list" class="template-preview-list" aria-label="建物テンプレートの間取り一覧"></div>
    <p id="building-template-description" class="note"></p>
    <div class="col2">
      <label>建物名（連番が付きます）<input id="building-base-name" value="建物" maxlength="100"></label>
@@ -286,9 +307,24 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </section>
  </aside>
 </main>
+
+<div id="template-preview-modal" class="template-preview-modal" hidden>
+ <section class="template-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="template-preview-title">
+  <div class="template-preview-modal-head">
+   <h2 id="template-preview-title"></h2>
+   <button type="button" id="template-preview-close" aria-label="プレビューを閉じる">×</button>
+  </div>
+  <p id="template-preview-meta" class="note"></p>
+  <label>表示階 <select id="template-preview-floor"></select></label>
+  <div id="template-preview-large" class="template-preview-large" aria-label="建物の拡大平面図"></div>
+  <p id="template-preview-description" class="note"></p>
+  <div class="actions"><button type="button" id="template-preview-use">このテンプレートを選択</button></div>
+ </section>
+</div>
 <script src="./map-viewer.js?v=compact-floor-ui-v3"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script src="./building-templates.js?v=lazy-template-safety-v2"></script>
+<script src="./template-preview.js?v=template-visual-v1"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
-<script src="./map-editor.js?v=batch-layout-v1"></script>
+<script src="./map-editor.js?v=template-visual-v1"></script>
 </body></html>
