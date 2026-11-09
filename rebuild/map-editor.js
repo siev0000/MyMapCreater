@@ -222,6 +222,17 @@ function updateVertexControls(obj){
  }
  picker.value=enabled&&old>=0&&old<points.length?String(old):"0";
  $("vertex-delete").disabled=!enabled||points.length<=(g.type==="polygon"?3:2);
+ $("rect-rotation-fields").classList.toggle("hidden",obj?.geometry?.type!=="rect");
+ if(obj?.geometry?.type==="rect")$("obj-rotation").value=obj.geometry.rotation||0;
+ const door=obj?.objectType==="door";
+ $("door-wall-fields").classList.toggle("hidden",!door);
+ if(door){
+  const scene=sceneNow(),picker=$("door-wall-id");
+  const opts=[["","（壁の関連付けなし）"],...(scene?.objects||[])
+   .filter(o=>o.objectType==="wall"&&(!obj.floorId||o.floorId===obj.floorId))
+   .map(o=>[o.id,o.name||o.id])];
+  fillSelect(picker,opts,obj.opening?.wallId||"");
+ }
  $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
  if(obj?.objectType==="wall")$("wall-thickness").value=obj.wall?.thickness??"";
 }
@@ -246,6 +257,18 @@ bind("vertex-delete",()=>{
  const index=Math.max(0,Math.min(points.length-1,Number($("vertex-index").value)||0));
  changeObject(o=>o.geometry.points.splice(index,1));
 },"click");
+bind("obj-rotation",()=>{
+ const n=Number(input("obj-rotation"));if(!Number.isFinite(n)){notice("回転角度が不正です","error");return}
+ changeObject(o=>{if(o.geometry?.type==="rect")o.geometry.rotation=((n%360)+360)%360});
+});
+bind("door-wall-id",()=>{
+ const wallId=input("door-wall-id");
+ changeObject(o=>{
+  if(o.objectType!=="door")return;
+  o.opening={...o.opening};
+  if(wallId)o.opening.wallId=wallId;else delete o.opening.wallId;
+ });
+});
 bind("wall-thickness",()=>{
  const raw=input("wall-thickness").trim();
  if(raw===""){changeObject(o=>{if(o.objectType==="wall"&&o.wall)delete o.wall.thickness});return}
