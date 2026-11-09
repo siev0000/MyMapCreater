@@ -1,0 +1,453 @@
+{
+  "schemaVersion": 2,
+  "id": "sakihana_station_interior",
+  "name": "咲花駅｜駅舎・ホーム（構内仮図）",
+  "coordinateSystem": {
+    "horizontal": [
+      1,
+      0
+    ],
+    "vertical": [
+      0,
+      1
+    ],
+    "background": "#15232c",
+    "bounds": {
+      "minX": -20,
+      "maxX": 120,
+      "minY": -30,
+      "maxY": 105
+    }
+  },
+  "grid": {
+    "visible": true,
+    "spacing": 5,
+    "stroke": "rgba(170,202,212,.16)",
+    "strokeWidth": 0.5
+  },
+  "settings": {
+    "initialDisplayLevel": 1,
+    "editorGrid": {
+      "spacing": 2,
+      "fraction": 0.5,
+      "originX": 0,
+      "originY": 0,
+      "visible": true,
+      "snap": true
+    },
+    "sourceInformation": "JR東日本公開構内図／咲花駅概要。室内の正確な位置・寸法・通行動線は推定です。",
+    "verifiedFeatures": [
+      "咲花駅は磐越西線",
+      "地上駅",
+      "単式ホーム1面1線",
+      "バリアフリー情報ではエレベーターなし"
+    ],
+    "provisionalFeatures": [
+      "駅舎・待合室の形状寸法",
+      "内部設備の位置",
+      "駅舎2F展望スペースの詳細平面"
+    ],
+    "draft": true
+  },
+  "layers": [
+    {
+      "id": "buildings",
+      "zIndex": 40
+    },
+    {
+      "id": "roads",
+      "zIndex": 55
+    },
+    {
+      "id": "railways",
+      "zIndex": 60
+    },
+    {
+      "id": "stations",
+      "zIndex": 70
+    }
+  ],
+  "objects": [
+    {
+      "id": "sakihana_station",
+      "name": "咲花駅 駅施設（仮配置）",
+      "parentId": null,
+      "objectType": "facility",
+      "geometry": {
+        "type": "rect",
+        "x": 17,
+        "y": 15,
+        "width": 56,
+        "height": 38
+      },
+      "displayLevel": 1,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 10,
+      "style": {
+        "fill": "#305460",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "咲花駅 駅施設（仮配置）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "構内の正確な寸法や壁配置は未確認です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floors": [
+        {
+          "id": "station_1f",
+          "label": "1階・待合室",
+          "elevation": 0,
+          "height": 3
+        },
+        {
+          "id": "station_2f",
+          "label": "2階・展望スペース（参考）",
+          "elevation": 3,
+          "height": 3
+        }
+      ]
+    },
+    {
+      "id": "sakihana_waiting",
+      "name": "待合室",
+      "parentId": "sakihana_station",
+      "objectType": "room",
+      "geometry": {
+        "type": "rect",
+        "x": 21,
+        "y": 19,
+        "width": 45,
+        "height": 30
+      },
+      "displayLevel": 3,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 30,
+      "style": {
+        "fill": "#426e80",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "待合室",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "列車を待つスペース。配置や寸法は仮です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floorId": "station_1f"
+    },
+    {
+      "id": "sakihana_entrance",
+      "name": "駅舎出入口（仮）",
+      "parentId": "sakihana_station",
+      "objectType": "door",
+      "geometry": {
+        "type": "rect",
+        "x": 36,
+        "y": 51,
+        "width": 13,
+        "height": 2
+      },
+      "displayLevel": 4,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 40,
+      "style": {
+        "fill": "#dec37e",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "駅舎出入口（仮）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "出入口の正確な位置・幅は未確認です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floorId": "station_1f"
+    },
+    {
+      "id": "sakihana_service",
+      "name": "乗車案内・証明書発行設備（仮位置）",
+      "parentId": "sakihana_station",
+      "objectType": "object",
+      "geometry": {
+        "type": "rect",
+        "x": 23,
+        "y": 22,
+        "width": 8,
+        "height": 5
+      },
+      "displayLevel": 4,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 40,
+      "style": {
+        "fill": "#668c93",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "乗車案内・証明書発行設備（仮位置）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "駅の設備位置は参考配置です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floorId": "station_1f"
+    },
+    {
+      "id": "sakihana_bench_1",
+      "name": "待合ベンチ（仮）",
+      "parentId": "sakihana_station",
+      "objectType": "object",
+      "geometry": {
+        "type": "rect",
+        "x": 39,
+        "y": 31,
+        "width": 15,
+        "height": 4
+      },
+      "displayLevel": 4,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 40,
+      "style": {
+        "fill": "#9e795a",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "待合ベンチ（仮）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "家具の有無・配置は未確認の仮案です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floorId": "station_1f"
+    },
+    {
+      "id": "sakihana_transition",
+      "name": "展望スペースへの動線（仮）",
+      "parentId": "sakihana_station",
+      "objectType": "stair",
+      "geometry": {
+        "type": "rect",
+        "x": 59,
+        "y": 35,
+        "width": 8,
+        "height": 11
+      },
+      "displayLevel": 4,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 40,
+      "style": {
+        "fill": "#a8a4a0",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "展望スペースへの動線（仮）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "実際の昇降設備の位置・形式は未確認です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floorId": "station_1f",
+      "connection": {
+        "fromFloorId": "station_1f",
+        "toFloorId": "station_2f"
+      }
+    },
+    {
+      "id": "sakihana_observation",
+      "name": "展望スペース（参考）",
+      "parentId": "sakihana_station",
+      "objectType": "room",
+      "geometry": {
+        "type": "rect",
+        "x": 21,
+        "y": 19,
+        "width": 45,
+        "height": 30
+      },
+      "displayLevel": 3,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 30,
+      "style": {
+        "fill": "#507b84",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "展望スペース（参考）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "2階の展望施設に関する公開記述を参考とした仮区画です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floorId": "station_2f"
+    },
+    {
+      "id": "sakihana_lookout",
+      "name": "眺望側（仮）",
+      "parentId": "sakihana_station",
+      "objectType": "object",
+      "geometry": {
+        "type": "rect",
+        "x": 23,
+        "y": 21,
+        "width": 40,
+        "height": 4
+      },
+      "displayLevel": 4,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 40,
+      "style": {
+        "fill": "#9eb8c3",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "眺望側（仮）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "眺望方向・窓位置は未確認です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      },
+      "floorId": "station_2f"
+    },
+    {
+      "id": "sakihana_platform",
+      "name": "単式ホーム（1面）",
+      "parentId": null,
+      "objectType": "facility",
+      "geometry": {
+        "type": "rect",
+        "x": 12,
+        "y": 58,
+        "width": 87,
+        "height": 13
+      },
+      "displayLevel": 1,
+      "visible": true,
+      "selectable": true,
+      "layer": "buildings",
+      "zIndex": 10,
+      "style": {
+        "fill": "#6b7e7a",
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "単式ホーム（1面）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "ホーム1面1線の構成を簡略表現しています。実寸・駅舎との位置関係は仮です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      }
+    },
+    {
+      "id": "sakihana_track",
+      "name": "磐越西線・線路（1線）",
+      "parentId": null,
+      "objectType": "railway",
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            8,
+            80
+          ],
+          [
+            105,
+            80
+          ]
+        ]
+      },
+      "displayLevel": 1,
+      "visible": true,
+      "selectable": true,
+      "layer": "railways",
+      "zIndex": 10,
+      "style": {
+        "fill": null,
+        "stroke": "#b4d5db",
+        "strokeWidth": 1.5,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "磐越西線・線路（1線）",
+        "fontSize": 10,
+        "color": "#f5fafb"
+      },
+      "detail": "路線および1面1線という構成に基づく模式線です。",
+      "metadata": {
+        "draft": true,
+        "realDimensionsVerified": false
+      }
+    }
+  ]
+}
