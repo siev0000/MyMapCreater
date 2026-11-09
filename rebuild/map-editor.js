@@ -240,6 +240,8 @@ function updateVertexControls(obj){
   $("door-slide-direction").value=obj.door?.slideDirection==="start"?"start":"end";
   $("door-slide-fields").classList.toggle("hidden",obj.door?.type!=="sliding"||obj.door?.leafCount===2);
  }
+ $("stair-direction-fields").classList.toggle("hidden",obj?.objectType!=="stair");
+ if(obj?.objectType==="stair")$("stair-low-side").value=obj.stair?.lowSide||"";
  $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
  if(obj?.objectType==="wall")$("wall-thickness").value=obj.wall?.thickness??"";
 }
@@ -323,6 +325,15 @@ bind("door-wall-id",()=>{
    [best.a[0]+best.dx*(t+half),best.a[1]+best.dy*(t+half)]
   ];
   o.opening.width=width;
+ });
+});
+bind("stair-low-side",()=>{
+ const value=input("stair-low-side");
+ if(value!==""&&!["top","bottom","left","right"].includes(value))return;
+ changeObject(o=>{
+  if(o.objectType!=="stair")return;
+  o.stair={...o.stair};
+  if(value)o.stair.lowSide=value;else delete o.stair.lowSide;
  });
 });
 bind("wall-thickness",()=>{
