@@ -92,12 +92,25 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 @media(max-width:650px){
  .template-preview-modal{padding:5px}
  .template-preview-dialog{width:100%;height:calc(100dvh - 10px);padding:8px;gap:6px}
- .template-preview-layout{grid-template-columns:1fr;grid-template-rows:minmax(145px,34%) minmax(0,1fr);gap:8px}
- .template-preview-list{max-height:none}
- .template-preview-thumb{flex-basis:48px;width:48px;height:39px}
- .template-preview-card{padding:3px}
+ /* Never stack the selector and floorplan: the list has its own scroll area. */
+ .template-preview-layout{grid-template-columns:minmax(126px,36%) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:7px}
+ .template-preview-picker{min-width:0}
+ .template-preview-list{max-height:none;min-height:0;overflow-y:auto}
+ .template-preview-thumb{flex-basis:40px;width:40px;height:36px}
+ .template-preview-card{padding:3px;gap:5px}
+ .template-preview-card-text{font-size:11px}
+ .template-preview-card-text small{font-size:9px}
  .template-preview-result h3{font-size:14px}
  .template-preview-large{min-height:110px;padding:6px}
+}
+@media(max-width:430px){
+ .template-preview-modal-head h2{font-size:13px}
+ .template-preview-layout{grid-template-columns:minmax(112px,36%) minmax(0,1fr);gap:5px}
+ .template-preview-thumb{display:none}
+ .template-preview-card-text{font-size:10px}
+ .template-preview-card-text small{font-size:8px}
+ .template-preview-result{gap:4px}
+ .template-preview-large{min-height:90px}
 }
 </style>
 </head>
