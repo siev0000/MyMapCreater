@@ -301,7 +301,28 @@ function create(opts){
   if(!Array.isArray(points)||points.length!==2)return false;
   const [a,b]=points,dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
   if(len<=0)return false;
-  const door=obj.door||{},hinge=door.hinge==="end"?b:a;
+  const door=obj.door||{};
+  if(door.type==="sliding"){
+   // Open sliding leaf runs along, and is drawn over, the linked wall.
+   // The two geometry endpoints still describe the actual wall opening.
+   const towardsStart=door.slideDirection==="start";
+   const vx=dx/len,vy=dy/len;
+   const start=towardsStart?[a[0]-dx,a[1]-dy]:[b[0],b[1]];
+   const end=towardsStart?[a[0],a[1]]:[b[0]+dx,b[1]+dy];
+   ctx.save();
+   ctx.strokeStyle=emphasized?(scene?.settings?.selectionStyle?.stroke||"#ffefa7"):"#ff9500";
+   ctx.lineCap="butt";ctx.lineJoin="round";
+   // Fixed screen width is visual only; the wall's physical thickness remains independent.
+   ctx.lineWidth=(emphasized?4.2:3.2)/scale();
+   ctx.beginPath();ctx.moveTo(...start);ctx.lineTo(...end);ctx.stroke();
+   // Small end marks make the sliding panel discernible from the wall.
+   const cap=(emphasized?3.4:2.5)/scale();
+   ctx.lineWidth=(emphasized?1.8:1.4)/scale();
+   ctx.beginPath();
+   for(const p of [start,end]){ctx.moveTo(p[0]-vy*cap,p[1]+vx*cap);ctx.lineTo(p[0]+vy*cap,p[1]-vx*cap)}
+   ctx.stroke();ctx.restore();return true;
+  }
+  const hinge=door.hinge==="end"?b:a;
   const far=door.hinge==="end"?a:b;
   const vx=(far[0]-hinge[0])/len,vy=(far[1]-hinge[1])/len;
   const side=door.swingSide==="right"?-1:1;
