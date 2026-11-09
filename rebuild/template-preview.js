@@ -94,8 +94,13 @@
  function ensurePreviewViewer(){
   if(previewViewer)return previewViewer;
   if(!global.AAMapViewer?.create)throw Error("共通マップ描画機能が見つかりません");
+  // The shared viewer also maintains a legend toggle. Keep its controls
+  // off-screen for the read-only preview, while satisfying its UI contract.
+  const legendButton=document.createElement("button");
+  const legendPanel=document.createElement("div");
   previewViewer=global.AAMapViewer.create({
-   canvas:$("template-preview-canvas"),host:$("template-preview-large")
+   canvas:$("template-preview-canvas"),host:$("template-preview-large"),
+   legend:legendPanel,legendButton
   });
   previewViewer.setEditMode(false);
   return previewViewer;
