@@ -112,7 +112,7 @@
   const floor=record(t)?.floors.find(f=>f.id===obj.floorId);
   const g=obj.geometry||{};
   const dimension=g.type==="rect"?" / "+String(Number((g.width/previewSpacing()).toFixed(1)))+" × "+String(Number((g.height/previewSpacing()).toFixed(1)))+"マス":"";
-  meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension;
+  meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension+(obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?" / 壁厚"+Number((obj.wall.thickness/previewSpacing()*50).toFixed(1))+"cm":"");
   if(obj.id==="preview_root"){
    detail.textContent=t?.description||obj.detail||"建物の概要";
    return;
@@ -243,6 +243,8 @@
  function syncEditFields(obj){
   $("template-edit-name").value=editing&&obj?obj.name||"":"";
   $("template-edit-detail").value=editing&&obj?obj.detail||"":"";
+  $("template-wall-thickness-label").hidden=!(editing&&obj?.objectType==="wall");
+  $("template-wall-thickness").value=editing&&obj?.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/previewSpacing()*50).toFixed(2))):"";
  }
  function setMode(value){
   editing=!!value;
@@ -296,6 +298,7 @@
    style:{fill:kind==="object"?"rgba(65,110,130,.65)":null,stroke:kind==="door"?"#e8b97a":"#a8d7dd",strokeWidth:1.5},
    shapePresetId:key,label:{visible:false,text:item[1]},detail:item[1]+"（設置物の説明を編集できます）",
    metadata:{generated:false,templateEditor:true}};
+  if(kind==="wall")obj.wall={thickness:previewSpacing()*10/50};
   if(kind==="door")obj.door={hinge:"start",swing:"inward",state:"closed",swingSide:"left"};
   scene.objects.push(obj);updateScene(scene,id);setEditMessage(item[1]+"を追加しました");
  }
@@ -313,6 +316,11 @@
    const obj=scene.objects.find(o=>o.id===selected.id);
    obj.name=$("template-edit-name").value.trim()||obj.name;
    obj.detail=$("template-edit-detail").value.trim();
+   if(obj.objectType==="wall"){
+    const cm=Number($("template-wall-thickness").value);
+    if(!Number.isFinite(cm)||cm<1||cm>300){editPast.pop();setEditMessage("壁の厚さは1〜300cmで入力してください");return}
+    obj.wall={...obj.wall,thickness:cm/50*previewSpacing()};
+   }
    if(obj.label)obj.label.text=obj.name;
   }
   updateScene(scene,remove?"preview_root":selected.id);
