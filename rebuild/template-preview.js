@@ -113,7 +113,7 @@
     {id:"grid",zIndex:5},{id:"subregions",zIndex:20},
     {id:"structures",zIndex:30},{id:"walls",zIndex:45}
    ],
-   grid:{visible:true,spacing:previewSpacing(),stroke:"rgba(148,180,192,.40)",strokeWidth:.6},
+   grid:{visible:false,spacing:previewSpacing(),stroke:"rgba(148,180,192,.40)",strokeWidth:.6},
    settings:{initialDisplayLevel:data.root.displayLevel,editorGrid:{
     spacing:previewSpacing(),originX:Number($("editor-grid-origin-x")?.value)||0,
     originY:Number($("editor-grid-origin-y")?.value)||0}},
@@ -127,7 +127,11 @@
   if(rebuild||viewer.getScene()===null){
    viewer.replaceScene(buildScene(t),{preserveView:false,selectedId:record(t).root.id});
   }
-  viewer.setPreviewGridVisible($("template-preview-grid").checked);
+  // Match the editor grid: it is rendered above rooms/slabs and remains legible.
+  viewer.setPreviewGridVisible(false);
+  viewer.setEditorGrid({visible:$("template-preview-grid").checked,
+   spacing:previewSpacing(),originX:Number($("editor-grid-origin-x")?.value)||0,
+   originY:Number($("editor-grid-origin-y")?.value)||0,snap:false});
   if(activeFloor&&!viewer.setFloor(activeFloor))
    throw Error("プレビューの階層を切り替えられません");
   viewer.redraw();
@@ -168,7 +172,7 @@
    $("template-preview-open").addEventListener("click",open);
    $("template-preview-filter").addEventListener("input",refresh);
    $("template-preview-floor").addEventListener("change",e=>{activeFloor=e.target.value;drawModal()});
-   $("template-preview-grid").addEventListener("change",()=>{if(previewViewer)previewViewer.setPreviewGridVisible($("template-preview-grid").checked)});
+   $("template-preview-grid").addEventListener("change",()=>{if(activeId)drawModal()});
    $("template-preview-zoom-in").addEventListener("click",()=>previewViewer?.zoomBy(1.3));
    $("template-preview-zoom-out").addEventListener("click",()=>previewViewer?.zoomBy(1/1.3));
    $("template-preview-fit").addEventListener("click",()=>previewViewer?.reset());
