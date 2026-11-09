@@ -1388,7 +1388,7 @@ function create(opts){
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,setEditorGrid,snapPoint:([x,y])=>[snapWorld(x,0),snapWorld(y,1)],
+ return{zoomBy:(factor)=>zoomAt(factor,width/2,height/2),show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,setEditorGrid,snapPoint:([x,y])=>[snapWorld(x,0),snapWorld(y,1)],
   getVisibilityGroups,setVisibilityMode,setPreviewGridVisible,getPreviewGridVisible,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
