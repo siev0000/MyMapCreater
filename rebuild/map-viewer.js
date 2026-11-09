@@ -21,6 +21,7 @@ function sceneCheck(scene){
   if(g.type==="ring"&&(!point(g.center)||![g.innerRadius,g.outerRadius].every(Number.isFinite)||g.innerRadius<0||g.outerRadius<=g.innerRadius))throw Error("環状図形が不正です: "+obj.id);
   if(obj.label?.position&&!point(obj.label.position))throw Error("文字位置が不正です: "+obj.id);
   if(obj.displayLevel!==undefined&&(!Number.isSafeInteger(obj.displayLevel)||obj.displayLevel<1))throw Error("表示Lvは1以上の整数です: "+obj.id);
+  if(g.type==="rect"&&g.rotation!==undefined&&!Number.isFinite(g.rotation))throw Error("図形の回転角が不正です: "+obj.id);
   if(obj.wall?.thickness!==undefined&&(!Number.isFinite(obj.wall.thickness)||obj.wall.thickness<=0))throw Error("壁の実厚が不正です: "+obj.id);
   if(obj.style?.opacity!==undefined&&(!Number.isFinite(obj.style.opacity)||obj.style.opacity<0||obj.style.opacity>1))throw Error("透過率が不正です: "+obj.id);
   if(obj.style?.strokeWidth!==undefined&&(!Number.isFinite(obj.style.strokeWidth)||obj.style.strokeWidth<0))throw Error("線幅が不正です: "+obj.id);
@@ -70,10 +71,16 @@ function segmentDistance(x,y,a,b){
  const t=clamp(((x-a[0])*vx+(y-a[1])*vy)/len,0,1);
  return Math.hypot(x-a[0]-vx*t,y-a[1]-vy*t);
 }
+function rectRotation(g){return Number.isFinite(g?.rotation)?g.rotation:0}
+function unrotateRectPoint(g,x,y){
+ const a=-rectRotation(g)*Math.PI/180,cx=g.x+g.width/2,cy=g.y+g.height/2;
+ const dx=x-cx,dy=y-cy,co=Math.cos(a),si=Math.sin(a);
+ return[cx+dx*co-dy*si,cy+dx*si+dy*co];
+}
 function contains(obj,x,y,tolerance){
  const g=obj.geometry||{type:"none"};
  switch(g.type){
-  case "rect":return x>=g.x&&x<=g.x+g.width&&y>=g.y&&y<=g.y+g.height;
+  case "rect":{const [px,py]=rectRotation(g)?unrotateRectPoint(g,x,y):[x,y];return px>=g.x-tolerance&&px<=g.x+g.width+tolerance&&py>=g.y-tolerance&&py<=g.y+g.height+tolerance}
   case "polygon":return Array.isArray(g.points)&&inPolygon(g.points,x,y);
   case "circle":return Math.hypot(x-g.center[0],y-g.center[1])<=g.radius+tolerance;
   case "ring":{const d=Math.hypot(x-g.center[0],y-g.center[1]);return d>=g.innerRadius-tolerance&&d<=g.outerRadius+tolerance}
@@ -417,6 +424,16 @@ function create(opts){
   ctx.restore();return true;
  }
  function traceStroke(obj,emphasized=false){
+  const g=obj.geometry;
+  if(g?.type==="rect"&&rectRotation(g)){
+   ctx.save();
+   const cx=g.x+g.width/2,cy=g.y+g.height/2;
+   ctx.translate(cx,cy);ctx.rotate(rectRotation(g)*Math.PI/180);ctx.translate(-cx,-cy);
+   traceStrokeCore(obj,emphasized);ctx.restore();return;
+  }
+  traceStrokeCore(obj,emphasized);
+ }
+ function traceStrokeCore(obj,emphasized=false){
   const st=obj.style||{},g=obj.geometry;
   if(obj.objectType==="supply"&&traceSupplyIcon(obj,emphasized))return;
   if(traceIndoorShape(obj,emphasized))return;
@@ -528,7 +545,7 @@ function create(opts){
  // Screen-space edit handles; only the selected geometry is changed.
  function editHandles(obj){
   const g=obj?.geometry||{};
-  if(g.type==="rect"){
+  if(g.type==="rect"&&!rectRotation(g)){
    const x=g.x,y=g.y,w=g.width,h=g.height;
    return[
     ["nw",x,y],["n",x+w/2,y],["ne",x+w,y],
