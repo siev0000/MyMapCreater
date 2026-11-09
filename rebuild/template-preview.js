@@ -192,7 +192,7 @@
   viewer.setEditorGrid({visible:$("template-preview-grid").checked,
    spacing:previewSpacing(),originX:Number($("editor-grid-origin-x")?.value)||0,
    originY:Number($("editor-grid-origin-y")?.value)||0,snap:false});
-  if(activeFloor&&!viewer.setFloor(activeFloor))
+  if(activeFloor&&viewer.getFloorContext()?.selectedFloorId!==activeFloor&&!viewer.setFloor(activeFloor))
    throw Error("プレビューの階層を切り替えられません");
   viewer.redraw();
   showObjectInfo(viewer.getSelected());
@@ -255,7 +255,7 @@
  function updateScene(scene,selectedId){
   previewViewer.replaceScene(scene,{preserveView:true,selectedId});
   previewViewer.setEditMode(editing);
-  if(activeFloor)previewViewer.setFloor(activeFloor);
+  if(activeFloor&&previewViewer.getFloorContext()?.selectedFloorId!==activeFloor)previewViewer.setFloor(activeFloor);
   showObjectInfo(previewViewer.getSelected());
  }
  function setHistory(from,to){
@@ -319,8 +319,9 @@
   try{
    const scene=previewViewer.getScene();
    const spec=library.capture(scene,"preview_root",{id,name,description:library.allPresets().find(t=>t.id===activeId)?.description||""});
-   spec.era=$("template-era-filter").value==="all"?"common":$("template-era-filter").value;
-   spec.use=useGroup({name});
+   const source=library.allPresets().find(t=>t.id===activeId);
+   spec.era=source?eraGroup(source):"common";
+   spec.use=source?.use||useGroup(source||{name});
    library.register(spec);
    // Identical local key used by the existing editor's template storage.
    localStorage.setItem("mymapcreater:building-templates:v1",JSON.stringify(library.custom));
@@ -331,7 +332,10 @@
    picker.dispatchEvent(new Event("change",{bubbles:true}));
    activeId=spec.id;
    setMode(false);
-   renderCache.clear();refresh();selectTemplate(spec.id);
+   editPast=[];editFuture=[];
+   renderCache.clear();
+   $("template-era-filter").value="all";$("template-use-filter").value="all";
+   refresh();selectTemplate(spec.id);
    setEditMessage("別名保存しました");
   }catch(e){setEditMessage("保存失敗："+e.message)}
  }
