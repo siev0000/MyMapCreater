@@ -486,7 +486,6 @@
   const before=JSON.stringify(obj);
   if(!placeOpening(scene,obj,center,width,true)){
    if(fromMove&&obj.opening?.wallId){
-    snapshot();
     delete obj.opening.wallId;
     updateScene(scene,obj.id);
     setEditMessage("壁から離れたため、開口の関連付けを解除しました");
