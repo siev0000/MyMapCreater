@@ -698,15 +698,17 @@ function create(opts){
    const side=["top","bottom","left","right"].includes(obj.stair?.lowSide)?obj.stair.lowSide:null;
    const [x,y]=screenAt(g.x+g.width/2,g.y+g.height/2);
    const symbol=dest?.symbol||"?",floor=dest?.label||"";
-   ctx.font="bold 12px system-ui, sans-serif";
+   ctx.font="bold 10px system-ui, sans-serif";
    const str=symbol+(floor?" "+floor:"");
-   const textWidth=ctx.measureText(str)?.width??str.length*8;
-   const bw=Math.max(28,textWidth+14),bh=24;
+   const textWidth=ctx.measureText(str)?.width??str.length*6.5;
+   const bw=Math.max(23,textWidth+9),bh=17;
    const px=clamp(x,bw/2+2,Math.max(bw/2+2,width-bw/2-2)),py=clamp(y,bh/2+2,Math.max(bh/2+2,height-bh/2-2));
-   ctx.fillStyle="rgba(8,30,41,.88)";
+   ctx.fillStyle="rgba(9,34,45,.48)";
    ctx.fillRect(px-bw/2,py-bh/2,bw,bh);
+   ctx.strokeStyle="rgba(141,192,205,.30)";
+   ctx.lineWidth=.6;ctx.strokeRect(px-bw/2,py-bh/2,bw,bh);
    ctx.textBaseline="middle";ctx.textAlign="center";
-   ctx.fillStyle=dest?(dest.symbol==="↑"?"#93dfff":"#ffd18a"):"#e6c1c1";
+   ctx.fillStyle=dest?(dest.symbol==="↑"?"#b0e6f8":"#ffe0ae"):"#e6c1c1";
    ctx.fillText(str,px,py);
    if(side){
     // LOW label always points to the actual entry side; elevation arrow is separate.
