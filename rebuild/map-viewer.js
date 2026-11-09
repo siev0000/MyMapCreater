@@ -485,6 +485,64 @@ function create(opts){
    R(.1,.08,.8,.84,"#446a7c");
    R(.2,.13,.6,.18,"#9ab9c6",null);
    R(.15,.4,.7,.43,"#658497");
+  }else if(kind==="sofa"||kind==="corner_sofa"){
+   // Plan view: upholstered seat cushions and backrest.
+   R(.05,.05,.90,.90,"#426c7a");
+   R(.07,.07,.86,.19,"#7097a4");
+   const n=w/h>2.1?3:w/h>1.25?2:1;
+   for(let i=0;i<n;i++)R(.11+i*.78/n,.31,.73/n,.59,"#608a98");
+   R(.03,.23,.10,.67,"#8aabb2",null);R(.87,.23,.10,.67,"#8aabb2",null);
+   if(kind==="corner_sofa")R(.08,.58,.38,.34,"#90a9b2");
+  }else if(kind==="chair"){
+   R(.12,.14,.76,.75,"#5d8797");
+   R(.11,.11,.78,.22,"#9ebcc2");
+  }else if(kind==="bunk_bed"){
+   R(.1,.08,.8,.84,"#446a7c");R(.2,.13,.6,.18,"#9ab9c6",null);
+   R(.15,.4,.7,.43,"#658497");
+   ctx.strokeStyle="#dae7e9";for(let i=0;i<4;i++)line(x+w*.83,y+h*(.26+i*.16),x+w*.95,y+h*(.26+i*.16));
+  }else if(kind==="kitchen"){
+   R(.06,.08,.88,.84,"#547b89");
+   for(const cx of [.2,.38,.55,.73])circle(cx,.32,.08,"#233c45",null);
+   R(.12,.59,.3,.23,"#7da8b4");R(.52,.58,.31,.24,"#244a59");
+  }else if(kind==="cooktop"){
+   for(const cx of [.26,.73])for(const cy of [.27,.73])circle(cx,cy,.16,"#213a43");
+  }else if(kind==="sink"){
+   R(.12,.13,.76,.74,"#668f9f");R(.19,.2,.62,.58,"#294e5b");
+   circle(.74,.28,.035,"#d4e5e8",null);
+  }else if(kind==="toilet"){
+   R(.25,.03,.5,.22,"#b4d1d8");
+   ctx.beginPath();ctx.ellipse(x+w*.5,y+h*.61,w*.3,h*.3,0,0,Math.PI*2);
+   ctx.fillStyle="#b4d1d8";ctx.fill();ctx.strokeStyle=accent;ctx.stroke();
+  }else if(kind==="bath"||kind==="shower"){
+   R(.08,.08,.84,.84,"#8ab4c2");R(.15,.15,.70,.70,"#366b83");
+   if(kind==="shower")circle(.75,.23,.075,"#bce2e9");
+  }else if(kind==="refrigerator"||kind==="cabinet"){
+   line(x+w*.5,y,x+w*.5,y+h);
+   R(.07,.09,.86,.83,"#537783",null);
+   line(x+w*.5,y+h*.12,x+w*.5,y+h*.88);
+   circle(.43,.52,.035,"#d2e1e6",null);circle(.57,.52,.035,"#d2e1e6",null);
+  }else if(kind==="washer"){
+   R(.09,.09,.82,.82,"#789fa9");circle(.5,.54,.31,"#2c6177");
+   circle(.5,.54,.22,"#96bdc5");R(.13,.13,.74,.12,"#b4d4d9",null);
+  }else if(kind==="microwave"||kind==="screen"){
+   R(.07,.15,.86,.7,"#2a5568");
+   R(.14,.24,.68,.52,"#448a9f");
+   if(kind==="microwave")circle(.9,.5,.04,"#b9d0cd",null);
+  }else if(kind==="lamp"||kind==="plant"||kind==="bin"){
+   circle(.5,.5,.33,kind==="plant"?"#4c8763":kind==="bin"?"#536671":"#f0dca0");
+   if(kind==="plant")for(const [fx,fy] of [[.32,.46],[.59,.4],[.46,.62]])circle(fx,fy,.10,"#82bb87",null);
+  }else if(kind==="aircon"||kind==="heater"||kind==="control_panel"){
+   R(.08,.15,.84,.68,"#567e8c");
+   for(const f of [.3,.45,.6,.75])line(x+w*.2,y+h*f,x+w*.8,y+h*f);
+  }else if(kind==="fan"){
+   circle(.5,.5,.35,"#375b67");
+   for(const [fx,fy] of [[.32,.34],[.68,.32],[.66,.7],[.32,.68]])circle(fx,fy,.12,"#9dbcc4",null);
+  }else if(kind==="bicycle"){
+   circle(.5,.2,.15,"#506d78");circle(.5,.8,.15,"#506d78");
+   line(x+w*.5,y+h*.2,x+w*.7,y+h*.53);
+   line(x+w*.7,y+h*.53,x+w*.5,y+h*.8);
+  }else if(kind==="rack"){
+   for(const f of [.2,.5,.8])line(x+w*f,y,x+w*f,y+h);
   }else if(kind==="dormancy_pod"){
    // Top-down personal rest pod: chassis, enclosed berth, status/control port.
    R(.06,.04,.88,.92,"#264a58");
