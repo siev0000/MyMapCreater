@@ -581,7 +581,7 @@ bind("clear-search",()=>{$("object-search").value="";showObjects()},"click");
 bind("move-mode",()=>{
  const enabled=viewer.setEditMode(checked("move-mode"));
  $("edit-hint").textContent=enabled?
-  "図形を一度選択してからドラッグで移動します。親子は自動的にまとめて移動しません。":
+  "図形の内側ドラッグで移動（子も追従）。黄色のハンドルで四角形を拡縮、線・多角形の頂点を移動できます。サイズ変更では内部の壁・家具は自動伸縮しません。":
   "図形を選択して右のパネルで編集してください。ドラッグは地図移動です。";
 });
 async function importFile(file){
