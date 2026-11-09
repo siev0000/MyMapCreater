@@ -65,6 +65,7 @@
   const a=t.custom?t.originalSize:t.cells;return a.join(" × ")+(t.custom?" 座標":" マス");
  }
  function selectTemplate(id){
+  if(editPast.length&&activeId&&activeId!==id&&global.confirm&&!global.confirm("未保存の編集内容を破棄して別のテンプレートを開きますか？"))return;
   if(editing)setMode(false);
   editPast=[];editFuture=[];
   const t=library?.allPresets().find(item=>item.id===id);if(!t)return;
@@ -198,7 +199,9 @@
   showObjectInfo(viewer.getSelected());
  }
  function close(){
+  if(editPast.length&&global.confirm&&!global.confirm("未保存の編集内容を破棄して閉じますか？"))return;
   if(editing)setMode(false);
+  editPast=[];editFuture=[];
   $("template-preview-modal").hidden=true;activeId=null;
   if(lastFocus?.focus)lastFocus.focus();
  }
@@ -261,7 +264,8 @@
  function setHistory(from,to){
   if(!from.length)return;
   to.push(previewViewer.getScene());
-  updateScene(from.pop(),previewViewer.getSelected()?.id||"preview_root");
+  const next=from.pop(),selectedId=previewViewer.getSelected()?.id;
+  updateScene(next,next.objects.some(o=>o.id===selectedId)?selectedId:"preview_root");
  }
  function uniqueId(scene,key){
   let name="preview_"+String(key).replace(/[^a-z0-9_-]/gi,"_"),i=2;
@@ -325,6 +329,7 @@
    library.register(spec);
    // Identical local key used by the existing editor's template storage.
    localStorage.setItem("mymapcreater:building-templates:v1",JSON.stringify(library.custom));
+   if(typeof global.dispatchEvent==="function")global.dispatchEvent(new Event("building-templates-updated"));
    if(![...picker.options].some(o=>o.value===spec.id)){
     const option=T("option","",spec.name);option.value=spec.id;picker.append(option);
    }
