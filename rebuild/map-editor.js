@@ -1050,7 +1050,7 @@ bind("geo-place-search",async()=>{
  const button=$("geo-place-search");button.disabled=true;
  $("geo-import-status").textContent="地名を検索中…（入力時の自動検索は行いません）";
  try{
-  geoCandidates=await window.AASakihanaMap.searchPlace(q);
+  geoCandidates=await window.AAMapGeoImporter.searchPlace(q);
   const select=$("geo-search-results");select.replaceChildren();
   for(let i=0;i<geoCandidates.length;i++){
    const option=document.createElement("option");option.value=String(i);
@@ -1069,7 +1069,7 @@ bind("geo-search-results",()=>{
  if(found){$("geo-lat").value=found.lat;$("geo-lon").value=found.lon;$("geo-place").value=found.name}
 });
 function selectedGeoRegion(){
- const geo=window.AASakihanaMap;
+ const geo=window.AAMapGeoImporter;
  if(!geo)throw Error("地理情報取込プログラムがありません");
  const lat=Number(input("geo-lat")),lon=Number(input("geo-lon"));
  if(!input("geo-lat").trim()||!input("geo-lon").trim())throw Error("緯度・経度を入力してください");
@@ -1083,7 +1083,7 @@ async function loadGeoOSM(){
  geoBusy=true;$("geo-osm-fetch").disabled=true;$("geo-dem-fetch").disabled=true;
  $("geo-import-status").textContent=region.name+"のOSMデータを取得中…";
  try{
-  const imported=await window.AASakihanaMap.loadOSM();
+  const imported=await window.AAMapGeoImporter.loadOSM();
   // Geographic matches only: terrain from a different area must never be transferred.
   const old=sceneNow(),before=old?.settings?.georeference;
   if(before?.terrainVerified&&before.center?.lat===region.lat&&before.center?.lon===region.lon&&before.widthM===region.sizeM){
@@ -1106,14 +1106,14 @@ async function loadGeoDEM(){
  geoBusy=true;$("geo-dem-fetch").disabled=true;$("geo-osm-fetch").disabled=true;
  $("geo-import-status").textContent="国土地理院DEM標高の取得中…";
  try{
-  window.AASakihanaMap.configure({
+  window.AAMapGeoImporter.configure({
    lat:g.center.lat,lon:g.center.lon,sizeM:g.widthM,
    name:g.regionName||scene.name,id:scene.id
   });
-  const grid=await window.AASakihanaMap.elevationGrid();
+  const grid=await window.AAMapGeoImporter.elevationGrid();
   if(sceneNow()?.id!==scene.id||sceneNow()?.settings?.georeference?.center?.lat!==g.center.lat)
    throw Error("標高取得中にマップが変更されました。再実行してください");
-  const next=window.AASakihanaMap.addElevation(sceneNow(),grid);
+  const next=window.AAMapGeoImporter.addElevation(sceneNow(),grid);
   if(!applyScene(next,null,{resetView:false}))return;
   $("geo-import-status").textContent="標高 "+grid.min.toFixed(1)+"〜"+grid.max.toFixed(1)+"m。地形は色分けされ、各セルを選択して高さを編集できます。";
   notice("標高の取得が完了しました。JSON保存すると保持できます。","success");
