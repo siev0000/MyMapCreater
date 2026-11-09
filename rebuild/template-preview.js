@@ -198,6 +198,7 @@
   showObjectInfo(viewer.getSelected());
  }
  function close(){
+  if(editing)setMode(false);
   $("template-preview-modal").hidden=true;activeId=null;
   if(lastFocus?.focus)lastFocus.focus();
  }
@@ -340,7 +341,10 @@
   const root=$("template-preview-list");
   root.replaceChildren();
   const filter=$("template-preview-filter").value.trim().toLowerCase();
+  const era=$("template-era-filter").value,use=$("template-use-filter").value;
   for(const t of library.allPresets()){
+   if(era!=="all"&&eraGroup(t)!==era)continue;
+   if(use!=="all"&&useGroup(t)!==use)continue;
    if(filter&&!((t.name||"")+" "+(t.category||"")+" "+(t.description||"")).toLowerCase().includes(filter))continue;
    const row=T("button","template-preview-card");row.type="button";
    row.dataset.templateId=t.id;
@@ -365,6 +369,18 @@
    $("template-preview-close").addEventListener("click",close);
    $("template-preview-open").addEventListener("click",open);
    $("template-preview-filter").addEventListener("input",refresh);
+   $("template-era-filter").addEventListener("change",refresh);
+   $("template-use-filter").addEventListener("change",refresh);
+   $("template-mode-toggle").addEventListener("click",()=>setMode(!editing));
+   fillOptions($("template-item-category"),Object.keys(catalog).map(name=>[name,name]));
+   updateCatalog();
+   $("template-item-category").addEventListener("change",updateCatalog);
+   $("template-item-add").addEventListener("click",addItem);
+   $("template-item-apply").addEventListener("click",()=>changeSelected(false));
+   $("template-item-delete").addEventListener("click",()=>changeSelected(true));
+   $("template-undo").addEventListener("click",()=>setHistory(editPast,editFuture));
+   $("template-redo").addEventListener("click",()=>setHistory(editFuture,editPast));
+   $("template-save-copy").addEventListener("click",saveCopy);
    $("template-preview-floor").addEventListener("change",e=>{activeFloor=e.target.value;drawModal()});
    $("template-preview-grid").addEventListener("change",()=>{if(activeId)drawModal()});
    $("template-preview-zoom-in").addEventListener("click",()=>previewViewer?.zoomBy(1.3));
