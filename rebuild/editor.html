@@ -95,6 +95,32 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #template-preview-modal #template-preview-canvas:active{cursor:grabbing}
 #template-preview-modal .template-preview-help{font-size:10px;color:#a6c4cf}
 @media(max-width:650px){#template-preview-modal .template-preview-toolbar button{padding:3px 6px;font-size:11px}#template-preview-modal .template-preview-help{font-size:9px}}
+/* Tight modal title and one-line map controls; prefer canvas space. */
+#template-preview-modal .template-preview-modal-head{height:30px;min-height:30px;gap:5px}
+#template-preview-modal .template-preview-modal-head h2{font-size:12px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#template-preview-modal .template-preview-modal-head button{min-width:25px;min-height:25px;width:25px;height:25px;font-size:18px;padding:0;line-height:1}
+#template-preview-modal .template-preview-dialog{gap:4px}
+#template-preview-modal .template-preview-result{gap:3px}
+#template-preview-modal .template-preview-result h3{font-size:13px;line-height:1.25}
+#template-preview-modal .template-preview-toolbar{display:flex;flex-wrap:nowrap;align-items:center;gap:4px;min-width:0;max-width:100%;height:29px;flex:none;overflow:hidden}
+#template-preview-modal .template-preview-toolbar>label:first-child{flex:none;white-space:nowrap;font-size:10px}
+#template-preview-modal .template-preview-toolbar select{box-sizing:border-box;width:57px;min-width:0;max-width:72px;flex:0 1 62px;padding:2px;font-size:11px;height:26px}
+#template-preview-modal .template-preview-toolbar button{box-sizing:border-box;padding:0 5px;height:26px;min-height:26px;flex:none;font-size:11px;white-space:nowrap}
+#template-preview-modal .template-preview-toolbar #template-preview-zoom-in,
+#template-preview-modal .template-preview-toolbar #template-preview-zoom-out{width:24px;font-size:15px;padding:0}
+#template-preview-modal .template-preview-grid-toggle{display:inline-flex;align-items:center;gap:2px;margin-left:0;font-size:10px;white-space:nowrap;flex:none}
+#template-preview-modal .template-preview-grid-toggle input{width:13px;height:13px;margin:0}
+@media(max-width:650px){
+ #template-preview-modal .template-preview-modal-head{height:26px;min-height:26px}
+ #template-preview-modal .template-preview-modal-head h2{font-size:10px}
+ #template-preview-modal .template-preview-toolbar{gap:2px}
+ #template-preview-modal .template-preview-toolbar select{width:43px;flex:0 1 43px;font-size:10px}
+ #template-preview-modal .template-preview-toolbar button{padding:0 3px;font-size:10px}
+ #template-preview-modal .template-preview-toolbar #template-preview-zoom-in,
+ #template-preview-modal .template-preview-toolbar #template-preview-zoom-out{width:19px}
+ #template-preview-modal .template-preview-grid-toggle{font-size:9px}
+}
+
 </style>
 </head>
 <body>
@@ -355,10 +381,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    </aside>
    <section class="template-preview-result" aria-label="選択テンプレートの詳細">
     <h3 id="template-preview-title"></h3>
-    <p id="template-preview-meta" class="note"></p>
-    <label for="template-preview-floor">表示階</label>
-    <select id="template-preview-floor" aria-label="プレビューする階層"></select>
-    <div class="template-preview-toolbar" aria-label="マップ表示操作">
+    <div class="template-preview-toolbar" aria-label="階層とマップ表示操作">
+     <label for="template-preview-floor">表示階</label>
+     <select id="template-preview-floor" aria-label="プレビューする階層"></select>
      <button type="button" id="template-preview-zoom-out" title="縮小">−</button>
      <button type="button" id="template-preview-zoom-in" title="拡大">＋</button>
      <button type="button" id="template-preview-fit">全体表示</button>
@@ -376,7 +401,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 </div>
 <script src="./map-viewer.js?v=template-shared-zoom-v4"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
-<script src="./building-templates.js?v=lazy-template-safety-v2"></script>
+<script src="./building-templates.js?v=template-wall-clearance-v3"></script>
 <script src="./template-preview.js?v=shared-scene-preview-v3"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=template-visual-v1"></script>
