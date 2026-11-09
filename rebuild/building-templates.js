@@ -147,7 +147,7 @@ const modernHousing=[
    doors:[["main","hall"],["bath","hall"]],entry:"hall",
    items:[["キッチン","kitchen",1,1,3,1],["ベッド","bed",7,1,2,4],
     ["テーブル","table",4,5,2,1.5],["浴槽","bath",.75,9,2,2],
-    ["トイレ","toilet",2.7,10.5,.8,1],["玄関収納","cabinet",7,10.5,2,1]]}]},
+    ["トイレ","toilet",2.9,10.5,.8,1],["玄関収納","cabinet",7,10.5,2,1]]}]},
  {id:"jp_apartment_1k",name:"現代日本・アパート1K",cells:[10,14],floors:1,
   description:"居室とキッチンを扉で分離した単身者向け1K。",
   plans:[{rooms:[
