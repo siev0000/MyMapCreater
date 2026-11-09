@@ -128,6 +128,23 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  #template-preview-modal .template-preview-toolbar #template-preview-fit{font-size:9px;padding:0 2px}
  #template-preview-modal .template-preview-grid-toggle{font-size:8px}
 }
+
+/* Preview object description mirrors the regular map detail footer. */
+#template-preview-modal .template-preview-info-footer{box-sizing:border-box;flex:0 0 clamp(112px,22dvh,170px);height:clamp(112px,22dvh,170px);min-width:0;min-height:0;display:flex;flex-direction:column;gap:7px;padding:10px 12px;background:rgba(9,31,42,.98);border:1px solid #537585;border-radius:6px;overflow:hidden}
+#template-preview-modal .template-preview-info-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;min-width:0}
+#template-preview-modal .template-preview-info-heading strong{font-size:13px;min-width:0;color:#f1fbff;overflow-wrap:anywhere}
+#template-preview-modal #template-preview-info-meta{font-size:10px;color:#e1c88b;overflow-wrap:anywhere}
+#template-preview-modal #template-preview-info-text{flex:1 1 auto;margin:0;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-y:auto;min-height:0}
+#template-preview-modal .template-preview-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;min-height:28px}
+#template-preview-modal .template-preview-bottom .note{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 auto;min-width:0;font-size:10px}
+#template-preview-modal .template-preview-bottom button{flex:none;min-height:28px;padding:3px 9px;font-size:11px}
+@media(max-width:650px){
+ #template-preview-modal .template-preview-info-footer{flex-basis:clamp(110px,24dvh,150px);height:clamp(110px,24dvh,150px);padding:7px;gap:4px}
+ #template-preview-modal .template-preview-info-heading strong{font-size:11px}
+ #template-preview-modal #template-preview-info-meta{font-size:9px}
+ #template-preview-modal #template-preview-info-text{font-size:10px;line-height:1.4}
+ #template-preview-modal .template-preview-bottom button{font-size:10px;padding:3px 5px}
+}
 </style>
 </head>
 <body>
@@ -399,9 +416,17 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     <div id="template-preview-large" class="template-preview-large" aria-label="選択階の実際のマップ表示">
      <canvas id="template-preview-canvas" aria-label="建物のマッププレビュー。ドラッグで移動、ホイールやピンチで拡大縮小"></canvas>
     </div>
-    <p class="template-preview-help">ドラッグ：移動　ホイール・ピンチ：拡大縮小</p>
-    <p id="template-preview-description" class="note"></p>
-    <div class="actions"><button type="button" id="template-preview-use">このテンプレートを選択</button></div>
+    <footer class="template-preview-info-footer" aria-label="選択した設置物の説明" aria-live="polite">
+     <div class="template-preview-info-heading">
+      <strong id="template-preview-info-title">建物を選択してください</strong>
+      <span id="template-preview-info-meta"></span>
+     </div>
+     <p id="template-preview-info-text">平面図の設備・家具・階段などをクリックすると、説明を表示します。</p>
+    </footer>
+    <div class="template-preview-bottom">
+     <p id="template-preview-description" class="note"></p>
+     <button type="button" id="template-preview-use">このテンプレートを選択</button>
+    </div>
    </section>
   </div>
  </section>
@@ -409,7 +434,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 <script src="./map-viewer.js?v=template-shared-zoom-v4"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script src="./building-templates.js?v=template-wall-clearance-v3"></script>
-<script src="./template-preview.js?v=compact-preview-controls-v4"></script>
+<script src="./template-preview.js?v=object-info-footer-v5"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=template-visual-v1"></script>
 </body></html>
