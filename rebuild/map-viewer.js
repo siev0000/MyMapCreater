@@ -118,6 +118,7 @@ function create(opts){
  const memory=new Map(),pointers=new Map();
  let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
  const interiorCache=new Map(),interiorPending=new Map(),interiorLoaded=new Set();
+ const linkedDoors=new Map();
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
  let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null,handleDrag=null,suppressClick=false;
  let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
@@ -432,8 +433,7 @@ function create(opts){
  function traceWallWithOpenings(target,wall){
   const g=wall.geometry;
   if(g?.type!=="polyline"||!Array.isArray(g.points)||g.points.length<2)return trace(target,g);
-  const doors=scene?.objects.filter(o=>o.objectType==="door"&&o.opening?.wallId===wall.id&&
-   o.geometry?.type==="polyline"&&o.geometry.points?.length===2)||[];
+  const doors=(linkedDoors.get(wall.id)||[]).filter(o=>o.geometry?.type==="polyline"&&o.geometry.points?.length===2);
   if(!doors.length)return trace(target,g);
   const tolerance=Math.max(.05,(wall.wall?.thickness||0)*.5);
   target.beginPath();
@@ -481,7 +481,7 @@ function create(opts){
   ctx.globalAlpha=emphasized?1:clamp(finite(st.opacity,1),0,1);
   ctx.lineJoin=st.lineJoin||"round";ctx.lineCap=st.lineCap||"round";
   // Openings should not be filled back in by rounded stroke caps.
-  if(obj.objectType==="wall"&&scene?.objects.some(o=>o.objectType==="door"&&o.opening?.wallId===obj.id))ctx.lineCap="butt";
+  if(obj.objectType==="wall"&&linkedDoors.has(obj.id))ctx.lineCap="butt";
   if(obj.objectType==="door"&&traceDoorSymbol(obj,emphasized)){ctx.restore();return}
   const ok=obj.objectType==="wall"?traceWallWithOpenings(ctx,obj):trace(ctx,g);
   if(ok){
@@ -682,6 +682,12 @@ function create(opts){
   ctx.setTransform(dpr*s*u[0],dpr*s*v[0],dpr*s*u[1],dpr*s*v[1],
    dpr*(width/2+panX-s*cu),dpr*(height/2+panY-s*cv));
   const list=sortedVisible();
+  linkedDoors.clear();
+  for(const item of scene.objects)if(item.objectType==="door"&&item.opening?.wallId){
+   const key=item.opening.wallId;
+   if(!linkedDoors.has(key))linkedDoors.set(key,[]);
+   linkedDoors.get(key).push(item);
+  }
   // Grid is a regular ranked rendering pass, not a special background overlay.
   const gridRank=finite(scene.layers?.find(l=>l.id==="grid")?.zIndex,5);
   const passes=list.map((obj,i)=>({kind:"object",rank:layerRank(obj),i,obj}));
