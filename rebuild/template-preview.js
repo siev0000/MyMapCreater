@@ -249,6 +249,17 @@
   "機械設備":[["charging_station","充電設備",4,3],["fuel_dispenser","燃料補給機",4,3],["dormancy_pod","休眠ポッド",2.2,3.3],["terminal_device","端末",2,2]],
   "特殊設備":[["research_table","研究台",5,2],["storage_container","大型保管庫",5,4]]
  };
+ function palette(){
+  const combined=Object.fromEntries(Object.entries(catalog).map(([category,items])=>[category,items.map(item=>({
+   id:item[0],name:item[1],widthCm:(item[2]||4)*50,depthCm:(item[3]||2)*50,shape:item[0],icon:"",description:item[1]+"の設置範囲です。"
+  }))]));
+  const residential=global.AAMapObjectCatalog?.residential||[];
+  for(const item of residential){
+   if(!combined[item.category])combined[item.category]=[];
+   combined[item.category].push(item);
+  }
+  return combined;
+ }
  function useGroup(t){
   if(t.use)return t.use;
   const name=(t.name||"");
@@ -271,7 +282,7 @@
  }
  function updateCatalog(){
   const category=$("template-item-category").value;
-  fillOptions($("template-item-choice"),(catalog[category]||[]).map(a=>[a[0],a[1]]));
+  fillOptions($("template-item-choice"),(palette()[category]||[]).map(a=>[a.id,(a.icon?a.icon+" ":"")+a.name+" · "+a.widthCm+"×"+a.depthCm+"cm"]));
  }
  function setEditMessage(s){$("template-edit-status").textContent=s}
  function syncEditFields(obj){
@@ -326,12 +337,12 @@
  function addItem(){
   if(!editing)return;
   const key=$("template-item-choice").value;
-  const item=(catalog[$("template-item-category").value]||[]).find(x=>x[0]===key);
+  const item=(palette()[$("template-item-category").value]||[]).find(x=>x.id===key);
   if(!item)return;
   const scene=previewViewer.getScene(),root=scene.objects.find(o=>o.id==="preview_root");
   if(!root)return;
   const spacing=previewSpacing(),g=root.geometry;
-  const id=uniqueId(scene,key),w=(item[2]||4)*spacing,h=(item[3]||2)*spacing;
+  const id=uniqueId(scene,key),w=item.widthCm/50*spacing,h=item.depthCm/50*spacing;
   // Snap newly added objects to half-cell positions at the building center.
   const center=previewViewer.screenToWorld($("template-preview-canvas").getBoundingClientRect().width/2,$("template-preview-canvas").getBoundingClientRect().height/2);
   const snap=v=>Math.round(v/(spacing*.5))*(spacing*.5);
@@ -339,11 +350,11 @@
   const y=snap(Math.max(g.y+spacing,Math.min(g.y+g.height-h-spacing,center[1]-h/2)));
   let geometry=key==="wall"||key==="door"||key==="window"?{type:"polyline",points:[[x,y],[x+2*spacing,y]]}:{type:"rect",x,y,width:w,height:h};
   const kind=key==="wall"?"wall":key==="door"?"door":key==="window"?"window":key==="room"?"region":"object";
-  const obj={id,name:item[1],parentId:root.id,displayLevel:(root.displayLevel||4)+1,floorId:activeFloor,
+  const obj={id,name:item.name,parentId:root.id,displayLevel:(root.displayLevel||4)+1,floorId:activeFloor,
    objectType:kind,layer:["wall","door","window"].includes(kind)?"walls":"structures",zIndex:kind==="wall"?47:kind==="door"||kind==="window"?49:kind==="region"?31:45,
    visible:true,selectable:true,geometry,
    style:{fill:kind==="object"?"rgba(65,110,130,.65)":null,stroke:kind==="door"?"#e8b97a":"#a8d7dd",strokeWidth:1.5},
-   shapePresetId:key,label:{visible:false,text:item[1]},detail:item[1]+"（設置物の説明を編集できます）",
+   shapePresetId:item.shape||key,label:{visible:false,text:item.name},detail:item.description||item.name+"（設置物の説明を編集できます）",
    metadata:{generated:false,templateEditor:true}};
   if(kind==="wall")obj.wall={thickness:previewSpacing()*10/50};
   if(kind==="door")obj.door={hinge:"start",swing:"inward",state:"closed",swingSide:"left"};
@@ -353,7 +364,7 @@
    if(kind==="window")obj.style.stroke="#80ddf0";
   }
   snapshot();
-  scene.objects.push(obj);updateScene(scene,id);setEditMessage(item[1]+"を追加しました");
+  scene.objects.push(obj);updateScene(scene,id);setEditMessage(item.name+"を追加しました");
  }
  function changeSelected(remove=false){
   if(!editing)return;
@@ -624,7 +635,7 @@
    $("template-era-filter").addEventListener("change",refresh);
    $("template-use-filter").addEventListener("change",refresh);
    $("template-mode-toggle").addEventListener("click",()=>setMode(!editing));
-   fillOptions($("template-item-category"),Object.keys(catalog).map(name=>[name,name]));
+   fillOptions($("template-item-category"),Object.keys(palette()).map(name=>[name,name]));
    updateCatalog();
    $("template-item-category").addEventListener("change",updateCatalog);
    $("template-item-add").addEventListener("click",addItem);
