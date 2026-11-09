@@ -134,12 +134,12 @@
   }
   title.textContent=obj.name||obj.id;
   const kind={
-   facility:"建物",slab:"床",wall:"壁",door:"扉",stair:"階段",object:"設置物"
+   facility:"建物",slab:"床",wall:"壁",door:"扉",window:"窓",region:"部屋",stair:"階段",object:"設置物"
   }[obj.objectType]||obj.objectType||"オブジェクト";
   const floor=record(t)?.floors.find(f=>f.id===obj.floorId);
   const g=obj.geometry||{};
   const dimension=g.type==="rect"?" / "+String(Number((g.width/previewSpacing()).toFixed(1)))+" × "+String(Number((g.height/previewSpacing()).toFixed(1)))+"マス":"";
-  meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension+(obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?" / 壁厚"+Number((obj.wall.thickness/previewSpacing()*50).toFixed(1))+"cm":"");
+  meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension+(obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?" / 壁厚"+Number((obj.wall.thickness/previewSpacing()*50).toFixed(1))+"cm":"")+(["door","window"].includes(obj.objectType)&&obj.geometry?.points?.length===2?" / 開口"+Number((length2(obj.geometry.points[0],obj.geometry.points[1])/previewSpacing()*50).toFixed(1))+"cm":"");
   if(obj.id==="preview_root"){
    detail.textContent=t?.description||obj.detail||"建物の概要";
    return;
