@@ -333,6 +333,6 @@ function addElevation(scene,data){
  opts.elevationSamplesKnown=data.known;opts.elevationSamplesTotal=data.total;
  return next;
 }
-global.AASakihanaMap={CENTER,UNIT,BOUNDS,configure,region,searchPlace,fromLonLat,toLonLat,bbox,osmQuery,
+global.AASakihanaMap={CENTER,get HALF_M(){return HALF_M},UNIT,BOUNDS,configure,region,searchPlace,fromLonLat,toLonLat,bbox,osmQuery,
  baseScene,fromOverpass,loadOSM,elevationGrid,addElevation,elevationFromRgb,clipLine,clipPolygon};
 })(window);
