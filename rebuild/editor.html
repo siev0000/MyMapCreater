@@ -32,6 +32,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #objects{max-height:205px;overflow:auto;display:grid;gap:3px}
 .object-entry{display:flex;align-items:center;gap:7px;width:100%;text-align:left;background:#163542;padding:6px 8px;font-size:11px}
 .object-entry[aria-current="true"]{background:#275566;border-color:#9adee2}
+.object-entry[aria-pressed="true"]{background:#305365;border-color:#e9cf8b;box-shadow:inset 3px 0 #e9cf8b}.batch-controls{padding:9px;border:1px solid #4e7987;border-radius:7px;margin:6px 0;background:rgba(28,62,72,.28)}
 .object-entry .meta{color:#a2bfc9;font-size:10px;margin-left:auto;flex:none}
 .col2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.col3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .fieldset{padding:10px;border:1px solid #365c6b;border-radius:8px;display:grid;gap:9px}
@@ -128,6 +129,21 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <h2>オブジェクト一覧</h2>
    <div class="row"><input id="object-search" placeholder="名前・IDで検索" aria-label="オブジェクトを検索">
     <button id="clear-search">消去</button></div>
+   <div class="switches"><label><input id="batch-mode" type="checkbox"> 複数選択モード（一覧から選択）</label></div>
+   <div class="actions"><button type="button" id="batch-select-visible">検索結果をすべて選択</button><button type="button" id="batch-clear">選択解除</button></div>
+   <div id="batch-controls" class="batch-controls hidden">
+    <p class="note" id="batch-count">0件を選択</p>
+    <div class="col2">
+     <label>整列<select id="batch-align"><option value="left">左端</option><option value="right">右端</option><option value="centerX">左右中央</option><option value="top">上端</option><option value="bottom">下端</option><option value="centerY">上下中央</option></select></label>
+     <button type="button" id="batch-align-apply">選択図形を整列</button>
+     <label>等間隔<select id="batch-distribute"><option value="x">横方向</option><option value="y">縦方向</option></select></label>
+     <button type="button" id="batch-distribute-apply">等間隔に配置</button>
+     <label>X移動（座標）<input id="batch-dx" type="number" step="any" value="0"></label>
+     <label>Y移動（座標）<input id="batch-dy" type="number" step="any" value="0"></label>
+    </div>
+    <div class="actions"><button type="button" id="batch-move">まとめて移動</button><button type="button" id="batch-delete" class="danger">まとめて削除</button></div>
+    <p class="note">整列・等間隔は選択した図形の外形を基準にします。親と子を同時に選んだ場合は親を優先します。全操作を1回のUndoで取り消せます。</p>
+   </div>
    <div id="objects" role="list"></div>
    <div class="col2">
     <label>形状<select id="new-shape" aria-label="追加する図形">
