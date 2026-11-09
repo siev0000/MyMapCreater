@@ -292,7 +292,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 
    <p class="note">配置開始位置はマップ画面の中心。現在のグリッド間隔とスナップを利用。保存前なら「戻す」で一括取消できます。大量追加時の重なりは事前に確認してください。</p>
   </section>
-  <section class="panel" id="land-route-create-panel">
+  </div>
+  <div class="tool-section" data-panel-tab="routes"><section class="panel" id="land-route-create-panel">
    <h2>土地・道路・線路の作成</h2>
    <p class="note">地図の種類を問わず利用できます。名前は作成時に自由入力。開始後、マップ上を順番にタップして道路・線路の経路、土地の外周を指定します。</p>
    <div class="col2">
@@ -312,7 +313,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   <div class="tool-section" data-panel-tab="terrain"><section class="panel" id="town-tools-panel">
    <h2>町の制作・地形編集</h2>
    <p class="note">実在地図の取得結果も、架空の町も、同じ編集操作を使用します。対象をマップ上で選択して実行してください。</p>
-   <div class="fieldset">
+   <div class="fieldset" id="road-connect-fields">
     <h3>道路の端点を接続</h3>
     <p class="note">選択道路の端点と、近くの別道路の端点を一つの接続点へ移動します。元のOSM図形を編集した記録を残します。</p>
     <label>最大接続距離（m）<input id="town-road-distance" type="number" min="0.1" max="20" step="0.5" value="2"></label>
@@ -640,6 +641,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script>
 (function(){
  const root=document.querySelector("main"),sidebar=document.getElementById("editor-tools");
+ const roadFields=document.getElementById("road-connect-fields"),routePanel=document.querySelector('[data-panel-tab="routes"]');
+ if(roadFields&&routePanel)routePanel.append(roadFields);
  const buttons=[...document.querySelectorAll(".editor-rail [data-tool-tab]")];
  const panels=[...document.querySelectorAll(".tool-section[data-panel-tab]")];
  let active=null;
