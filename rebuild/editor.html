@@ -415,7 +415,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <button type="button" id="template-preview-close" aria-label="プレビューを閉じる">×</button>
   </div>
   <div class="template-preview-layout">
-   <aside class="template-preview-picker" aria-label="テンプレート一覧">
+   <aside id="template-preview-picker" class="template-preview-picker" aria-label="テンプレート一覧">
     <label for="template-era-filter">世界観</label>
     <select id="template-era-filter">
      <option value="all">すべて</option><option value="common">共通・未分類</option>
@@ -449,7 +449,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
      <label class="template-preview-grid-toggle"><input type="checkbox" id="template-preview-grid" checked> マス目</label>
     </div>
     <div id="template-edit-controls" hidden>
-     <div class="template-edit-catalog">
+     <div id="template-edit-catalog" class="template-edit-catalog">
       <label>設置物分類 <select id="template-item-category"></select></label>
       <label>設置物 <select id="template-item-choice"></select></label>
       <button type="button" id="template-item-add">中央に追加</button>
@@ -490,7 +490,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 <script src="./map-viewer.js?v=template-shared-zoom-v4"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script src="./building-templates.js?v=template-wall-clearance-v3"></script>
-<script src="./template-preview.js?v=template-edit-v6"></script>
+<script src="./template-preview.js?v=template-edit-v7"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=template-visual-v1"></script>
 </body></html>
