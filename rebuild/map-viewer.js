@@ -611,7 +611,30 @@ function create(opts){
   if(handle.id.startsWith("vertex:")&&g.points){
    const index=Number(handle.id.slice(7)),pt=g.points[index];
    if(!pt||pt[0]===sx&&pt[1]===sy)return false;
-   g.points[index]=[sx,sy];return true;
+   const previous=obj.objectType==="wall"?g.points.map(p=>[...p]):null;
+   g.points[index]=[sx,sy];
+   if(previous){
+    for(const door of scene.objects.filter(o=>o.objectType==="door"&&o.opening?.wallId===obj.id&&
+      o.geometry?.type==="polyline"&&o.geometry.points?.length===2)){
+     const [p,q]=door.geometry.points,center=[(p[0]+q[0])/2,(p[1]+q[1])/2];let nearest=null;
+     for(let i=1;i<previous.length;i++){
+      const a=previous[i-1],b=previous[i],dx=b[0]-a[0],dy=b[1]-a[1],len2=dx*dx+dy*dy;
+      if(len2<1e-8)continue;
+      const t=Math.max(0,Math.min(1,((center[0]-a[0])*dx+(center[1]-a[1])*dy)/len2));
+      const distance=(center[0]-a[0]-dx*t)**2+(center[1]-a[1]-dy*t)**2;
+      if(!nearest||distance<nearest.distance)nearest={i,t,distance};
+     }
+     if(!nearest)continue;
+     const a=g.points[nearest.i-1],b=g.points[nearest.i],dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
+     if(len<1e-5)continue;
+     const width=Math.min(Number(door.opening.width)||Math.hypot(p[0]-q[0],p[1]-q[1]),len*.8);
+     const half=width/(2*len),t=Math.max(half,Math.min(1-half,nearest.t));
+     door.geometry.points=[[a[0]+dx*(t-half),a[1]+dy*(t-half)],
+                           [a[0]+dx*(t+half),a[1]+dy*(t+half)]];
+     door.opening.width=width;
+    }
+   }
+   return true;
   }
   if(g.type!=="rect")return false;
   const right=g.x+g.width,bottom=g.y+g.height;
