@@ -362,19 +362,7 @@ const viewer=window.AAMapViewer.create({
    const pending=pendingFocus;pendingFocus=null;
    viewer.selectItemById(pending.id,{focus:true});
 
-const gridToggle=$('preview-grid-toggle');
-function applyGridPreference(){
- viewer.setPreviewGridVisible(gridPreference);
- const enabled=viewer.getPreviewGridVisible();
- gridToggle.setAttribute("aria-pressed",String(enabled));
- gridToggle.title=enabled?"マス目を非表示":"マス目を表示";
-}
-gridToggle.addEventListener("click",()=>{
- gridPreference=!viewer.getPreviewGridVisible();
- try{localStorage.setItem("map-preview-grid-visible",String(gridPreference))}catch(_){}
- applyGridPreference();
-});
-applyGridPreference();
+
   }else{
    // Optional deep link to an exact object in the currently loaded scene.
    const objectId=new URLSearchParams(location.search).get('focus');
@@ -471,6 +459,19 @@ applyGridPreference();
   renderMapTree();
  }
 });
+const gridToggle=$('preview-grid-toggle');
+function applyGridPreference(){
+ viewer.setPreviewGridVisible(gridPreference);
+ const enabled=viewer.getPreviewGridVisible();
+ gridToggle.setAttribute("aria-pressed",String(enabled));
+ gridToggle.title=enabled?"マス目を非表示":"マス目を表示";
+}
+gridToggle.addEventListener("click",()=>{
+ gridPreference=!viewer.getPreviewGridVisible();
+ try{localStorage.setItem("map-preview-grid-visible",String(gridPreference))}catch(_){}
+ applyGridPreference();
+});
+applyGridPreference();
 let nodes=new Map(),roots=[],selected=null,viewId='top',selectedObjectId=null,pendingFocus=null;
 const treeExpanded=new Set(),initializedTreeMaps=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
 $('detail-back').addEventListener('click',()=>{
