@@ -189,6 +189,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     <div class="switches"><label><input id="obj-visible" type="checkbox">図形を表示</label><label><input id="obj-selectable" type="checkbox">選択可能</label></div>
     <fieldset class="fieldset"><legend>図形の座標・大きさ</legend>
      <div id="geometry-fields"></div>
+     <div id="rect-rotation-fields" class="hidden">
+      <label>回転角度（度、矩形のみ）<input id="obj-rotation" type="number" step="any" value="0"></label>
+      <p class="note">回転中の矩形は座標数値で大きさを調整できます。回転ハンドルは次期対応です。</p>
+     </div>
      <div id="vertex-actions" class="hidden">
       <p class="note">頂点を選択してから追加・削除できます。多角形は3点、線は2点以上を保持します。</p>
       <div class="col2">
@@ -199,6 +203,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
        <button type="button" id="vertex-add">頂点を追加</button>
        <button type="button" id="vertex-delete">頂点を削除</button>
       </div>
+     </div>
+     <div id="door-wall-fields" class="hidden">
+      <label>接続する壁<select id="door-wall-id"></select></label>
+      <p class="note">扉を壁に関連付けると、壁単体の移動に扉が追従し、壁と重なる部分を開口として表示できます。壁上の位置は扉の座標で指定します。</p>
      </div>
      <div id="wall-thickness-fields" class="hidden">
       <label>壁の実厚（マップ座標単位）<input id="wall-thickness" type="number" min="0.001" step="any" placeholder="例：0.5"></label>
