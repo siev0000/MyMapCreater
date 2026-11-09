@@ -708,9 +708,18 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  }
  for(const b of buttons)b.addEventListener("click",()=>selectTab(b.dataset.toolTab));
  window.AAMapEditorUI={selectTab,activeTab:()=>active};
+ let previousLayout=null;
  function syncLayoutMode(){
-  root.dataset.layout=window.innerWidth<window.innerHeight?"portrait":"landscape";
-  document.querySelector(".editor-rail").setAttribute("aria-orientation",root.dataset.layout==="portrait"?"horizontal":"vertical");
+  const next=window.innerWidth<window.innerHeight?"portrait":"landscape";
+  root.dataset.layout=next;
+  document.querySelector(".editor-rail").setAttribute("aria-orientation",next==="portrait"?"horizontal":"vertical");
+  if(previousLayout==="portrait"&&next==="landscape"&&root.dataset.sidebarOpen==="false"){
+   // A rotated landscape screen has room for its inspector again.
+   root.dataset.sidebarOpen="true";
+   for(const p of panels)p.dataset.active=String(p.dataset.panelTab===active);
+   for(const b of buttons)b.setAttribute("aria-pressed",String(b.dataset.toolTab===active));
+  }
+  previousLayout=next;
  }
  syncLayoutMode();
  window.addEventListener("resize",syncLayoutMode);
