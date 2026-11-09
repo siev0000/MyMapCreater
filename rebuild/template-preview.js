@@ -312,9 +312,11 @@
  }
  function setHistory(from,to){
   if(!from.length)return;
-  to.push(previewViewer.getScene());
+  const current=previewViewer.getScene();
+  to.push(current);
   const next=from.pop(),selectedId=previewViewer.getSelected()?.id;
-  updateScene(next,next.objects.some(o=>o.id===selectedId)?selectedId:"preview_root");
+  const fresh=next.objects.find(o=>o.metadata?.templateEditor&&!current.objects.some(v=>v.id===o.id));
+  updateScene(next,fresh?.id||(next.objects.some(o=>o.id===selectedId)?selectedId:"preview_root"));
  }
  function uniqueId(scene,key){
   let name="preview_"+String(key).replace(/[^a-z0-9_-]/gi,"_"),i=2;
