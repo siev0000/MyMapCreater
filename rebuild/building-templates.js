@@ -136,10 +136,206 @@ const communalLayouts=[
 ];
 for(const [id,name,cells,floors,layout,description,category,facilityMode,podsPerFloor] of communalLayouts)
  presets.push({id,name,cells,floors,layout,description,category,facilityMode,podsPerFloor,worldStyle:"machine",entranceSide:"center"});
+
+/* Modern Japanese housing: original playable layouts informed by typical 1R/1K/LDK
+   arrangements (UR Housing / LIFULL), not tracings of any advertised property. */
+const modernHousing=[
+ {id:"jp_studio_1r",name:"現代日本・ワンルーム1R",cells:[10,12],floors:1,
+  description:"居室とキッチンが一体の1R。玄関・ユニットバス・収納を備える。",
+  plans:[{rooms:[
+   ["main","居室・キッチン",0,0,10,8],["bath","ユニットバス",0,8,4,4],["hall","玄関",4,8,6,4]],
+   doors:[["main","hall"],["bath","hall"]],entry:"hall",
+   items:[["キッチン","kitchen",1,1,3,1],["ベッド","bed",7,1,2,4],
+    ["テーブル","table",4,5,2,1.5],["浴槽","bath",.75,9,2,2],
+    ["トイレ","toilet",2.7,10.5,.8,1],["玄関収納","cabinet",7,10.5,2,1]]}]},
+ {id:"jp_apartment_1k",name:"現代日本・アパート1K",cells:[10,14],floors:1,
+  description:"居室とキッチンを扉で分離した単身者向け1K。",
+  plans:[{rooms:[
+   ["main","居室",0,0,10,9],["bath","浴室・トイレ",0,9,4,5],["hall","キッチン・玄関",4,9,6,5]],
+   doors:[["main","hall"],["bath","hall"]],entry:"hall",
+   items:[["ベッド","bed",1,1,3,5],["収納","cabinet",7,1,2,1],
+    ["キッチン","kitchen",5,10,3,1],["浴槽","bath",.75,10,2,2],
+    ["トイレ","toilet",2.75,12,.8,1],["玄関収納","cabinet",7,12,2,1]]}]},
+ {id:"jp_mansion_1ldk",name:"現代日本・マンション1LDK",cells:[14,16],floors:1,
+  description:"LDKと独立寝室。玄関ホールから洗面・浴室・トイレへアクセスする。",
+  plans:[{rooms:[
+   ["bed","寝室",0,0,6,11],["ldk","LDK",6,0,8,11],
+   ["bath","浴室・洗面",0,11,5,3],["wc","トイレ",0,14,5,2],["hall","玄関・廊下",5,11,9,5]],
+   doors:[["bed","ldk"],["ldk","hall"],["bath","hall"],["wc","hall"]],entry:"hall",
+   items:[["ベッド","bed",1,2,3,5],["収納","cabinet",1,8,3,1],
+    ["キッチン","kitchen",7,1,4,1],["食卓","table",10,5,2,2],["ソファ","sofa",7,8,3,1.5],
+    ["浴槽","bath",.5,11.5,2,2],["洗面台","sink",3,11.5,1,1],
+    ["トイレ","toilet",1,14.5,1.5,1],["玄関収納","cabinet",11,14,2,1]]}]},
+ {id:"jp_mansion_2ldk",name:"現代日本・マンション2LDK",cells:[18,20],floors:1,
+  description:"2室の個室とLDK。居室を廊下から独立して利用できる家族向け住戸。",
+  plans:[{rooms:[
+   ["bed1","寝室",0,0,7,10],["bed2","洋室",7,0,6,10],["ldk","LDK",13,0,5,14],
+   ["corridor","共用廊下",0,10,13,4],["bath","浴室・洗面",0,14,5,4],
+   ["wc","トイレ",0,18,5,2],["hall","玄関ホール",5,14,13,6]],
+   doors:[["bed1","corridor"],["bed2","corridor"],["ldk","corridor"],
+    ["corridor","hall"],["bath","hall"],["wc","hall"],["ldk","hall"]],entry:"hall",
+   items:[["ベッド","bed",1,2,3,5],["ベッド","bed",8,2,3,5],
+    ["キッチン","kitchen",14,1,3,1],["食卓","table",14,5,3,2],["ソファ","sofa",14,9,3,1.5],
+    ["浴槽","bath",.7,15,2,2],["洗面台","sink",3.3,15,1,1],
+    ["トイレ","toilet",1,18.5,1.5,1],["収納棚","cabinet",6,18,3,1]]}]},
+ {id:"jp_mansion_3ldk",name:"現代日本・マンション3LDK",cells:[20,22],floors:1,
+  description:"LDKと個室3室。共用廊下、独立した水回りを備えたファミリー住戸。",
+  plans:[{rooms:[
+   ["bed1","主寝室",0,0,7,9],["bed2","洋室A",7,0,7,9],["bed3","洋室B",14,0,6,9],
+   ["corridor","廊下",0,9,20,4],["bath","浴室・洗面",0,13,5,5],
+   ["wc","トイレ",0,18,5,4],["hall","玄関ホール",5,13,2,9],["ldk","LDK",7,13,13,9]],
+   doors:[["bed1","corridor"],["bed2","corridor"],["bed3","corridor"],
+    ["corridor","hall"],["corridor","ldk"],["bath","hall"],["wc","hall"],["hall","ldk"]],entry:"hall",
+   items:[["ベッド","bed",1,2,3,5],["ベッド","bed",9,2,3,5],["ベッド","bed",15,2,3,5],
+    ["キッチン","kitchen",8,14,4,1],["食卓","table",13,15,3,2],["ソファ","sofa",15,19,3,1.5],
+    ["浴槽","bath",.75,14,2,2],["洗面台","sink",3.3,14,1,1],
+    ["トイレ","toilet",1,19,1.5,1],["収納棚","cabinet",8,20,3,1]]}]},
+ {id:"jp_detached_2story",name:"現代日本・2階建て戸建て",cells:[18,18],floors:2,
+  description:"1階はLDK・水回り・玄関、2階は寝室3室とホールを配置した2階建て。",
+  plans:[
+   {rooms:[["bath","浴室",0,0,5,5],["wash","洗面・脱衣",5,0,5,5],
+     ["wc","トイレ",0,5,5,4],["hall","廊下・階段",5,5,5,13],
+     ["entry","玄関・収納",0,9,5,9],["ldk","LDK",10,0,8,18]],
+    doors:[["bath","wash"],["wash","hall"],["wc","hall"],["entry","hall"],["hall","ldk"]],entry:"entry",
+    items:[["浴槽","bath",1,1,2,3],["洗面台","sink",6,1,2,1],
+     ["トイレ","toilet",1,6,1.5,1.5],["収納棚","cabinet",1,11,3,1],
+     ["階段","stair",6,14,3,3],["キッチン","kitchen",11,1,4,1],
+     ["食卓","table",12,7,3,2],["ソファ","sofa",12,12,4,2]]},
+   {rooms:[["bed1","主寝室",0,0,7,10],["bed2","洋室A",7,0,6,10],
+     ["bed3","洋室B",13,0,5,10],["hall","2階ホール・階段",0,10,18,8]],
+    doors:[["bed1","hall"],["bed2","hall"],["bed3","hall"]],
+    items:[["ベッド","bed",1,2,3,5],["ベッド","bed",8,2,3,5],
+     ["ベッド","bed",14,2,3,5],["階段","stair",6,14,3,3],
+     ["収納棚","cabinet",13,12,3,1]]}
+  ]}
+];
+for(const plan of modernHousing)presets.push({
+ id:plan.id,name:plan.name,cells:plan.cells,floors:plan.floors,layout:"custom-modern",
+ category:"modern_housing",era:"modern-jp",use:"housing",
+ description:plan.description,planSource:"original-layout-inspired-by-UR-LIFULL",
+ modernPlan:plan.plans
+});
+function generateModern(template,options){
+ const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
+ if(typeof prefix!=="string"||!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("現代住宅テンプレートの配置指定が不正");
+ const [w,h]=template.cells,objs=[],at=(a,b)=>[x+a*spacing,y+b*spacing];
+ const rect=(a,b,c,d)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:c*spacing,height:d*spacing});
+ const line=(a,b,c,d)=>({type:"polyline",points:[at(a,b),at(c,d)]});
+ const floors=template.modernPlan.map((_,i)=>({id:(i+1)+"F",label:(i+1)+"階",elevation:i*3,height:3}));
+ const main={id:prefix,name:baseName,parentId,displayLevel,objectType:"facility",layer:"subregions",zIndex:30,
+  geometry:rect(0,0,w,h),floors,visible:true,selectable:true,
+  style:{fill:"rgba(90,143,153,.12)",stroke:"#a6cbd0",strokeWidth:1.4},
+  label:{visible:true,text:baseName,position:at(w/2,h/2),fontSize:11},
+  detail:template.description,metadata:{templateId:template.id,generated:true,era:"modern-jp"}};
+ objs.push(main);
+ let count=0;
+ const push=(name,kind,geometry,f,style,extra={})=>{
+  const o={id:prefix+"_modern_"+(++count),name,parentId:prefix,displayLevel:displayLevel+1,
+   floorId:f,objectType:kind,layer:kind==="wall"||kind==="door"?"walls":"structures",
+   zIndex:kind==="slab"?29:kind==="region"?31:kind==="wall"?47:kind==="door"?49:kind==="stair"?46:42,
+   geometry,visible:true,selectable:kind!=="slab"&&kind!=="wall",
+   style,label:{visible:kind==="region",text:name,fontSize:8},
+   detail:name+"（現代日本の住宅用テンプレート）",
+   metadata:{templateId:template.id,generated:true},...extra};
+  if(kind==="door"){o.door={hinge:"start",swing:"inward",state:"closed",swingSide:"left"};
+   o.opening={kind:"interior",width:geometry.points?Math.hypot(
+    geometry.points[1][0]-geometry.points[0][0],geometry.points[1][1]-geometry.points[0][1]):0,external:false};}
+  objs.push(o);return o;
+ };
+ for(let z=0;z<template.modernPlan.length;z++){
+  const plan=template.modernPlan[z],floor=floors[z].id;
+  push("床面 "+floor,"slab",rect(0,0,w,h),floor,{fill:"rgba(48,81,88,.64)",stroke:null});
+  const rooms=plan.rooms.map(([id,name,rx,ry,rw,rh])=>({id,name,x:rx,y:ry,w:rw,h:rh}));
+  const roomMap=new Map(rooms.map(r=>[r.id,r]));
+  const edgeH=new Map(),edgeV=new Map(),blockedH=new Set(),blockedV=new Set();
+  const addEdge=(map,key)=>map.set(key,true);
+  for(const room of rooms){
+   for(let ix=room.x;ix<room.x+room.w;ix++){
+    addEdge(edgeH,ix+","+room.y);addEdge(edgeH,ix+","+(room.y+room.h));
+   }
+   for(let iy=room.y;iy<room.y+room.h;iy++){
+    addEdge(edgeV,room.x+","+iy);addEdge(edgeV,(room.x+room.w)+","+iy);
+   }
+   const zone=push(room.name,"region",rect(room.x,room.y,room.w,room.h),floor,
+    {fill:z%2?"rgba(69,115,124,.11)":"rgba(81,122,133,.12)",stroke:null},
+    {shapePresetId:"room_zone",detail:room.name+"。部屋の用途を示す領域です。"});
+   zone.label.position=at(room.x+room.w/2,room.y+room.h/2);
+  }
+  const doors=[];
+  const shared=(a,b)=>{
+   if(Math.abs(a.x+a.w-b.x)<1e-9||Math.abs(b.x+b.w-a.x)<1e-9)
+    return{direction:"V",fixed:Math.abs(a.x+a.w-b.x)<1e-9?a.x+a.w:b.x+b.w,
+     lo:Math.max(a.y,b.y),hi:Math.min(a.y+a.h,b.y+b.h)};
+   if(Math.abs(a.y+a.h-b.y)<1e-9||Math.abs(b.y+b.h-a.y)<1e-9)
+    return{direction:"H",fixed:Math.abs(a.y+a.h-b.y)<1e-9?a.y+a.h:b.y+b.h,
+     lo:Math.max(a.x,b.x),hi:Math.min(a.x+a.w,b.x+b.w)};
+   return null;
+  };
+  for(const [aId,bId] of plan.doors){
+   const a=roomMap.get(aId),b=roomMap.get(bId),join=a&&b&&shared(a,b);
+   if(!join||join.hi-join.lo<2)throw Error("間仕切り接続が不正："+template.id+"/"+floor+"/"+aId+"-"+bId);
+   const openingWidth=2,start=join.lo+Math.floor((join.hi-join.lo-openingWidth)/2);
+   for(let d=start;d<start+openingWidth;d++)
+    (join.direction==="H"?blockedH:blockedV).add(
+      join.direction==="H"?d+","+join.fixed:join.fixed+","+d);
+   doors.push({direction:join.direction,fixed:join.fixed,start,external:false});
+  }
+  if(plan.entry){
+   const entry=roomMap.get(plan.entry);
+   if(!entry||entry.y+entry.h!==h||entry.w<2)throw Error("外部入口が不正："+template.id);
+   const start=entry.x+Math.floor((entry.w-2)/2);
+   blockedH.add(start+","+h);blockedH.add((start+1)+","+h);
+   doors.push({direction:"H",fixed:h,start,external:true});
+  }
+  // Emit maximal, collinear wall segments; each doorway is a real wall gap.
+  for(const [map,blocked,direction] of [[edgeH,blockedH,"H"],[edgeV,blockedV,"V"]]){
+   const coordinates=[...map.keys()].filter(k=>!blocked.has(k)).map(k=>k.split(",").map(Number));
+   const groups=new Map();
+   for(const [a,b] of coordinates){
+    const fixed=direction==="H"?b:a,pos=direction==="H"?a:b;
+    if(!groups.has(fixed))groups.set(fixed,[]);
+    groups.get(fixed).push(pos);
+   }
+   for(const [fixed,positions] of groups){
+    positions.sort((a,b)=>a-b);
+    for(let i=0;i<positions.length;){
+     let first=positions[i],end=first+1;i++;
+     while(i<positions.length&&positions[i]===end){end++;i++}
+     push("壁","wall",direction==="H"?line(first,fixed,end,fixed):line(fixed,first,fixed,end),floor,
+      {fill:null,stroke:"#d3e6e8",strokeWidth:2});
+    }
+   }
+  }
+  for(const door of doors){
+   const g=door.direction==="H"?line(door.start,door.fixed,door.start+2,door.fixed):
+    line(door.fixed,door.start,door.fixed,door.start+2);
+   const o=push(door.external?"玄関扉":"室内扉","door",g,floor,
+    {fill:null,stroke:"#e8b97a",strokeWidth:2},
+    {detail:door.external?"住戸の出入口です。":"区画をつなぐ室内扉です。"});
+   if(door.external){o.opening.kind="entrance";o.opening.external=true}
+  }
+  for(const [name,shape,fx,fy,fw,fh] of plan.items){
+   if(fx<0||fy<0||fx+fw>w||fy+fh>h)throw Error("設置物が外周を越える："+name);
+   const stair=shape==="stair";
+   const extra={shapePresetId:shape,detail:name+"。住戸の生活用設備です。"};
+   if(stair){
+    extra.connection={id:prefix+"_stair_main",fromFloorId:floor,
+     toFloorId:floors[z+1]?.id||floors[z-1]?.id,
+     fromAnchor:at(fx+fw/2,fy+fh/2),toAnchor:at(fx+fw/2,fy+fh/2),
+     direction:z<template.modernPlan.length-1?"up":"down"};
+   }
+   push(name,stair?"stair":"object",rect(fx,fy,fw,fh),floor,
+    {fill:stair?"rgba(75,118,137,.5)":"rgba(46,91,110,.7)",stroke:"#9ec5ca",strokeWidth:1},extra);
+  }
+ }
+ return{template:copy(template),objects:objs};
+}
+
 const copy=x=>JSON.parse(JSON.stringify(x));
 function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
  if(!template)throw Error("不明な建物テンプレート: "+templateId);
+ if(template.modernPlan)return generateModern(template,options);
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
  if(typeof prefix!=="string"||!prefix)throw Error("建物IDが必要です");
  if(!Number.isFinite(spacing)||spacing<=0)throw Error("グリッド間隔が不正です");
