@@ -54,6 +54,16 @@
       "parentId": "automaton_ship",
       "source": "../rebuild/scenes/lower.scene.json",
       "shortName": "下層"
+    },
+    {
+      "id": "sakihana_gosen_500m",
+      "name": "実在地域｜咲花駅周辺（500m）",
+      "shortName": "咲花駅",
+      "kind": "root",
+      "parentId": null,
+      "description": "OpenStreetMap道路・線路・建物・土地利用を編集画面から取得可能。国土地理院DEM標高差対応。初期ファイルは駅の基準点のみ。",
+      "source": "../rebuild/scenes/sakihana-starter.scene.json",
+      "realWorld": true
     }
   ],
   "defaultMapId": "middle"
