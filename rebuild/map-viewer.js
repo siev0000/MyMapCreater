@@ -686,9 +686,13 @@ function create(opts){
    if(!emphasized&&st.fill){ctx.fillStyle=st.fill;ctx.fill(g.type==="ring"?"evenodd":"nonzero")}
    if(emphasized||st.stroke){
     ctx.strokeStyle=emphasized?(scene?.settings?.selectionStyle?.stroke||"#ffefa7"):st.stroke;
+    const geoWidth=Number(obj.metadata?.renderWidthM);
+    const unitsPerM=Number(scene?.settings?.georeference?.worldUnitsPerMeter);
     ctx.lineWidth=obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)&&obj.wall.thickness>0
      ?Math.max(obj.wall.thickness,(emphasized?2.3:0)/scale())
-     :(emphasized?2.3:Math.max(.15,finite(st.strokeWidth,1)))/scale();
+     :Number.isFinite(geoWidth)&&geoWidth>0&&Number.isFinite(unitsPerM)&&unitsPerM>0
+      ?Math.max(.1,geoWidth*unitsPerM,(emphasized?2.3:0)/scale())
+      :(emphasized?2.3:Math.max(.15,finite(st.strokeWidth,1)))/scale();
     ctx.setLineDash(emphasized?[]:(st.dash||[]).map(n=>n/scale()));
     ctx.stroke();
    }
