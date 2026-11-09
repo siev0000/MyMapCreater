@@ -173,6 +173,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #template-preview-modal #template-collision-status[data-has-collision="true"]{color:#ffbd9c;font-weight:650}
 #template-preview-modal .template-preview-large[data-collision="true"]{outline:2px solid #dc7663;outline-offset:-2px}
 #template-preview-modal #template-edit-controls label[hidden],#template-preview-modal #template-edit-controls button[hidden]{display:none!important}
+
+#template-preview-modal .template-preview-picker:has(#template-edit-catalog) #template-preview-list{min-height:90px}
+#template-preview-modal #template-collision-status{white-space:normal}
 </style>
 </head>
 <body>
@@ -508,8 +511,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 </div>
 <script src="./map-viewer.js?v=window-opening-v5"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
-<script src="./building-templates.js?v=wall-thickness-v6"></script>
-<script src="./template-preview.js?v=advanced-template-editor-v13"></script>
+<script src="./building-templates.js?v=selectable-walls-v7"></script>
+<script src="./template-preview.js?v=advanced-template-editor-v14"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=wall-thickness-v4"></script>
 </body></html>
