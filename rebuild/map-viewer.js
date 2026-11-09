@@ -121,7 +121,7 @@ function create(opts){
  const creditLink=document.createElement("a");creditLink.href="https://www.openstreetmap.org/copyright";
  creditLink.target="_blank";creditLink.rel="noopener noreferrer";creditLink.textContent="© OpenStreetMap contributors (ODbL)";
  creditLink.style.color="#b6e4f2";geoCredit.append(creditLink);
- const demCredit=document.createElement("span");demCredit.textContent=" / 標高：国土地理院";geoCredit.append(demCredit);
+ const demCredit=document.createElement("a");demCredit.href="https://maps.gsi.go.jp/development/ichiran.html";demCredit.target="_blank";demCredit.rel="noopener noreferrer";demCredit.textContent=" / 標高：国土地理院（加工表示）";demCredit.style.color="#b6e4f2";geoCredit.append(demCredit);
  if(host?.append)host.append(geoCredit);
 
  const legendButton=opts.legendButton,roadButton=opts.roadButton;
