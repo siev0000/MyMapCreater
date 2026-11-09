@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const S=(name,attrs={})=>{const el=document.createElementNS(ns,name);for(const [key,value] of Object.entries(attrs))el.setAttribute(key,String(value));return el};
  const T=(tag,cls,value)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(value!==undefined)node.textContent=value;return node};
- let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null;
+ let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null,editing=false,editPast=[],editFuture=[],beforeDrag=null;
  const renderCache=new Map();
  function previewSpacing(){
   const value=Number($("editor-grid-spacing")?.value);
@@ -65,6 +65,8 @@
   const a=t.custom?t.originalSize:t.cells;return a.join(" × ")+(t.custom?" 座標":" マス");
  }
  function selectTemplate(id){
+  if(editing)setMode(false);
+  editPast=[];editFuture=[];
   const t=library?.allPresets().find(item=>item.id===id);if(!t)return;
   const previous=activeId;
   activeId=id;
@@ -86,6 +88,7 @@
  function open(){
   if(!library)return;
   lastFocus=document.activeElement;
+  if(editing)setMode(false);
   $("template-preview-modal").hidden=false;
   renderCache.clear();refresh();
   selectTemplate(picker.value||library.allPresets()[0]?.id);
@@ -150,7 +153,9 @@
    infoTitle:$("template-preview-info-title"),
    infoMeta:$("template-preview-info-meta"),
    infoText:$("template-preview-info-text"),
-   onSelectionChanged:(_key,obj)=>showObjectInfo(obj)
+   onSelectionChanged:(_key,obj)=>{showObjectInfo(obj);syncEditFields(obj)},
+   onBeforeObjectDrag:scene=>{if(editing)beforeDrag=JSON.stringify(scene)},
+   onObjectMoved:()=>{if(editing&&beforeDrag){editPast.push(JSON.parse(beforeDrag));editFuture=[];beforeDrag=null;setEditMessage("位置・形状を変更しました")}}
   });
   previewViewer.setEditMode(false);
   return previewViewer;
@@ -195,6 +200,139 @@
  function close(){
   $("template-preview-modal").hidden=true;activeId=null;
   if(lastFocus?.focus)lastFocus.focus();
+ }
+ const eraNames={"common":"共通・未分類","modern-jp":"現代日本","japanese":"和風","historical-eu":"歴史欧州","fantasy":"異世界","machine":"機械","ruins":"終末・廃墟"};
+ const catalog={
+  "建築":[["wall","壁",0,0],["door","扉",0,0],["room","部屋の区画",6,6]],
+  "生活設備":[["kitchen","キッチン",4,2],["toilet","トイレ",2,2],["sink","洗面台",2,1],["bath","浴槽",3,2]],
+  "家具":[["bed","ベッド",3,5],["table","机",3,2],["chair","椅子",1,1],["shelf","収納棚",3,1]],
+  "商業設備":[["counter","カウンター",5,2],["display_shelf","商品棚",4,1]],
+  "作業設備":[["workbench","作業台",6,3],["tool_cabinet","工具棚",3,1]],
+  "機械設備":[["charging_station","充電設備",4,3],["fuel_dispenser","燃料補給機",4,3],["dormancy_pod","休眠ポッド",2.2,3.3],["terminal_device","端末",2,2]],
+  "特殊設備":[["research_table","研究台",5,2],["storage_container","大型保管庫",5,4]]
+ };
+ function useGroup(t){
+  const name=(t.name||"");
+  if(/住宅|住居|休眠|ポッド/.test(name))return "housing";
+  if(/宿|ホテル|旅館/.test(name))return "lodging";
+  if(/店舗|商店/.test(name))return "shop";
+  if(/研究|事務所|端末|登録/.test(name))return "office";
+  if(/工房|整備/.test(name))return "production";
+  if(/倉庫|補給|燃料|充電/.test(name))return "storage";
+  return "special";
+ }
+ function eraGroup(t){
+  // The legacy generic plans are NOT retroactively asserted to be historical.
+  return t.era||((t.worldStyle==="machine"||/^machine_/.test(t.id))?"machine":"common");
+ }
+ function fillOptions(select,items){
+  select.replaceChildren();
+  for(const [value,name] of items){const o=T("option","",name);o.value=value;select.append(o)}
+  if(items.length)select.value=items[0][0];
+ }
+ function updateCatalog(){
+  const category=$("template-item-category").value;
+  fillOptions($("template-item-choice"),(catalog[category]||[]).map(a=>[a[0],a[1]]));
+ }
+ function setEditMessage(s){$("template-edit-status").textContent=s}
+ function syncEditFields(obj){
+  $("template-edit-name").value=editing&&obj?obj.name||"":"";
+  $("template-edit-detail").value=editing&&obj?obj.detail||"":"";
+ }
+ function setMode(value){
+  editing=!!value;
+  $("template-mode-toggle").setAttribute("aria-pressed",String(editing));
+  $("template-mode-toggle").textContent=editing?"プレビューに戻る":"編集モード";
+  $("template-edit-controls").hidden=!editing;
+  const pickerSide=$("template-preview-picker"),palette=$("template-edit-catalog");
+  if(editing)pickerSide.insertBefore(palette,$("template-preview-list"));
+  else $("template-edit-controls").insertBefore(palette,$("template-edit-controls").firstChild);
+  previewViewer?.setEditMode(editing);
+  if(editing){syncEditFields(previewViewer?.getSelected());setEditMessage("配置物を選択して編集、保存時は別名で登録します")}
+ }
+ function snapshot(){if(!editing||!previewViewer)return;editPast.push(previewViewer.getScene());if(editPast.length>45)editPast.shift();editFuture=[]}
+ function updateScene(scene,selectedId){
+  previewViewer.replaceScene(scene,{preserveView:true,selectedId});
+  previewViewer.setEditMode(editing);
+  if(activeFloor)previewViewer.setFloor(activeFloor);
+  showObjectInfo(previewViewer.getSelected());
+ }
+ function setHistory(from,to){
+  if(!from.length)return;
+  to.push(previewViewer.getScene());
+  updateScene(from.pop(),previewViewer.getSelected()?.id||"preview_root");
+ }
+ function uniqueId(scene,key){
+  let name="preview_"+String(key).replace(/[^a-z0-9_-]/gi,"_"),i=2;
+  while(scene.objects.some(o=>o.id===name+"_"+i))i++;
+  return name+"_"+i;
+ }
+ function addItem(){
+  if(!editing)return;
+  const key=$("template-item-choice").value;
+  const item=(catalog[$("template-item-category").value]||[]).find(x=>x[0]===key);
+  if(!item)return;
+  const scene=previewViewer.getScene(),root=scene.objects.find(o=>o.id==="preview_root");
+  if(!root)return;
+  const spacing=previewSpacing(),g=root.geometry;
+  const id=uniqueId(scene,key),w=(item[2]||4)*spacing,h=(item[3]||2)*spacing;
+  // Snap newly added objects to half-cell positions at the building center.
+  const center=previewViewer.screenToWorld($("template-preview-canvas").getBoundingClientRect().width/2,$("template-preview-canvas").getBoundingClientRect().height/2);
+  const snap=v=>Math.round(v/(spacing*.5))*(spacing*.5);
+  const x=snap(Math.max(g.x+spacing,Math.min(g.x+g.width-w-spacing,center[0]-w/2)));
+  const y=snap(Math.max(g.y+spacing,Math.min(g.y+g.height-h-spacing,center[1]-h/2)));
+  let geometry=key==="wall"||key==="door"?{type:"polyline",points:[[x,y],[x+2*spacing,y]]}:{type:"rect",x,y,width:w,height:h};
+  const kind=key==="wall"?"wall":key==="door"?"door":"object";
+  snapshot();
+  const obj={id,name:item[1],parentId:root.id,displayLevel:(root.displayLevel||4)+1,floorId:activeFloor,
+   objectType:kind,layer:kind==="wall"||kind==="door"?"walls":"structures",zIndex:kind==="wall"?47:kind==="door"?49:45,
+   visible:true,selectable:true,geometry,
+   style:{fill:kind==="object"?"rgba(65,110,130,.65)":null,stroke:kind==="door"?"#e8b97a":"#a8d7dd",strokeWidth:1.5},
+   shapePresetId:key,label:{visible:false,text:item[1]},detail:item[1]+"（設置物の説明を編集できます）",
+   metadata:{generated:false,templateEditor:true}};
+  if(kind==="door")obj.door={hinge:"start",swing:"inward",state:"closed",swingSide:"left"};
+  scene.objects.push(obj);updateScene(scene,id);setEditMessage(item[1]+"を追加しました");
+ }
+ function changeSelected(remove=false){
+  if(!editing)return;
+  const selected=previewViewer?.getSelected();
+  if(!selected||selected.id==="preview_root"){setEditMessage("建物全体ではなく設置物を選択してください");return}
+  const scene=previewViewer.getScene();
+  snapshot();
+  if(remove){
+   const ids=new Set([selected.id]);
+   for(let i=0;i<scene.objects.length;i++)if(ids.has(scene.objects[i].parentId))ids.add(scene.objects[i].id);
+   scene.objects=scene.objects.filter(o=>!ids.has(o.id));
+  }else{
+   const obj=scene.objects.find(o=>o.id===selected.id);
+   obj.name=$("template-edit-name").value.trim()||obj.name;
+   obj.detail=$("template-edit-detail").value.trim();
+   if(obj.label)obj.label.text=obj.name;
+  }
+  updateScene(scene,remove?"preview_root":selected.id);
+  setEditMessage(remove?"設置物を削除しました":"名前と説明を変更しました");
+ }
+ function saveCopy(){
+  if(!editing)return;
+  const name=$("template-save-name").value.trim(),id=$("template-save-id").value.trim();
+  try{
+   const scene=previewViewer.getScene();
+   const spec=library.capture(scene,"preview_root",{id,name,description:library.allPresets().find(t=>t.id===activeId)?.description||""});
+   spec.era=$("template-era-filter").value==="all"?"common":$("template-era-filter").value;
+   spec.use=useGroup({name});
+   library.register(spec);
+   // Identical local key used by the existing editor's template storage.
+   localStorage.setItem("mymapcreater:building-templates:v1",JSON.stringify(library.custom));
+   if(![...picker.options].some(o=>o.value===spec.id)){
+    const option=T("option","",spec.name);option.value=spec.id;picker.append(option);
+   }
+   picker.value=spec.id;
+   picker.dispatchEvent(new Event("change",{bubbles:true}));
+   activeId=spec.id;
+   setMode(false);
+   renderCache.clear();refresh();selectTemplate(spec.id);
+   setEditMessage("別名保存しました");
+  }catch(e){setEditMessage("保存失敗："+e.message)}
  }
  function refresh(){
   if(!library)return;
