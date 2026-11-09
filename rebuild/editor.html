@@ -264,6 +264,30 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 
    <p class="note">配置開始位置はマップ画面の中心。現在のグリッド間隔とスナップを利用。保存前なら「戻す」で一括取消できます。大量追加時の重なりは事前に確認してください。</p>
   </section>
+  <section class="panel" id="town-tools-panel">
+   <h2>町の制作・地形編集</h2>
+   <p class="note">実在地図の取得結果も、架空の町も、同じ編集操作を使用します。対象をマップ上で選択して実行してください。</p>
+   <div class="fieldset">
+    <h3>道路の端点を接続</h3>
+    <p class="note">選択道路の端点と、近くの別道路の端点を一つの接続点へ移動します。元のOSM図形を編集した記録を残します。</p>
+    <label>最大接続距離（m）<input id="town-road-distance" type="number" min="0.1" max="20" step="0.5" value="2"></label>
+    <button id="town-road-connect" type="button">選択道路の最も近い端点を接続</button>
+   </div>
+   <div class="fieldset">
+    <h3>標高セルをまとめて編集</h3>
+    <p class="note">選択セルの中心から指定半径に入る標高セルへ、高さの変化量を適用します。元のDEM値と手動編集値を区別します。</p>
+    <div class="col2">
+     <label>半径（m）<input id="town-terrain-radius" type="number" min="0" max="500" step="5" value="25"></label>
+     <label>標高変化（m）<input id="town-terrain-delta" type="number" min="-100" max="100" step="0.5" value="1"></label>
+    </div>
+    <button id="town-terrain-apply" type="button">選択セル周辺の標高を変更</button>
+   </div>
+   <div class="fieldset">
+    <h3>建物の配置位置</h3>
+    <label class="switches"><input id="town-building-at-selection" type="checkbox"> 上の「建物をまとめて追加」を選択図形の中心から配置（無選択時は画面中央）</label>
+    <p class="note">建物輪郭を選択してから配置位置の目安にできます。元の建物輪郭自体は変更しません。</p>
+   </div>
+  </section>
   <section class="panel" id="editor-grid-panel">
    <h2>共通グリッド・スナップ</h2>
    <p class="note">建物も道路も同じマップ座標で配置します。1マス＝50cm、補助スナップ＝25cm。座標値と実寸の換算はマップごとに設定してください。</p>
@@ -543,5 +567,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 <script src="./building-templates.js?v=modern-housing-real-scale-v9"></script>
 <script src="./template-preview.js?v=residential-palette-v18"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
-<script src="./map-editor.js?v=generic-geo-import-v10"></script>
+<script src="./town-edit-tools.js?v=city-edit-v1"></script>
+ <script src="./map-editor.js?v=town-edit-tools-v11"></script>
 </body></html>
