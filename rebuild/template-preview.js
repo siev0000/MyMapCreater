@@ -154,9 +154,15 @@
    infoTitle:$("template-preview-info-title"),
    infoMeta:$("template-preview-info-meta"),
    infoText:$("template-preview-info-text"),
-   onSelectionChanged:(_key,obj)=>{showObjectInfo(obj);syncEditFields(obj)},
+   onSelectionChanged:(_key,obj)=>{showObjectInfo(obj);syncEditFields(obj);if(editing)updateAreaStatus(previewViewer?.getScene())},
    onBeforeObjectDrag:scene=>{if(editing)beforeDrag=JSON.stringify(scene)},
-   onObjectMoved:()=>{if(editing&&beforeDrag){editPast.push(JSON.parse(beforeDrag));editFuture=[];beforeDrag=null;setEditMessage("位置・形状を変更しました")}}
+   onObjectChanging:(_obj,scene)=>{if(editing)refreshChecks(scene)},
+   onObjectMoved:()=>{if(editing&&beforeDrag){
+    editPast.push(JSON.parse(beforeDrag));editFuture=[];beforeDrag=null;
+    const obj=previewViewer.getSelected();
+    if(["door","window"].includes(obj?.objectType))linkSelectedOpening(true);
+    setEditMessage("位置・形状を変更しました");refreshChecks(previewViewer.getScene());
+   }}
   });
   previewViewer.setEditMode(false);
   return previewViewer;
@@ -197,6 +203,7 @@
    throw Error("プレビューの階層を切り替えられません");
   viewer.redraw();
   showObjectInfo(viewer.getSelected());
+  refreshChecks(viewer.getScene());
  }
  function close(){
   if(editPast.length&&global.confirm&&!global.confirm("未保存の編集内容を破棄して閉じますか？"))return;
@@ -207,7 +214,7 @@
  }
  const eraNames={"common":"共通・未分類","modern-jp":"現代日本","japanese":"和風","historical-eu":"歴史欧州","fantasy":"異世界","machine":"機械","ruins":"終末・廃墟"};
  const catalog={
-  "建築":[["wall","壁",0,0],["door","扉",0,0],["room","部屋の区画",6,6]],
+  "建築":[["wall","壁",0,0],["door","扉",0,0],["window","窓",0,0],["room","部屋の区画",6,6]],
   "生活設備":[["kitchen","キッチン",4,2],["toilet","トイレ",2,2],["sink","洗面台",2,1],["bath","浴槽",3,2]],
   "家具":[["bed","ベッド",3,5],["table","机",3,2],["chair","椅子",1,1],["shelf","収納棚",3,1]],
   "商業設備":[["counter","カウンター",5,2],["display_shelf","商品棚",4,1]],
@@ -245,6 +252,16 @@
   $("template-edit-detail").value=editing&&obj?obj.detail||"":"";
   $("template-wall-thickness-label").hidden=!(editing&&obj?.objectType==="wall");
   $("template-wall-thickness").value=editing&&obj?.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/previewSpacing()*50).toFixed(2))):"";
+  const rect=editing&&obj?.geometry?.type==="rect"&&["object","stair"].includes(obj.objectType);
+  for(const [label,input] of [["template-dim-width-label","template-dim-width"],["template-dim-height-label","template-dim-height"],["template-dim-rotation-label","template-dim-rotation"]])
+   $(label).hidden=!rect;
+  $("template-dim-width").value=rect?Number((obj.geometry.width/previewSpacing()*50).toFixed(1)):"";
+  $("template-dim-height").value=rect?Number((obj.geometry.height/previewSpacing()*50).toFixed(1)):"";
+  $("template-dim-rotation").value=rect?obj.geometry.rotation||0:"";
+  const opening=editing&&["door","window"].includes(obj?.objectType);
+  $("template-opening-width-label").hidden=!opening;
+  $("template-opening-link").hidden=!opening;
+  $("template-opening-width").value=opening?Number((length2(obj.geometry.points[0],obj.geometry.points[1])/previewSpacing()*50).toFixed(1)):"";
  }
  function setMode(value){
   editing=!!value;
@@ -263,6 +280,8 @@
   previewViewer.setEditMode(editing);
   if(activeFloor&&previewViewer.getFloorContext()?.selectedFloorId!==activeFloor)previewViewer.setFloor(activeFloor);
   showObjectInfo(previewViewer.getSelected());
+  syncEditFields(previewViewer.getSelected());
+  refreshChecks(previewViewer.getScene());
  }
  function setHistory(from,to){
   if(!from.length)return;
@@ -289,17 +308,22 @@
   const snap=v=>Math.round(v/(spacing*.5))*(spacing*.5);
   const x=snap(Math.max(g.x+spacing,Math.min(g.x+g.width-w-spacing,center[0]-w/2)));
   const y=snap(Math.max(g.y+spacing,Math.min(g.y+g.height-h-spacing,center[1]-h/2)));
-  let geometry=key==="wall"||key==="door"?{type:"polyline",points:[[x,y],[x+2*spacing,y]]}:{type:"rect",x,y,width:w,height:h};
-  const kind=key==="wall"?"wall":key==="door"?"door":"object";
-  snapshot();
+  let geometry=key==="wall"||key==="door"||key==="window"?{type:"polyline",points:[[x,y],[x+2*spacing,y]]}:{type:"rect",x,y,width:w,height:h};
+  const kind=key==="wall"?"wall":key==="door"?"door":key==="window"?"window":key==="room"?"region":"object";
   const obj={id,name:item[1],parentId:root.id,displayLevel:(root.displayLevel||4)+1,floorId:activeFloor,
-   objectType:kind,layer:kind==="wall"||kind==="door"?"walls":"structures",zIndex:kind==="wall"?47:kind==="door"?49:45,
+   objectType:kind,layer:["wall","door","window"].includes(kind)?"walls":"structures",zIndex:kind==="wall"?47:kind==="door"||kind==="window"?49:45,
    visible:true,selectable:true,geometry,
    style:{fill:kind==="object"?"rgba(65,110,130,.65)":null,stroke:kind==="door"?"#e8b97a":"#a8d7dd",strokeWidth:1.5},
    shapePresetId:key,label:{visible:false,text:item[1]},detail:item[1]+"（設置物の説明を編集できます）",
    metadata:{generated:false,templateEditor:true}};
   if(kind==="wall")obj.wall={thickness:previewSpacing()*10/50};
   if(kind==="door")obj.door={hinge:"start",swing:"inward",state:"closed",swingSide:"left"};
+  if(kind==="region"){obj.label={visible:true,text:obj.name,position:[x+w/2,y+h/2],fontSize:9};obj.shapePresetId="room_zone"}
+  if(kind==="door"||kind==="window"){
+   if(!placeOpening(scene,obj,center,2*spacing)){setEditMessage("扉・窓を設置できる長さの壁がありません");return}
+   if(kind==="window")obj.style.stroke="#80ddf0";
+  }
+  snapshot();
   scene.objects.push(obj);updateScene(scene,id);setEditMessage(item[1]+"を追加しました");
  }
  function changeSelected(remove=false){
@@ -316,6 +340,23 @@
    const obj=scene.objects.find(o=>o.id===selected.id);
    obj.name=$("template-edit-name").value.trim()||obj.name;
    obj.detail=$("template-edit-detail").value.trim();
+   if(["object","stair"].includes(obj.objectType)&&obj.geometry?.type==="rect"){
+    const w=Number($("template-dim-width").value),h=Number($("template-dim-height").value),rotation=Number($("template-dim-rotation").value);
+    if(!Number.isFinite(w)||!Number.isFinite(h)||w<1||h<1||w>5000||h>5000||!Number.isFinite(rotation)||Math.abs(rotation)>360){
+     editPast.pop();setEditMessage("家具の幅・奥行は1〜5000cm、回転は±360°で入力してください");return;
+    }
+    const g=obj.geometry,cx=g.x+g.width/2,cy=g.y+g.height/2;
+    g.width=w/50*previewSpacing();g.height=h/50*previewSpacing();
+    g.x=cx-g.width/2;g.y=cy-g.height/2;g.rotation=rotation;
+   }
+   if(["door","window"].includes(obj.objectType)){
+    const cm=Number($("template-opening-width").value);
+    if(!Number.isFinite(cm)||cm<25||cm>500){editPast.pop();setEditMessage("開口幅は25〜500cmで入力してください");return}
+    const ps=obj.geometry.points,center=[(ps[0][0]+ps[1][0])/2,(ps[0][1]+ps[1][1])/2];
+    if(!placeOpening(scene,obj,center,cm/50*previewSpacing(),true)){
+     editPast.pop();setEditMessage("開口幅に合う壁が近くにありません");return
+    }
+   }
    if(obj.objectType==="wall"){
     const cm=Number($("template-wall-thickness").value);
     if(!Number.isFinite(cm)||cm<1||cm>300){editPast.pop();setEditMessage("壁の厚さは1〜300cmで入力してください");return}
@@ -323,6 +364,7 @@
    }
    if(obj.label)obj.label.text=obj.name;
   }
+  if(remove)for(const door of scene.objects)if(["door","window"].includes(door.objectType)&&door.opening?.wallId===selected.id){delete door.opening.wallId}
   updateScene(scene,remove?"preview_root":selected.id);
   setEditMessage(remove?"設置物を削除しました":"名前と説明を変更しました");
  }
@@ -541,6 +583,7 @@
    $("template-item-add").addEventListener("click",addItem);
    $("template-item-apply").addEventListener("click",()=>changeSelected(false));
    $("template-item-delete").addEventListener("click",()=>changeSelected(true));
+   $("template-opening-link").addEventListener("click",()=>linkSelectedOpening());
    $("template-undo").addEventListener("click",()=>setHistory(editPast,editFuture));
    $("template-redo").addEventListener("click",()=>setHistory(editFuture,editPast));
    $("template-save-copy").addEventListener("click",saveCopy);
