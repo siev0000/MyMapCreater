@@ -192,6 +192,46 @@ function create(opts){
   showDetails(owner);
   return true;
  }
+ function floorOverlayState(){
+  const context=getFloorContext();
+  if(!context)return null;
+  const owner=scene.objects.find(o=>o.id===context.ownerId),g=owner?.geometry;
+  if(!g)return null;
+  let points=[];
+  if(g.type==="rect"){
+   points=[[g.x,g.y],[g.x+g.width,g.y],[g.x+g.width,g.y+g.height],[g.x,g.y+g.height]];
+   if(Number.isFinite(g.rotation)&&g.rotation){
+    const angle=g.rotation*Math.PI/180,cx=g.x+g.width/2,cy=g.y+g.height/2;
+    points=points.map(([x,y])=>[cx+(x-cx)*Math.cos(angle)-(y-cy)*Math.sin(angle),
+                             cy+(x-cx)*Math.sin(angle)+(y-cy)*Math.cos(angle)]);
+   }
+  }else if(g.type==="polygon"&&g.points?.length)points=g.points;
+  else if(g.type==="circle"&&g.center)points=[
+   [g.center[0]-g.radius,g.center[1]],[g.center[0]+g.radius,g.center[1]],
+   [g.center[0],g.center[1]-g.radius],[g.center[0],g.center[1]+g.radius]];
+  if(!points.length)return null;
+  const positions=points.map(p=>screenAt(...p));
+  const xs=positions.map(p=>p[0]),ys=positions.map(p=>p[1]);
+  return{ownerId:owner.id,name:owner.name||owner.id,
+   floors:context.floors,selectedFloorId:context.selectedFloorId,
+   x:(Math.min(...xs)+Math.max(...xs))/2,y:Math.min(...ys),width,height};
+ }
+ function stairDestination(obj){
+  if(obj.objectType!=="stair")return null;
+  const connection=obj.connection;
+  if(!connection?.fromFloorId||!connection?.toFloorId)return null;
+  const lookup=new Map(scene.objects.map(o=>[o.id,o]));
+  let owner=lookup.get(obj.parentId),seen=new Set();
+  while(owner&&!seen.has(owner.id)&&!Array.isArray(owner.floors)){
+   seen.add(owner.id);owner=lookup.get(owner.parentId);
+  }
+  if(!Array.isArray(owner?.floors)||obj.floorId!==connection.fromFloorId)return null;
+  const a=owner.floors.findIndex(f=>f.id===connection.fromFloorId);
+  const b=owner.floors.findIndex(f=>f.id===connection.toFloorId);
+  if(a<0||b<0||a===b)return null;
+  const floor=owner.floors[b];
+  return{symbol:b>a?"↑":"↓",label:floor.label||floor.id,id:floor.id};
+ }
  function initialDisplayLevel(){
   const level=scene?.settings?.initialDisplayLevel;
   return Number.isSafeInteger(level)&&level>=1?level:3;
@@ -483,17 +523,20 @@ function create(opts){
     if(horizontal)line(x,y+h*i/n,x+w,y+h*i/n);
     else line(x+w*i/n,y,x+w*i/n,y+h);
    }
-   ctx.strokeStyle=emphasized?"#ffefa7":"#e3bd7b";ctx.lineWidth=2/scale();
-   const direction=obj.connection?.direction==="down"?-1:1;
-   const cx=x+w/2,cy=y+h/2,dist=(horizontal?h:w)*.31;
-   const sx=horizontal?cx-dist*0:cx-dist*direction;
-   const sy=horizontal?cy-dist*direction:cy;
-   const ex=horizontal?cx:cx+dist*direction;
-   const ey=horizontal?cy+dist*direction:cy;
-   line(sx,sy,ex,ey);
-   const angle=Math.atan2(ey-sy,ex-sx),head=Math.min(w,h)*.16;
-   line(ex,ey,ex-head*Math.cos(angle-.6),ey-head*Math.sin(angle-.6));
-   line(ex,ey,ex-head*Math.cos(angle+.6),ey-head*Math.sin(angle+.6));
+   // One arrow indicates elevation, not the screen-space staircase direction.
+   const destination=stairDestination(obj);
+   const text=destination?destination.symbol+" "+destination.label:"未接続";
+   const fontSize=12/scale(),padX=5/scale(),padY=3/scale();
+   ctx.save();
+   ctx.font="bold "+fontSize+"px system-ui, sans-serif";
+   ctx.textAlign="center";ctx.textBaseline="middle";
+   const tw=ctx.measureText(text).width,boxW=tw+2*padX,boxH=fontSize+2*padY;
+   const cx=x+w/2,cy=y+h/2;
+   ctx.fillStyle="rgba(10,32,41,.82)";
+   ctx.fillRect(cx-boxW/2,cy-boxH/2,boxW,boxH);
+   ctx.fillStyle=destination?(destination.symbol==="↑"?"#82d4f5":"#ffcb84"):"#e2bbc2";
+   ctx.fillText(text,cx,cy);
+   ctx.restore();
   }
   ctx.restore();return true;
  }
@@ -770,6 +813,7 @@ function create(opts){
   drawEditorGrid();
   drawLabels(list);
   drawEditHandles();
+  if(typeof opts.onFloorOverlayChanged==="function")opts.onFloorOverlayChanged(floorOverlayState());
   if(opts.zoomLabel)opts.zoomLabel.textContent=Math.round(zoom*100)+"%";
  }
  // Exterior scene is loaded first. Interiors are fetched only after selecting
