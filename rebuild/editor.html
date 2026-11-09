@@ -205,7 +205,12 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
       </div>
      </div>
      <div id="door-wall-fields" class="hidden">
-      <label>接続する壁<select id="door-wall-id"></select></label>
+      <div class="col2">
+        <label>扉の種類<select id="door-type"><option value="hinged">開き戸</option><option value="sliding">スライドドア</option></select></label>
+        <label id="door-slide-fields">スライド方向<select id="door-slide-direction"><option value="start">始点側</option><option value="end">終点側</option></select></label>
+       </div>
+       <label>接続する壁<select id="door-wall-id"></select></label>
+       <p class="note">スライドドアはオレンジ色で、選択した方向の壁に扉を重ねて表示します。始点・終点は扉の2頂点の順番です。</p>
       <p class="note">扉を壁に関連付けると、壁単体の移動に扉が追従し、壁と重なる部分を開口として表示できます。壁上の位置は扉の座標で指定します。</p>
      </div>
      <div id="wall-thickness-fields" class="hidden">
