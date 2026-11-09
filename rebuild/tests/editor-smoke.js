@@ -30,7 +30,7 @@ const ids=[
 "undo","redo","clone-object","delete-object","selected-fields","select-empty",
 "objects","object-search","clear-search","obj-id","obj-name","obj-display-level","obj-type",
 "obj-parent","layer-list","obj-layer","obj-z","obj-visible","obj-selectable",
-"door-type","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
+"door-type","door-leaf-count","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
 "apply-json","new-shape","new-role","new-layer","new-parent-selected","new-when-parent-selected","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
@@ -83,6 +83,12 @@ async function main(){
  assert.equal(el["obj-type"].value,"door");
  el["door-type"].value="sliding";el["door-type"].listeners.change();
  assert.equal(JSON.parse(el["json-object"].value).door.type,"sliding");
+ el["door-leaf-count"].value="2";el["door-leaf-count"].listeners.change();
+ assert.equal(JSON.parse(el["json-object"].value).door.leafCount,2);
+ el.undo.click();
+ assert.notEqual(JSON.parse(el["json-object"].value).door.leafCount,2);
+ el.redo.click();
+ assert.equal(JSON.parse(el["json-object"].value).door.leafCount,2);
  el["door-slide-direction"].value="start";el["door-slide-direction"].listeners.change();
  assert.equal(JSON.parse(el["json-object"].value).door.slideDirection,"start");
  el.undo.click();
