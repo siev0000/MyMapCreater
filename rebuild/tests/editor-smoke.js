@@ -28,7 +28,7 @@ const ids=[
 "legend-footer","legend-content","legend-switch","visibility-controls","zoom-in","zoom-out",
 "zoom-reset","zoom-label","map-hint","scene-select","scene-name","edit-hint","message",
 "undo","redo","clone-object","delete-object","selected-fields","select-empty",
-"objects","object-search","clear-search","obj-id","obj-name","obj-display-level","obj-type",
+"objects","object-search","clear-search","batch-mode","batch-select-visible","batch-clear","batch-controls","batch-count","batch-align","batch-align-apply","batch-distribute","batch-distribute-apply","batch-dx","batch-dy","batch-move","batch-delete","obj-id","obj-name","obj-display-level","obj-type",
 "obj-parent","layer-list","obj-layer","obj-z","obj-visible","obj-selectable",
 "stair-direction-fields","stair-low-side","door-type","door-leaf-count","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
@@ -77,6 +77,18 @@ async function main(){
  choice.click();
  assert.equal(el["obj-id"].value,"workshop");
  // Explicitly create a nested door, displayed only when the parent is selected.
+ // Batch mode must preserve selection IDs and use one undo for a bulk move.
+ el["batch-mode"].checked=true;el["batch-mode"].listeners.change();
+ const selectedEntries=el.objects.children.slice(0,2);
+ selectedEntries.forEach(x=>x.click());
+ assert.equal(el["batch-count"].textContent,"2件を選択");
+ el["batch-dx"].value="5";el["batch-dy"].value="0";
+ el["batch-move"].click();
+ assert.equal(el["batch-count"].textContent,"2件を選択");
+ el.undo.click();
+ el["batch-clear"].click();
+ assert.equal(el["batch-count"].textContent,"0件を選択");
+ el["batch-mode"].checked=false;el["batch-mode"].listeners.change();
  el["new-shape"].value="polyline";el["new-role"].value="door";el["new-level"].value="small";
  el["new-parent-selected"].checked=true;el["new-when-parent-selected"].checked=true;
  el["add-object"].click();
