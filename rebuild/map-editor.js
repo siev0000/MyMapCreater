@@ -392,7 +392,7 @@ function updateVertexControls(obj){
  $("stair-direction-fields").classList.toggle("hidden",obj?.objectType!=="stair");
  if(obj?.objectType==="stair")$("stair-low-side").value=obj.stair?.lowSide||"";
  $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
- if(obj?.objectType==="wall")$("wall-thickness").value=obj.wall?.thickness??"";
+ if(obj?.objectType==="wall")$("wall-thickness").value=Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/gridState.spacing*50).toFixed(2))):"";
 }
 bind("vertex-add",()=>{
  const current=sceneNow()?.objects.find(o=>o.id===state.selectedId),points=current?.geometry?.points;
@@ -489,8 +489,8 @@ bind("wall-thickness",()=>{
  const raw=input("wall-thickness").trim();
  if(raw===""){changeObject(o=>{if(o.objectType==="wall"&&o.wall)delete o.wall.thickness});return}
  const thickness=Number(raw);
- if(!Number.isFinite(thickness)||thickness<=0){notice("壁の実厚は0より大きい値を指定してください","error");renderSelected();return}
- changeObject(o=>{if(o.objectType!=="wall")return;o.wall={...o.wall,thickness}});
+ if(!Number.isFinite(thickness)||thickness<1||thickness>300){notice("壁厚は1〜300cmで指定してください","error");renderSelected();return}
+ changeObject(o=>{if(o.objectType!=="wall")return;o.wall={...o.wall,thickness:thickness/50*gridState.spacing}});
 });
 function initBuildingTemplates(){
  const list=window.AAMapBuildingTemplates?.allPresets()||[];
