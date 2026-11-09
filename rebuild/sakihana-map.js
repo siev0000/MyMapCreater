@@ -7,9 +7,12 @@
 const CENTER={lat:37.7351639,lon:139.2909028},HALF_M=250,UNIT=4;
 const DEG_LAT=111132.92,DEG_LON=111320*Math.cos(CENTER.lat*Math.PI/180);
 const BOUNDS={minX:-HALF_M*UNIT,maxX:HALF_M*UNIT,minY:-HALF_M*UNIT,maxY:HALF_M*UNIT};
+// Try the community instance first; overpass-api.de often returns HTTP 502
+// when its query queue is full. Never hammer a failing host with fast retries.
 const overpassEndpoints=[
- "https://overpass-api.de/api/interpreter",
- "https://overpass.private.coffee/api/interpreter"
+ "https://overpass.private.coffee/api/interpreter",
+ "https://lz4.overpass-api.de/api/interpreter",
+ "https://overpass-api.de/api/interpreter"
 ];
 function fromLonLat(p){return[(p.lon-CENTER.lon)*DEG_LON*UNIT,(CENTER.lat-p.lat)*DEG_LAT*UNIT]}
 function toLonLat(x,y){return{lat:CENTER.lat-y/UNIT/DEG_LAT,lon:CENTER.lon+x/UNIT/DEG_LON}}
@@ -196,18 +199,36 @@ function fromOverpass(payload){
  return scene;
 }
 async function loadOSM(){
- const query=osmQuery();
- let lastError=null;
+ const query=osmQuery(),failures=[];
  for(const endpoint of overpassEndpoints){
+  const host=new URL(endpoint).hostname;
+  const controller=typeof AbortController==="function"?new AbortController():null;
+  const timeout=controller?setTimeout(()=>controller.abort(),60000):null;
   try{
-   const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},
-    body:"data="+encodeURIComponent(query)});
-   if(!response.ok)throw Error("HTTP "+response.status);
+   const response=await fetch(endpoint,{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+    body:"data="+encodeURIComponent(query),
+    ...(controller?{signal:controller.signal}:{})
+   });
+   if(!response.ok){
+    const reason=response.status===502||response.status===503||response.status===504
+     ?"（サーバー混雑・一時障害）"
+     :response.status===429?"（利用制限）":"";
+    failures.push(host+": HTTP "+response.status+reason);
+    // A wrong query/blocked client should not be retried repeatedly on the same host.
+    continue;
+   }
    const payload=await response.json();
-   return fromOverpass(payload);
-  }catch(error){lastError=error}
+   const scene=fromOverpass(payload);
+   scene.settings.georeference.overpassEndpoint=endpoint;
+   return scene;
+  }catch(error){
+   failures.push(host+": "+(error?.name==="AbortError"?"60秒でタイムアウト":error?.message||"通信エラー"));
+  }finally{if(timeout!==null)clearTimeout(timeout)}
  }
- throw Error("OpenStreetMap取得失敗: "+(lastError?.message||"unknown")+"。Overpassサービスの状態・CORS・通信環境を確認してください。");
+ throw Error("OSMを取得できませんでした。"+
+  failures.join(" / ")+"。時間を置いて再試行してください。取得に失敗しても既存マップは変更されません。");
 }
 // Source elevations are supplied by GSI DEM PNG tiles, not estimated from OSM terrain classes.
 const TILE_SIZE=256;
