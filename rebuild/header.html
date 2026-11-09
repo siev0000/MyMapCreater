@@ -61,7 +61,6 @@ main{max-width:1240px;margin:0 auto;padding:5px clamp(10px,3vw,24px) 16px}
 /* Full-height read-only map area; header stays exactly two rows. */
 main{max-width:none;padding:0}
 .viewport{position:relative;display:block;min-height:0;height:calc(100dvh - 68px);padding:0;overflow:hidden;border:0;border-radius:0;background:#0c2029;text-align:left}
-#sakihana-viewer-tools[hidden]{display:none!important}
 #map-canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
 #map-canvas:active{cursor:grabbing}
 .map-zoom{position:absolute;top:10px;right:10px;z-index:3;display:flex;gap:4px;background:rgba(6,21,30,.83);border:1px solid #4a7382;border-radius:9px;padding:4px;align-items:center}
@@ -311,11 +310,8 @@ main{max-width:none;padding:0}
   <div class="map-title-chip" id="current-map-title" aria-live="polite">マップを読み込み中…</div>
   <div class="map-hint" id="map-hint" role="status" hidden></div>
   <div id="map-load-status" class="map-load-status" role="alert" hidden></div>
-  <div id="sakihana-viewer-tools" hidden style="position:absolute;top:55px;right:10px;z-index:8;display:flex;gap:5px;align-items:center;flex-wrap:wrap;max-width:min(92vw,350px);">
-   <button id="sakihana-viewer-osm" type="button" style="background:#24515a;border:1px solid #75a9ac;border-radius:6px;padding:5px 8px;color:white;font-size:11px">OSM実地図を取得</button>
-   <button id="sakihana-viewer-dem" type="button" style="background:#254d42;border:1px solid #75a89b;border-radius:6px;padding:5px 8px;color:white;font-size:11px">標高を取得</button>
-   <button id="sakihana-viewer-save" type="button" disabled style="background:#31565b;border:1px solid #93c4c7;border-radius:6px;padding:5px 8px;color:white;font-size:11px">取得結果をJSON保存</button>
-   <button id="sakihana-viewer-edit" type="button" disabled style="background:#326369;border:1px solid #93c4c7;border-radius:6px;padding:5px 8px;color:white;font-size:11px">取得結果を編集へ</button>
+  <div id="geo-viewer-tools" style="position:absolute;top:55px;right:10px;z-index:8;display:flex;gap:5px;align-items:center">
+   <a href="./editor.html?import=1" style="background:#24515a;border:1px solid #75a9ac;border-radius:6px;padding:6px 9px;color:white;font-size:11px;text-decoration:none">地図データ取込（編集画面）</a>
   </div>
   <div class="map-zoom" aria-label="マップの拡大縮小">
    <button type="button" id="zoom-out" title="縮小">−</button>
@@ -358,7 +354,6 @@ main{max-width:none;padding:0}
 </div>
 <script src="./spec-viewer.js?v=5"></script>
 <script src="./map-viewer.js?v=geo-credits-v8"></script>
-<script src="./sakihana-map.js?v=overpass-failover-v3"></script>
 <script src="./object-catalog.js?v=residential-46-v2"></script>
 <script>
 (()=>{
@@ -686,80 +681,11 @@ function render(){
  $('view-kind').textContent=active.kind||'map';
  $('view-name').textContent=active.id===root.id?root.name+'｜'+displayName:active.name;
  $('view-description').textContent=active.description||'';
- $('sakihana-viewer-tools').hidden=active.id!=="sakihana_gosen_500m";
- sakihanaUpdateExportButtons();
  document.title=$('view-name').textContent+'｜マップ表示';
  const sceneSource=active.id===root.id?
   (root.views||[]).find(v=>v.id===viewId)?.source||active.source||null:active.source||null;
  viewer.show(active.id,active.id===root.id?viewId:null,sceneSource);
 }
-const SAKIHANA_TRANSFER_KEY="mymapcreater:viewer-to-editor:sakihana:v1";
-function sakihanaHasData(){
- const scene=viewer.getScene();
- return scene?.id==="sakihana_gosen_500m"&&scene.objects.some(o=>o.metadata?.source==="OpenStreetMap"||o.metadata?.featureKind==="terrain");
-}
-function sakihanaUpdateExportButtons(){
- const ready=selected==="sakihana_gosen_500m"&&sakihanaHasData();
- $("sakihana-viewer-save").disabled=!ready;
- $("sakihana-viewer-edit").disabled=!ready;
-}
-function sakihanaExportJSON(){
- if(!sakihanaHasData())return;
- const scene=viewer.getScene();
- try{
-  window.AAMapViewer.sceneCheck(scene);
-  const blob=new Blob([JSON.stringify(scene,null,2)+"\n"],{type:"application/json"});
-  const url=URL.createObjectURL(blob),link=document.createElement("a");
-  link.href=url;link.download="sakihana_gosen_500m.scene.json";
-  document.body.append(link);link.click();link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),0);
-  const hint=$("map-hint");hint.hidden=false;hint.textContent="取得した地図をJSON保存しました。編集画面の「JSONを開く」から読み込めます。";
- }catch(error){
-  const hint=$("map-hint");hint.hidden=false;hint.textContent="JSON保存に失敗："+error.message;
- }
-}
-function sakihanaSendToEditor(){
- if(!sakihanaHasData())return;
- const scene=viewer.getScene();
- try{
-  window.AAMapViewer.sceneCheck(scene);
-  sessionStorage.setItem(SAKIHANA_TRANSFER_KEY,JSON.stringify(scene));
-  location.href="./editor.html#sakihana_gosen_500m";
- }catch(error){
-  const hint=$("map-hint");hint.hidden=false;
-  hint.textContent="編集画面への引き継ぎに失敗："+error.message+"。先に「取得結果をJSON保存」で保存してください。";
- }
-}
-$("sakihana-viewer-save").addEventListener("click",sakihanaExportJSON);
-$("sakihana-viewer-edit").addEventListener("click",sakihanaSendToEditor);
-async function importSakihanaViewer(mode){
- if(selected!=="sakihana_gosen_500m"||!window.AASakihanaMap)return;
- const button=$("sakihana-viewer-"+mode);
- button.disabled=true;
- const hint=$("map-hint");hint.hidden=false;hint.textContent=mode==="osm"?"OpenStreetMapの実データを取得中…":"国土地理院の標高を解析中…";
- try{
-  const current=viewer.getScene();
-  if(!current)throw Error("咲花駅の初期シーンの読み込みが完了していません");
-  let scene;
-  if(mode==="osm"){
-   scene=await window.AASakihanaMap.loadOSM();
-   if(current.settings?.georeference?.terrainVerified){
-    scene.objects.unshift(...current.objects.filter(o=>o.metadata?.featureKind==="terrain"));
-    Object.assign(scene.settings.georeference,{
-     terrainVerified:true,demLayer:current.settings.georeference.demLayer,
-     demZoom:current.settings.georeference.demZoom,minElevationM:current.settings.georeference.minElevationM,
-     maxElevationM:current.settings.georeference.maxElevationM});
-   }
-  }else scene=window.AASakihanaMap.addElevation(current,await window.AASakihanaMap.elevationGrid());
-  if(selected!=="sakihana_gosen_500m")return;
-  viewer.replaceScene(scene,{preserveView:true,selectedId:null});
-  sakihanaUpdateExportButtons();
-  hint.textContent=mode==="osm"?"OSM実地図を表示しました。編集する場合は「編集」を開いてください。":"標高差を色で表示しました。";
- }catch(e){hint.textContent="取得できません："+e.message}
- finally{button.disabled=false}
-}
-$("sakihana-viewer-osm").addEventListener("click",()=>importSakihanaViewer("osm"));
-$("sakihana-viewer-dem").addEventListener("click",()=>importSakihanaViewer("dem"));
 function select(id,mode){
  if(!nodes.has(id))return;
  selected=id;
