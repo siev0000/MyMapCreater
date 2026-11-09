@@ -279,7 +279,7 @@
   $("template-edit-detail").value=editing&&obj?obj.detail||"":"";
   $("template-wall-thickness-label").hidden=!(editing&&obj?.objectType==="wall");
   $("template-wall-thickness").value=editing&&obj?.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/previewSpacing()*50).toFixed(2))):"";
-  const rect=editing&&obj?.geometry?.type==="rect"&&["object","stair"].includes(obj.objectType);
+  const rect=editing&&obj?.geometry?.type==="rect"&&obj.objectType==="object";
   for(const [label,input] of [["template-dim-width-label","template-dim-width"],["template-dim-height-label","template-dim-height"],["template-dim-rotation-label","template-dim-rotation"]])
    $(label).hidden=!rect;
   $("template-dim-width").value=rect?Number((obj.geometry.width/previewSpacing()*50).toFixed(1)):"";
@@ -367,7 +367,7 @@
    const obj=scene.objects.find(o=>o.id===selected.id);
    obj.name=$("template-edit-name").value.trim()||obj.name;
    obj.detail=$("template-edit-detail").value.trim();
-   if(["object","stair"].includes(obj.objectType)&&obj.geometry?.type==="rect"){
+   if(obj.objectType==="object"&&obj.geometry?.type==="rect"){
     const w=Number($("template-dim-width").value),h=Number($("template-dim-height").value),rotation=Number($("template-dim-rotation").value);
     if(!Number.isFinite(w)||!Number.isFinite(h)||w<1||h<1||w>5000||h>5000||!Number.isFinite(rotation)||Math.abs(rotation)>360){
      editPast.pop();setEditMessage("家具の幅・奥行は1〜5000cm、回転は±360°で入力してください");return;
@@ -423,6 +423,20 @@
   const fixtures=objects.filter(o=>["object","stair"].includes(o.objectType)&&o.geometry?.type==="rect"&&(!floorId||o.floorId===floorId));
   const walls=objects.filter(o=>o.objectType==="wall"&&o.geometry?.type==="polyline");
   const openings=objects.filter(o=>["door","window"].includes(o.objectType)&&o.geometry?.type==="polyline");
+  // Two openings may not occupy the same portion of a linked wall.
+  for(let i=0;i<openings.length;i++)for(let j=i+1;j<openings.length;j++){
+   const a=openings[i],b=openings[j];
+   if(!a.opening?.wallId||a.opening.wallId!==b.opening?.wallId||a.floorId!==b.floorId||(!floorId?false:a.floorId!==floorId))continue;
+   const [p,q]=a.geometry.points, [u,v]=b.geometry.points;
+   if(!p||!q||!u||!v)continue;
+   const dx=q[0]-p[0],dy=q[1]-p[1],len=Math.hypot(dx,dy);
+   if(len<EPS)continue;
+   const cross=pt=>Math.abs((pt[0]-p[0])*dy-(pt[1]-p[1])*dx)/len;
+   if(cross(u)>EPS||cross(v)>EPS)continue;
+   const project=pt=>((pt[0]-p[0])*dx+(pt[1]-p[1])*dy)/len;
+   if(Math.min(len,Math.max(project(u),project(v)))-Math.max(0,Math.min(project(u),project(v)))>EPS)
+    errors.push({a:a.id,b:b.id,message:a.name+"と"+b.name+"の開口が重複"});
+  }
   for(const fixture of fixtures){
    const fp=polygonOfRect(fixture.geometry);
    for(const wall of [...walls,...openings]){
