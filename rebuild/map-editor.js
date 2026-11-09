@@ -8,7 +8,7 @@ const notice=(message,kind="")=>{$("message").className=kind;$("message").textCo
 const input=id=>$(id).value;
 const checked=id=>$(id).checked;
 const state={scene:null,selectedId:null,options:[],undo:[],redo:[],dragBefore:null,
- savingName:"",dirty:false,internal:false,currentOptionKey:null,batchIds:new Set()};
+ savingName:"",dirty:false,internal:false,currentOptionKey:null,currentWorldId:null,worlds:[],batchIds:new Set()};
 let viewer;
 const gridDefaults={visible:true,snap:true,spacing:2,fraction:.5,originX:0,originY:0};
 let gridState={...gridDefaults};
@@ -823,11 +823,9 @@ function applyScene(scene,selectedId,{record=true,resetView=false}={}){
   renderSelected();showObjects();showNewLayerChoices();
   if(!record)setDirty(false);else setDirty(true);
   if(scene.settings?.georeference&&!state.options.some(o=>o.key===scene.id)){
-   const option={key:scene.id,id:scene.id,title:"制作中｜"+scene.name,scene:copy(scene)};
+   const option={key:scene.id,id:scene.id,title:"制作中｜"+scene.name,mapTitle:"制作中｜"+scene.name,worldId:state.currentWorldId,scene:copy(scene)};
    state.options.push(option);
-   const tag=document.createElement("option");tag.value=option.key;tag.textContent=option.title;
-   $("scene-select").append(tag);
-   state.currentOptionKey=option.key;$("scene-select").value=option.key;
+   state.currentOptionKey=option.key;renderWorldSelection(state.currentWorldId,option.key);
   }
   const live=state.options.find(o=>o.key===scene.id&&o.scene);
   if(live)live.scene=copy(scene);
@@ -1154,8 +1152,8 @@ function geoButtons(){
 }
 bind("geo-import-toggle",()=>{
  const panel=$("geo-import-panel");
- panel.hidden=false;
- $("geo-import-toggle").setAttribute("aria-expanded","true");
+ panel.hidden=!panel.hidden;
+ $("geo-import-toggle").setAttribute("aria-expanded",String(!panel.hidden));
  if(sceneNow()?.settings?.georeference){
   const gr=sceneNow().settings.georeference;
   $("geo-lat").value=gr.center.lat;
@@ -1314,31 +1312,61 @@ viewer=window.AAMapViewer.create({
 setGridInputs(gridDefaults);
 loadCustomBuildingTemplates();
 initBuildingTemplates();
+// World is the top-level collection; the one-line header lists only its maps.
+// Earth and Apocrypha=Archive are independent worlds, never siblings in a
+// single map list. Source scenes remain untouched.
+function worldOptions(worldId){return state.options.filter(o=>o.worldId===worldId)}
+function renderWorldSelection(worldId,selectedKey){
+ const current=state.worlds.find(w=>w.id===worldId)||state.worlds[0];
+ if(!current)return;
+ state.currentWorldId=current.id;
+ fillSelect($("world-select"),state.worlds.map(w=>[w.id,w.name]),current.id);
+ const options=worldOptions(current.id);
+ fillSelect($("scene-select"),options.map(o=>[o.key,o.mapTitle||o.title]),selectedKey||options[0]?.key||"");
+ const selected=options.find(o=>o.key===(selectedKey||state.currentOptionKey))||options[0];
+ const link=$("editor-view-map");
+ if(selected)link.href="./header.html#"+encodeURIComponent(selected.projection?selected.id+"::"+selected.projection:selected.id);
+ link.title=selected?"閲覧画面｜"+selected.title:"閲覧画面";
+}
+function optionFromCurrent(){return state.options.find(o=>o.key===state.currentOptionKey)}
+function unsavedOk(){
+ return !state.dirty||confirm("現在の編集は未保存です。破棄してマップを切り替えますか？");
+}
 async function init(){
  try{
   const response=await fetch("./map-tree.json",{cache:"no-store"});
   if(!response.ok)throw Error("HTTP "+response.status);
-  const config=await response.json(),opts=[];
-  for(const root of config.maps.filter(m=>m.parentId===null)){
-   for(const view of root.views||[])if(view.source){
+  const config=await response.json(),opts=[],roots=config.maps.filter(m=>m.parentId===null);
+  // Both roots are worlds; each contains map views and child maps.
+  state.worlds=roots.map(w=>({id:w.id,name:w.name}));
+  const descendants=rootId=>{
+   const found=[];const visit=parentId=>{
+    for(const node of config.maps.filter(m=>m.parentId===parentId)){
+     if(node.source)found.push(node);
+     visit(node.id);
+    }
+   };visit(rootId);return found;
+  };
+  for(const root of roots){
+   for(const view of root.views||[])if(view.source)
     opts.push({key:root.id+"::"+view.id,title:root.name+" / "+(view.displayName||view.name),
-     source:view.source,id:root.id,projection:view.id});
-   }
-   if(root.source)opts.push({key:root.id,title:root.name,source:root.source,id:root.id});
-   for(const sub of config.maps.filter(m=>m.parentId===root.id)){
-    if(sub.source)opts.push({key:sub.id,title:sub.name,source:sub.source,id:sub.id});
-   }
+     mapTitle:view.displayName||view.name,worldId:root.id,source:view.source,id:root.id,projection:view.id});
+   if(root.source)
+    opts.push({key:root.id,title:root.name+" / "+(root.id==="earth_world"?"地球全体":root.name),
+     mapTitle:root.id==="earth_world"?"地球全体":"全体",worldId:root.id,source:root.source,id:root.id});
+   for(const sub of descendants(root.id))if(sub.source)
+    opts.push({key:sub.id,title:root.name+" / "+sub.name,mapTitle:sub.name,
+     worldId:root.id,source:sub.source,id:sub.id});
   }
   if(!opts.length)throw Error("JSONの参照先マップがありません");
   state.options=opts;
-  fillSelect($("scene-select"),opts.map(o=>[o.key,o.title]),opts[0].key);
   const hash=decodeURIComponent(location.hash.slice(1));
   const fallback=opts.find(o=>o.id===config.defaultMapId)||opts[0];
   const first=opts.find(o=>o.key===hash||o.id===hash)||fallback;
-  $("scene-select").value=first.key;
+  renderWorldSelection(first.worldId,first.key);
   await load(first);
   if(new URLSearchParams(location.search).has("import")){
-   window.AAMapEditorUI?.selectTab("import",true);
+   window.AAMapEditorUI?.selectTab("files",true);
    $("geo-import-panel").hidden=false;
    $("geo-import-toggle").setAttribute("aria-expanded","true");
   }
@@ -1347,18 +1375,15 @@ async function init(){
    let incoming=null;
    try{incoming=sessionStorage.getItem(key)}
    catch(error){notice("確認画面からの地図引き継ぎを読み込めません："+error.message,"error")}
-   if(incoming){
-    try{
-     const restored=JSON.parse(incoming);
-     if(restored?.id!=="sakihana_gosen_500m")throw Error("別マップのデータです");
-     window.AAMapViewer.sceneCheck(restored);
-     if(applyScene(restored,null,{record:true,resetView:true})){
-      sessionStorage.removeItem(key);
-      state.savingName="sakihana_gosen_500m.scene.json";
-      notice("確認画面で取得したOSM・標高データを編集画面へ引き継ぎました。編集後は「街マップJSONを保存」で保存してください。","success");
-     }else notice("取得した地図を反映できません。転送データは保持しています。","error");
-    }catch(error){notice("取得地図の引き継ぎに失敗："+error.message+"。転送データは保持しています。","error")}
-   }
+   if(incoming)try{
+    const restored=JSON.parse(incoming);
+    if(restored?.id!=="sakihana_gosen_500m")throw Error("別マップのデータです");
+    window.AAMapViewer.sceneCheck(restored);
+    if(applyScene(restored,null,{record:true,resetView:true})){
+     sessionStorage.removeItem(key);state.savingName="sakihana_gosen_500m.scene.json";
+     notice("取得済み地図を引き継ぎました。編集後は「保」タブからJSON保存してください。","success");
+    }
+   }catch(error){notice("取得地図の引き継ぎに失敗："+error.message,"error")}
   }
  }catch(error){notice("マップ一覧の読み込み失敗："+error.message,"error")}
 }
@@ -1366,8 +1391,9 @@ async function load(option){
  if(!option)return;
  state.dragBefore=null;state.undo.length=0;state.redo.length=0;state.selectedId=null;
  notice("読み込み中："+option.title);
- $("scene-select").value=option.key;
+ renderWorldSelection(option.worldId,option.key);
  state.currentOptionKey=option.key;
+ state.savingName="";
  if(history.replaceState)history.replaceState(null,"","#"+encodeURIComponent(option.key));
  if(option.scene){
   applyScene(copy(option.scene),null,{record:false,resetView:true});
@@ -1377,13 +1403,20 @@ async function load(option){
  if(sceneNow())notice("編集する図形を選択してください");
 }
 bind("scene-select",async()=>{
- const option=state.options.find(o=>o.key===input("scene-select"));
- if(!option)return;
- if(state.dirty&&!confirm("未保存の編集を破棄してマップを切り替えますか？")){
-  $("scene-select").value=state.currentOptionKey||state.options[0].key;
-  return;
+ const option=worldOptions(state.currentWorldId).find(o=>o.key===input("scene-select"));
+ if(!option||option.key===state.currentOptionKey)return;
+ if(!unsavedOk()){
+  $("scene-select").value=state.currentOptionKey;return;
  }
  await load(option);
+});
+bind("world-select",async()=>{
+ const wanted=input("world-select");
+ if(wanted===state.currentWorldId)return;
+ if(!unsavedOk()){$("world-select").value=state.currentWorldId;return}
+ const target=worldOptions(wanted)[0];
+ if(!target){$("world-select").value=state.currentWorldId;return notice("このワールドにはマップがありません","error")}
+ await load(target);
 });
 init();
 })();
