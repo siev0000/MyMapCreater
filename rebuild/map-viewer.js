@@ -21,6 +21,7 @@ function sceneCheck(scene){
   if(g.type==="ring"&&(!point(g.center)||![g.innerRadius,g.outerRadius].every(Number.isFinite)||g.innerRadius<0||g.outerRadius<=g.innerRadius))throw Error("環状図形が不正です: "+obj.id);
   if(obj.label?.position&&!point(obj.label.position))throw Error("文字位置が不正です: "+obj.id);
   if(obj.displayLevel!==undefined&&(!Number.isSafeInteger(obj.displayLevel)||obj.displayLevel<1))throw Error("表示Lvは1以上の整数です: "+obj.id);
+  if(obj.wall?.thickness!==undefined&&(!Number.isFinite(obj.wall.thickness)||obj.wall.thickness<=0))throw Error("壁の実厚が不正です: "+obj.id);
   if(obj.style?.opacity!==undefined&&(!Number.isFinite(obj.style.opacity)||obj.style.opacity<0||obj.style.opacity>1))throw Error("透過率が不正です: "+obj.id);
   if(obj.style?.strokeWidth!==undefined&&(!Number.isFinite(obj.style.strokeWidth)||obj.style.strokeWidth<0))throw Error("線幅が不正です: "+obj.id);
  }
@@ -109,6 +110,7 @@ function create(opts){
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
  let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null,handleDrag=null;
  let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
+ let previewGridVisible=null;
  try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
  function getAxes(){
   return [scene?.coordinateSystem?.horizontal||[1,0],scene?.coordinateSystem?.vertical||[0,1]];
@@ -428,7 +430,9 @@ function create(opts){
    if(!emphasized&&st.fill){ctx.fillStyle=st.fill;ctx.fill(g.type==="ring"?"evenodd":"nonzero")}
    if(emphasized||st.stroke){
     ctx.strokeStyle=emphasized?(scene?.settings?.selectionStyle?.stroke||"#ffefa7"):st.stroke;
-    ctx.lineWidth=(emphasized?2.3:Math.max(.15,finite(st.strokeWidth,1)))/scale();
+    ctx.lineWidth=obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)&&obj.wall.thickness>0
+     ?Math.max(obj.wall.thickness,(emphasized?2.3:0)/scale())
+     :(emphasized?2.3:Math.max(.15,finite(st.strokeWidth,1)))/scale();
     ctx.setLineDash(emphasized?[]:(st.dash||[]).map(n=>n/scale()));
     ctx.stroke();
    }
@@ -464,14 +468,29 @@ function create(opts){
   ctx.stroke();ctx.restore();
  }
  function drawGrid(){
-  const grid=scene?.grid;if(!grid?.visible)return;
-  const b=bounds(),spacing=Math.max(1,finite(grid.spacing,100));
-  ctx.save();ctx.lineWidth=Math.max(.1,finite(grid.strokeWidth,.6))/scale();
-  ctx.strokeStyle=htmlColor(grid.stroke,"#94b4c0");
-  ctx.beginPath();
-  for(let x=Math.ceil(b.minX/spacing)*spacing;x<=b.maxX;x+=spacing){ctx.moveTo(x,b.minY);ctx.lineTo(x,b.maxY)}
-  for(let y=Math.ceil(b.minY/spacing)*spacing;y<=b.maxY;y+=spacing){ctx.moveTo(b.minX,y);ctx.lineTo(b.maxX,y)}
+  const configured=scene?.grid||{},enabled=previewGridVisible===null?configured.visible===true:previewGridVisible;
+  if(!enabled)return;
+  // Explicit preview ON works even in scenes whose stored grid.visible is false.
+  const spacing=Number(configured.spacing)>0?Number(configured.spacing):
+   Number(scene?.settings?.editorGrid?.spacing)>0?Number(scene.settings.editorGrid.spacing):2;
+  if(!(spacing>0)||spacing*scale()<5)return;
+  const points=[[0,0],[width,0],[0,height],[width,height]].map(p=>worldAt(...p));
+  const minX=Math.min(...points.map(p=>p[0])),maxX=Math.max(...points.map(p=>p[0]));
+  const minY=Math.min(...points.map(p=>p[1])),maxY=Math.max(...points.map(p=>p[1]));
+  if((maxX-minX)/spacing>600||(maxY-minY)/spacing>600)return;
+  ctx.save();ctx.lineWidth=Math.max(.1,finite(configured.strokeWidth,.6))/scale();
+  ctx.strokeStyle=htmlColor(configured.stroke,"#94b4c0");ctx.beginPath();
+  const ox=Number(scene?.settings?.editorGrid?.originX)||0,oy=Number(scene?.settings?.editorGrid?.originY)||0;
+  for(let i=Math.ceil((minX-ox)/spacing);i<=(maxX-ox)/spacing;i++){const x=ox+i*spacing;ctx.moveTo(x,minY);ctx.lineTo(x,maxY)}
+  for(let i=Math.ceil((minY-oy)/spacing);i<=(maxY-oy)/spacing;i++){const y=oy+i*spacing;ctx.moveTo(minX,y);ctx.lineTo(maxX,y)}
   ctx.stroke();ctx.restore();
+ }
+ function setPreviewGridVisible(visible){
+  previewGridVisible=typeof visible==="boolean"?visible:null;
+  draw();return getPreviewGridVisible();
+ }
+ function getPreviewGridVisible(){
+  return previewGridVisible===null?scene?.grid?.visible===true:previewGridVisible;
  }
  function drawLabels(objects){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.save();
@@ -585,7 +604,7 @@ function create(opts){
   // Grid is a regular ranked rendering pass, not a special background overlay.
   const gridRank=finite(scene.layers?.find(l=>l.id==="grid")?.zIndex,5);
   const passes=list.map((obj,i)=>({kind:"object",rank:layerRank(obj),i,obj}));
-  if(scene.grid?.visible)passes.push({kind:"grid",rank:gridRank,i:-1});
+  if(getPreviewGridVisible())passes.push({kind:"grid",rank:gridRank,i:-1});
   passes.sort((a,b)=>a.rank-b.rank||a.i-b.i);
   for(const pass of passes){
    if(pass.kind==="grid")drawGrid();
@@ -1067,7 +1086,7 @@ function create(opts){
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
  return{show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,setEditorGrid,snapPoint:([x,y])=>[snapWorld(x,0),snapWorld(y,1)],
-  getVisibilityGroups,setVisibilityMode,screenToWorld:worldAt,redraw:draw};
+  getVisibilityGroups,setVisibilityMode,setPreviewGridVisible,getPreviewGridVisible,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
 })(window);
