@@ -216,6 +216,7 @@
   "特殊設備":[["research_table","研究台",5,2],["storage_container","大型保管庫",5,4]]
  };
  function useGroup(t){
+  if(t.use)return t.use;
   const name=(t.name||"");
   if(/住宅|住居|休眠|ポッド/.test(name))return "housing";
   if(/宿|ホテル|旅館/.test(name))return "lodging";
