@@ -201,24 +201,26 @@ function generate(templateId,options={}){
    }
   }
   if(stair){
-   const sx=nX-5,sy=nY-7;
-   base("stair_"+f,i+1<template.floors?"上り階段":"下り階段","stair",rect(sx,sy,4,6),f,
+   // Keep stairs within the south-right zone, entirely past the partition wall.
+   const partitionY=template.layout==="front"?Math.round(nY*.67):mid;
+   const sx=nX-5,sy=partitionY+1,stairH=Math.min(6,nY-partitionY-2);
+   base("stair_"+f,i+1<template.floors?"上り階段":"下り階段","stair",rect(sx,sy,4,stairH),f,
     {fill:"rgba(75,118,137,.5)",stroke:"#acd5df",strokeWidth:1.5},
     {shapePresetId:"stair",connection:{id:id("stair_main"),fromFloorId:f,
       toFloorId:floorNames[i+1]?.id||floorNames[i-1].id,
-      fromAnchor:at(sx+2,sy+3),toAnchor:at(sx+2,sy+3),direction:i+1<template.floors?"up":"down"}});
+      fromAnchor:at(sx+2,sy+stairH/2),toAnchor:at(sx+2,sy+stairH/2),direction:i+1<template.floors?"up":"down"}});
   }
-  if(template.category==="warehouse"){
+  if(template.worldStyle!=="machine"&&template.category==="warehouse"){
     base("storage_"+f,"収納区画","object",rect(1,1,5,4),f,
      {fill:"#2b4856",stroke:"#9ec5ca",strokeWidth:1}, {shapePresetId:"storage_container"});
-  }else if(template.category==="shop"){
+  }else if(template.worldStyle!=="machine"&&template.category==="shop"){
     base("counter_"+f,"カウンター","object",rect(2,2,5,2),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"table"});
-  }else if(template.category==="workshop"){
+  }else if(template.worldStyle!=="machine"&&template.category==="workshop"){
     base("workbench_"+f,"作業台","object",rect(2,2,6,3),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"workbench"});
   }else if(template.worldStyle!=="machine"&&["small_house","row_house","apartment"].includes(template.category)){
-    base("bed_"+f,"ベッド","object",rect(2,2,3,5),f,
+    base("bed_"+f,"ベッド","object",rect(2,Math.max(1,Math.min(2,(template.layout==="front"?Math.round(nY*.67):mid)-5)),3,5),f,
      {fill:"#375666",stroke:"#9ec5ca",strokeWidth:1},{shapePresetId:"bed"});
   }
   if(template.worldStyle==="machine"&&!template.facilityMode){
@@ -293,15 +295,15 @@ function generate(templateId,options={}){
         metadata:{templateId:template.id,generated:true,role:"dormancy-pod",podIndex:number}});
      }
     }
-    addDevice("management","休眠管理端末",nX-6,2,3,3,"terminal_device");
+    addDevice("management","休眠管理端末",nX-4,2,3,3,"terminal_device");
     // Fuel/charging are separate systems and not embedded in each dormancy pod.
-    if(mode==="housing")addDevice("charging","共用充電設備",nX-7,nY-10,3,3,"charging_station");
+    if(mode==="housing")addDevice("charging","共用充電設備",nX-7,2,3,3,"charging_station");
    }else{
     const kind=mode==="fuel"?"fuel_dispenser":mode==="charging"?"charging_station":"terminal_device";
     const cols=mode==="terminal"?3:4;
     const rows=mode==="terminal"?2:2;
     for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
-      const px=2+col*5,py=2+row*6;
+      const px=template.layout==="cross"&&col===2?Math.round(nX*.48)+2:2+col*5,py=2+row*6;
       addDevice("station_"+row+"_"+col,mode==="fuel"?"燃料補給機":mode==="charging"?"充電設備":"登録端末",px,py,3,4,kind);
     }
     addDevice("management","管理端末",nX-7,2,4,3,"terminal_device");
