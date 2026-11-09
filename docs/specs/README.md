@@ -26,6 +26,7 @@
 | [08-placeable-objects.md](08-placeable-objects.md) | 大型設備・家具などの配置 |
 | [09-indoor-supply-icon-catalog.md](09-indoor-supply-icon-catalog.md) | 室内物資アイコンの割り当て表 |
 | [10-shape-only-catalog.md](10-shape-only-catalog.md) | 家具・大型設備の図形のみの一覧とSVGプレビュー |
+| [11-interior-generation-rules.md](11-interior-generation-rules.md) | 建物内部・入口・通路・室内配置の作成順序と完成判定 |
 
 ## 完成範囲の確定
 
