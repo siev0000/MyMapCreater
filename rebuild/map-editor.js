@@ -889,6 +889,93 @@ function uniqueId(base,objects){
  let i=2;while(used.has(name+"_"+i))i++;
  return name+"_"+i;
 }
+// User-defined land, road and rail lines; no import data is needed.
+const lineDraft={active:false,kind:"road",name:"",widthM:4,points:[],sceneId:null};
+function lineDraftPaint(){
+ const over=$("land-route-draw-overlay"),ready=lineDraft.points.length>=(lineDraft.kind==="land"?3:2);
+ over.hidden=!lineDraft.active;
+ $("land-route-begin").disabled=lineDraft.active;
+ $("land-route-finish").disabled=!lineDraft.active||!ready;
+ $("land-route-undo-point").disabled=!lineDraft.active||!lineDraft.points.length;
+ $("land-route-cancel").disabled=!lineDraft.active;
+ const label=$("land-route-status");over.replaceChildren();
+ if(!lineDraft.active){label.textContent="マップ上をタップして点を指定します。線は2点以上、土地は3点以上で確定できます。";return}
+ label.textContent=lineDraft.name+"：指定点 "+lineDraft.points.length+"（"+(lineDraft.kind==="land"?"3":"2")+"点以上で確定）";
+ const bounds=over.getBoundingClientRect();
+ const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+ svg.setAttribute("viewBox","0 0 "+Math.max(1,bounds.width)+" "+Math.max(1,bounds.height));
+ svg.setAttribute("width","100%");svg.setAttribute("height","100%");
+ svg.style.position="absolute";svg.style.inset="0";svg.style.pointerEvents="none";
+ const poly=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+ poly.setAttribute("points",lineDraft.points.map(p=>p.screen.join(",")).join(" "));
+ poly.setAttribute("fill","none");poly.setAttribute("stroke","#ffe19b");poly.setAttribute("stroke-width","3");
+ svg.append(poly);
+ if(lineDraft.kind==="land"&&lineDraft.points.length>=3){
+  const a=lineDraft.points.at(-1).screen,b=lineDraft.points[0].screen;
+  const line=document.createElementNS("http://www.w3.org/2000/svg","line");
+  for(const [k,v] of [["x1",a[0]],["y1",a[1]],["x2",b[0]],["y2",b[1]]])line.setAttribute(k,v);
+  line.setAttribute("stroke","#ffe19b");line.setAttribute("stroke-dasharray","5 5");line.setAttribute("stroke-width","2");svg.append(line);
+ }
+ over.append(svg);
+ for(const point of lineDraft.points){
+  const dot=document.createElement("span");dot.className="draw-point";
+  dot.style.left=point.screen[0]+"px";dot.style.top=point.screen[1]+"px";over.append(dot);
+ }
+}
+function lineDraftStop(){lineDraft.active=false;lineDraft.points=[];lineDraftPaint()}
+bind("land-route-begin",()=>{
+ const scene=sceneNow(),name=input("land-route-name").trim(),kind=input("land-route-kind"),width=Number(input("land-route-width"));
+ if(!scene)return notice("マップを先に選択してください","error");
+ if(!name)return notice("道路・線路・土地の名前を自由に入力してください","error");
+ if(kind!=="land"&&(!Number.isFinite(width)||width<.1||width>100))return notice("幅は0.1～100mで入力してください","error");
+ if(checked("move-mode")){$("move-mode").checked=false;viewer.setEditMode(false)}
+ Object.assign(lineDraft,{active:true,sceneId:scene.id,kind,name,widthM:width,points:[]});
+ lineDraftPaint();notice("マップ上をタップして順番に経路・土地の外周を指定してください","success");
+},"click");
+$("land-route-draw-overlay").addEventListener("click",e=>{
+ if(!lineDraft.active)return;
+ const rect=$("map-canvas").getBoundingClientRect(),overlay=$("land-route-draw-overlay").getBoundingClientRect();
+ if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)return;
+ const p=snapPoint(viewer.screenToWorld(e.clientX-rect.left,e.clientY-rect.top));
+ const last=lineDraft.points.at(-1)?.world;
+ if(last&&Math.hypot(p[0]-last[0],p[1]-last[1])<1e-7)return;
+ lineDraft.points.push({world:p,screen:[e.clientX-overlay.left,e.clientY-overlay.top]});
+ lineDraftPaint();
+});
+bind("land-route-undo-point",()=>{lineDraft.points.pop();lineDraftPaint()},"click");
+bind("land-route-cancel",()=>{lineDraftStop();notice("経路の作成を取り消しました")}, "click");
+bind("land-route-finish",()=>{
+ const src=sceneNow(),points=lineDraft.points.map(p=>p.world);
+ if(!lineDraft.active||!src||src.id!==lineDraft.sceneId)return notice("マップが切り替わりました。再度作成してください","error");
+ if(points.length<(lineDraft.kind==="land"?3:2))return notice("経路または土地の点が足りません","error");
+ const scene=copy(src),kind=lineDraft.kind;
+ const layer=kind==="land"?"landuse":kind==="road"?"roads":"railways";
+ const zIndex=kind==="land"?12:kind==="road"?55:60;
+ if(!scene.layers.some(x=>x.id===layer))scene.layers.push({id:layer,zIndex});
+ const id=uniqueId("created_"+kind,scene.objects);
+ const widthWorld=lineDraft.widthM*(Number(scene.settings?.georeference?.worldUnitsPerMeter)||gridState.spacing*2);
+ const avg=points.reduce((a,p)=>[a[0]+p[0]/points.length,a[1]+p[1]/points.length],[0,0]);
+ scene.objects.push({id,name:lineDraft.name,objectType:kind==="land"?"region":"route",
+  layer,zIndex,displayLevel:1,visible:true,selectable:true,
+  geometry:{type:kind==="land"?"polygon":"polyline",points},
+  style:{fill:kind==="land"?"rgba(91,147,100,.4)":null,
+   stroke:kind==="land"?"#96bd86":kind==="road"?"#d6c39d":"#c0b8b3",
+   strokeWidth:kind==="land"?1.3:Math.max(1,Math.min(8,widthWorld/8))},
+  label:{visible:false,text:lineDraft.name,position:avg,fontSize:12},
+  metadata:{featureKind:kind==="land"?"landuse":kind,source:"manual-map-editor",
+   ...(kind==="land"?{}:{widthM:lineDraft.widthM}),heightM:null,manualGeometryEdit:true}});
+ if(applyScene(scene,id)){
+  lineDraftStop();
+  notice("「"+scene.objects.at(-1).name+"」を作成しました。JSONを保存すると確定できます。","success");
+ }
+},"click");
+bind("land-route-kind",()=>{
+ const kind=input("land-route-kind"),field=$("land-route-width").closest("label");
+ field.hidden=kind==="land";
+},"change");
+// Keep draft separate from the map data when switching existing maps.
+bind("scene-select",()=>{if(lineDraft.active)lineDraftStop()},"change");
+
 bind("add-object",()=>{
  const scene=sceneNow();if(!scene)return;
  const gtype=input("new-shape");
