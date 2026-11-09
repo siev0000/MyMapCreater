@@ -91,6 +91,52 @@
   selectTemplate(picker.value||library.allPresets()[0]?.id);
   $("template-preview-filter").focus();
  }
+ function showObjectInfo(obj){
+  const t=library?.allPresets().find(item=>item.id===activeId);
+  const title=$("template-preview-info-title"),meta=$("template-preview-info-meta"),
+    detail=$("template-preview-info-text");
+  if(!obj){
+   title.textContent="設置物を選択してください";
+   meta.textContent="";
+   detail.textContent="平面図の家具・設備・扉・階段をクリックすると、名前と説明を表示します。";
+   return;
+  }
+  title.textContent=obj.name||obj.id;
+  const kind={
+   facility:"建物",slab:"床",wall:"壁",door:"扉",stair:"階段",object:"設置物"
+  }[obj.objectType]||obj.objectType||"オブジェクト";
+  const floor=record(t)?.floors.find(f=>f.id===obj.floorId);
+  const g=obj.geometry||{};
+  const dimension=g.type==="rect"?" / "+(g.width/previewSpacing()).toFixed(1).replace(/\\.0$/,"")+" × "+(g.height/previewSpacing()).toFixed(1).replace(/\\.0$/,"")+"マス":"";
+  meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension;
+  if(obj.id==="preview_root"){
+   detail.textContent=t?.description||obj.detail||"建物の概要";
+   return;
+  }
+  // Existing templates give fixtures a shared boilerplate description. Explain
+  // their verified role/type without inventing world-specific lore or capabilities.
+  const hints={
+   dormancy_pod:"個別に配置された休眠ポッドです。配置・通路・扉との位置関係を確認できます。",
+   charging_station:"建物内の充電設備です。配置位置を確認できます。",
+   fuel_dispenser:"燃料を補給するための設備です。配置位置を確認できます。",
+   terminal_device:"操作・情報用の端末です。配置位置を確認できます。",
+   workbench:"作業用の設備です。配置位置を確認できます。",
+   storage_container:"収納・保管用の設備です。配置位置を確認できます。",
+   table:"作業や接客に使う台です。配置位置を確認できます。",
+   bed:"ベッドです。部屋内の配置を確認できます。"
+  };
+  let explanation=obj.detail||"";
+  if(!explanation||explanation.startsWith("建物テンプレートから生成。")){
+   if(obj.objectType==="stair"){
+    const to=record(t)?.floors.find(f=>f.id===obj.connection?.toFloorId);
+    explanation="階を移動するための階段です。"+(to?"接続先："+(to.label||to.id)+"。":"")+"通路や壁との位置関係を確認できます。";
+   }else if(obj.objectType==="door")explanation="開口部に配置する扉です。出入口と通行経路を確認できます。";
+   else if(obj.objectType==="wall")explanation="間仕切り・外壁を構成する壁です。";
+   else if(obj.objectType==="slab")explanation="この階の床面です。";
+   else explanation=hints[obj.shapePresetId]||"「"+(obj.name||kind)+"」として配置された設置物です。具体的な機能はテンプレート側で未設定です。";
+  }
+  detail.textContent=explanation;
+ }
  function ensurePreviewViewer(){
   if(previewViewer)return previewViewer;
   if(!global.AAMapViewer?.create)throw Error("共通マップ描画機能が見つかりません");
@@ -101,9 +147,10 @@
   previewViewer=global.AAMapViewer.create({
    canvas:$("template-preview-canvas"),host:$("template-preview-large"),
    legend:legendPanel,legendButton,
-   infoTitle:document.createElement("span"),
-   infoMeta:document.createElement("span"),
-   infoText:document.createElement("span")
+   infoTitle:$("template-preview-info-title"),
+   infoMeta:$("template-preview-info-meta"),
+   infoText:$("template-preview-info-text"),
+   onSelectionChanged:(_key,obj)=>showObjectInfo(obj)
   });
   previewViewer.setEditMode(false);
   return previewViewer;
@@ -143,6 +190,7 @@
   if(activeFloor&&!viewer.setFloor(activeFloor))
    throw Error("プレビューの階層を切り替えられません");
   viewer.redraw();
+  showObjectInfo(viewer.getSelected());
  }
  function close(){
   $("template-preview-modal").hidden=true;activeId=null;
