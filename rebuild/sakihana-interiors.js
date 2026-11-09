@@ -3,7 +3,7 @@
  * 既存の建物外形・駅座標・標高・道路・鉄道を一切変更せず、子オブジェクトのみ追加する。
  */
 (function(root){"use strict";
-const VERSION="sakihana-interiors-draft-v1";
+const VERSION="sakihana-interiors-draft-v2";
 function bounds(g){
  if(!g)return null;
  let p=g.type==="polygon"?g.points:(g.type==="rect"?[[g.x,g.y],[g.x+g.width,g.y+g.height]]:null);
@@ -38,16 +38,16 @@ function room(scene,owner,b,i,name,x,y,w,h){
  if(owner.geometry.type==="polygon"&&!inside(midX,midY,owner.geometry.points))return;
  add(scene,owner,"room_"+i,name,"room",
   {type:"rect",x:x+margin,y:y+margin,width:Math.max(0.1,w-2*margin),height:Math.max(0.1,h-2*margin)},
-  3,{fill:"rgba(87,139,153,.23)",stroke:"#acd3dc",strokeWidth:0.8,opacity:1},
+  2,{fill:"rgba(87,139,153,.23)",stroke:"#acd3dc",strokeWidth:0.8,opacity:1},
   {metadata:{generated:true,source:"schematic-draft",verifiedInterior:false,interiorDraftVersion:VERSION,roomPurpose:name}});
 }
 function wall(scene,owner,i,x1,y1,x2,y2){
- add(scene,owner,"wall_"+i,"間仕切り（仮）","wall",{type:"polyline",points:[[x1,y1],[x2,y2]]},4,
+ add(scene,owner,"wall_"+i,"間仕切り（仮）","wall",{type:"polyline",points:[[x1,y1],[x2,y2]]},2,
   {fill:null,stroke:"#d2e0de",strokeWidth:1.4,opacity:1},{wall:{thickness:0.3}});
 }
 function object(scene,owner,id,name,x,y,w,h,kind){
  add(scene,owner,"object_"+id,name,"object",
-  {type:"rect",x,y,width:w,height:h},4,
+  {type:"rect",x,y,width:w,height:h},2,
   {fill:"#557e88",stroke:"#dfc482",strokeWidth:1,opacity:1},
   {metadata:{generated:true,source:"schematic-draft",verifiedInterior:false,interiorDraftVersion:VERSION,kind}});
 }
@@ -94,17 +94,50 @@ function build(scene,owner,ordinal){
  if(floors>1)object(scene,owner,"stair","階段位置（仮）",x+w*.37,y+h*.70,Math.max(2,w*.16),Math.max(2,h*.18),"stair-proxy");
  return true;
 }
+function addStationInterior(scene){
+ // Link the schematic to the EXISTING station coordinate marker in the same scene.
+ // The marker's position and footprint are left unchanged.
+ const station=scene.objects.find(o=>o.metadata?.source==="station-coordinate"&&
+  (/咲花|station/i.test(String(o.name||"")+" "+String(o.id||""))));
+ if(!station||station.geometry?.type!=="circle")return false;
+ const center=station.geometry.center;
+ if(!Array.isArray(center)||center.length!==2)return false;
+ station.objectType="facility";
+ station.floors=[{id:station.id+"__1F",label:"駅施設・参考配置",elevation:0,height:3}];
+ station.detail=(station.detail?station.detail+"\\n":"")+
+  "駅構内の仮案。待合・出入口・ホーム等の相対配置と寸法は実測値ではありません。";
+ station.metadata={...(station.metadata||{}),verifiedInterior:false,interiorDraft:true,interiorDraftVersion:VERSION};
+ const [cx,cy]=center;
+ // The geometry is a schematic overlay that appears ONLY after the existing marker is selected.
+ const extent=Math.max(12,Math.min(20,Number(station.geometry.radius||6)*2));
+ const x=cx-extent*.5,y=cy-extent*.55,w=extent,h=extent*.66;
+ const floorId=station.id+"__1F";
+ const zone=(id,name,g,type="room",style={fill:"rgba(74,132,151,.40)",stroke:"#b7dce6",strokeWidth:1.3,opacity:1})=>{
+  scene.objects.push({id:station.id+"__"+id,name,parentId:station.id,objectType:type,displayLevel:2,
+   floorId,layer:"stations",zIndex:80,visible:true,selectable:true,geometry:g,style,
+   detail:"咲花駅の参考配置です。実際の位置・形状・寸法は未確認です。",
+   metadata:{generated:true,source:"station-schematic-draft",verifiedInterior:false,interiorDraftVersion:VERSION}});
+ };
+ zone("waiting","駅待合スペース（仮）",{type:"rect",x,y,width:w*.65,height:h});
+ zone("service","駅内設備（仮）",{type:"rect",x:x+w*.70,y:y+h*.15,width:w*.20,height:h*.35},"object");
+ zone("entrance","駅出入口（仮位置）",{type:"rect",x:x+w*.3,y:y+h*.88,width:w*.25,height:h*.10},"door",
+  {fill:"#dab979",stroke:"#ffdf9c",strokeWidth:1,opacity:1});
+ zone("platform","ホーム方向（模式図）",
+  {type:"rect",x:x-w*.15,y:y-h*.32,width:w*1.3,height:h*.22},"object",
+  {fill:"rgba(140,153,149,.34)",stroke:"#d6dad8",strokeWidth:1,opacity:1});
+ return true;
+}
 function enrich(scene){
  if(scene?.id!=="sakihana_gosen_500m"||!Array.isArray(scene.objects))return scene;
  if(scene.settings?.sakihanaInteriorDraft===VERSION)return scene;
  const original=[...scene.objects],buildings=original.filter(o=>o.metadata?.featureKind==="building");
  let generated=0,skipped=0;
  for(let i=0;i<buildings.length;i++)(build(scene,buildings[i],i)?generated++:skipped++);
- // The station point is a geographical reference marker, not verified station-building geometry.
- // Do not invent a station footprint at the marker.
+ const stationLinked=addStationInterior(scene);
+ // Station stays inside the same 500m map: its original coordinate marker is the parent.
  scene.settings={...scene.settings,sakihanaInteriorDraft:VERSION,
   interiorDraftNotice:"既存建物の室内構成は参考用の仮間取りで、現地調査・公開図面による検証はしていません。駅の実際の駅舎形状も未確認です。",
-  interiorDraftCounts:{existingBuildingCount:buildings.length,generatedBuildingCount:generated,skippedBuildingCount:skipped}};
+  interiorDraftCounts:{existingBuildingCount:buildings.length,generatedBuildingCount:generated,skippedBuildingCount:skipped,stationLinked}};
  return scene;
 }
 root.AASakihanaInteriorDraft={enrich,version:VERSION};
