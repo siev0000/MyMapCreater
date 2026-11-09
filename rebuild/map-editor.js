@@ -1139,6 +1139,24 @@ async function init(){
   const first=opts.find(o=>o.key===hash||o.id===hash)||fallback;
   $("scene-select").value=first.key;
   await load(first);
+  if(first.id==="sakihana_gosen_500m"){
+   const key="mymapcreater:viewer-to-editor:sakihana:v1";
+   let incoming=null;
+   try{incoming=sessionStorage.getItem(key)}
+   catch(error){notice("確認画面からの地図引き継ぎを読み込めません："+error.message,"error")}
+   if(incoming){
+    try{
+     const restored=JSON.parse(incoming);
+     if(restored?.id!=="sakihana_gosen_500m")throw Error("別マップのデータです");
+     window.AAMapViewer.sceneCheck(restored);
+     if(applyScene(restored,null,{record:true,resetView:true})){
+      sessionStorage.removeItem(key);
+      state.savingName="sakihana_gosen_500m.scene.json";
+      notice("確認画面で取得したOSM・標高データを編集画面へ引き継ぎました。編集後は「街マップJSONを保存」で保存してください。","success");
+     }else notice("取得した地図を反映できません。転送データは保持しています。","error");
+    }catch(error){notice("取得地図の引き継ぎに失敗："+error.message+"。転送データは保持しています。","error")}
+   }
+  }
  }catch(error){notice("マップ一覧の読み込み失敗："+error.message,"error")}
 }
 async function load(option){
