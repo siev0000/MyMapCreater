@@ -708,7 +708,7 @@ function sakihanaExportJSON(){
  const scene=viewer.getScene();
  try{
   window.AAMapViewer.sceneCheck(scene);
-  const blob=new Blob([JSON.stringify(scene,null,2)+"\\n"],{type:"application/json"});
+  const blob=new Blob([JSON.stringify(scene,null,2)+"\n"],{type:"application/json"});
   const url=URL.createObjectURL(blob),link=document.createElement("a");
   link.href=url;link.download="sakihana_gosen_500m.scene.json";
   document.body.append(link);link.click();link.remove();
