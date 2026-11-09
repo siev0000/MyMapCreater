@@ -29,7 +29,7 @@ function sceneCheck(scene){
  const lookup=new Map(scene.objects.map(o=>[o.id,o]));
  for(const obj of scene.objects){
   if(obj.parentId&&!ids.has(obj.parentId))throw Error("存在しない親ID: "+obj.id);
-  if(obj.objectType==="door"&&obj.opening?.wallId){
+  if((obj.objectType==="door"||obj.objectType==="window")&&obj.opening?.wallId){
    const linked=lookup.get(obj.opening.wallId);
    if(!linked||linked.objectType!=="wall")throw Error("扉が参照する壁IDが不正です: "+obj.id);
   }
@@ -621,6 +621,8 @@ function create(opts){
   // Openings should not be filled back in by rounded stroke caps.
   if(obj.objectType==="wall"&&linkedDoors.has(obj.id))ctx.lineCap="butt";
   if(obj.objectType==="door"&&traceDoorSymbol(obj,emphasized)){ctx.restore();return}
+  // Windows share the wall opening path but remain a thin cyan glazed line.
+  if(obj.objectType==="window"&&g.type==="polyline"){ctx.strokeStyle=emphasized?"#ffefa7":(st.stroke||"#80ddf0");ctx.lineWidth=(emphasized?3:2)/scale();ctx.beginPath();for(let i=0;i<g.points.length;i++){if(!i)ctx.moveTo(...g.points[i]);else ctx.lineTo(...g.points[i])}ctx.stroke();ctx.restore();return}
   const ok=obj.objectType==="wall"?traceWallWithOpenings(ctx,obj):trace(ctx,g);
   if(ok){
    if(!emphasized&&st.fill){ctx.fillStyle=st.fill;ctx.fill(g.type==="ring"?"evenodd":"nonzero")}
@@ -854,7 +856,7 @@ function create(opts){
    dpr*(width/2+panX-s*cu),dpr*(height/2+panY-s*cv));
   const list=sortedVisible();
   linkedDoors.clear();
-  for(const item of scene.objects)if(item.objectType==="door"&&item.opening?.wallId){
+  for(const item of scene.objects)if((item.objectType==="door"||item.objectType==="window")&&item.opening?.wallId){
    const key=item.opening.wallId;
    if(!linkedDoors.has(key))linkedDoors.set(key,[]);
    linkedDoors.get(key).push(item);
@@ -1338,6 +1340,7 @@ function create(opts){
     }
     if(applyHandle(selected,handleDrag.handle,x,y)){
      handleDrag.moved=true;draw();
+     if(typeof opts.onObjectChanging==="function")opts.onObjectChanging(selected,scene);
     }
    }
   }else if(objectDrag&&pointers.size===1&&selected?.id===objectDrag.id){
@@ -1348,7 +1351,7 @@ function create(opts){
    }
    if(Math.hypot(x-objectDrag.x,y-objectDrag.y)>4){
     const dx=bx-ax,dy=by-ay;
-    if(dx||dy){translateObject(selected,dx,dy);objectDrag.moved=true;draw()}
+    if(dx||dy){translateObject(selected,dx,dy);objectDrag.moved=true;draw();if(typeof opts.onObjectChanging==="function")opts.onObjectChanging(selected,scene)}
    }
   }else if(pointers.size===2){
    const [a,b]=[...pointers.values()],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
