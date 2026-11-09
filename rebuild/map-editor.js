@@ -775,6 +775,15 @@ function applyScene(scene,selectedId,{record=true,resetView=false}={}){
   $("scene-name").textContent=scene.name||"マップ";
   renderSelected();showObjects();showNewLayerChoices();
   if(!record)setDirty(false);else setDirty(true);
+  if(scene.settings?.georeference&&!state.options.some(o=>o.key===scene.id)){
+   const option={key:scene.id,id:scene.id,title:"制作中｜"+scene.name,scene:copy(scene)};
+   state.options.push(option);
+   const tag=document.createElement("option");tag.value=option.key;tag.textContent=option.title;
+   $("scene-select").append(tag);
+   state.currentOptionKey=option.key;$("scene-select").value=option.key;
+  }
+  const live=state.options.find(o=>o.key===scene.id&&o.scene);
+  if(live)live.scene=copy(scene);
   geoButtons();
   notice("JSONの設定を反映しました（未保存）","success");
   return true;
@@ -998,56 +1007,110 @@ async function downloadBundle(){
   setDirty(false);notice(files.length+"ファイルをZIPにまとめて保存しました。rebuild/ 以下に展開して反映してください。","success");
  }catch(error){notice("ZIP保存できません："+error.message,"error")}
 }
+// The editor is a map creator; external map data is an optional, region-neutral import.
+let geoCandidates=[],geoSearchPrevious=0,geoBusy=false;
 function geoButtons(){
- const active=sceneNow()?.id==="sakihana_gosen_500m";
- $("sakihana-osm-fetch").hidden=!active;
- $("sakihana-dem-fetch").hidden=!active;
+ const scene=sceneNow();
+ $("geo-dem-fetch").disabled=geoBusy||!scene?.settings?.georeference;
+ if(scene?.settings?.georeference&&!geoBusy){
+  const gr=scene.settings.georeference;
+  $("geo-import-status").textContent="編集中："+scene.name+" ／ "+(gr.widthM||"?")+"m四方。地理情報はマップと一緒にJSON保存されます。";
+ }
 }
-async function loadSakihanaOSM(){
- if(!window.AASakihanaMap)return notice("咲花駅取込機能が読み込めません","error");
- if(sceneNow()?.id!=="sakihana_gosen_500m")return notice("咲花駅周辺マップを先に選択してください","error");
- if(state.dirty&&!confirm("現在の未保存編集を実データ取得で置き換えますか？"))return;
- const button=$("sakihana-osm-fetch");
- button.disabled=true;
- notice("OpenStreetMapから咲花駅周辺500m四方の地物を取得中…");
+bind("geo-import-toggle",()=>{
+ const panel=$("geo-import-panel"),expanded=panel.hidden;
+ panel.hidden=!expanded;
+ $("geo-import-toggle").setAttribute("aria-expanded",String(expanded));
+ if(expanded&&sceneNow()?.settings?.georeference){
+  const gr=sceneNow().settings.georeference;
+  $("geo-lat").value=gr.center.lat;
+  $("geo-lon").value=gr.center.lon;
+  $("geo-place").value=gr.regionName||sceneNow().name;
+  $("geo-size").value=String(gr.widthM);
+ }
+});
+bind("geo-place-search",async()=>{
+ const q=input("geo-place").trim();
+ if(!q)return notice("検索する地名を入力してください","error");
+ const elapsed=Date.now()-geoSearchPrevious;
+ if(geoBusy||elapsed<1100)return notice("地名検索は連続実行できません。少し時間を置いてください","error");
+ geoSearchPrevious=Date.now();
+ geoBusy=true;
+ const button=$("geo-place-search");button.disabled=true;
+ $("geo-import-status").textContent="地名を検索中…（入力時の自動検索は行いません）";
  try{
-  const scene=await window.AASakihanaMap.loadOSM();
-  // Preserve only the already verified terrain; do not merge potentially edited OSM ways.
-  const before=sceneNow();
-  if(before?.settings?.georeference?.terrainVerified){
-   scene.objects.unshift(...before.objects.filter(o=>o.metadata?.featureKind==="terrain"));
-   Object.assign(scene.settings.georeference,{
-    terrainVerified:true,demLayer:before.settings.georeference.demLayer,
-    demZoom:before.settings.georeference.demZoom,
-    minElevationM:before.settings.georeference.minElevationM,
-    maxElevationM:before.settings.georeference.maxElevationM,
-    demRetrievedAt:before.settings.georeference.demRetrievedAt,
-    elevationSamplesKnown:before.settings.georeference.elevationSamplesKnown,
-    elevationSamplesTotal:before.settings.georeference.elevationSamplesTotal
-   });
+  geoCandidates=await window.AASakihanaMap.searchPlace(q);
+  const select=$("geo-search-results");select.replaceChildren();
+  for(let i=0;i<geoCandidates.length;i++){
+   const option=document.createElement("option");option.value=String(i);
+   option.textContent=geoCandidates[i].name;select.append(option);
   }
-  if(!applyScene(scene,null,{resetView:true}))return;
-  const counts=scene.settings.georeference.counts||{};
-  notice("OSM取込完了："+scene.objects.length+"地物（道路"+(counts.road||0)+"、線路"+(counts.railway||0)+"、建物"+(counts.building||0)+"）。JSONを保存すると取り込んだ配置を固定できます。","success");
- }catch(error){notice(error.message,"error")}
- finally{button.disabled=false}
+  if(!geoCandidates.length)throw Error("該当する場所が見つかりません。緯度・経度を直接指定できます");
+  select.value="0";
+  $("geo-lat").value=geoCandidates[0].lat;
+  $("geo-lon").value=geoCandidates[0].lon;
+  $("geo-import-status").textContent=geoCandidates.length+"件の候補があります。場所を確認してから取込を実行してください。";
+ }catch(error){$("geo-import-status").textContent="検索失敗："+error.message;notice(error.message,"error")}
+ finally{geoBusy=false;button.disabled=false;geoButtons()}
+});
+bind("geo-search-results",()=>{
+ const found=geoCandidates[Number(input("geo-search-results"))];
+ if(found){$("geo-lat").value=found.lat;$("geo-lon").value=found.lon;$("geo-place").value=found.name}
+});
+function selectedGeoRegion(){
+ const geo=window.AASakihanaMap;
+ if(!geo)throw Error("地理情報取込プログラムがありません");
+ const lat=Number(input("geo-lat")),lon=Number(input("geo-lon"));
+ if(!input("geo-lat").trim()||!input("geo-lon").trim())throw Error("緯度・経度を入力してください");
+ return geo.configure({lat,lon,sizeM:Number(input("geo-size")),name:input("geo-place").trim()||"指定地域"});
 }
-async function loadSakihanaDEM(){
- if(!window.AASakihanaMap)return notice("標高取込機能が読み込めません","error");
- if(sceneNow()?.id!=="sakihana_gosen_500m")return notice("咲花駅周辺マップを先に選択してください","error");
- const button=$("sakihana-dem-fetch");
- button.disabled=true;notice("国土地理院の標高タイルを取得・解析中…");
+async function loadGeoOSM(){
+ if(geoBusy)return;
+ let region;
+ try{region=selectedGeoRegion()}catch(error){notice(error.message,"error");return}
+ if(state.dirty&&!confirm("現在の未保存の編集内容が置き換わります。事前にJSONを保存しましたか？"))return;
+ geoBusy=true;$("geo-osm-fetch").disabled=true;$("geo-dem-fetch").disabled=true;
+ $("geo-import-status").textContent=region.name+"のOSMデータを取得中…";
  try{
-  const grid=await window.AASakihanaMap.elevationGrid();
-  const scene=window.AASakihanaMap.addElevation(sceneNow(),grid);
-  if(!applyScene(scene,null,{resetView:false}))return;
-  notice("標高の取得完了："+grid.min.toFixed(1)+"m～"+grid.max.toFixed(1)+"m、取得標高サンプル"+grid.known+"/"+grid.total+
-   "。色の変化は標高差の可視化です。未取得セルは描画しません。","success");
- }catch(error){notice(error.message,"error")}
- finally{button.disabled=false}
+  const imported=await window.AASakihanaMap.loadOSM();
+  // Geographic matches only: terrain from a different area must never be transferred.
+  const old=sceneNow(),before=old?.settings?.georeference;
+  if(before?.terrainVerified&&before.center?.lat===region.lat&&before.center?.lon===region.lon&&before.widthM===region.sizeM){
+   imported.objects.unshift(...old.objects.filter(o=>o.metadata?.featureKind==="terrain"));
+   for(const key of ["terrainVerified","demLayer","demZoom","minElevationM","maxElevationM","demRetrievedAt","elevationSamplesKnown","elevationSamplesTotal"])
+    imported.settings.georeference[key]=before[key];
+  }
+  if(!applyScene(imported,null,{resetView:true}))return;
+  state.savingName=region.id+".scene.json";
+  const counts=imported.settings.georeference.counts||{};
+  $("geo-import-status").textContent="取得完了：建物"+(counts.building||0)+"件、道路"+(counts.road||0)+"件、鉄道"+(counts.railway||0)+"件。制作画面で編集できます。";
+  notice("実地図を制作マップとして取り込みました。必ずJSON保存してください。","success");
+ }catch(error){$("geo-import-status").textContent="取得失敗："+error.message;notice(error.message,"error")}
+ finally{geoBusy=false;$("geo-osm-fetch").disabled=false;geoButtons()}
 }
-bind("sakihana-osm-fetch",loadSakihanaOSM,"click");
-bind("sakihana-dem-fetch",loadSakihanaDEM,"click");
+async function loadGeoDEM(){
+ if(geoBusy)return;
+ const scene=sceneNow(),g=scene?.settings?.georeference;
+ if(!g)return notice("まずOSM地図を取得するか、地理参照付きのJSONを開いてください","error");
+ geoBusy=true;$("geo-dem-fetch").disabled=true;$("geo-osm-fetch").disabled=true;
+ $("geo-import-status").textContent="国土地理院DEM標高の取得中…";
+ try{
+  window.AASakihanaMap.configure({
+   lat:g.center.lat,lon:g.center.lon,sizeM:g.widthM,
+   name:g.regionName||scene.name,id:scene.id
+  });
+  const grid=await window.AASakihanaMap.elevationGrid();
+  if(sceneNow()?.id!==scene.id||sceneNow()?.settings?.georeference?.center?.lat!==g.center.lat)
+   throw Error("標高取得中にマップが変更されました。再実行してください");
+  const next=window.AASakihanaMap.addElevation(sceneNow(),grid);
+  if(!applyScene(next,null,{resetView:false}))return;
+  $("geo-import-status").textContent="標高 "+grid.min.toFixed(1)+"〜"+grid.max.toFixed(1)+"m。地形は色分けされ、各セルを選択して高さを編集できます。";
+  notice("標高の取得が完了しました。JSON保存すると保持できます。","success");
+ }catch(error){$("geo-import-status").textContent="標高取得失敗："+error.message;notice(error.message,"error")}
+ finally{geoBusy=false;$("geo-osm-fetch").disabled=false;geoButtons()}
+}
+bind("geo-osm-fetch",loadGeoOSM,"click");
+bind("geo-dem-fetch",loadGeoDEM,"click");
 
 bind("download-bundle",downloadBundle,"click");
 bind("download",download,"click");
@@ -1166,7 +1229,11 @@ async function load(option){
  $("scene-select").value=option.key;
  state.currentOptionKey=option.key;
  if(history.replaceState)history.replaceState(null,"","#"+encodeURIComponent(option.key));
- await viewer.show(option.id,option.projection||null,option.source);
+ if(option.scene){
+  applyScene(copy(option.scene),null,{record:false,resetView:true});
+  setDirty(false);
+ }else await viewer.show(option.id,option.projection||null,option.source);
+ geoButtons();
  if(sceneNow())notice("編集する図形を選択してください");
 }
 bind("scene-select",async()=>{
