@@ -162,6 +162,12 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  #template-preview-modal #template-edit-controls{max-height:30dvh;overflow-y:auto}
  #template-preview-modal #template-edit-controls input,#template-preview-modal #template-edit-controls select{width:75px}
 }
+
+#template-preview-modal #template-preview-picker #template-edit-catalog{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:6px;background:#173846;border:1px solid #648a98;border-radius:5px;flex:none}
+#template-preview-modal #template-preview-picker #template-edit-catalog label{display:flex;flex-direction:column;align-items:stretch;gap:2px;font-size:10px}
+#template-preview-modal #template-preview-picker #template-edit-catalog select{width:100%;max-width:none;min-width:0}
+#template-preview-modal #template-preview-picker #template-edit-catalog button{width:100%;min-height:27px;font-size:11px}
+#template-preview-modal #template-edit-controls .template-edit-object,#template-preview-modal #template-edit-controls .template-edit-save{align-items:center}
 </style>
 </head>
 <body>
@@ -489,8 +495,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 </div>
 <script src="./map-viewer.js?v=template-shared-zoom-v4"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
-<script src="./building-templates.js?v=template-wall-clearance-v3"></script>
-<script src="./template-preview.js?v=template-edit-v7"></script>
+<script src="./building-templates.js?v=template-era-v4"></script>
+<script src="./template-preview.js?v=template-edit-v8"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=template-visual-v1"></script>
 </body></html>
