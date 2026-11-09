@@ -1,24 +1,25 @@
 {
   "schemaVersion": 1,
   "system": "Generic map scene viewer",
-  "description": "Map menu and scene sources are data-driven; the application supports arbitrary world maps, towns, ships and buildings.",
+  "description": "Worlds are independent top-level containers (Earth and Apocrypha=Archive). Each world's maps are switched independently; a root's source or views are that world's overview maps.",
   "maps": [
     {
       "id": "earth_world",
       "name": "地球",
       "shortName": "地球",
-      "kind": "root",
+      "kind": "world",
       "parentId": null,
       "source": "../rebuild/scenes/earth-world.scene.json",
       "description": "Natural Earth由来の世界地図の概観。日本・新潟県の咲花駅周辺マップを子マップに登録。",
       "realWorld": true,
-      "scope": "global-overview"
+      "scope": "global-overview",
+      "worldType": "real-world"
     },
     {
       "id": "automaton_ship",
       "name": "アポクリファ＝アーカイブ",
       "shortName": "船全体",
-      "kind": "root",
+      "kind": "world",
       "parentId": null,
       "description": "船体全体（全長4,000m／最大幅2,500m）",
       "bounds": {
@@ -40,7 +41,8 @@
           "displayName": "船体側面形状",
           "source": "../rebuild/scenes/root-side.scene.json"
         }
-      ]
+      ],
+      "worldType": "fictional-world"
     },
     {
       "id": "upper",
