@@ -176,6 +176,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 
 #template-preview-modal .template-preview-picker:has(#template-edit-catalog) #template-preview-list{min-height:90px}
 #template-preview-modal #template-collision-status{white-space:normal}
+
+#sakihana-osm-fetch,#sakihana-dem-fetch{background:#244f51;border:1px solid #448784;color:#e4f4ef}
+#sakihana-osm-fetch[hidden],#sakihana-dem-fetch[hidden]{display:none!important}
+#sakihana-osm-fetch:disabled,#sakihana-dem-fetch:disabled{opacity:.55}
 </style>
 </head>
 <body>
@@ -184,6 +188,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  <strong class="brand">汎用マップ編集</strong>
  <select id="scene-select" aria-label="編集するマップを選択"></select>
  <div class="toolbar">
+  <button id="sakihana-osm-fetch" type="button" title="咲花駅500m範囲の実在OSM道路・鉄道・建物・土地利用を取得">咲花OSM取込</button>
+  <button id="sakihana-dem-fetch" type="button" title="国土地理院の標高タイルを読み込み、標高差を色で可視化">標高DEM取込</button>
   <button id="open-json">JSONを開く</button><input id="file-input" type="file" accept=".json,application/json" hidden>
   <button id="undo" title="操作を戻す" disabled>戻す</button>
   <button id="redo" title="操作を進める" disabled>進める</button>
@@ -377,6 +383,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
       </label>
       <p class="note">低い側は水色、高い側は橙色。段差の明暗も低い側から高い側へ変わります。マップの上下と階の上り下りは別の意味です。</p>
      </div>
+     <div id="geo-height-fields" class="hidden">
+      <div class="col2">
+       <label>標高（海抜m）<input id="geo-elevation-m" type="number" step="0.01" placeholder="未取得"></label>
+       <label>建物・設備の高さ（m）<input id="geo-height-m" type="number" step="0.1" min="0" placeholder="不明"></label>
+      </div>
+      <p class="note">標高の未取得は空欄のまま保持します。既知のDEM値や手入力値のみ保存し、標高着色は地形セルに反映します。</p>
+     </div>
      <div id="wall-thickness-fields" class="hidden">
       <label>壁の厚さ（cm・1マス＝50cm）<input id="wall-thickness" type="number" min="1" max="300" step="1" placeholder="例：10"></label>
       <p class="note">壁の中心線を基準に厚みを表示します。数値はcmで入力し、グリッド間隔に応じて地図座標へ換算・保存します。</p>
@@ -509,7 +522,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </div>
  </section>
 </div>
-<script src="./map-viewer.js?v=residential-plan-v6"></script>
+<script src="./map-viewer.js?v=geo-width-real-v7"></script>
+<script src="./sakihana-map.js?v=osm-dem-500m-v1"></script>
 <script src="./object-catalog.js?v=residential-46-v2"></script>
 <script src="./building-templates.js?v=modern-housing-real-scale-v9"></script>
 <script src="./template-preview.js?v=residential-palette-v18"></script>
