@@ -121,6 +121,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  #template-preview-modal .template-preview-grid-toggle{font-size:9px}
 }
 
+@media(max-width:430px){
+ #template-preview-modal .template-preview-layout{grid-template-columns:minmax(0,30fr) minmax(0,70fr)!important;gap:3px}
+ #template-preview-modal .template-preview-toolbar>label:first-child{font-size:9px}
+ #template-preview-modal .template-preview-toolbar select{width:40px;flex:0 1 40px}
+ #template-preview-modal .template-preview-toolbar #template-preview-fit{font-size:9px;padding:0 2px}
+ #template-preview-modal .template-preview-grid-toggle{font-size:8px}
+}
 </style>
 </head>
 <body>
