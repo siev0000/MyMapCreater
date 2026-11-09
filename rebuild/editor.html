@@ -180,7 +180,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #sakihana-osm-fetch,#sakihana-dem-fetch{background:#244f51;border:1px solid #448784;color:#e4f4ef}
 #sakihana-osm-fetch[hidden],#sakihana-dem-fetch[hidden]{display:none!important}
 #sakihana-osm-fetch:disabled,#sakihana-dem-fetch:disabled{opacity:.55}
-</style>
+#geo-import-panel[hidden]{display:none!important}#geo-import-panel input,#geo-import-panel select{color:#e4f0f3;background:#102934;border:1px solid #496e7a;border-radius:5px;padding:6px}#geo-import-panel button{background:#28596a;border:1px solid #568e9d;color:#eff7f7;padding:7px 10px;border-radius:5px;cursor:pointer}#geo-import-panel button:disabled{opacity:.45;cursor:wait}#geo-import-panel label{display:flex;flex-direction:column;gap:3px;font-size:11px}</style>
 </head>
 <body>
 <header>
@@ -188,8 +188,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  <strong class="brand">汎用マップ編集</strong>
  <select id="scene-select" aria-label="編集するマップを選択"></select>
  <div class="toolbar">
-  <button id="sakihana-osm-fetch" type="button" title="咲花駅500m範囲の実在OSM道路・鉄道・建物・土地利用を取得">咲花OSM取込</button>
-  <button id="sakihana-dem-fetch" type="button" title="国土地理院の標高タイルを読み込み、標高差を色で可視化">標高DEM取込</button>
+  <button id="geo-import-toggle" type="button" aria-expanded="false" aria-controls="geo-import-panel">地図データ取込</button>
   <button id="open-json">JSONを開く</button><input id="file-input" type="file" accept=".json,application/json" hidden>
   <button id="undo" title="操作を戻す" disabled>戻す</button>
   <button id="redo" title="操作を進める" disabled>進める</button>
@@ -199,6 +198,21 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  </div>
 </header>
 <div id="message" role="status">シーンJSONを読み込み中…</div>
+<section id="geo-import-panel" hidden aria-label="地理データ取込" style="padding:12px 16px;background:#17323d;border-bottom:1px solid #416d78;color:#e1ecee">
+ <strong>地図データ取込（補助機能）</strong>　<small>地名検索または座標指定 → OSM地物取得 → 必要に応じて標高取得 → 編集・JSON保存</small>
+ <div style="display:flex;flex-wrap:wrap;gap:9px;align-items:end;margin-top:8px">
+  <label>地名・駅名 <input id="geo-place" type="text" placeholder="例：新潟県五泉市 咲花駅" value="新潟県五泉市 咲花駅" style="min-width:185px"></label>
+  <button type="button" id="geo-place-search">地名を検索</button>
+  <label>検索候補 <select id="geo-search-results" style="max-width:260px"><option value="">座標を直接指定できます</option></select></label>
+  <label>緯度 <input id="geo-lat" type="number" min="-85" max="85" step="any" value="37.7351639" style="width:120px"></label>
+  <label>経度 <input id="geo-lon" type="number" min="-180" max="180" step="any" value="139.2909028" style="width:125px"></label>
+  <label>範囲（一辺m） <select id="geo-size"><option value="250">250m</option><option value="500" selected>500m</option><option value="1000">1000m</option><option value="2000">2000m</option></select></label>
+  <button type="button" id="geo-osm-fetch">指定地域の地図を取得</button>
+  <button type="button" id="geo-dem-fetch">現在の地域の標高を取得</button>
+ </div>
+ <p id="geo-import-status" role="status" style="margin:7px 0 0;color:#b5d3d9;font-size:12px">取得した地図は現在の編集シーンに読み込まれます。元マップは自動上書きされません。</p>
+ <p style="margin:4px 0 0;font-size:11px">© OpenStreetMap contributors (ODbL) / 標高：国土地理院。<a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">地名検索の利用条件</a>に従い、検索はボタンを押した時だけ行います。取得した地図は「街マップJSONを保存」で保存してください。</p>
+</section>
 <main>
  <section class="map-pane" id="viewport" aria-label="汎用マップ編集領域">
   <canvas id="map-canvas" aria-label="クリックして図形を選択。移動モードでは選択中の図形をドラッグできます"></canvas>
@@ -523,10 +537,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
  </section>
 </div>
 <script src="./map-viewer.js?v=geo-credits-v8"></script>
-<script src="./sakihana-map.js?v=overpass-failover-v3"></script>
+<script src="./sakihana-map.js?v=region-configurable-v4"></script>
 <script src="./object-catalog.js?v=residential-46-v2"></script>
 <script src="./building-templates.js?v=modern-housing-real-scale-v9"></script>
 <script src="./template-preview.js?v=residential-palette-v18"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
-<script src="./map-editor.js?v=sakihana-viewer-transfer-v6"></script>
+<script src="./map-editor.js?v=generic-geo-import-v7"></script>
 </body></html>
