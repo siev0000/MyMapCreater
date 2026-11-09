@@ -296,6 +296,7 @@ main{max-width:none;padding:0}
    <span class="zoom-percent" id="zoom-label">100%</span>
    <button type="button" id="zoom-in" title="拡大">＋</button>
    <button type="button" id="zoom-reset" title="全体に戻す">⌖</button>
+   <button type="button" id="preview-grid-toggle" aria-pressed="false" title="マス目の表示を切り替える">▦</button>
   </div>
 
   <footer class="legend-footer" id="legend-footer" aria-label="表示色と区画の凡例" hidden>
@@ -336,6 +337,8 @@ main{max-width:none;padding:0}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
+let gridPreference=null;
+try{const v=localStorage.getItem("map-preview-grid-visible");if(v==="true"||v==="false")gridPreference=v==="true"}catch(_){}
 const viewer=window.AAMapViewer.create({
  host:$('viewport'),canvas:$('map-canvas'),
  info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
@@ -358,6 +361,20 @@ const viewer=window.AAMapViewer.create({
   if(pendingFocus?.floorId===mapId){
    const pending=pendingFocus;pendingFocus=null;
    viewer.selectItemById(pending.id,{focus:true});
+
+const gridToggle=$('preview-grid-toggle');
+function applyGridPreference(){
+ viewer.setPreviewGridVisible(gridPreference);
+ const enabled=viewer.getPreviewGridVisible();
+ gridToggle.setAttribute("aria-pressed",String(enabled));
+ gridToggle.title=enabled?"マス目を非表示":"マス目を表示";
+}
+gridToggle.addEventListener("click",()=>{
+ gridPreference=!viewer.getPreviewGridVisible();
+ try{localStorage.setItem("map-preview-grid-visible",String(gridPreference))}catch(_){}
+ applyGridPreference();
+});
+applyGridPreference();
   }else{
    // Optional deep link to an exact object in the currently loaded scene.
    const objectId=new URLSearchParams(location.search).get('focus');
