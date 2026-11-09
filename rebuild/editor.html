@@ -529,9 +529,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   <div class="tool-section" data-panel-tab="files">
   <section class="panel" id="world-selection-panel">
    <h2>ワールド・表示</h2>
-   <label>大マップ（ワールド）<select id="world-select" aria-label="切り替えるワールド"></select></label>
-   <p class="note">選択したワールド内のマップは、上部の1行リストから切り替えられます。</p>
-   <a id="editor-view-map" href="./header.html" class="editor-nav-link">選択中のマップを閲覧画面で開く</a>
+   <label>① ワールドを選択<select id="world-select" aria-label="開くワールドを選択"></select></label>
+   <label>② ワールド内のマップを選択<select id="world-map-select" aria-label="ワールド内のマップを選択"></select></label>
+   <button type="button" id="world-map-open">選択したマップを開く</button>
+   <p class="note" id="world-open-status" role="status">ここで選択するだけでは編集中のマップは変わりません。「開く」で反映します。</p>
+   <a id="editor-view-map" href="./header.html" class="editor-nav-link">現在編集中のマップを閲覧画面で開く</a>
   </section>
   <section class="panel">
    <h2>JSONファイルの読込・保存</h2>
@@ -701,5 +703,5 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./template-preview.js?v=residential-palette-v18"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
- <script src="./map-editor.js?v=two-worlds-one-line-header-v15"></script>
+ <script src="./map-editor.js?v=two-stage-world-selection-v16"></script>
 </body></html>
