@@ -326,11 +326,46 @@
   updateScene(scene,remove?"preview_root":selected.id);
   setEditMessage(remove?"設置物を削除しました":"名前と説明を変更しました");
  }
+ // Geometric clearance checks for placed fixtures and wall thickness.
+ function checkFixtureCollisions(scene){
+  const errors=[],eps=1e-7,objects=scene?.objects||[];
+  const fixtures=objects.filter(o=>["object","stair"].includes(o.objectType)&&o.geometry?.type==="rect");
+  const barriers=objects.filter(o=>["wall","door"].includes(o.objectType)&&o.geometry?.type==="polyline");
+  for(const fixture of fixtures){
+   const g=fixture.geometry;
+   for(const wall of barriers){
+    if(wall.floorId!==fixture.floorId)continue;
+    const half=wall.objectType==="wall"?(wall.wall?.thickness||0)/2:0;
+    const points=wall.geometry.points||[];
+    for(let i=1;i<points.length;i++){
+     const [ax,ay]=points[i-1],[bx,by]=points[i];
+     const horizontal=Math.abs(ay-by)<eps,vertical=Math.abs(ax-bx)<eps;
+     if(horizontal&&g.y<ay+half-eps&&g.y+g.height>ay-half+eps&&
+       Math.min(Math.max(ax,bx),g.x+g.width)-Math.max(Math.min(ax,bx),g.x)>eps){
+       errors.push(fixture.name+"と"+wall.name+"が干渉");break;
+     }
+     if(vertical&&g.x<ax+half-eps&&g.x+g.width>ax-half+eps&&
+       Math.min(Math.max(ay,by),g.y+g.height)-Math.max(Math.min(ay,by),g.y)>eps){
+       errors.push(fixture.name+"と"+wall.name+"が干渉");break;
+     }
+    }
+   }
+   for(const other of fixtures)if(fixture.id<other.id&&fixture.floorId===other.floorId){
+    const b=other.geometry;
+    if(Math.min(g.x+g.width,b.x+b.width)-Math.max(g.x,b.x)>eps&&
+       Math.min(g.y+g.height,b.y+b.height)-Math.max(g.y,b.y)>eps)
+     errors.push(fixture.name+"と"+other.name+"が重複");
+   }
+  }
+  return errors;
+ }
  function saveCopy(){
   if(!editing)return;
   const name=$("template-save-name").value.trim(),id=$("template-save-id").value.trim();
   try{
    const scene=previewViewer.getScene();
+   const collisions=checkFixtureCollisions(scene);
+   if(collisions.length)throw Error("設備の貫通・重複を修正してください："+collisions.slice(0,3).join("、")+(collisions.length>3?" ほか"+(collisions.length-3)+"件":""));
    const spec=library.capture(scene,"preview_root",{id,name,description:library.allPresets().find(t=>t.id===activeId)?.description||""});
    const source=library.allPresets().find(t=>t.id===activeId);
    spec.era=source?eraGroup(source):"common";
