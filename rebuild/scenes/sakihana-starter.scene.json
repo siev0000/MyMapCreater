@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 2,
+  "id": "sakihana_gosen_500m",
+  "name": "実在地域｜咲花駅周辺（500m四方）",
+  "coordinateSystem": {
+    "horizontal": [
+      1,
+      0
+    ],
+    "vertical": [
+      0,
+      1
+    ],
+    "background": "#14202a",
+    "bounds": {
+      "minX": -1000,
+      "maxX": 1000,
+      "minY": -1000,
+      "maxY": 1000
+    }
+  },
+  "grid": {
+    "visible": false,
+    "spacing": 2,
+    "stroke": "rgba(180,202,205,.14)",
+    "strokeWidth": 0.5
+  },
+  "settings": {
+    "initialDisplayLevel": 1,
+    "editorGrid": {
+      "spacing": 2,
+      "fraction": 0.5,
+      "originX": 0,
+      "originY": 0,
+      "visible": true,
+      "snap": true
+    },
+    "georeference": {
+      "center": {
+        "lat": 37.7351639,
+        "lon": 139.2909028
+      },
+      "widthM": 500,
+      "heightM": 500,
+      "worldUnitsPerMeter": 4,
+      "source": "OpenStreetMap",
+      "copyright": "© OpenStreetMap contributors",
+      "license": "ODbL 1.0",
+      "attributionUrl": "https://www.openstreetmap.org/copyright",
+      "terrainSource": "国土地理院 基盤地図情報数値標高モデル（取得時のみ）",
+      "terrainVerified": false
+    }
+  },
+  "layers": [
+    {
+      "id": "terrain",
+      "zIndex": 4
+    },
+    {
+      "id": "landuse",
+      "zIndex": 12
+    },
+    {
+      "id": "water",
+      "zIndex": 20
+    },
+    {
+      "id": "buildings",
+      "zIndex": 40
+    },
+    {
+      "id": "roads",
+      "zIndex": 55
+    },
+    {
+      "id": "railways",
+      "zIndex": 60
+    },
+    {
+      "id": "stations",
+      "zIndex": 70
+    }
+  ],
+  "objects": [
+    {
+      "id": "sakihana_station_reference",
+      "name": "咲花駅（位置参照点）",
+      "objectType": "object",
+      "layer": "stations",
+      "zIndex": 70,
+      "visible": true,
+      "selectable": true,
+      "displayLevel": 1,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          0,
+          0
+        ],
+        "radius": 8
+      },
+      "style": {
+        "fill": "#e8c17a",
+        "stroke": "#fff1c0",
+        "strokeWidth": 1.3
+      },
+      "label": {
+        "visible": true,
+        "text": "咲花駅",
+        "position": [
+          0,
+          -25
+        ],
+        "fontSize": 12
+      },
+      "detail": "駅の位置参照点。OpenStreetMap の図形は「OSMから取得」で読み込みます。",
+      "metadata": {
+        "verifiedStationCoordinate": true,
+        "source": "station-coordinate",
+        "lat": 37.7351639,
+        "lon": 139.2909028
+      }
+    }
+  ]
+}
