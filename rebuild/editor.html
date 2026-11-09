@@ -227,6 +227,29 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 #geo-import-panel{display:block}
 #geo-import-panel[hidden]{display:none!important}
 #world-selection-panel select{width:100%}
+/* Layout is determined by the actual viewport aspect ratio, not by device width.
+   Landscape: canvas | vertical tabs | right inspector.
+   Portrait:  canvas / horizontal tabs / bottom inspector.
+   The canvas remains in the layout and never gets covered by the inspector. */
+@media (orientation: landscape){
+ main{grid-template-columns:minmax(0,1fr) 54px minmax(235px, min(34vw, 335px))!important;grid-template-rows:minmax(0,1fr)!important;position:relative}
+ .map-pane{grid-column:1!important;grid-row:1!important;height:100%!important;min-height:0!important}
+ .editor-rail{grid-column:2!important;grid-row:1!important;flex-direction:column!important;overflow-x:hidden!important;overflow-y:auto!important;min-height:0!important;z-index:4!important}
+ .side{position:static!important;grid-column:3!important;grid-row:1!important;width:auto!important;min-height:0!important;height:auto!important;max-height:none!important;display:block!important;border-top:0!important;border-left:1px solid #365669!important;box-shadow:none!important}
+ main[data-sidebar-open="false"]{grid-template-columns:minmax(0,1fr) 54px 0!important}
+ main[data-sidebar-open="false"] .side{display:none!important}
+ .rail-button{flex:0 0 auto!important;width:100%!important;height:49px!important}
+}
+@media (orientation: portrait){
+ main{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) 52px minmax(0,38%)!important;position:relative}
+ .map-pane{grid-column:1!important;grid-row:1!important;width:100%!important;height:100%!important;min-height:0!important}
+ .editor-rail{grid-column:1!important;grid-row:2!important;z-index:4!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:3px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;padding:3px 5px!important;background:#092430!important;border-left:0!important;border-top:1px solid #3b6072!important;scrollbar-width:thin}
+ .rail-button{flex:0 0 46px!important;width:46px!important;min-width:46px!important;height:44px!important;padding:3px 1px!important}
+ .rail-button span{font-size:17px}.rail-button small{font-size:9px}
+ .side{position:static!important;grid-column:1!important;grid-row:3!important;z-index:3!important;width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;max-height:none!important;display:block!important;overflow-y:auto!important;border:0!important;border-top:1px solid #426778!important;box-shadow:none!important}
+ main[data-sidebar-open="false"]{grid-template-rows:minmax(0,1fr) 52px 0!important}
+ main[data-sidebar-open="false"] .side{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -675,7 +698,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  let active=null;
  function selectTab(id,forceOpen=false){
   if(!buttons.some(b=>b.dataset.toolTab===id))return;
-  const close=window.innerWidth<=650&&active===id&&!forceOpen&&root.dataset.sidebarOpen!=="false";
+  const close=active===id&&!forceOpen&&root.dataset.sidebarOpen!=="false";
   active=id;root.dataset.sidebarOpen=close?"false":"true";
   for(const b of buttons){const on=b.dataset.toolTab===id;b.setAttribute("aria-selected",String(on));b.setAttribute("aria-pressed",String(on&&!close))}
   for(const p of panels)p.dataset.active=String(p.dataset.panelTab===id&&!close);
@@ -685,11 +708,17 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  }
  for(const b of buttons)b.addEventListener("click",()=>selectTab(b.dataset.toolTab));
  window.AAMapEditorUI={selectTab,activeTab:()=>active};
+ function syncLayoutMode(){
+  root.dataset.layout=window.innerWidth<window.innerHeight?"portrait":"landscape";
+  document.querySelector(".editor-rail").setAttribute("aria-orientation",root.dataset.layout==="portrait"?"horizontal":"vertical");
+ }
+ syncLayoutMode();
+ window.addEventListener("resize",syncLayoutMode);
  let initial="objects";try{initial=sessionStorage.getItem("mymapcreater:editor:last-tool-tab")||"objects"}catch(_){}
  if(initial==="import")initial="files";
  selectTab(initial,true);
- // On narrow screens leave the map fully visible until a tool is deliberately opened.
- if(window.innerWidth<=650){
+ // In portrait, start with full preview and horizontal tool strip only.
+ if(window.innerHeight>window.innerWidth){
   root.dataset.sidebarOpen="false";
   for(const panel of panels)panel.dataset.active="false";
  }
