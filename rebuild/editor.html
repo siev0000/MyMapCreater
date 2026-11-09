@@ -643,6 +643,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  const root=document.querySelector("main"),sidebar=document.getElementById("editor-tools");
  const roadFields=document.getElementById("road-connect-fields"),routePanel=document.querySelector('[data-panel-tab="routes"]');
  if(roadFields&&routePanel)routePanel.append(roadFields);
+ const placeAtSelection=document.getElementById("town-building-at-selection")?.closest(".fieldset");
+ const buildingPane=document.querySelector('[data-panel-tab="buildings"]');
+ if(placeAtSelection&&buildingPane)buildingPane.append(placeAtSelection);
  const buttons=[...document.querySelectorAll(".editor-rail [data-tool-tab]")];
  const panels=[...document.querySelectorAll(".tool-section[data-panel-tab]")];
  let active=null;
@@ -663,6 +666,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  window.AAMapEditorUI={selectTab,activeTab:()=>active};
  let initial="objects";try{initial=sessionStorage.getItem("mymapcreater:editor:last-tool-tab")||"objects"}catch(_){}
  selectTab(initial,true);
+ // On narrow screens leave the map fully visible until a tool is deliberately opened.
+ if(window.innerWidth<=650){
+  root.dataset.sidebarOpen="false";
+  for(const panel of panels)panel.dataset.active="false";
+ }
 })();
 </script>
 <script src="./packed-scene-loader.js?v=sakihana-snapshot-v1"></script>
@@ -673,5 +681,5 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./template-preview.js?v=residential-palette-v18"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
- <script src="./map-editor.js?v=land-route-draw-v13"></script>
+ <script src="./map-editor.js?v=sidebar-tabs-v14"></script>
 </body></html>
