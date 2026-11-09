@@ -2,7 +2,7 @@
  * No external API calls. Run: node rebuild/tests/geodata-any-region.js */
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
-const src=fs.readFileSync(path.resolve(__dirname,"../sakihana-map.js"),"utf8");
+const src=fs.readFileSync(path.resolve(__dirname,"../geo-data-import.js"),"utf8");
 const window={};let calls=[];
 const c=vm.createContext({window,Date,Math,Number,Error,URL,AbortController,setTimeout,clearTimeout,
  fetch:async url=>{
@@ -10,7 +10,7 @@ const c=vm.createContext({window,Date,Math,Number,Error,URL,AbortController,setT
   return {ok:true,json:async()=>[{display_name:"長岡駅, 新潟県",lat:"37.4476",lon:"138.8513"}]};
  }});
 vm.runInContext(src,c);
-const geo=window.AASakihanaMap;
+const geo=window.AAMapGeoImporter;
 assert.equal(geo.HALF_M,250);
 assert.equal(geo.baseScene().id,"sakihana_gosen_500m");
 assert.equal(geo.baseScene().settings.georeference.worldUnitsPerMeter,4);
