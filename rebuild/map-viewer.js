@@ -1324,7 +1324,9 @@ function create(opts){
    let json=memory.get(source);
    if(!json){const result=await fetch(source,{cache:"no-store"});
     if(!result.ok)throw Error("HTTP "+result.status);
-    json=sceneCheck(await result.json());memory.set(source,json)}
+    const raw=await result.json();
+    json=sceneCheck(window.AAMapPackedScene?await window.AAMapPackedScene.unpack(raw):raw);
+    memory.set(source,json)}
    if(request!==myRequest)return;
    scene=json;initialScale=computeScale();zoom=1;panX=0;panY=0;
    setupModes();draw();renderLegend();setHint("");
