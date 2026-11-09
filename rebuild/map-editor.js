@@ -391,6 +391,12 @@ function updateVertexControls(obj){
  }
  $("stair-direction-fields").classList.toggle("hidden",obj?.objectType!=="stair");
  if(obj?.objectType==="stair")$("stair-low-side").value=obj.stair?.lowSide||"";
+ const geo=!!sceneNow()?.settings?.georeference;
+ $("geo-height-fields").classList.toggle("hidden",!geo||!obj);
+ if(geo&&obj){
+  $("geo-elevation-m").value=Number.isFinite(obj.metadata?.elevationM)?String(obj.metadata.elevationM):"";
+  $("geo-height-m").value=Number.isFinite(obj.metadata?.heightM)?String(obj.metadata.heightM):"";
+ }
  $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
  if(obj?.objectType==="wall")$("wall-thickness").value=Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/gridState.spacing*50).toFixed(2))):"";
 }
@@ -492,6 +498,28 @@ bind("wall-thickness",()=>{
  if(!Number.isFinite(thickness)||thickness<1||thickness>300){notice("壁厚は1〜300cmで指定してください","error");renderSelected();return}
  changeObject(o=>{if(o.objectType!=="wall")return;o.wall={...o.wall,thickness:thickness/50*gridState.spacing}});
 });
+function geoNumberEdit(field,raw,min=0){
+ const text=raw.trim();
+ if(text!==""&&(!Number.isFinite(Number(text))||Number(text)<min)){
+  notice("数値が不正です（"+field+"）","error");renderSelected();return;
+ }
+ changeObject(o=>{
+  o.metadata={...o.metadata};
+  if(text===""){delete o.metadata[field];return}
+  o.metadata[field]=Number(text);
+  if(field==="elevationM"&&o.metadata.featureKind==="terrain"){
+   const range=sceneNow()?.settings?.georeference;
+   const minHeight=Number(range?.minElevationM),maxHeight=Number(range?.maxElevationM);
+   if(Number.isFinite(minHeight)&&Number.isFinite(maxHeight)){
+    const t=maxHeight===minHeight?0.5:Math.max(0,Math.min(1,(Number(text)-minHeight)/(maxHeight-minHeight)));
+    const red=Math.round(37+100*t),green=Math.round(75+78*(1-t)),blue=Math.round(63+18*(1-t));
+    o.style={...o.style,fill:"rgb("+red+","+green+","+blue+")"};
+   }
+  }
+ });
+}
+bind("geo-elevation-m",()=>geoNumberEdit("elevationM",input("geo-elevation-m"),-1000));
+bind("geo-height-m",()=>geoNumberEdit("heightM",input("geo-height-m"),0));
 function initBuildingTemplates(){
  const list=window.AAMapBuildingTemplates?.allPresets()||[];
  const picker=$("building-template"),previous=picker.value;picker.replaceChildren();
@@ -745,6 +773,7 @@ function applyScene(scene,selectedId,{record=true,resetView=false}={}){
   $("scene-name").textContent=scene.name||"マップ";
   renderSelected();showObjects();showNewLayerChoices();
   if(!record)setDirty(false);else setDirty(true);
+  geoButtons();
   notice("JSONの設定を反映しました（未保存）","success");
   return true;
  }catch(error){notice("変更できません："+error.message,"error");return false}
@@ -967,6 +996,57 @@ async function downloadBundle(){
   setDirty(false);notice(files.length+"ファイルをZIPにまとめて保存しました。rebuild/ 以下に展開して反映してください。","success");
  }catch(error){notice("ZIP保存できません："+error.message,"error")}
 }
+function geoButtons(){
+ const active=sceneNow()?.id==="sakihana_gosen_500m";
+ $("sakihana-osm-fetch").hidden=!active;
+ $("sakihana-dem-fetch").hidden=!active;
+}
+async function loadSakihanaOSM(){
+ if(!window.AASakihanaMap)return notice("咲花駅取込機能が読み込めません","error");
+ if(sceneNow()?.id!=="sakihana_gosen_500m")return notice("咲花駅周辺マップを先に選択してください","error");
+ if(state.dirty&&!confirm("現在の未保存編集を実データ取得で置き換えますか？"))return;
+ const button=$("sakihana-osm-fetch");
+ button.disabled=true;
+ notice("OpenStreetMapから咲花駅周辺500m四方の地物を取得中…");
+ try{
+  const scene=await window.AASakihanaMap.loadOSM();
+  // Preserve only the already verified terrain; do not merge potentially edited OSM ways.
+  const before=sceneNow();
+  if(before?.settings?.georeference?.terrainVerified){
+   scene.objects.unshift(...before.objects.filter(o=>o.metadata?.featureKind==="terrain"));
+   Object.assign(scene.settings.georeference,{
+    terrainVerified:true,demLayer:before.settings.georeference.demLayer,
+    demZoom:before.settings.georeference.demZoom,
+    minElevationM:before.settings.georeference.minElevationM,
+    maxElevationM:before.settings.georeference.maxElevationM,
+    demRetrievedAt:before.settings.georeference.demRetrievedAt,
+    elevationSamplesKnown:before.settings.georeference.elevationSamplesKnown,
+    elevationSamplesTotal:before.settings.georeference.elevationSamplesTotal
+   });
+  }
+  if(!applyScene(scene,null,{resetView:true}))return;
+  const counts=scene.settings.georeference.counts||{};
+  notice("OSM取込完了："+scene.objects.length+"地物（道路"+(counts.road||0)+"、線路"+(counts.railway||0)+"、建物"+(counts.building||0)+"）。JSONを保存すると取り込んだ配置を固定できます。","success");
+ }catch(error){notice(error.message,"error")}
+ finally{button.disabled=false}
+}
+async function loadSakihanaDEM(){
+ if(!window.AASakihanaMap)return notice("標高取込機能が読み込めません","error");
+ if(sceneNow()?.id!=="sakihana_gosen_500m")return notice("咲花駅周辺マップを先に選択してください","error");
+ const button=$("sakihana-dem-fetch");
+ button.disabled=true;notice("国土地理院の標高タイルを取得・解析中…");
+ try{
+  const grid=await window.AASakihanaMap.elevationGrid();
+  const scene=window.AASakihanaMap.addElevation(sceneNow(),grid);
+  if(!applyScene(scene,null,{resetView:false}))return;
+  notice("標高の取得完了："+grid.min.toFixed(1)+"m～"+grid.max.toFixed(1)+"m、取得標高サンプル"+grid.known+"/"+grid.total+
+   "。色の変化は標高差の可視化です。未取得セルは描画しません。","success");
+ }catch(error){notice(error.message,"error")}
+ finally{button.disabled=false}
+}
+bind("sakihana-osm-fetch",loadSakihanaOSM,"click");
+bind("sakihana-dem-fetch",loadSakihanaDEM,"click");
+
 bind("download-bundle",downloadBundle,"click");
 bind("download",download,"click");
 bind("download-interior",downloadInterior,"click");
@@ -1009,7 +1089,7 @@ viewer=window.AAMapViewer.create({
   if(data)setGridInputs({...gridDefaults,...data.settings?.editorGrid});
   if(data)$("scene-name").textContent=data.name||data.id;
   else $("scene-name").textContent="マップ";
-  showObjects();renderSelected();showNewLayerChoices();
+  showObjects();renderSelected();showNewLayerChoices();geoButtons();
  },
  onInteriorLoaded:(id,data)=>{
   state.scene=copy(data);
