@@ -94,8 +94,18 @@ function showNewLayerChoices(){
 }
 function batchMode(){return checked("batch-mode")}
 function filteredObjects(){
- const q=input("object-search").trim().toLowerCase();
- return (sceneNow()?.objects||[]).filter(o=>!q||((o.name||"")+" "+o.id+" "+(o.objectType||"")).toLowerCase().includes(q));
+ const q=input("object-search").trim().toLowerCase(),category=input("object-category-filter");
+ const matchCategory=o=>{
+  const k=o.metadata?.featureKind||"";
+  if(category==="terrain")return k==="terrain";
+  if(category==="building")return k==="building"||o.objectType==="facility";
+  if(category==="road")return k==="road"||o.objectType==="route";
+  if(category==="railway")return k==="railway";
+  if(category==="water")return ["water","waterway"].includes(k);
+  if(category==="other")return !["terrain","building","road","railway","water","waterway"].includes(k);
+  return true;
+ };
+ return (sceneNow()?.objects||[]).filter(o=>matchCategory(o)&&(!q||((o.name||"")+" "+o.id+" "+(o.objectType||"")).toLowerCase().includes(q)));
 }
 function showObjects(){
  const list=$("objects"),data=sceneNow();
@@ -902,6 +912,7 @@ function restore(from,to){
 bind("undo",()=>restore(state.undo,state.redo),"click");
 bind("redo",()=>restore(state.redo,state.undo),"click");
 bind("object-search",showObjects,"input");
+bind("object-category-filter",showObjects,"change");
 bind("clear-search",()=>{$("object-search").value="";showObjects()},"click");
 bind("move-mode",()=>{
  const enabled=viewer.setEditMode(checked("move-mode"));
