@@ -507,6 +507,8 @@ function geoNumberEdit(field,raw,min=0){
   o.metadata={...o.metadata};
   if(text===""){delete o.metadata[field];return}
   o.metadata[field]=Number(text);
+  o.metadata[field==="elevationM"?"manualElevationEdit":"manualHeightEdit"]=true;
+  if(field==="elevationM")o.metadata.verifiedElevation=false;
   if(field==="elevationM"&&o.metadata.featureKind==="terrain"){
    const range=sceneNow()?.settings?.georeference;
    const minHeight=Number(range?.minElevationM),maxHeight=Number(range?.maxElevationM);
