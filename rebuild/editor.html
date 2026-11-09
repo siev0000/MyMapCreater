@@ -218,14 +218,22 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  header{gap:5px;padding:5px}
  .editor-overlay{max-width:55vw}
 }
+
+/* Header is intentionally a single line: active world map list + history. */
+.editor-header{height:44px;min-height:44px;max-height:44px;display:flex;align-items:center;gap:7px;padding:5px 10px;flex-wrap:nowrap;overflow:hidden}
+.editor-header #scene-select{flex:1 1 auto;width:auto;min-width:0;max-width:none;height:32px}
+.editor-header #undo,.editor-header #redo{flex:0 0 37px;width:37px;height:32px;padding:1px 3px;font-size:21px;line-height:1}
+.editor-nav-link{display:block;padding:9px;border:1px solid #679cab;border-radius:6px;text-align:center;background:#214b5b;font-weight:700}
+#geo-import-panel{display:block}
+#geo-import-panel[hidden]{display:none!important}
+#world-selection-panel select{width:100%}
 </style>
 </head>
 <body>
-<header>
- <a href="./header.html" title="マップ表示に戻る">‹ 閲覧へ</a>
- <strong class="brand">MyMapCreater</strong>
- <select id="scene-select" aria-label="編集するマップを選択"></select>
-
+<header class="editor-header" aria-label="マップ編集ヘッダー">
+ <select id="scene-select" aria-label="選択ワールド内のマップを切り替え"></select>
+ <button id="undo" type="button" title="編集を戻す" aria-label="戻る" disabled>↶</button>
+ <button id="redo" type="button" title="編集を進める" aria-label="進む" disabled>↷</button>
 </header>
 <div id="message" role="status">シーンJSONを読み込み中…</div>
 
@@ -255,7 +263,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   <button type="button" class="rail-button" data-tool-tab="properties" title="選択オブジェクトの編集" aria-label="選択オブジェクトの編集"><span aria-hidden="true">属</span><small>属性</small></button>
   <button type="button" class="rail-button" data-tool-tab="supplies" title="物資と収納" aria-label="物資と収納"><span aria-hidden="true">物</span><small>物資</small></button>
   <button type="button" class="rail-button" data-tool-tab="grid" title="グリッド・マップ設定" aria-label="グリッド・マップ設定"><span aria-hidden="true">設</span><small>設定</small></button>
-  <button type="button" class="rail-button" id="geo-import-toggle" data-tool-tab="import" aria-expanded="false" aria-controls="geo-import-panel" title="実在地図の取込" aria-label="実在地図の取込"><span aria-hidden="true">取</span><small>取込</small></button>
   <button type="button" class="rail-button" data-tool-tab="files" title="保存・読込" aria-label="保存・読込"><span aria-hidden="true">保</span><small>保存</small></button>
  </nav>
  <aside class="side" id="editor-tools" aria-label="編集ツール">
@@ -519,20 +526,29 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
    </div>
   </section>
   </div>
-  <div class="tool-section" data-panel-tab="files"> <div class="toolbar">
+  <div class="tool-section" data-panel-tab="files">
+  <section class="panel" id="world-selection-panel">
+   <h2>ワールド・表示</h2>
+   <label>大マップ（ワールド）<select id="world-select" aria-label="切り替えるワールド"></select></label>
+   <p class="note">選択したワールド内のマップは、上部の1行リストから切り替えられます。</p>
+   <a id="editor-view-map" href="./header.html" class="editor-nav-link">選択中のマップを閲覧画面で開く</a>
+  </section>
+  <section class="panel">
+   <h2>JSONファイルの読込・保存</h2>
+   <p class="note">編集したマップは保存操作を行うまでGitHubの元データには反映しません。</p>
+  </section>
+  <div class="toolbar">
   <button id="open-json">JSONを開く</button><input id="file-input" type="file" accept=".json,application/json" hidden>
-  <button id="undo" title="操作を戻す" disabled>戻す</button>
-  <button id="redo" title="操作を進める" disabled>進める</button>
   <button id="download">街マップJSONを保存</button>
   <button id="download-bundle" title="街マップとすべての建物内部JSONをZIPにまとめる">全データZIP保存</button>
   <button id="download-interior" title="選択した建物の内部データを保存">建物内部JSONを保存</button>
  </div>
-  <section class="panel" id="file-info-panel">
-   <h2>ファイルについて</h2>
-   <p class="note">編集内容はこのブラウザー内の作業状態です。「全データZIP保存」で街マップと建物内部JSONを一括で書き出せます。GitHub上のデータには自動で上書きしません。保存したJSONをリポジトリの該当シーンに配置すると表示側にも反映されます。</p>
+  <section class="panel">
+   <h2>実在地図の取込</h2>
+   <button id="geo-import-toggle" type="button" aria-expanded="false" aria-controls="geo-import-panel">地域データ取込を開く</button>
+   <p class="note">OpenStreetMapや標高の取得は必要なときだけ開く補助機能です。</p>
   </section>
-  </div>
-  <div class="tool-section" data-panel-tab="import"><section id="geo-import-panel" aria-label="地理データ取込" style="padding:12px 16px;background:#17323d;border-bottom:1px solid #416d78;color:#e1ecee">
+  <section id="geo-import-panel" hidden aria-label="地理データ取込" style="padding:12px 16px;background:#17323d;border-bottom:1px solid #416d78;color:#e1ecee">
  <strong>地図データ取込（補助機能）</strong>　<small>地名検索または座標指定 → OSM地物取得 → 必要に応じて標高取得 → 編集・JSON保存</small>
  <div style="display:flex;flex-wrap:wrap;gap:9px;align-items:end;margin-top:8px">
   <label>地名・駅名 <input id="geo-place" type="text" placeholder="例：新潟県五泉市 咲花駅" value="新潟県五泉市 咲花駅" style="min-width:185px"></label>
@@ -546,7 +562,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  </div>
  <p id="geo-import-status" role="status" style="margin:7px 0 0;color:#b5d3d9;font-size:12px">取得した地図は現在の編集シーンに読み込まれます。元マップは自動上書きされません。</p>
  <p style="margin:4px 0 0;font-size:11px">© OpenStreetMap contributors (ODbL) / 標高：国土地理院。<a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">地名検索の利用条件</a>に従い、検索はボタンを押した時だけ行います。取得した地図は「街マップJSONを保存」で保存してください。</p>
-</section></div>
+</section>
+    <section class="panel" id="file-info-panel">
+   <h2>ファイルについて</h2>
+   <p class="note">編集内容はこのブラウザー内の作業状態です。「全データZIP保存」で街マップと建物内部JSONを一括で書き出せます。GitHub上のデータには自動で上書きしません。保存したJSONをリポジトリの該当シーンに配置すると表示側にも反映されます。</p>
+  </section>
+  </div>
+
  </aside>
 </main>
 
@@ -655,16 +677,14 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   active=id;root.dataset.sidebarOpen=close?"false":"true";
   for(const b of buttons){const on=b.dataset.toolTab===id;b.setAttribute("aria-selected",String(on));b.setAttribute("aria-pressed",String(on&&!close))}
   for(const p of panels)p.dataset.active=String(p.dataset.panelTab===id&&!close);
-  if(id==="import"&&!close){const panel=document.getElementById("geo-import-panel");panel.hidden=false;document.getElementById("geo-import-toggle").setAttribute("aria-expanded","true")}
   sidebar.scrollTop=0;
   try{sessionStorage.setItem("mymapcreater:editor:last-tool-tab",id)}catch(_){}
   window.dispatchEvent(new Event("resize"));
  }
- for(const b of buttons)if(b.id!=="geo-import-toggle")b.addEventListener("click",()=>selectTab(b.dataset.toolTab));
- const geo=document.getElementById("geo-import-toggle");
- geo.addEventListener("click",()=>selectTab("import"));
+ for(const b of buttons)b.addEventListener("click",()=>selectTab(b.dataset.toolTab));
  window.AAMapEditorUI={selectTab,activeTab:()=>active};
  let initial="objects";try{initial=sessionStorage.getItem("mymapcreater:editor:last-tool-tab")||"objects"}catch(_){}
+ if(initial==="import")initial="files";
  selectTab(initial,true);
  // On narrow screens leave the map fully visible until a tool is deliberately opened.
  if(window.innerWidth<=650){
