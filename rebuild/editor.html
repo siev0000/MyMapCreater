@@ -62,6 +62,43 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 .template-preview-large{height:min(52dvh,440px);min-height:180px;margin:10px 0;border:1px solid #426b79;border-radius:7px;background:#0a252e;padding:12px}
 .template-preview-dialog .note{margin:6px 0}
 @media(max-width:500px){.template-preview-list{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));max-height:230px}.template-preview-large{height:min(44dvh,330px)}}
+
+/* Full-size split template catalog: scroll list left, preview selected floor right. */
+.template-preview-modal{position:fixed;z-index:2000;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,10,16,.75);padding:12px}
+.template-preview-modal[hidden]{display:none!important}
+.template-preview-dialog{width:min(1150px,96vw);height:min(820px,94dvh);max-width:none;max-height:none;overflow:hidden;display:flex;flex-direction:column;gap:10px;border:1px solid #689baa;border-radius:12px;background:#112d38;padding:12px;color:#eaf4f6;box-shadow:0 15px 50px rgba(0,0,0,.45)}
+.template-preview-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}
+.template-preview-modal-head h2{margin:0;font-size:16px}
+.template-preview-modal-head button{font-size:23px;min-width:34px;min-height:32px}
+.template-preview-layout{min-height:0;flex:1;display:grid;grid-template-columns:minmax(235px,35%) minmax(0,1fr);gap:12px}
+.template-preview-picker{min-height:0;display:flex;flex-direction:column;gap:7px;overflow:hidden}
+.template-preview-picker label,.template-preview-result label{font-size:12px}
+.template-preview-picker input{flex:none}
+.template-preview-list{display:flex;flex-direction:column;gap:5px;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;padding:2px 5px 2px 1px;margin:0}
+.template-preview-card{display:flex;align-items:center;gap:8px;width:100%;min-width:0;flex:none;padding:5px;text-align:left;border:1px solid #416675;border-radius:7px;background:#163440;color:#e4f1f3;cursor:pointer}
+.template-preview-card:hover,.template-preview-card:focus-visible{border-color:#91cad1;background:#244c58}
+.template-preview-card[aria-selected="true"]{background:#286072;border-color:#b1e2e9}
+.template-preview-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 62px;width:62px;height:52px;background:#0a252e;border-radius:4px}
+.template-floorplan{display:block;width:100%;height:100%;max-height:100%;overflow:visible}
+.template-preview-card-text{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px}
+.template-preview-card-text strong{white-space:normal;line-height:1.25}
+.template-preview-card-text small{font-size:10px;color:#a6c4cf}
+.template-preview-result{min-height:0;min-width:0;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.template-preview-result h3{font-size:16px;margin:0}
+.template-preview-result .note{margin:0}
+.template-preview-result select{flex:none}
+.template-preview-large{flex:1 1 auto;min-height:180px;height:auto;margin:4px 0;border:1px solid #426b79;border-radius:7px;background:#0a252e;padding:12px;overflow:hidden}
+.template-preview-result .actions{flex:none}
+@media(max-width:650px){
+ .template-preview-modal{padding:5px}
+ .template-preview-dialog{width:100%;height:calc(100dvh - 10px);padding:8px;gap:6px}
+ .template-preview-layout{grid-template-columns:1fr;grid-template-rows:minmax(145px,34%) minmax(0,1fr);gap:8px}
+ .template-preview-list{max-height:none}
+ .template-preview-thumb{flex-basis:48px;width:48px;height:39px}
+ .template-preview-card{padding:3px}
+ .template-preview-result h3{font-size:14px}
+ .template-preview-large{min-height:110px;padding:6px}
+}
 </style>
 </head>
 <body>
@@ -101,8 +138,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <h2>建物フォーマット・一括配置</h2>
    <p class="note">選択した形式から、床・外壁・入口・間仕切り・階段をまとめて生成します。テンプレートは独立データで、既存建物には影響しません。</p>
    <label>建物テンプレート<select id="building-template"></select></label>
-   <p class="note">下の一覧の平面図を選ぶと、階ごとの間取りを拡大表示できます。</p>
-   <div id="template-preview-list" class="template-preview-list" aria-label="建物テンプレートの間取り一覧"></div>
+   <button id="template-preview-open" type="button">建物テンプレート一覧を大きく表示・選択</button>
+   <p class="note">一覧は別ウィンドウで開き、左のテンプレート選択と右の階別平面図を並べて確認できます。</p>
    <p id="building-template-description" class="note"></p>
    <div class="col2">
      <label>建物名（連番が付きます）<input id="building-base-name" value="建物" maxlength="100"></label>
@@ -311,20 +348,31 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 <div id="template-preview-modal" class="template-preview-modal" hidden>
  <section class="template-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="template-preview-title">
   <div class="template-preview-modal-head">
-   <h2 id="template-preview-title"></h2>
+   <h2>建物テンプレート一覧・間取りプレビュー</h2>
    <button type="button" id="template-preview-close" aria-label="プレビューを閉じる">×</button>
   </div>
-  <p id="template-preview-meta" class="note"></p>
-  <label>表示階 <select id="template-preview-floor"></select></label>
-  <div id="template-preview-large" class="template-preview-large" aria-label="建物の拡大平面図"></div>
-  <p id="template-preview-description" class="note"></p>
-  <div class="actions"><button type="button" id="template-preview-use">このテンプレートを選択</button></div>
+  <div class="template-preview-layout">
+   <aside class="template-preview-picker" aria-label="テンプレート一覧">
+    <label for="template-preview-filter">テンプレート検索</label>
+    <input id="template-preview-filter" type="search" placeholder="名称・種類で絞り込み">
+    <div id="template-preview-list" class="template-preview-list" role="listbox" aria-label="建物テンプレートの候補"></div>
+   </aside>
+   <section class="template-preview-result" aria-label="選択テンプレートの詳細">
+    <h3 id="template-preview-title"></h3>
+    <p id="template-preview-meta" class="note"></p>
+    <label for="template-preview-floor">表示階</label>
+    <select id="template-preview-floor" aria-label="プレビューする階層"></select>
+    <div id="template-preview-large" class="template-preview-large" aria-label="選択階の拡大平面図"></div>
+    <p id="template-preview-description" class="note"></p>
+    <div class="actions"><button type="button" id="template-preview-use">このテンプレートを選択</button></div>
+   </section>
+  </div>
  </section>
 </div>
 <script src="./map-viewer.js?v=compact-floor-ui-v3"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
 <script src="./building-templates.js?v=lazy-template-safety-v2"></script>
-<script src="./template-preview.js?v=template-visual-v1"></script>
+<script src="./template-preview.js?v=split-catalog-v2"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./map-editor.js?v=template-visual-v1"></script>
 </body></html>
