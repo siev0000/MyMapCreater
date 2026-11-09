@@ -238,7 +238,7 @@ function updateVertexControls(obj){
   $("door-type").value=obj.door?.type==="sliding"?"sliding":"hinged";
   $("door-leaf-count").value=obj.door?.leafCount===2?"2":"1";
   $("door-slide-direction").value=obj.door?.slideDirection==="start"?"start":"end";
-  $("door-slide-fields").classList.toggle("hidden",obj.door?.type!=="sliding");
+  $("door-slide-fields").classList.toggle("hidden",obj.door?.type!=="sliding"||obj.door?.leafCount===2);
  }
  $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
  if(obj?.objectType==="wall")$("wall-thickness").value=obj.wall?.thickness??"";
