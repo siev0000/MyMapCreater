@@ -44,74 +44,48 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #json-object{min-height:125px}
 @media(max-width:780px){main{grid-template-columns:1fr}.map-pane{height:55dvh;min-height:320px}.side{max-height:none;border-left:0;border-top:1px solid #426778}header{padding:6px}.toolbar{margin:0}#scene-select{max-width:none}}
 
-/* Template cards and a read-only floorplan modal. */
-.template-preview-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));max-height:280px;overflow-y:auto;gap:6px;margin:8px 0;padding:2px}
-.template-preview-card{display:flex;gap:8px;align-items:center;min-width:0;padding:5px;text-align:left;border:1px solid #416675;border-radius:7px;background:#163440;color:#e4f1f3;cursor:pointer}
-.template-preview-card:hover,.template-preview-card:focus-visible{border-color:#91cad1;background:#244c58}
-.template-preview-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 50px;width:50px;height:46px;background:#0a252e;border-radius:4px}
-.template-floorplan{display:block;width:100%;height:100%;max-height:100%;overflow:visible}
-.template-preview-card-text{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:11px}
-.template-preview-card-text strong{white-space:normal;line-height:1.25}
-.template-preview-card-text small{font-size:9px;color:#a6c4cf}
-.template-preview-modal{position:fixed;z-index:2000;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,10,16,.68);padding:14px}
-.template-preview-modal[hidden]{display:none!important}
-.template-preview-dialog{width:min(610px,100%);max-height:calc(100dvh - 28px);overflow:auto;border:1px solid #689baa;border-radius:12px;background:#112d38;padding:12px 14px;color:#eaf4f6;box-shadow:0 15px 50px rgba(0,0,0,.4)}
-.template-preview-modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.template-preview-modal-head h2{margin:0;font-size:16px}
-.template-preview-modal-head button{font-size:23px;min-height:28px;min-width:32px}
-.template-preview-large{height:min(52dvh,440px);min-height:180px;margin:10px 0;border:1px solid #426b79;border-radius:7px;background:#0a252e;padding:12px}
-.template-preview-dialog .note{margin:6px 0}
-@media(max-width:500px){.template-preview-list{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));max-height:230px}.template-preview-large{height:min(44dvh,330px)}}
-
-/* Full-size split template catalog: scroll list left, preview selected floor right. */
-.template-preview-modal{position:fixed;z-index:2000;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,10,16,.75);padding:12px}
-.template-preview-modal[hidden]{display:none!important}
-.template-preview-dialog{width:min(1150px,96vw);height:min(820px,94dvh);max-width:none;max-height:none;overflow:hidden;display:flex;flex-direction:column;gap:10px;border:1px solid #689baa;border-radius:12px;background:#112d38;padding:12px;color:#eaf4f6;box-shadow:0 15px 50px rgba(0,0,0,.45)}
-.template-preview-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}
-.template-preview-modal-head h2{margin:0;font-size:16px}
-.template-preview-modal-head button{font-size:23px;min-width:34px;min-height:32px}
-.template-preview-layout{min-height:0;flex:1;display:grid;grid-template-columns:minmax(235px,35%) minmax(0,1fr);gap:12px}
-.template-preview-picker{min-height:0;display:flex;flex-direction:column;gap:7px;overflow:hidden}
-.template-preview-picker label,.template-preview-result label{font-size:12px}
-.template-preview-picker input{flex:none}
-.template-preview-list{display:flex;flex-direction:column;gap:5px;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;padding:2px 5px 2px 1px;margin:0}
-.template-preview-card{display:flex;align-items:center;gap:8px;width:100%;min-width:0;flex:none;padding:5px;text-align:left;border:1px solid #416675;border-radius:7px;background:#163440;color:#e4f1f3;cursor:pointer}
-.template-preview-card:hover,.template-preview-card:focus-visible{border-color:#91cad1;background:#244c58}
-.template-preview-card[aria-selected="true"]{background:#286072;border-color:#b1e2e9}
-.template-preview-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 62px;width:62px;height:52px;background:#0a252e;border-radius:4px}
-.template-floorplan{display:block;width:100%;height:100%;max-height:100%;overflow:visible}
-.template-preview-card-text{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px}
-.template-preview-card-text strong{white-space:normal;line-height:1.25}
-.template-preview-card-text small{font-size:10px;color:#a6c4cf}
-.template-preview-result{min-height:0;min-width:0;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
-.template-preview-result h3{font-size:16px;margin:0}
-.template-preview-result .note{margin:0}
-.template-preview-result select{flex:none}
-.template-preview-large{flex:1 1 auto;min-height:180px;height:auto;margin:4px 0;border:1px solid #426b79;border-radius:7px;background:#0a252e;padding:12px;overflow:hidden}
-.template-preview-result .actions{flex:none}
+/* Single source of truth for the template selector layout. */
+#template-preview-modal{position:fixed;z-index:2000;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,10,16,.78);padding:8px}
+#template-preview-modal[hidden]{display:none!important}
+#template-preview-modal .template-preview-dialog{box-sizing:border-box;width:min(1150px,calc(100vw - 16px));height:min(820px,calc(100dvh - 16px));max-width:none;max-height:none;overflow:hidden;display:flex;flex-direction:column;gap:7px;border:1px solid #689baa;border-radius:10px;background:#112d38;padding:10px;color:#eaf4f6;box-shadow:0 15px 50px rgba(0,0,0,.45)}
+#template-preview-modal .template-preview-modal-head{display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;min-width:0;gap:10px}
+#template-preview-modal .template-preview-modal-head h2{margin:0;font-size:15px}
+#template-preview-modal .template-preview-modal-head button{font-size:22px;min-width:32px;min-height:32px}
+#template-preview-modal .template-preview-layout{display:grid!important;grid-template-columns:minmax(0,36fr) minmax(0,64fr)!important;grid-template-rows:minmax(0,1fr)!important;grid-auto-flow:column;min-width:0;min-height:0;flex:1 1 auto;width:100%;gap:9px}
+#template-preview-modal .template-preview-picker{grid-column:1;grid-row:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;gap:5px}
+#template-preview-modal .template-preview-result{grid-column:2;grid-row:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto;gap:5px}
+#template-preview-modal .template-preview-picker label,#template-preview-modal .template-preview-result label{font-size:11px}
+#template-preview-modal .template-preview-picker input{min-width:0;width:100%;flex:none}
+#template-preview-modal .template-preview-list{display:flex;flex-direction:column;flex:1 1 auto;max-height:none;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;gap:4px;margin:0;padding:2px}
+#template-preview-modal .template-preview-card{display:flex;align-items:center;gap:6px;width:100%;min-width:0;flex:none;padding:4px;text-align:left;border:1px solid #416675;border-radius:6px;background:#163440;color:#e4f1f3;cursor:pointer}
+#template-preview-modal .template-preview-card:hover,#template-preview-modal .template-preview-card:focus-visible{border-color:#91cad1;background:#244c58}
+#template-preview-modal .template-preview-card[aria-selected="true"]{background:#286072;border-color:#b1e2e9}
+#template-preview-modal .template-preview-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 48px;width:48px;height:42px;background:#0a252e;border-radius:4px}
+#template-preview-modal .template-floorplan{display:block;width:100%;height:100%;max-height:100%;overflow:visible}
+#template-preview-modal .template-preview-card-text{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:11px}
+#template-preview-modal .template-preview-card-text strong{white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+#template-preview-modal .template-preview-card-text small{font-size:9px;color:#a6c4cf}
+#template-preview-modal .template-preview-result h3{font-size:15px;margin:0}
+#template-preview-modal .template-preview-result .note{margin:0}
+#template-preview-modal .template-preview-result select{flex:none}
+#template-preview-modal .template-preview-large{flex:1 1 auto;min-height:90px;height:auto;margin:3px 0;border:1px solid #426b79;border-radius:6px;background:#0a252e;padding:9px;overflow:hidden}
+#template-preview-modal .template-preview-result .actions{flex:none}
 @media(max-width:650px){
- .template-preview-modal{padding:5px}
- .template-preview-dialog{width:100%;height:calc(100dvh - 10px);padding:8px;gap:6px}
- /* Never stack the selector and floorplan: the list has its own scroll area. */
- .template-preview-layout{grid-template-columns:minmax(126px,36%) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:7px}
- .template-preview-picker{min-width:0}
- .template-preview-list{max-height:none;min-height:0;overflow-y:auto}
- .template-preview-thumb{flex-basis:40px;width:40px;height:36px}
- .template-preview-card{padding:3px;gap:5px}
- .template-preview-card-text{font-size:11px}
- .template-preview-card-text small{font-size:9px}
- .template-preview-result h3{font-size:14px}
- .template-preview-large{min-height:110px;padding:6px}
+ #template-preview-modal{padding:4px}
+ #template-preview-modal .template-preview-dialog{width:calc(100vw - 8px);height:calc(100dvh - 8px);padding:6px;gap:5px}
+ #template-preview-modal .template-preview-layout{grid-template-columns:minmax(0,38fr) minmax(0,62fr)!important;gap:5px}
+ #template-preview-modal .template-preview-modal-head h2{font-size:12px}
+ #template-preview-modal .template-preview-card{padding:3px;gap:4px}
+ #template-preview-modal .template-preview-thumb{flex-basis:32px;width:32px;height:34px}
+ #template-preview-modal .template-preview-result h3{font-size:13px}
+ #template-preview-modal .template-preview-large{padding:5px}
 }
 @media(max-width:430px){
- .template-preview-modal-head h2{font-size:13px}
- .template-preview-layout{grid-template-columns:minmax(112px,36%) minmax(0,1fr);gap:5px}
- .template-preview-thumb{display:none}
- .template-preview-card-text{font-size:10px}
- .template-preview-card-text small{font-size:8px}
- .template-preview-result{gap:4px}
- .template-preview-large{min-height:90px}
+ #template-preview-modal .template-preview-thumb{display:none}
+ #template-preview-modal .template-preview-card-text{font-size:10px}
+ #template-preview-modal .template-preview-card-text small{font-size:8px}
 }
+
 </style>
 </head>
 <body>
