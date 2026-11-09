@@ -59,20 +59,31 @@
  function sizeText(t){
   const a=t.custom?t.originalSize:t.cells;return a.join(" × ")+(t.custom?" 座標":" マス");
  }
- function open(id){
-  const t=library.allPresets().find(item=>item.id===id);if(!t)return;
-  activeId=id;activeFloor=record(t).floors[0].id;
-  lastFocus=document.activeElement;
-  const modal=$("template-preview-modal"),floors=$("template-preview-floor");
+ function selectTemplate(id){
+  const t=library?.allPresets().find(item=>item.id===id);if(!t)return;
+  const previous=activeId;
+  activeId=id;
+  const available=record(t).floors;
+  // When moving between templates, use the matching floor if it exists.
+  if(previous!==id||!available.some(f=>f.id===activeFloor))
+   activeFloor=available.some(f=>f.id===activeFloor)?activeFloor:available[0].id;
+  const floors=$("template-preview-floor");
   $("template-preview-title").textContent=t.name;
   $("template-preview-description").textContent=t.description||"説明なし";
   $("template-preview-meta").textContent=sizeText(t)+" / "+t.floors+"階"+(t.custom?" / 自作":"");
   floors.replaceChildren();
-  for(const f of record(t).floors){const o=T("option","",f.label||f.id);o.value=f.id;floors.append(o)}
+  for(const f of available){const o=T("option","",f.label||f.id);o.value=f.id;floors.append(o)}
   floors.value=activeFloor;
   drawModal();
-  modal.hidden=false;
-  $("template-preview-close").focus();
+  for(const card of $("template-preview-list").children)
+   card.setAttribute("aria-selected",String(card.dataset.templateId===id));
+ }
+ function open(){
+  if(!library)return;
+  lastFocus=document.activeElement;
+  $("template-preview-modal").hidden=false;
+  selectTemplate(picker.value||library.allPresets()[0]?.id);
+  $("template-preview-filter").focus();
  }
  function drawModal(){
   if(!activeId)return;
@@ -89,15 +100,22 @@
   renderCache.clear();
   const root=$("template-preview-list");
   root.replaceChildren();
+  const filter=$("template-preview-filter").value.trim().toLowerCase();
   for(const t of library.allPresets()){
+   if(filter&&!((t.name||"")+" "+(t.category||"")+" "+(t.description||"")).toLowerCase().includes(filter))continue;
    const row=T("button","template-preview-card");row.type="button";
+   row.dataset.templateId=t.id;
+   row.setAttribute("role","option");
    row.setAttribute("aria-label",t.name+" の間取りを見る");
+   row.setAttribute("aria-selected",String(t.id===activeId));
    const thumbnail=T("span","template-preview-thumb");
    try{thumbnail.append(renderPlan(t,record(t).floors[0].id,true))}
    catch(error){thumbnail.textContent="プレビュー不可";row.title=error.message}
    const info=T("span","template-preview-card-text");
    info.append(T("strong","",t.name),T("small","",sizeText(t)+" · "+t.floors+"階"));
-   row.append(thumbnail,info);row.addEventListener("click",()=>open(t.id));root.append(row);
+   row.append(thumbnail,info);
+   row.addEventListener("click",()=>selectTemplate(t.id));
+   root.append(row);
   }
  }
  function init(lib,select){
@@ -106,6 +124,8 @@
   if(!modal.dataset.initialized){
    modal.dataset.initialized="1";
    $("template-preview-close").addEventListener("click",close);
+   $("template-preview-open").addEventListener("click",open);
+   $("template-preview-filter").addEventListener("input",refresh);
    $("template-preview-floor").addEventListener("change",e=>{activeFloor=e.target.value;drawModal()});
    $("template-preview-use").addEventListener("click",()=>{
     if(!activeId)return;
