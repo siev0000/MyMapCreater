@@ -30,7 +30,7 @@ const ids=[
 "undo","redo","clone-object","delete-object","selected-fields","select-empty",
 "objects","object-search","clear-search","obj-id","obj-name","obj-display-level","obj-type",
 "obj-parent","layer-list","obj-layer","obj-z","obj-visible","obj-selectable",
-"obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
+"door-type","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
 "apply-json","new-shape","new-role","new-layer","new-parent-selected","new-when-parent-selected","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
@@ -81,6 +81,14 @@ async function main(){
  el["new-parent-selected"].checked=true;el["new-when-parent-selected"].checked=true;
  el["add-object"].click();
  assert.equal(el["obj-type"].value,"door");
+ el["door-type"].value="sliding";el["door-type"].listeners.change();
+ assert.equal(JSON.parse(el["json-object"].value).door.type,"sliding");
+ el["door-slide-direction"].value="start";el["door-slide-direction"].listeners.change();
+ assert.equal(JSON.parse(el["json-object"].value).door.slideDirection,"start");
+ el.undo.click();
+ assert.equal(JSON.parse(el["json-object"].value).door.slideDirection,"end");
+ el.redo.click();
+ assert.equal(JSON.parse(el["json-object"].value).door.slideDirection,"start");
  assert.equal(el["obj-parent"].value,"workshop");
  assert.equal(JSON.parse(el["json-object"].value).visibility.whenParentSelected,true);
  el.undo.click();
