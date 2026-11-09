@@ -233,7 +233,7 @@ function generateModern(template,options){
   const o={id:prefix+"_modern_"+(++count),name,parentId:prefix,displayLevel:displayLevel+1,
    floorId:f,objectType:kind,layer:kind==="wall"||kind==="door"?"walls":"structures",
    zIndex:kind==="slab"?29:kind==="region"?31:kind==="wall"?47:kind==="door"?49:kind==="stair"?46:42,
-   geometry,visible:true,selectable:kind!=="slab"&&kind!=="wall",
+   geometry,visible:true,selectable:kind!=="slab",
    style,label:{visible:kind==="region",text:name,fontSize:8},
    detail:name+"（現代日本の住宅用テンプレート）",
    metadata:{templateId:template.id,generated:true},...extra};
@@ -352,7 +352,7 @@ function generate(templateId,options={}){
   const obj={id:id(suffix),name,parentId:prefix,displayLevel:displayLevel+1,
    floorId,objectType:kind,layer:kind==="wall"||kind==="door"?"walls":"structures",
    zIndex:kind==="wall"?47:kind==="door"?49:kind==="stair"?46:kind==="slab"?29:45,
-   geometry,visible:true,selectable:kind!=="wall"&&kind!=="slab",style,
+   geometry,visible:true,selectable:kind!=="slab",style,
    label:{visible:false,text:name},detail:"建物テンプレートから生成。必要に応じて編集してください。",
    metadata:{templateId:template.id,generated:true},...extra};
   objects.push(obj);return obj;
