@@ -119,7 +119,7 @@ function create(opts){
  let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
  const interiorCache=new Map(),interiorPending=new Map(),interiorLoaded=new Set();
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
- let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null,handleDrag=null;
+ let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null,handleDrag=null,suppressClick=false;
  let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
  let previewGridVisible=null;
  try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
@@ -1072,11 +1072,41 @@ function create(opts){
  const observer=new ResizeObserver(resize);observer.observe(host);observer.observe(canvas);resize();
  const pos=e=>{const r=canvas.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
  canvas.addEventListener("wheel",e=>{e.preventDefault();const [x,y]=pos(e);zoomAt(e.deltaY<0?1.15:1/1.15,x,y)},{passive:false});
+ // Double-click a selected polygon/polyline edge to insert a vertex.
+ // Alt-click an existing vertex to remove it (minimum 3 / 2 retained).
+ // Editor property buttons provide the same actions on touch devices.
+ canvas.addEventListener("dblclick",e=>{
+  if(!editMode||!selected||!["polygon","polyline"].includes(selected.geometry?.type))return;
+  const points=selected.geometry.points,[x,y]=pos(e);
+  const count=selected.geometry.type==="polygon"?points.length:points.length-1;
+  let near=null;
+  for(let i=0;i<count;i++){
+   const a=screenAt(...points[i]),b=screenAt(...points[(i+1)%points.length]);
+   const distance=segmentDistance(x,y,a,b);
+   if(distance<=12&&(!near||distance<near.distance))near={i,distance};
+  }
+  if(!near)return;
+  e.preventDefault?.();
+  const [wx,wy]=worldAt(x,y),point=[snapWorld(wx,0),snapWorld(wy,1)];
+  if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
+  points.splice(near.i+1,0,point);
+  draw();
+  if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(selected),getScene());
+ });
  canvas.addEventListener("pointerdown",e=>{
   canvas.setPointerCapture(e.pointerId);
   const [x,y]=pos(e);pointers.set(e.pointerId,{x,y});
   dragged=false;dragStart={x,y};
   const handle=pointers.size===1?hitEditHandle(x,y):null;
+  if(e.altKey&&handle?.id.startsWith("vertex:")&&selected?.geometry?.points){
+   const points=selected.geometry.points;
+   if(points.length>(selected.geometry.type==="polygon"?3:2)){
+    if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
+    points.splice(Number(handle.id.slice(7)),1);draw();
+    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(selected),getScene());
+    suppressClick=true;return;
+   }
+  }
   if(handle&&selected){
    handleDrag={id:selected.id,handle,startGeometry:clone(selected.geometry),
     startLabel:Array.isArray(selected.label?.position)?[...selected.label.position]:null,
@@ -1137,11 +1167,12 @@ function create(opts){
    if(point){const dx=snapWorld(point[0],0)-point[0],dy=snapWorld(point[1],1)-point[1];translateObject(movedObject,dx,dy);draw()}
   }
   objectDrag=null;handleDrag=null;
+  if(suppressClick){suppressClick=false;return}
   if(editedObject){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(editedObject),getScene());
   }else if(movedObject){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
-  }else if(clicked){
+  }else if(clicked&&!suppressClick){
    const hit=pick(x,y);
    if(hit?.objectType==="stair"&&hit.connection?.toFloorId){
     // A stair switches the physical floor of its owning building, never the
