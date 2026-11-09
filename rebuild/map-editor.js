@@ -494,7 +494,7 @@ bind("wall-thickness",()=>{
 });
 function initBuildingTemplates(){
  const list=window.AAMapBuildingTemplates?.allPresets()||[];
- const picker=$("building-template");picker.replaceChildren();
+ const picker=$("building-template"),previous=picker.value;picker.replaceChildren();
  for(const category of [...new Set(list.map(t=>t.category))]){
   const group=document.createElement("optgroup");
   group.label=category==="custom"?"自作テンプレート":list.find(t=>t.id===category)?.name||category;
@@ -505,7 +505,7 @@ function initBuildingTemplates(){
   }
   picker.append(group);
  }
- picker.value=list[0]?.id||"";
+ picker.value=list.some(t=>t.id===previous)?previous:(list[0]?.id||"");
  function describe(){
   const t=list.find(t=>t.id===input("building-template"));
   if(!t)return;
@@ -518,6 +518,7 @@ function initBuildingTemplates(){
  if(window.AAMapTemplatePreview&&$("template-preview-list"))
   window.AAMapTemplatePreview.init(window.AAMapBuildingTemplates,picker);
 }
+window.addEventListener("building-templates-updated",initBuildingTemplates);
 const customStorageKey="mymapcreater:building-templates:v1";
 function loadCustomBuildingTemplates(){
  try{
