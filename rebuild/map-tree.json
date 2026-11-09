@@ -4,6 +4,17 @@
   "description": "Map menu and scene sources are data-driven; the application supports arbitrary world maps, towns, ships and buildings.",
   "maps": [
     {
+      "id": "earth_world",
+      "name": "地球",
+      "shortName": "地球",
+      "kind": "root",
+      "parentId": null,
+      "source": "../rebuild/scenes/earth-world.scene.json",
+      "description": "Natural Earth由来の世界地図の概観。日本・新潟県の咲花駅周辺マップを子マップに登録。",
+      "realWorld": true,
+      "scope": "global-overview"
+    },
+    {
       "id": "automaton_ship",
       "name": "アポクリファ＝アーカイブ",
       "shortName": "船全体",
@@ -59,9 +70,9 @@
       "id": "sakihana_gosen_500m",
       "name": "咲花駅周辺（保存済み実地図・標高）",
       "shortName": "咲花駅",
-      "kind": "root",
-      "parentId": null,
-      "description": "2026-11-09取得の咲花駅・道路11・鉄道5・建物69・地形標高400セルを初期表示。原本の座標は表示用に0.1座標単位まで丸めたスナップショット。",
+      "kind": "place",
+      "parentId": "earth_world",
+      "description": "地球の子マップ｜日本・新潟県五泉市の咲花駅周辺（500m四方）。保存済みOSM・標高地図。",
       "source": "../rebuild/scenes/sakihana-saved-2026-11-09.packed.json",
       "realWorld": true
     }
