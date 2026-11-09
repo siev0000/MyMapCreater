@@ -326,38 +326,148 @@
   updateScene(scene,remove?"preview_root":selected.id);
   setEditMessage(remove?"設置物を削除しました":"名前と説明を変更しました");
  }
- // Geometric clearance checks for placed fixtures and wall thickness.
- function checkFixtureCollisions(scene){
-  const errors=[],eps=1e-7,objects=scene?.objects||[];
-  const fixtures=objects.filter(o=>["object","stair"].includes(o.objectType)&&o.geometry?.type==="rect");
-  const barriers=objects.filter(o=>["wall","door"].includes(o.objectType)&&o.geometry?.type==="polyline");
+ // Geometry helpers: metres use 1 cell = 0.5m, independent of map coordinate spacing.
+ const EPS=1e-7;
+ const length2=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+ function polygonOfRect(g){
+  const x=g.x,y=g.y,w=g.width,h=g.height,cx=x+w/2,cy=y+h/2,
+   rad=(Number(g.rotation)||0)*Math.PI/180,c=Math.cos(rad),s=Math.sin(rad);
+  return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(([px,py])=>
+   [cx+(px-cx)*c-(py-cy)*s,cy+(px-cx)*s+(py-cy)*c]);
+ }
+ function thickSegment(a,b,width){
+  const len=length2(a,b),half=width/2;if(len<EPS)return null;
+  const nx=-(b[1]-a[1])/len*half,ny=(b[0]-a[0])/len*half;
+  return [[a[0]+nx,a[1]+ny],[b[0]+nx,b[1]+ny],[b[0]-nx,b[1]-ny],[a[0]-nx,a[1]-ny]];
+ }
+ function polygonsIntersect(a,b){
+  for(const poly of [a,b])for(let i=0;i<poly.length;i++){
+   const p=poly[i],q=poly[(i+1)%poly.length],nx=q[1]-p[1],ny=p[0]-q[0];
+   const proj=points=>points.map(v=>v[0]*nx+v[1]*ny);
+   const ap=proj(a),bp=proj(b);
+   if(Math.max(...ap)<=Math.min(...bp)+EPS||Math.max(...bp)<=Math.min(...ap)+EPS)return false;
+  }
+  return true;
+ }
+ function checkFixtureCollisions(scene,floorId=null){
+  const errors=[],objects=scene?.objects||[];
+  const fixtures=objects.filter(o=>["object","stair"].includes(o.objectType)&&o.geometry?.type==="rect"&&(!floorId||o.floorId===floorId));
+  const walls=objects.filter(o=>o.objectType==="wall"&&o.geometry?.type==="polyline");
+  const openings=objects.filter(o=>["door","window"].includes(o.objectType)&&o.geometry?.type==="polyline");
   for(const fixture of fixtures){
-   const g=fixture.geometry;
-   for(const wall of barriers){
+   const fp=polygonOfRect(fixture.geometry);
+   for(const wall of [...walls,...openings]){
     if(wall.floorId!==fixture.floorId)continue;
-    const half=wall.objectType==="wall"?(wall.wall?.thickness||0)/2:0;
+    const halfWidth=wall.objectType==="wall"?(wall.wall?.thickness||0.04):Math.max(.04,(scene.settings?.editorGrid?.spacing||2)*.035);
     const points=wall.geometry.points||[];
     for(let i=1;i<points.length;i++){
-     const [ax,ay]=points[i-1],[bx,by]=points[i];
-     const horizontal=Math.abs(ay-by)<eps,vertical=Math.abs(ax-bx)<eps;
-     if(horizontal&&g.y<ay+half-eps&&g.y+g.height>ay-half+eps&&
-       Math.min(Math.max(ax,bx),g.x+g.width)-Math.max(Math.min(ax,bx),g.x)>eps){
-       errors.push(fixture.name+"と"+wall.name+"が干渉");break;
-     }
-     if(vertical&&g.x<ax+half-eps&&g.x+g.width>ax-half+eps&&
-       Math.min(Math.max(ay,by),g.y+g.height)-Math.max(Math.min(ay,by),g.y)>eps){
-       errors.push(fixture.name+"と"+wall.name+"が干渉");break;
-     }
+     const poly=thickSegment(points[i-1],points[i],halfWidth);
+     if(poly&&polygonsIntersect(fp,poly)){errors.push({a:fixture.id,b:wall.id,message:fixture.name+"と"+wall.name+"が干渉"});break}
     }
    }
-   for(const other of fixtures)if(fixture.id<other.id&&fixture.floorId===other.floorId){
-    const b=other.geometry;
-    if(Math.min(g.x+g.width,b.x+b.width)-Math.max(g.x,b.x)>eps&&
-       Math.min(g.y+g.height,b.y+b.height)-Math.max(g.y,b.y)>eps)
-     errors.push(fixture.name+"と"+other.name+"が重複");
-   }
+   for(const other of fixtures)if(fixture.id<other.id&&fixture.floorId===other.floorId&&
+     polygonsIntersect(fp,polygonOfRect(other.geometry)))
+    errors.push({a:fixture.id,b:other.id,message:fixture.name+"と"+other.name+"が重複"});
   }
   return errors;
+ }
+ function updateCollisionStatus(scene){
+  if(!scene)return;
+  const errors=checkFixtureCollisions(scene,activeFloor);
+  const node=$("template-collision-status");
+  node.dataset.hasCollision=String(errors.length>0);
+  $("template-preview-large").dataset.collision=String(errors.length>0&&editing);
+  node.textContent=errors.length?"干渉 "+errors.length+"件："+errors.slice(0,2).map(e=>e.message).join("、")+
+   (errors.length>2?" ほか"+(errors.length-2)+"件":""):"干渉チェック：問題なし";
+ }
+ function chooseWall(scene,center,floor,width,strict=false){
+  let best=null;
+  for(const wall of scene.objects){
+   if(wall.objectType!=="wall"||wall.floorId!==floor||wall.geometry?.type!=="polyline")continue;
+   const points=wall.geometry.points;
+   for(let i=1;i<points.length;i++){
+    const [a,b]=[points[i-1],points[i]],dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
+    if(len<width+EPS)continue;
+    const dot=((center[0]-a[0])*dx+(center[1]-a[1])*dy)/(len*len);
+    const t=Math.max(width/(2*len),Math.min(1-width/(2*len),dot));
+    const mx=a[0]+dx*t,my=a[1]+dy*t,dist=Math.hypot(mx-center[0],my-center[1]);
+    if(!best||dist<best.dist)best={wall,a,b,dx,dy,len,mid:[mx,my],dist};
+   }
+  }
+  if(strict&&best&&best.dist>previewSpacing()*2)return null;
+  return best;
+ }
+ function placeOpening(scene,obj,position,width,strict=false){
+  const found=chooseWall(scene,position,obj.floorId,width,strict);
+  if(!found)return false;
+  const ux=found.dx/found.len,uy=found.dy/found.len;
+  obj.geometry={type:"polyline",points:[
+   [found.mid[0]-ux*width/2,found.mid[1]-uy*width/2],
+   [found.mid[0]+ux*width/2,found.mid[1]+uy*width/2]]};
+  obj.opening={...obj.opening,wallId:found.wall.id,kind:obj.objectType==="window"?"window":"interior",width,external:false};
+  return true;
+ }
+ function linkSelectedOpening(fromMove=false){
+  const selected=previewViewer?.getSelected();
+  if(!editing||!selected||!["door","window"].includes(selected.objectType))return false;
+  const scene=previewViewer.getScene(),obj=scene.objects.find(o=>o.id===selected.id);
+  const points=obj.geometry?.points||[],center=points.length>=2?
+   [(points[0][0]+points[1][0])/2,(points[0][1]+points[1][1])/2]:[0,0];
+  const width=length2(points[0]||center,points[1]||center);
+  const before=JSON.stringify(obj);
+  if(!placeOpening(scene,obj,center,width,true)){
+   if(!fromMove)setEditMessage("壁が近くに見つかりません。扉・窓を壁のそばへ移動してください");
+   return false;
+  }
+  if(before===JSON.stringify(obj))return true;
+  if(!fromMove)snapshot();
+  updateScene(scene,obj.id);
+  setEditMessage("壁と開口部を関連付けました");
+  return true;
+ }
+ function roomArea(scene,room){
+  const g=room.geometry,spacing=previewSpacing(),walls=scene.objects.filter(o=>o.objectType==="wall"&&o.floorId===room.floorId&&o.geometry?.type==="polyline");
+  const insets=[0,0,0,0],sides=[
+   {axis:0,at:g.x,min:g.y,max:g.y+g.height},
+   {axis:0,at:g.x+g.width,min:g.y,max:g.y+g.height},
+   {axis:1,at:g.y,min:g.x,max:g.x+g.width},
+   {axis:1,at:g.y+g.height,min:g.x,max:g.x+g.width}];
+  sides.forEach((side,index)=>{
+   for(const wall of walls){
+    const half=(wall.wall?.thickness||0)/2,p=wall.geometry.points;
+    for(let i=1;i<p.length;i++){
+     const a=p[i-1],b=p[i],coord=side.axis===0?0:1,parallel=side.axis===0?1:0;
+     if(Math.abs(a[coord]-b[coord])>EPS||Math.abs(a[coord]-side.at)>EPS)continue;
+     const cover=Math.min(side.max,Math.max(a[parallel],b[parallel]))-Math.max(side.min,Math.min(a[parallel],b[parallel]));
+     if(cover>EPS)insets[index]=Math.max(insets[index],half);
+    }
+   }
+  });
+  const usableWidth=Math.max(0,g.width-insets[0]-insets[1]);
+  const usableHeight=Math.max(0,g.height-insets[2]-insets[3]);
+  return{gross:g.width*g.height/(spacing*spacing)*.25,
+   net:usableWidth*usableHeight/(spacing*spacing)*.25};
+ }
+ function updateAreaStatus(scene){
+  if(!scene)return;
+  const rooms=scene.objects.filter(o=>o.objectType==="region"&&o.geometry?.type==="rect"&&o.floorId===activeFloor);
+  const summary=$("template-area-status");
+  if(rooms.length){
+   const totals=rooms.map(r=>roomArea(scene,r));
+   const net=totals.reduce((a,r)=>a+r.net,0),gross=totals.reduce((a,r)=>a+r.gross,0);
+   summary.textContent="室内面積（概算）："+net.toFixed(1)+"㎡（区画外形 "+gross.toFixed(1)+"㎡、"+rooms.length+"室）";
+   const selected=previewViewer?.getSelected();
+   if(selected?.objectType==="region"&&selected.geometry?.type==="rect"){
+    const m=roomArea(scene,selected);
+    summary.textContent+=" / 選択中「"+selected.name+"」："+m.net.toFixed(1)+"㎡";
+   }
+  }else{
+   const root=scene.objects.find(o=>o.id==="preview_root"),g=root?.geometry;
+   summary.textContent=g?.type==="rect"?"建物外形："+(g.width*g.height/previewSpacing()**2*.25).toFixed(1)+"㎡（部屋区画がないため内法未計算）":"有効面積：未計算";
+  }
+ }
+ function refreshChecks(scene){
+  updateCollisionStatus(scene);updateAreaStatus(scene);
  }
  function saveCopy(){
   if(!editing)return;
@@ -365,7 +475,7 @@
   try{
    const scene=previewViewer.getScene();
    const collisions=checkFixtureCollisions(scene);
-   if(collisions.length)throw Error("設備の貫通・重複を修正してください："+collisions.slice(0,3).join("、")+(collisions.length>3?" ほか"+(collisions.length-3)+"件":""));
+   if(collisions.length)throw Error("設備の貫通・重複を修正してください："+collisions.slice(0,3).map(e=>e.message).join("、")+(collisions.length>3?" ほか"+(collisions.length-3)+"件":""));
    const spec=library.capture(scene,"preview_root",{id,name,description:library.allPresets().find(t=>t.id===activeId)?.description||""});
    const source=library.allPresets().find(t=>t.id===activeId);
    spec.era=source?eraGroup(source):"common";
