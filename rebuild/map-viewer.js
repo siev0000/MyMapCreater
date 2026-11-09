@@ -480,6 +480,8 @@ function create(opts){
   ctx.save();
   ctx.globalAlpha=emphasized?1:clamp(finite(st.opacity,1),0,1);
   ctx.lineJoin=st.lineJoin||"round";ctx.lineCap=st.lineCap||"round";
+  // Openings should not be filled back in by rounded stroke caps.
+  if(obj.objectType==="wall"&&scene?.objects.some(o=>o.objectType==="door"&&o.opening?.wallId===obj.id))ctx.lineCap="butt";
   if(obj.objectType==="door"&&traceDoorSymbol(obj,emphasized)){ctx.restore();return}
   const ok=obj.objectType==="wall"?traceWallWithOpenings(ctx,obj):trace(ctx,g);
   if(ok){
