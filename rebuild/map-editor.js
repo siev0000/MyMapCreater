@@ -623,11 +623,17 @@ function addBuildingTemplates(){
   notice("配置数1～100、横の列数1～25、間隔0～200マスを指定してください","error");return;
  }
  const selection=scene.objects.find(o=>o.id===state.selectedId);
- const parent=checked("building-parent-selected")?selection:null;
- if(checked("building-parent-selected")&&!parent){notice("親として使う区画・施設を選択するか、親にする設定を解除してください","error");return}
- if(parent&&!["region","facility"].includes(parent.objectType)){
+ const usingAnchor=checked("town-building-at-selection");
+ const parentEligible=selection&&["region","facility"].includes(selection.objectType);
+ const parent=checked("building-parent-selected")&&parentEligible?selection:null;
+ if(checked("building-parent-selected")&&!selection&&!usingAnchor){
+  notice("親として使う区画・施設を選択するか、親にする設定を解除してください","error");return;
+ }
+ if(checked("building-parent-selected")&&selection&&!parentEligible&&!usingAnchor){
   notice("建物の親には区画または施設を選択してください","error");return;
  }
+ // When aligning a template to a selected OSM footprint, it is a location anchor,
+ // not a hierarchy parent. The imported footprint remains available for comparison.
  const spacing=gridState.spacing;
  const box=$("map-canvas").getBoundingClientRect();
  const anchorObject=checked("town-building-at-selection")?selection:null;
