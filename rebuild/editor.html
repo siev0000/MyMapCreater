@@ -180,39 +180,55 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #sakihana-osm-fetch,#sakihana-dem-fetch{background:#244f51;border:1px solid #448784;color:#e4f4ef}
 #sakihana-osm-fetch[hidden],#sakihana-dem-fetch[hidden]{display:none!important}
 #sakihana-osm-fetch:disabled,#sakihana-dem-fetch:disabled{opacity:.55}
-#geo-import-panel[hidden]{display:none!important}#geo-import-panel input,#geo-import-panel select{color:#e4f0f3;background:#102934;border:1px solid #496e7a;border-radius:5px;padding:6px}#geo-import-panel button{background:#28596a;border:1px solid #568e9d;color:#eff7f7;padding:7px 10px;border-radius:5px;cursor:pointer}#geo-import-panel button:disabled{opacity:.45;cursor:wait}#geo-import-panel label{display:flex;flex-direction:column;gap:3px;font-size:11px}#land-route-draw-overlay[hidden]{display:none!important}#land-route-draw-overlay .draw-point{position:absolute;width:11px;height:11px;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:#ffd879;pointer-events:none}#land-route-draw-overlay .draw-line{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}#land-route-draw-overlay{user-select:none}</style>
+#geo-import-panel[hidden]{display:none!important}#geo-import-panel input,#geo-import-panel select{color:#e4f0f3;background:#102934;border:1px solid #496e7a;border-radius:5px;padding:6px}#geo-import-panel button{background:#28596a;border:1px solid #568e9d;color:#eff7f7;padding:7px 10px;border-radius:5px;cursor:pointer}#geo-import-panel button:disabled{opacity:.45;cursor:wait}#geo-import-panel label{display:flex;flex-direction:column;gap:3px;font-size:11px}#land-route-draw-overlay[hidden]{display:none!important}#land-route-draw-overlay .draw-point{position:absolute;width:11px;height:11px;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:#ffd879;pointer-events:none}#land-route-draw-overlay .draw-line{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}#land-route-draw-overlay{user-select:none}
+/* Persistent map preview + narrow, one-kanji editing navigation. */
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column}
+header{flex:0 0 auto;min-height:44px;flex-wrap:nowrap}
+#message{flex:0 0 auto;min-height:22px;max-height:30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);min-height:0;height:0;flex:1 1 auto;overflow:hidden}
+.map-pane{min-height:0!important;height:100%;grid-column:1;grid-row:1}
+.editor-rail{grid-column:2;grid-row:1;background:#092430;border-left:1px solid #3b6072;display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:6px 3px;overflow-y:auto;min-height:0}
+.rail-button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex:0 0 auto;width:100%;height:49px;min-width:0;padding:3px 1px;border-radius:8px;background:transparent;border:1px solid transparent;color:#b4d4dc}
+.rail-button span{font-size:19px;font-weight:800;line-height:1.1}.rail-button small{font-size:9px;font-weight:600}
+.rail-button[aria-selected="true"]{background:#28596a;border-color:#86c5ce;color:white}
+.rail-button:focus-visible{outline:2px solid #ace6f0;outline-offset:-2px}
+.side{grid-column:3;grid-row:1;min-width:0;min-height:0;max-height:none!important;overflow-y:auto;background:#102633}
+.tool-section{display:none;min-width:0}.tool-section[data-active="true"]{display:block}
+.tool-section > .panel{border-bottom:1px solid #355466}
+.tool-section>.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px}
+.tool-section>.toolbar button{white-space:normal;min-height:34px}
+.tool-section>.toolbar #download{grid-column:1/-1;border-color:#a1d7c8;background:#255e58}
+#geo-import-panel{padding:10px!important;border:0!important;display:grid;gap:8px;background:transparent!important}
+#geo-import-panel>div{display:grid!important;grid-template-columns:1fr!important;align-items:stretch!important;gap:8px!important}
+#geo-import-panel label input,#geo-import-panel label select{min-width:0!important;width:100%!important}
+#geo-import-panel[hidden]{display:none!important}
+@media(max-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 49px minmax(220px,285px)}
+ .rail-button{height:44px}
+}
+@media(max-width:650px){
+ main{grid-template-columns:minmax(0,1fr) 47px;position:relative}
+ .map-pane{grid-column:1/3;grid-row:1;height:100%!important;min-height:0!important}
+ .editor-rail{grid-column:2;grid-row:1;z-index:10;background:rgba(8,33,46,.97)}
+ .side{position:absolute;z-index:9;right:47px;top:0;bottom:0;width:min(330px,calc(100vw - 58px));max-height:none!important;border:1px solid #4b7889;box-shadow:-10px 0 28px rgba(0,0,0,.5)}
+ main[data-sidebar-open="false"] .side{display:none}
+ #scene-select{max-width:none}
+ .brand{display:none}
+ header{gap:5px;padding:5px}
+ .editor-overlay{max-width:55vw}
+}
+</style>
 </head>
 <body>
 <header>
  <a href="./header.html" title="マップ表示に戻る">‹ 閲覧へ</a>
- <strong class="brand">汎用マップ編集</strong>
+ <strong class="brand">MyMapCreater</strong>
  <select id="scene-select" aria-label="編集するマップを選択"></select>
- <div class="toolbar">
-  <button id="geo-import-toggle" type="button" aria-expanded="false" aria-controls="geo-import-panel">地図データ取込</button>
-  <button id="open-json">JSONを開く</button><input id="file-input" type="file" accept=".json,application/json" hidden>
-  <button id="undo" title="操作を戻す" disabled>戻す</button>
-  <button id="redo" title="操作を進める" disabled>進める</button>
-  <button id="download">街マップJSONを保存</button>
-  <button id="download-bundle" title="街マップとすべての建物内部JSONをZIPにまとめる">全データZIP保存</button>
-  <button id="download-interior" title="選択した建物の内部データを保存">建物内部JSONを保存</button>
- </div>
+
 </header>
 <div id="message" role="status">シーンJSONを読み込み中…</div>
-<section id="geo-import-panel" hidden aria-label="地理データ取込" style="padding:12px 16px;background:#17323d;border-bottom:1px solid #416d78;color:#e1ecee">
- <strong>地図データ取込（補助機能）</strong>　<small>地名検索または座標指定 → OSM地物取得 → 必要に応じて標高取得 → 編集・JSON保存</small>
- <div style="display:flex;flex-wrap:wrap;gap:9px;align-items:end;margin-top:8px">
-  <label>地名・駅名 <input id="geo-place" type="text" placeholder="例：新潟県五泉市 咲花駅" value="新潟県五泉市 咲花駅" style="min-width:185px"></label>
-  <button type="button" id="geo-place-search">地名を検索</button>
-  <label>検索候補 <select id="geo-search-results" style="max-width:260px"><option value="">座標を直接指定できます</option></select></label>
-  <label>緯度 <input id="geo-lat" type="number" min="-85" max="85" step="any" value="37.7351639" style="width:120px"></label>
-  <label>経度 <input id="geo-lon" type="number" min="-180" max="180" step="any" value="139.2909028" style="width:125px"></label>
-  <label>範囲（一辺m） <select id="geo-size"><option value="250">250m</option><option value="500" selected>500m</option><option value="1000">1000m</option><option value="2000">2000m</option></select></label>
-  <button type="button" id="geo-osm-fetch">指定地域の地図を取得</button>
-  <button type="button" id="geo-dem-fetch">現在の地域の標高を取得</button>
- </div>
- <p id="geo-import-status" role="status" style="margin:7px 0 0;color:#b5d3d9;font-size:12px">取得した地図は現在の編集シーンに読み込まれます。元マップは自動上書きされません。</p>
- <p style="margin:4px 0 0;font-size:11px">© OpenStreetMap contributors (ODbL) / 標高：国土地理院。<a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">地名検索の利用条件</a>に従い、検索はボタンを押した時だけ行います。取得した地図は「街マップJSONを保存」で保存してください。</p>
-</section>
+
 <main>
  <section class="map-pane" id="viewport" aria-label="汎用マップ編集領域">
   <canvas id="map-canvas" aria-label="クリックして図形を選択。移動モードでは選択中の図形をドラッグできます"></canvas>
@@ -231,8 +247,19 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   <div id="visibility-controls" hidden></div>
   <div id="map-hint" hidden></div>
  </section>
- <aside class="side">
-  <section class="panel" id="building-template-panel">
+ <nav class="editor-rail" aria-label="編集ツール切り替え">
+  <button type="button" class="rail-button" data-tool-tab="objects" title="図形一覧・作成" aria-label="図形一覧・作成"><span aria-hidden="true">図</span><small>図形</small></button>
+  <button type="button" class="rail-button" data-tool-tab="routes" title="土地・道路・線路" aria-label="土地・道路・線路"><span aria-hidden="true">道</span><small>道路</small></button>
+  <button type="button" class="rail-button" data-tool-tab="terrain" title="地形編集" aria-label="地形編集"><span aria-hidden="true">地</span><small>地形</small></button>
+  <button type="button" class="rail-button" data-tool-tab="buildings" title="建物の作成" aria-label="建物の作成"><span aria-hidden="true">建</span><small>建物</small></button>
+  <button type="button" class="rail-button" data-tool-tab="properties" title="選択オブジェクトの編集" aria-label="選択オブジェクトの編集"><span aria-hidden="true">属</span><small>属性</small></button>
+  <button type="button" class="rail-button" data-tool-tab="supplies" title="物資と収納" aria-label="物資と収納"><span aria-hidden="true">物</span><small>物資</small></button>
+  <button type="button" class="rail-button" data-tool-tab="grid" title="グリッド・マップ設定" aria-label="グリッド・マップ設定"><span aria-hidden="true">設</span><small>設定</small></button>
+  <button type="button" class="rail-button" id="geo-import-toggle" data-tool-tab="import" aria-expanded="false" aria-controls="geo-import-panel" title="実在地図の取込" aria-label="実在地図の取込"><span aria-hidden="true">取</span><small>取込</small></button>
+  <button type="button" class="rail-button" data-tool-tab="files" title="保存・読込" aria-label="保存・読込"><span aria-hidden="true">保</span><small>保存</small></button>
+ </nav>
+ <aside class="side" id="editor-tools" aria-label="編集ツール">
+  <div class="tool-section" data-panel-tab="buildings"><section class="panel" id="building-template-panel">
    <h2>建物フォーマット・一括配置</h2>
    <p class="note">選択した形式から、床・外壁・入口・間仕切り・階段をまとめて生成します。テンプレートは独立データで、既存建物には影響しません。</p>
    <label>建物テンプレート<select id="building-template"></select></label>
@@ -281,7 +308,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    </div>
    <p class="note" id="land-route-status" role="status">道路・線路は2点以上、土地は3点以上を指定して確定してください。場所をタップするごとに点が追加されます。</p>
   </section>
-  <section class="panel" id="town-tools-panel">
+  </div>
+  <div class="tool-section" data-panel-tab="terrain"><section class="panel" id="town-tools-panel">
    <h2>町の制作・地形編集</h2>
    <p class="note">実在地図の取得結果も、架空の町も、同じ編集操作を使用します。対象をマップ上で選択して実行してください。</p>
    <div class="fieldset">
@@ -305,7 +333,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     <p class="note">建物輪郭を選択してから配置位置の目安にできます。元の建物輪郭自体は変更しません。</p>
    </div>
   </section>
-  <section class="panel" id="editor-grid-panel">
+  </div>
+  <div class="tool-section" data-panel-tab="grid"><section class="panel" id="editor-grid-panel">
    <h2>共通グリッド・スナップ</h2>
    <p class="note">建物も道路も同じマップ座標で配置します。1マス＝50cm、補助スナップ＝25cm。座標値と実寸の換算はマップごとに設定してください。</p>
    <div class="col2">
@@ -321,7 +350,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <button id="editor-grid-save" type="button">グリッド設定をマップJSONに反映</button>
    <p id="editor-grid-note" class="note">マップの広域表示では、線が密集するのを防ぐためグリッドを自動的に隠します。</p>
   </section>
-  <section class="panel">
+  </div>
+  <div class="tool-section" data-panel-tab="objects"><section class="panel" id="object-list-panel">
    <h2>マップ構成・オブジェクト一覧</h2>
    <label>作業対象 <select id="object-category-filter"><option value="all">すべて</option><option value="terrain">地形・標高</option><option value="building">建物・施設</option><option value="road">道路</option><option value="railway">鉄道</option><option value="water">河川・水域</option><option value="other">家具・設備・その他</option></select></label>
    <div class="row"><input id="object-search" placeholder="名前・IDで検索" aria-label="オブジェクトを検索">
@@ -364,7 +394,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    <label class="switches"><span style="display:flex;gap:6px;align-items:center"><input id="move-mode" type="checkbox"> 選択中の図形をドラッグ移動</span></label>
    <p class="note">道路・壁・区画は同じ図形エンジンで編集できます。図形を作成しても自動で壁・道路には変換しません。</p>
   </section>
-  <section class="panel" id="supply-palette">
+  </div>
+  <div class="tool-section" data-panel-tab="supplies"><section class="panel" id="supply-palette">
    <h2>物資・収納カタログ（仕様09）</h2>
    <p class="note">承認済みの30種類から選択。物資はアイコンのみで描き、棚・家具は別の図形として管理します。</p>
    <label>物資アイコン<select id="supply-preset"></select></label>
@@ -382,7 +413,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     <div id="supply-contents-list"></div>
    </div>
   </section>
-  <section class="panel" id="object-properties">
+  </div>
+  <div class="tool-section" data-panel-tab="properties"><section class="panel" id="object-properties">
    <h2>選択した図形の設定</h2>
    <p class="note" id="select-empty">右上の一覧または地図から図形を選択してください。</p>
    <div id="selected-fields" class="hidden">
@@ -472,7 +504,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     </fieldset>
    </div>
   </section>
-  <section class="panel">
+  </div>
+  <div class="tool-section" data-panel-tab="grid"><section class="panel" id="scene-json-panel">
    <h2>マップ全体の設定（JSON）</h2>
    <p class="note">マップ名・背景色・座標系・グリッド・レイヤー順・表示グループはこのJSONで編集します。施設・壁・道路の固有名をプログラムに登録する必要はありません。</p>
    <button type="button" id="show-scene-json">マップ全体のJSONを開く</button>
@@ -484,10 +517,35 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
     </div>
    </div>
   </section>
-  <section class="panel">
+  </div>
+  <div class="tool-section" data-panel-tab="files"> <div class="toolbar">
+  <button id="open-json">JSONを開く</button><input id="file-input" type="file" accept=".json,application/json" hidden>
+  <button id="undo" title="操作を戻す" disabled>戻す</button>
+  <button id="redo" title="操作を進める" disabled>進める</button>
+  <button id="download">街マップJSONを保存</button>
+  <button id="download-bundle" title="街マップとすべての建物内部JSONをZIPにまとめる">全データZIP保存</button>
+  <button id="download-interior" title="選択した建物の内部データを保存">建物内部JSONを保存</button>
+ </div>
+  <section class="panel" id="file-info-panel">
    <h2>ファイルについて</h2>
    <p class="note">編集内容はこのブラウザー内の作業状態です。「全データZIP保存」で街マップと建物内部JSONを一括で書き出せます。GitHub上のデータには自動で上書きしません。保存したJSONをリポジトリの該当シーンに配置すると表示側にも反映されます。</p>
   </section>
+  </div>
+  <div class="tool-section" data-panel-tab="import"><section id="geo-import-panel" aria-label="地理データ取込" style="padding:12px 16px;background:#17323d;border-bottom:1px solid #416d78;color:#e1ecee">
+ <strong>地図データ取込（補助機能）</strong>　<small>地名検索または座標指定 → OSM地物取得 → 必要に応じて標高取得 → 編集・JSON保存</small>
+ <div style="display:flex;flex-wrap:wrap;gap:9px;align-items:end;margin-top:8px">
+  <label>地名・駅名 <input id="geo-place" type="text" placeholder="例：新潟県五泉市 咲花駅" value="新潟県五泉市 咲花駅" style="min-width:185px"></label>
+  <button type="button" id="geo-place-search">地名を検索</button>
+  <label>検索候補 <select id="geo-search-results" style="max-width:260px"><option value="">座標を直接指定できます</option></select></label>
+  <label>緯度 <input id="geo-lat" type="number" min="-85" max="85" step="any" value="37.7351639" style="width:120px"></label>
+  <label>経度 <input id="geo-lon" type="number" min="-180" max="180" step="any" value="139.2909028" style="width:125px"></label>
+  <label>範囲（一辺m） <select id="geo-size"><option value="250">250m</option><option value="500" selected>500m</option><option value="1000">1000m</option><option value="2000">2000m</option></select></label>
+  <button type="button" id="geo-osm-fetch">指定地域の地図を取得</button>
+  <button type="button" id="geo-dem-fetch">現在の地域の標高を取得</button>
+ </div>
+ <p id="geo-import-status" role="status" style="margin:7px 0 0;color:#b5d3d9;font-size:12px">取得した地図は現在の編集シーンに読み込まれます。元マップは自動上書きされません。</p>
+ <p style="margin:4px 0 0;font-size:11px">© OpenStreetMap contributors (ODbL) / 標高：国土地理院。<a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">地名検索の利用条件</a>に従い、検索はボタンを押した時だけ行います。取得した地図は「街マップJSONを保存」で保存してください。</p>
+</section></div>
  </aside>
 </main>
 
@@ -578,6 +636,32 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
   </div>
  </section>
 </div>
+
+<script>
+(function(){
+ const root=document.querySelector("main"),sidebar=document.getElementById("editor-tools");
+ const buttons=[...document.querySelectorAll(".editor-rail [data-tool-tab]")];
+ const panels=[...document.querySelectorAll(".tool-section[data-panel-tab]")];
+ let active=null;
+ function selectTab(id,forceOpen=false){
+  if(!buttons.some(b=>b.dataset.toolTab===id))return;
+  const close=window.innerWidth<=650&&active===id&&!forceOpen&&root.dataset.sidebarOpen!=="false";
+  active=id;root.dataset.sidebarOpen=close?"false":"true";
+  for(const b of buttons){const on=b.dataset.toolTab===id;b.setAttribute("aria-selected",String(on));b.setAttribute("aria-pressed",String(on&&!close))}
+  for(const p of panels)p.dataset.active=String(p.dataset.panelTab===id&&!close);
+  if(id==="import"&&!close){const panel=document.getElementById("geo-import-panel");panel.hidden=false;document.getElementById("geo-import-toggle").setAttribute("aria-expanded","true")}
+  sidebar.scrollTop=0;
+  try{sessionStorage.setItem("mymapcreater:editor:last-tool-tab",id)}catch(_){}
+  window.dispatchEvent(new Event("resize"));
+ }
+ for(const b of buttons)if(b.id!=="geo-import-toggle")b.addEventListener("click",()=>selectTab(b.dataset.toolTab));
+ const geo=document.getElementById("geo-import-toggle");
+ geo.addEventListener("click",()=>selectTab("import"));
+ window.AAMapEditorUI={selectTab,activeTab:()=>active};
+ let initial="objects";try{initial=sessionStorage.getItem("mymapcreater:editor:last-tool-tab")||"objects"}catch(_){}
+ selectTab(initial,true);
+})();
+</script>
 <script src="./packed-scene-loader.js?v=sakihana-snapshot-v1"></script>
 <script src="./map-viewer.js?v=sakihana-snapshot-v9"></script>
 <script src="./geo-data-import.js?v=generic-import-v1"></script>
