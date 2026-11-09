@@ -117,11 +117,13 @@ function create(opts){
  const geoCredit=document.createElement("div");
  geoCredit.hidden=true;
  geoCredit.setAttribute("aria-label","地図の出典");
- geoCredit.style.cssText="position:absolute;right:8px;bottom:8px;z-index:9;padding:4px 7px;border-radius:5px;border:1px solid #42636a;background:rgba(7,22,30,.90);font:10px system-ui,sans-serif;color:#ebf3f4;pointer-events:auto;max-width:min(85vw,340px)";
- const creditLink=document.createElement("a");creditLink.href="https://www.openstreetmap.org/copyright";
- creditLink.target="_blank";creditLink.rel="noopener noreferrer";creditLink.textContent="© OpenStreetMap contributors (ODbL)";
- creditLink.style.color="#b6e4f2";geoCredit.append(creditLink);
- const demCredit=document.createElement("a");demCredit.href="https://maps.gsi.go.jp/development/ichiran.html";demCredit.target="_blank";demCredit.rel="noopener noreferrer";demCredit.textContent=" / 標高：国土地理院（加工表示）";demCredit.style.color="#b6e4f2";geoCredit.append(demCredit);
+ geoCredit.style.cssText="position:absolute;right:8px;bottom:8px;z-index:9;padding:3px 6px;border-radius:4px;background:rgba(7,22,30,.82);font:10px system-ui,sans-serif;color:#ebf3f4;pointer-events:none;user-select:none;max-width:min(85vw,340px)";
+ const creditLink=document.createElement("span");
+ creditLink.textContent="© OpenStreetMap contributors (ODbL)";
+ geoCredit.append(creditLink);
+ const demCredit=document.createElement("span");
+ demCredit.textContent=" / 標高：国土地理院（加工表示）";
+ geoCredit.append(demCredit);
  if(host?.append)host.append(geoCredit);
 
  const legendButton=opts.legendButton,roadButton=opts.roadButton;
