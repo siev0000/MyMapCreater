@@ -180,7 +180,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 #sakihana-osm-fetch,#sakihana-dem-fetch{background:#244f51;border:1px solid #448784;color:#e4f4ef}
 #sakihana-osm-fetch[hidden],#sakihana-dem-fetch[hidden]{display:none!important}
 #sakihana-osm-fetch:disabled,#sakihana-dem-fetch:disabled{opacity:.55}
-#geo-import-panel[hidden]{display:none!important}#geo-import-panel input,#geo-import-panel select{color:#e4f0f3;background:#102934;border:1px solid #496e7a;border-radius:5px;padding:6px}#geo-import-panel button{background:#28596a;border:1px solid #568e9d;color:#eff7f7;padding:7px 10px;border-radius:5px;cursor:pointer}#geo-import-panel button:disabled{opacity:.45;cursor:wait}#geo-import-panel label{display:flex;flex-direction:column;gap:3px;font-size:11px}</style>
+#geo-import-panel[hidden]{display:none!important}#geo-import-panel input,#geo-import-panel select{color:#e4f0f3;background:#102934;border:1px solid #496e7a;border-radius:5px;padding:6px}#geo-import-panel button{background:#28596a;border:1px solid #568e9d;color:#eff7f7;padding:7px 10px;border-radius:5px;cursor:pointer}#geo-import-panel button:disabled{opacity:.45;cursor:wait}#geo-import-panel label{display:flex;flex-direction:column;gap:3px;font-size:11px}#land-route-draw-overlay[hidden]{display:none!important}#land-route-draw-overlay .draw-point{position:absolute;width:11px;height:11px;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:#ffd879;pointer-events:none}#land-route-draw-overlay .draw-line{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}#land-route-draw-overlay{user-select:none}</style>
 </head>
 <body>
 <header>
@@ -216,6 +216,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 <main>
  <section class="map-pane" id="viewport" aria-label="汎用マップ編集領域">
   <canvas id="map-canvas" aria-label="クリックして図形を選択。移動モードでは選択中の図形をドラッグできます"></canvas>
+  <div id="land-route-draw-overlay" hidden aria-label="道路・線路・土地の経路点を指定" style="position:absolute;inset:0;z-index:6;cursor:crosshair;touch-action:manipulation;background:rgba(20,50,65,.04)"></div>
   <div class="name-chip" id="scene-name">マップ</div>
   <div class="editor-overlay" id="edit-hint">図形を選択して右のパネルで編集してください。</div>
   <div class="view-tools">
@@ -263,6 +264,22 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
    </div>
 
    <p class="note">配置開始位置はマップ画面の中心。現在のグリッド間隔とスナップを利用。保存前なら「戻す」で一括取消できます。大量追加時の重なりは事前に確認してください。</p>
+  </section>
+  <section class="panel" id="land-route-create-panel">
+   <h2>土地・道路・線路の作成</h2>
+   <p class="note">地図の種類を問わず利用できます。名前は作成時に自由入力。開始後、マップ上を順番にタップして道路・線路の経路、土地の外周を指定します。</p>
+   <div class="col2">
+    <label>作成する種類<select id="land-route-kind"><option value="road">道路</option><option value="railway">線路</option><option value="land">土地・区画</option></select></label>
+    <label>名前<input id="land-route-name" type="text" maxlength="100" placeholder="例：中央通り、磐越西線、住宅予定地"></label>
+    <label>幅（m）<input id="land-route-width" type="number" min="0.1" max="100" step="0.5" value="4"></label>
+   </div>
+   <div class="actions">
+    <button type="button" id="land-route-begin">地図上で指定開始</button>
+    <button type="button" id="land-route-finish" disabled>確定して追加</button>
+    <button type="button" id="land-route-undo-point" disabled>最後の点を戻す</button>
+    <button type="button" id="land-route-cancel" disabled>作成を中止</button>
+   </div>
+   <p class="note" id="land-route-status" role="status">道路・線路は2点以上、土地は3点以上を指定して確定してください。場所をタップするごとに点が追加されます。</p>
   </section>
   <section class="panel" id="town-tools-panel">
    <h2>町の制作・地形編集</h2>
@@ -569,5 +586,5 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 <script src="./template-preview.js?v=residential-palette-v18"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
- <script src="./map-editor.js?v=town-edit-tools-v12"></script>
+ <script src="./map-editor.js?v=land-route-draw-v13"></script>
 </body></html>
