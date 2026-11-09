@@ -530,7 +530,7 @@ function create(opts){
    ctx.save();
    ctx.font="bold "+fontSize+"px system-ui, sans-serif";
    ctx.textAlign="center";ctx.textBaseline="middle";
-   const tw=ctx.measureText(text).width,boxW=tw+2*padX,boxH=fontSize+2*padY;
+   const tw=ctx.measureText(text)?.width??text.length*fontSize*.7,boxW=tw+2*padX,boxH=fontSize+2*padY;
    const cx=x+w/2,cy=y+h/2;
    ctx.fillStyle="rgba(10,32,41,.82)";
    ctx.fillRect(cx-boxW/2,cy-boxH/2,boxW,boxH);
