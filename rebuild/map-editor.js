@@ -211,6 +211,48 @@ function renderGeometry(obj){
   target.append(p);
  }
 }
+function updateVertexControls(obj){
+ const g=obj?.geometry,points=g?.points||[],enabled=g?.type==="polyline"||g?.type==="polygon";
+ $("vertex-actions").classList.toggle("hidden",!enabled);
+ const picker=$("vertex-index"),old=Number(picker.value);picker.replaceChildren();
+ if(enabled)for(let i=0;i<points.length;i++){
+  const option=document.createElement("option");option.value=String(i);
+  option.textContent="頂点 "+(i+1)+" ["+points[i].map(n=>Number(n.toFixed(3))).join(", ")+"]";
+  picker.append(option);
+ }
+ picker.value=enabled&&old>=0&&old<points.length?String(old):"0";
+ $("vertex-delete").disabled=!enabled||points.length<=(g.type==="polygon"?3:2);
+ $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
+ if(obj?.objectType==="wall")$("wall-thickness").value=obj.wall?.thickness??"";
+}
+bind("vertex-add",()=>{
+ const current=sceneNow()?.objects.find(o=>o.id===state.selectedId),points=current?.geometry?.points;
+ if(!points)return;
+ const index=Math.max(0,Math.min(points.length-1,Number($("vertex-index").value)||0));
+ const backward=$("vertex-placement").value==="before";
+ let other=backward?index-1:index+1;
+ if(other<0||other>=points.length){
+  if(current.geometry.type==="polygon")other=(other+points.length)%points.length;
+  else{notice("線の端から外へは中点を挿入できません。別の頂点を選んでください。","error");return}
+ }
+ const target=backward?index:index+1,point=[(points[index][0]+points[other][0])/2,(points[index][1]+points[other][1])/2];
+ if(changeObject(o=>o.geometry.points.splice(target,0,point)))$("vertex-index").value=String(target);
+},"click");
+bind("vertex-delete",()=>{
+ const current=sceneNow()?.objects.find(o=>o.id===state.selectedId),points=current?.geometry?.points;
+ if(!points)return;
+ const min=current.geometry.type==="polygon"?3:2;
+ if(points.length<=min){notice("必要な頂点数を下回るため削除できません","error");return}
+ const index=Math.max(0,Math.min(points.length-1,Number($("vertex-index").value)||0));
+ changeObject(o=>o.geometry.points.splice(index,1));
+},"click");
+bind("wall-thickness",()=>{
+ const raw=input("wall-thickness").trim();
+ if(raw===""){changeObject(o=>{if(o.objectType==="wall"&&o.wall)delete o.wall.thickness});return}
+ const thickness=Number(raw);
+ if(!Number.isFinite(thickness)||thickness<=0){notice("壁の実厚は0より大きい値を指定してください","error");renderSelected();return}
+ changeObject(o=>{if(o.objectType!=="wall")return;o.wall={...o.wall,thickness}});
+});
 function initBuildingTemplates(){
  const list=window.AAMapBuildingTemplates?.allPresets()||[];
  const picker=$("building-template");picker.replaceChildren();
@@ -409,7 +451,7 @@ function renderSelected(){
  const data=sceneNow(),obj=data?.objects.find(o=>o.id===state.selectedId);
  $("selected-fields").classList.toggle("hidden",!obj);
  $("select-empty").classList.toggle("hidden",!!obj);
- if(!obj){buttonStatus();supplyOptions();return}
+ if(!obj){updateVertexControls(null);buttonStatus();supplyOptions();return}
  $("obj-id").value=obj.id;
  $("obj-name").value=obj.name||"";
   $("obj-display-level").value=obj.displayLevel??"";
@@ -444,7 +486,7 @@ function renderSelected(){
  $("obj-label-size").value=String(number(label.fontSize,12));
  $("obj-detail").value=obj.detail||"";
  $("json-object").value=JSON.stringify(obj,null,2);
- renderGeometry(obj);buttonStatus();supplyOptions();
+ renderGeometry(obj);updateVertexControls(obj);buttonStatus();supplyOptions();
 }
 function applyScene(scene,selectedId,{record=true,resetView=false}={}){
  try{
