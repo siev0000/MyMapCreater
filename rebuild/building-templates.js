@@ -302,7 +302,9 @@ function generateModern(template,options){
      let first=positions[i],end=first+1;i++;
      while(i<positions.length&&positions[i]===end){end++;i++}
      push("壁","wall",direction==="H"?line(first,fixed,end,fixed):line(fixed,first,fixed,end),floor,
-      {fill:null,stroke:"#d3e6e8",strokeWidth:2});
+      {fill:null,stroke:"#d3e6e8",strokeWidth:2},
+      {wall:{thickness:(fixed===0||fixed===(direction==="H"?h:w)?15:10)/50*spacing},
+       metadata:{templateId:template.id,generated:true,wallThicknessCm:fixed===0||fixed===(direction==="H"?h:w)?15:10}});
     }
    }
   }
@@ -312,6 +314,8 @@ function generateModern(template,options){
    const o=push(door.external?"玄関扉":"室内扉","door",g,floor,
     {fill:null,stroke:"#e8b97a",strokeWidth:2},
     {detail:door.external?"住戸の出入口です。":"区画をつなぐ室内扉です。"});
+   // Door opening is 2 cells (1 metre); the adjacent wall already has
+   // a real geometric gap instead of a line drawn underneath the leaf.
    if(door.external){o.opening.kind="entrance";o.opening.external=true}
   }
   for(const [name,shape,fx,fy,fw,fh] of plan.items){
