@@ -77,18 +77,6 @@
       "description": "地球の子マップ｜日本・新潟県五泉市の咲花駅周辺（500m四方）。保存済みOSM・標高地図。",
       "source": "../rebuild/scenes/sakihana-saved-2026-11-09.packed.json",
       "realWorld": true
-    },
-    {
-      "id": "sakihana_station_interior",
-      "name": "咲花駅｜駅構内（編集用仮図）",
-      "shortName": "咲花駅構内",
-      "kind": "place",
-      "parentId": "sakihana_gosen_500m",
-      "source": "../rebuild/scenes/sakihana-station-interior.scene.json",
-      "description": "咲花駅の構内参考図。駅舎・待合・展望スペース・単式ホームの仮配置。実測図ではありません。",
-      "realWorld": true,
-      "scope": "interior-schematic",
-      "provisional": true
     }
   ],
   "defaultMapId": "middle"
