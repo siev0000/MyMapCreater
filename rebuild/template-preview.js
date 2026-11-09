@@ -6,16 +6,21 @@
  const T=(tag,cls,value)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(value!==undefined)node.textContent=value;return node};
  let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null;
  const renderCache=new Map();
+ function previewSpacing(){
+  const value=Number($("editor-grid-spacing")?.value);
+  return Number.isFinite(value)&&value>0?value:2;
+ }
  function record(template){
   if(!template)return null;
-  if(renderCache.has(template.id))return renderCache.get(template.id);
+  const cacheKey=template.id+"::"+previewSpacing();
+  if(renderCache.has(cacheKey))return renderCache.get(cacheKey);
   // This is a preview only. It does not write to the active map or allocate IDs there.
-  const data=library.generate(template.id,{prefix:"preview_root",displayLevel:4,x:0,y:0,spacing:2,baseName:template.name});
+  const data=library.generate(template.id,{prefix:"preview_root",displayLevel:4,x:0,y:0,spacing:previewSpacing(),baseName:template.name});
   const root=data.objects.find(o=>o.id==="preview_root"&&o.geometry?.type==="rect");
   if(!root)throw Error("プレビュー用の建物外形がありません");
   const floors=(root.floors||[]).length?root.floors:[{id:"1F",label:"1階"}];
   const result={root,objects:data.objects,floors};
-  renderCache.set(template.id,result);return result;
+  renderCache.set(cacheKey,result);return result;
  }
  function renderPlan(template,floorId,small=false){
   const {root,objects}=record(template),r=root.geometry,w=r.width,h=r.height;
@@ -82,6 +87,7 @@
   if(!library)return;
   lastFocus=document.activeElement;
   $("template-preview-modal").hidden=false;
+  renderCache.clear();refresh();
   selectTemplate(picker.value||library.allPresets()[0]?.id);
   $("template-preview-filter").focus();
  }
@@ -107,8 +113,10 @@
     {id:"grid",zIndex:5},{id:"subregions",zIndex:20},
     {id:"structures",zIndex:30},{id:"walls",zIndex:45}
    ],
-   grid:{visible:true,spacing:2,stroke:"rgba(148,180,192,.40)",strokeWidth:.6},
-   settings:{initialDisplayLevel:data.root.displayLevel,editorGrid:{spacing:2,originX:0,originY:0}},
+   grid:{visible:true,spacing:previewSpacing(),stroke:"rgba(148,180,192,.40)",strokeWidth:.6},
+   settings:{initialDisplayLevel:data.root.displayLevel,editorGrid:{
+    spacing:previewSpacing(),originX:Number($("editor-grid-origin-x")?.value)||0,
+    originY:Number($("editor-grid-origin-y")?.value)||0}},
    objects:data.objects
   };
  }
