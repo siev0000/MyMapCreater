@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const S=(name,attrs={})=>{const el=document.createElementNS(ns,name);for(const [key,value] of Object.entries(attrs))el.setAttribute(key,String(value));return el};
  const T=(tag,cls,value)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(value!==undefined)node.textContent=value;return node};
- let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null;
+ let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null;
  const renderCache=new Map();
  function record(template){
   if(!template)return null;
@@ -74,7 +74,7 @@
   floors.replaceChildren();
   for(const f of available){const o=T("option","",f.label||f.id);o.value=f.id;floors.append(o)}
   floors.value=activeFloor;
-  drawModal();
+  drawModal({rebuild:true});
   for(const card of $("template-preview-list").children)
    card.setAttribute("aria-selected",String(card.dataset.templateId===id));
  }
@@ -85,11 +85,44 @@
   selectTemplate(picker.value||library.allPresets()[0]?.id);
   $("template-preview-filter").focus();
  }
- function drawModal(){
+ function ensurePreviewViewer(){
+  if(previewViewer)return previewViewer;
+  if(!global.AAMapViewer?.create)throw Error("共通マップ描画機能が見つかりません");
+  previewViewer=global.AAMapViewer.create({
+   canvas:$("template-preview-canvas"),host:$("template-preview-large")
+  });
+  previewViewer.setEditMode(false);
+  return previewViewer;
+ }
+ function buildScene(t){
+  const data=record(t),g=data.root.geometry;
+  const margin=Math.max(4,Math.min(g.width,g.height)*.12);
+  return{
+   schemaVersion:2,id:"template_preview",name:t.name,
+   coordinateSystem:{
+    horizontal:[1,0],vertical:[0,1],background:"#0b1d27",
+    bounds:{minX:g.x-margin,maxX:g.x+g.width+margin,minY:g.y-margin,maxY:g.y+g.height+margin}
+   },
+   layers:[
+    {id:"grid",zIndex:5},{id:"subregions",zIndex:20},
+    {id:"structures",zIndex:30},{id:"walls",zIndex:45}
+   ],
+   grid:{visible:true,spacing:2,stroke:"rgba(148,180,192,.40)",strokeWidth:.6},
+   settings:{initialDisplayLevel:data.root.displayLevel,editorGrid:{spacing:2,originX:0,originY:0}},
+   objects:data.objects
+  };
+ }
+ function drawModal({rebuild=false}={}){
   if(!activeId)return;
-  const t=library.allPresets().find(item=>item.id===activeId);
-  if(!t)return;
-  const target=$("template-preview-large");target.replaceChildren(renderPlan(t,activeFloor));
+  const t=library.allPresets().find(item=>item.id===activeId);if(!t)return;
+  const viewer=ensurePreviewViewer();
+  if(rebuild||viewer.getScene()===null){
+   viewer.replaceScene(buildScene(t),{preserveView:false,selectedId:record(t).root.id});
+  }
+  viewer.setPreviewGridVisible($("template-preview-grid").checked);
+  if(activeFloor&&!viewer.setFloor(activeFloor))
+   throw Error("プレビューの階層を切り替えられません");
+  viewer.redraw();
  }
  function close(){
   $("template-preview-modal").hidden=true;activeId=null;
@@ -127,6 +160,10 @@
    $("template-preview-open").addEventListener("click",open);
    $("template-preview-filter").addEventListener("input",refresh);
    $("template-preview-floor").addEventListener("change",e=>{activeFloor=e.target.value;drawModal()});
+   $("template-preview-grid").addEventListener("change",()=>{if(previewViewer)previewViewer.setPreviewGridVisible($("template-preview-grid").checked)});
+   $("template-preview-zoom-in").addEventListener("click",()=>previewViewer?.zoomBy(1.3));
+   $("template-preview-zoom-out").addEventListener("click",()=>previewViewer?.zoomBy(1/1.3));
+   $("template-preview-fit").addEventListener("click",()=>previewViewer?.reset());
    $("template-preview-use").addEventListener("click",()=>{
     if(!activeId)return;
     picker.value=activeId;picker.dispatchEvent(new Event("change",{bubbles:true}));close();
