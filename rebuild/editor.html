@@ -370,8 +370,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
       <p class="note">低い側は水色、高い側は橙色。段差の明暗も低い側から高い側へ変わります。マップの上下と階の上り下りは別の意味です。</p>
      </div>
      <div id="wall-thickness-fields" class="hidden">
-      <label>壁の実厚（マップ座標単位）<input id="wall-thickness" type="number" min="0.001" step="any" placeholder="例：0.5"></label>
-      <p class="note">表示線幅（画面px）とは別です。壁の実際の太さを地図座標で保存し、拡大縮小にも追従します。</p>
+      <label>壁の厚さ（cm・1マス＝50cm）<input id="wall-thickness" type="number" min="1" max="300" step="1" placeholder="例：10"></label>
+      <p class="note">壁の中心線を基準に厚みを表示します。数値はcmで入力し、グリッド間隔に応じて地図座標へ換算・保存します。</p>
      </div>
     </fieldset>
     <fieldset class="fieldset"><legend>色・線</legend>
@@ -463,6 +463,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
      <div class="template-edit-object">
       <label>名前 <input id="template-edit-name" placeholder="設置物名"></label>
       <label>説明 <input id="template-edit-detail" placeholder="設置物の説明"></label>
+      <label id="template-wall-thickness-label" hidden>壁厚(cm) <input id="template-wall-thickness" type="number" min="1" max="300" step="1" placeholder="10"></label>
       <button type="button" id="template-item-apply">選択中に反映</button>
       <button type="button" id="template-item-delete">選択中を削除</button>
       <button type="button" id="template-undo">元に戻す</button>
@@ -495,8 +496,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,365px);min-he
 </div>
 <script src="./map-viewer.js?v=template-shared-zoom-v4"></script>
 <script src="./object-catalog.js?v=approved-30-v1"></script>
-<script src="./building-templates.js?v=modern-jp-floorplans-v5"></script>
-<script src="./template-preview.js?v=modern-jp-filter-v10"></script>
+<script src="./building-templates.js?v=wall-thickness-v6"></script>
+<script src="./template-preview.js?v=wall-thickness-v11"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
-<script src="./map-editor.js?v=modern-jp-picker-v3"></script>
+<script src="./map-editor.js?v=wall-thickness-v4"></script>
 </body></html>
