@@ -107,7 +107,7 @@
   }[obj.objectType]||obj.objectType||"オブジェクト";
   const floor=record(t)?.floors.find(f=>f.id===obj.floorId);
   const g=obj.geometry||{};
-  const dimension=g.type==="rect"?" / "+(g.width/previewSpacing()).toFixed(1).replace(/\\.0$/,"")+" × "+(g.height/previewSpacing()).toFixed(1).replace(/\\.0$/,"")+"マス":"";
+  const dimension=g.type==="rect"?" / "+String(Number((g.width/previewSpacing()).toFixed(1)))+" × "+String(Number((g.height/previewSpacing()).toFixed(1)))+"マス":"";
   meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension;
   if(obj.id==="preview_root"){
    detail.textContent=t?.description||obj.detail||"建物の概要";
