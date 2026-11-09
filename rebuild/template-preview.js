@@ -75,7 +75,7 @@
   const floors=$("template-preview-floor");
   $("template-preview-title").textContent=t.name;
   $("template-preview-description").textContent=t.description||"説明なし";
-  $("template-preview-meta").textContent=sizeText(t)+" / "+t.floors+"階"+(t.custom?" / 自作":"");
+  // Dimensions and floor count already appear in the left-side template list.
   floors.replaceChildren();
   for(const f of available){const o=T("option","",f.label||f.id);o.value=f.id;floors.append(o)}
   floors.value=activeFloor;
