@@ -268,6 +268,29 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 #template-preview-modal .template-item-card{display:grid;grid-template-columns:1fr;gap:3px;text-align:left}
 #template-preview-modal .template-item-card strong{font-size:11px}
 #template-preview-modal .template-item-card small{font-size:10px;color:#a5c9d0}
+
+/* Template editor v20: editor lives in footer tabs, canvas gets the reclaimed space. */
+#template-preview-modal .template-preview-result:has(#template-edit-controls:not([hidden])) .template-preview-info-footer{flex-basis:clamp(185px,30dvh,260px);height:clamp(185px,30dvh,260px)}
+#template-preview-modal .template-preview-info-footer{gap:5px;padding:6px;overflow:hidden}
+#template-preview-modal .template-detail-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:0 0 auto}
+#template-preview-modal .template-detail-tabs button{min-height:27px;padding:3px 5px;font-size:11px;background:#13303d;border:1px solid #486a78;color:#b9d6df;border-radius:4px}
+#template-preview-modal .template-detail-tabs button[aria-selected="true"]{color:#fff;background:#26576b;border-color:#80bdcf}
+#template-preview-modal .template-detail-description{display:flex;flex:1 1 auto;flex-direction:column;gap:5px;min-height:0;overflow-y:auto}
+#template-preview-modal .template-detail-description[hidden]{display:none!important}
+#template-preview-modal .template-preview-info-footer #template-edit-controls{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;align-items:stretch}
+#template-preview-modal .template-preview-info-footer #template-edit-controls[hidden]{display:none!important}
+#template-preview-modal .template-item-choice-internal[hidden]{display:none!important}
+#template-preview-modal .template-item-card{grid-template-columns:54px minmax(0,1fr);align-items:center}
+#template-preview-modal .template-item-shape{grid-row:span 2;display:flex;align-items:center;justify-content:center;width:50px;height:42px;background:#0c2935;border:1px solid #456b7b;border-radius:4px}
+#template-preview-modal .template-item-shape svg{width:46px;height:38px}
+#template-preview-modal .template-item-card strong,#template-preview-modal .template-item-card small{min-width:0;overflow-wrap:anywhere}
+@media(max-width:650px){
+ #template-preview-modal .template-preview-result:has(#template-edit-controls:not([hidden])) .template-preview-info-footer{flex-basis:clamp(170px,29dvh,240px);height:clamp(170px,29dvh,240px)}
+ #template-preview-modal .template-preview-info-footer{padding:5px}
+ #template-preview-modal .template-item-card{grid-template-columns:40px minmax(0,1fr);gap:2px}
+ #template-preview-modal .template-item-shape{width:37px;height:35px}
+ #template-preview-modal .template-item-shape svg{width:34px;height:31px}
+}
 </style>
 </head>
 <body>
@@ -662,10 +685,25 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
      <button type="button" id="template-preview-fit">全体表示</button>
      <label class="template-preview-grid-toggle"><input type="checkbox" id="template-preview-grid" checked> マス目</label>
     </div>
+    <div id="template-preview-large" class="template-preview-large" aria-label="選択階の実際のマップ表示">
+     <canvas id="template-preview-canvas" aria-label="建物のマッププレビュー。ドラッグで移動、ホイールやピンチで拡大縮小"></canvas>
+    </div>
+    <footer class="template-preview-info-footer" aria-label="選択した設置物の情報">
+      <div class="template-detail-tabs" role="tablist" aria-label="編集設定と説明の切り替え">
+       <button type="button" id="template-detail-settings-tab" role="tab" aria-selected="false" aria-controls="template-edit-controls">設定・編集</button>
+       <button type="button" id="template-detail-description-tab" role="tab" aria-selected="true" aria-controls="template-detail-description">説明・詳細</button>
+      </div>
+      <div id="template-detail-description" class="template-detail-description" role="tabpanel">
+       <div class="template-preview-info-heading">
+        <strong id="template-preview-info-title">建物を選択してください</strong>
+        <span id="template-preview-info-meta"></span>
+       </div>
+       <p id="template-preview-info-text">平面図の設備・家具・階段などをクリックすると、説明を表示します。</p>
+      </div>
     <div id="template-edit-controls" hidden>
      <div id="template-edit-catalog" class="template-edit-catalog">
       <label>設置物分類 <select id="template-item-category"></select></label>
-      <label>設置物 <select id="template-item-choice"></select></label>
+      <label class="template-item-choice-internal" hidden>設置物 <select id="template-item-choice" aria-label="現在選択中の設置物"></select></label>
       <button type="button" id="template-item-add">中央に追加</button>
      </div>
      <div class="template-edit-object">
@@ -691,15 +729,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
      <p id="template-collision-status" class="note" role="status" aria-live="polite">干渉検査：待機中</p>
      <p id="template-area-status" class="note" aria-live="polite">有効面積：未計算</p>
     </div>
-    <div id="template-preview-large" class="template-preview-large" aria-label="選択階の実際のマップ表示">
-     <canvas id="template-preview-canvas" aria-label="建物のマッププレビュー。ドラッグで移動、ホイールやピンチで拡大縮小"></canvas>
-    </div>
-    <footer class="template-preview-info-footer" aria-label="選択した設置物の説明" aria-live="polite">
-     <div class="template-preview-info-heading">
-      <strong id="template-preview-info-title">建物を選択してください</strong>
-      <span id="template-preview-info-meta"></span>
-     </div>
-     <p id="template-preview-info-text">平面図の設備・家具・階段などをクリックすると、説明を表示します。</p>
     </footer>
     <div class="template-preview-bottom">
      <p id="template-preview-description" class="note"></p>
