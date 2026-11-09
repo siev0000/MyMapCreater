@@ -1213,6 +1213,10 @@ async function init(){
   const first=opts.find(o=>o.key===hash||o.id===hash)||fallback;
   $("scene-select").value=first.key;
   await load(first);
+  if(new URLSearchParams(location.search).has("import")){
+   $("geo-import-panel").hidden=false;
+   $("geo-import-toggle").setAttribute("aria-expanded","true");
+  }
   if(first.id==="sakihana_gosen_500m"){
    const key="mymapcreater:viewer-to-editor:sakihana:v1";
    let incoming=null;
