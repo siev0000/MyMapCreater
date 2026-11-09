@@ -53,3 +53,11 @@
 ## 回帰テスト
 
 `node rebuild/tests/sakihana-geodata.js` で地理座標の往復、道路・線路・建物・森林の試験図形の切り出し、シーンバリデーション、400標高セルの生成、GSI RGB復号をテスト。**試験図形は検証専用で実在の咲花地物としてGitHubシーンに含まない。**
+
+## Overpass HTTP 502対策（2026-11-09）
+
+- Overpassの混雑時に`HTTP 502`が返ることがあるため、取得順を `overpass.private.coffee` → `lz4.overpass-api.de` → `overpass-api.de` に変更した。
+- 各サーバーのHTTPエラーを収集し、すべて失敗した場合にサーバー別エラーを表示する。各リクエストは利用可能な環境では60秒で中止。短時間の同一サーバー連続リトライは行わない。
+- 成功した取得先を`settings.georeference.overpassEndpoint`に保持。既存シーンへの変更は、データ取得と変換が完全に成功した後だけ行う。
+- `node rebuild/tests/sakihana-overpass-failover.js`を追加。模擬的なHTTP 502→代替サーバー成功、および全サーバー失敗時の診断表示を検査。
+- 利用者側のブラウザー実通信成功は未検証。公開サーバーの空き状況やブラウザーのCORS設定によって失敗する可能性は残る。
