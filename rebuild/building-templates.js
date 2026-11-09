@@ -376,9 +376,9 @@ function generateCustom(templateId,options={}){
   o.metadata={...o.metadata,templateId:t.id,generated:true};
   return o;
  });
- return{template:{id:t.id,name:t.name,cells:[t.originalSize[0]/(options.spacing||2),t.originalSize[1]/(options.spacing||2)],floors:out[0].floors?.length||1,description:t.description,category:"custom",originalSize:t.originalSize},objects:out};
+ return{template:{id:t.id,name:t.name,cells:[t.originalSize[0]/(options.spacing||2),t.originalSize[1]/(options.spacing||2)],floors:out[0].floors?.length||1,description:t.description,category:"custom",era:t.era||"common",use:t.use||"special",originalSize:t.originalSize},objects:out};
 }
-function allPresets(){return[...presets,...custom.map(t=>({id:t.id,name:t.name,category:"custom",description:t.description||"保存した建物",cells:[...t.originalSize],floors:t.objects.find(o=>o.id===t.rootId)?.floors?.length||1,custom:true,originalSize:t.originalSize}))]}
+function allPresets(){return[...presets,...custom.map(t=>({id:t.id,name:t.name,category:"custom",description:t.description||"保存した建物",cells:[...t.originalSize],floors:t.objects.find(o=>o.id===t.rootId)?.floors?.length||1,custom:true,era:t.era||"common",use:t.use||"special",originalSize:t.originalSize}))]}
 function generateAny(templateId,options){return custom.some(t=>t.id===templateId)?generateCustom(templateId,options):generate(templateId,options)}
 global.AAMapBuildingTemplates={presets,custom,allPresets,generate:generateAny,register,capture};
 
