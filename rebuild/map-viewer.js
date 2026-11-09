@@ -114,6 +114,16 @@ function trace(ctx,geometry){
 }
 function create(opts){
  const canvas=opts.canvas,host=opts.host,ctx=canvas.getContext("2d");
+ const geoCredit=document.createElement("div");
+ geoCredit.hidden=true;
+ geoCredit.setAttribute("aria-label","地図の出典");
+ geoCredit.style.cssText="position:absolute;right:8px;bottom:8px;z-index:9;padding:4px 7px;border-radius:5px;border:1px solid #42636a;background:rgba(7,22,30,.90);font:10px system-ui,sans-serif;color:#ebf3f4;pointer-events:auto;max-width:min(85vw,340px)";
+ const creditLink=document.createElement("a");creditLink.href="https://www.openstreetmap.org/copyright";
+ creditLink.target="_blank";creditLink.rel="noopener noreferrer";creditLink.textContent="© OpenStreetMap contributors (ODbL)";
+ creditLink.style.color="#b6e4f2";geoCredit.append(creditLink);
+ const demCredit=document.createElement("span");demCredit.textContent=" / 標高：国土地理院";geoCredit.append(demCredit);
+ if(host?.append)host.append(geoCredit);
+
  const legendButton=opts.legendButton,roadButton=opts.roadButton;
  const memory=new Map(),pointers=new Map();
  let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
@@ -908,6 +918,8 @@ function create(opts){
   ctx.restore();
  }
  function draw(){
+  geoCredit.hidden=!scene?.settings?.georeference;
+  demCredit.hidden=!scene?.settings?.georeference?.terrainVerified;
   if(!canvas.width||!canvas.height)return;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle=htmlColor(scene?.coordinateSystem?.background,"#0b1d27");
