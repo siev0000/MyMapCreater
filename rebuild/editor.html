@@ -250,6 +250,24 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  main[data-sidebar-open="false"]{grid-template-rows:minmax(0,1fr) 52px 0!important}
  main[data-sidebar-open="false"] .side{display:none!important}
 }
+
+/* Slightly translucent editor inspector, without fading its controls. */
+.side{background:rgba(16,38,51,.89)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+@media (orientation: portrait){.side{background:rgba(16,38,51,.91)!important}}
+#template-preview-modal .template-picker-filters{flex:none;min-width:0;border:1px solid #456775;border-radius:6px;background:rgba(18,49,61,.7)}
+#template-preview-modal .template-picker-filters summary{cursor:pointer;padding:7px 8px;font-size:11px;font-weight:700;color:#d5edf1}
+#template-preview-modal .template-filter-fields{display:grid;gap:5px;padding:6px}
+#template-preview-modal .template-filter-fields>label{font-size:10px}
+#template-preview-modal .template-filter-fields>input,#template-preview-modal .template-filter-fields>select{width:100%;min-width:0}
+#template-preview-modal #template-item-list[hidden],
+#template-preview-modal #template-preview-list[hidden],
+#template-preview-modal #template-picker-filters[hidden]{display:none!important}
+#template-preview-modal #template-item-list{flex:1 1 auto;min-height:70px;overflow-y:auto}
+#template-preview-modal .template-preview-picker[data-editing="true"] #template-edit-catalog{order:0}
+#template-preview-modal .template-preview-picker[data-editing="true"] #template-item-list{order:1}
+#template-preview-modal .template-item-card{display:grid;grid-template-columns:1fr;gap:3px;text-align:left}
+#template-preview-modal .template-item-card strong{font-size:11px}
+#template-preview-modal .template-item-card small{font-size:10px;color:#a5c9d0}
 </style>
 </head>
 <body>
@@ -605,6 +623,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   </div>
   <div class="template-preview-layout">
    <aside id="template-preview-picker" class="template-preview-picker" aria-label="テンプレート一覧">
+    <details id="template-picker-filters" class="template-picker-filters">
+     <summary>検索・絞り込み</summary>
+     <div class="template-filter-fields">
     <label for="template-era-filter">世界観</label>
     <select id="template-era-filter">
      <option value="all">すべて</option><option value="common">共通・未分類</option>
@@ -622,7 +643,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
     </select>
     <label for="template-preview-filter">テンプレート検索</label>
     <input id="template-preview-filter" type="search" placeholder="名称・種類で絞り込み">
+     </div>
+    </details>
     <div id="template-preview-list" class="template-preview-list" role="listbox" aria-label="建物テンプレートの候補"></div>
+    <div id="template-item-list" class="template-preview-list" role="listbox" aria-label="設置物の一覧" hidden></div>
    </aside>
    <section class="template-preview-result" aria-label="選択テンプレートの詳細">
     <div class="template-preview-editor-head">
@@ -738,7 +762,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./geo-data-import.js?v=generic-import-v1"></script>
 <script src="./object-catalog.js?v=residential-46-v2"></script>
 <script src="./building-templates.js?v=modern-housing-real-scale-v9"></script>
-<script src="./template-preview.js?v=residential-palette-v18"></script>
+<script src="./template-preview.js?v=compact-palette-v19"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
  <script src="./map-editor.js?v=two-stage-world-selection-v16"></script>
