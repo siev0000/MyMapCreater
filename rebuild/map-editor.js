@@ -265,11 +265,36 @@ bind("obj-rotation",()=>{
  changeObject(o=>{if(o.geometry?.type==="rect")o.geometry.rotation=((n%360)+360)%360});
 });
 bind("door-wall-id",()=>{
- const wallId=input("door-wall-id");
+ const wallId=input("door-wall-id"),data=sceneNow(),wall=data?.objects.find(x=>x.id===wallId);
+ if(wallId&&(!wall||wall.objectType!=="wall"||wall.geometry?.type!=="polyline"||wall.geometry.points.length<2)){
+  notice("接続する壁には折れ線の図形を指定してください","error");renderSelected();return;
+ }
  changeObject(o=>{
   if(o.objectType!=="door")return;
   o.opening={...o.opening};
-  if(wallId)o.opening.wallId=wallId;else delete o.opening.wallId;
+  if(!wallId){delete o.opening.wallId;return}
+  o.opening.wallId=wallId;
+  // Place door on the nearest segment, preserving its approximate opening width.
+  const points=o.geometry?.points||[];
+  if(o.geometry?.type!=="polyline"||points.length!==2)return;
+  const center=[(points[0][0]+points[1][0])/2,(points[0][1]+points[1][1])/2];
+  const desired=Math.max(.001,Number(o.opening.width)||Math.hypot(points[1][0]-points[0][0],points[1][1]-points[0][1]));
+  let best=null;
+  const vertices=wall.geometry.points;
+  for(let i=1;i<vertices.length;i++){
+   const a=vertices[i-1],b=vertices[i],dx=b[0]-a[0],dy=b[1]-a[1],len2=dx*dx+dy*dy;
+   if(len2<1e-8)continue;
+   const t=Math.max(0,Math.min(1,((center[0]-a[0])*dx+(center[1]-a[1])*dy)/len2));
+   const distance=(center[0]-(a[0]+dx*t))**2+(center[1]-(a[1]+dy*t))**2;
+   if(!best||distance<best.distance)best={a,b,dx,dy,len:Math.sqrt(len2),t,distance};
+  }
+  if(!best)return;
+  const width=Math.min(desired,best.len*.8),half=width/(2*best.len),t=Math.max(half,Math.min(1-half,best.t));
+  o.geometry.points=[
+   [best.a[0]+best.dx*(t-half),best.a[1]+best.dy*(t-half)],
+   [best.a[0]+best.dx*(t+half),best.a[1]+best.dy*(t+half)]
+  ];
+  o.opening.width=width;
  });
 });
 bind("wall-thickness",()=>{
