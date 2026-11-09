@@ -8,7 +8,7 @@ const notice=(message,kind="")=>{$("message").className=kind;$("message").textCo
 const input=id=>$(id).value;
 const checked=id=>$(id).checked;
 const state={scene:null,selectedId:null,options:[],undo:[],redo:[],dragBefore:null,
- savingName:"",dirty:false,internal:false,currentOptionKey:null};
+ savingName:"",dirty:false,internal:false,currentOptionKey:null,batchIds:new Set()};
 let viewer;
 const gridDefaults={visible:true,snap:true,spacing:2,fraction:.5,originX:0,originY:0};
 let gridState={...gridDefaults};
@@ -92,26 +92,42 @@ function showNewLayerChoices(){
   })?.[0]||entries[0][0];
  fillSelect(picker,entries,defaultLayer);
 }
+function batchMode(){return checked("batch-mode")}
+function filteredObjects(){
+ const q=input("object-search").trim().toLowerCase();
+ return (sceneNow()?.objects||[]).filter(o=>!q||((o.name||"")+" "+o.id+" "+(o.objectType||"")).toLowerCase().includes(q));
+}
 function showObjects(){
  const list=$("objects"),data=sceneNow();
  list.replaceChildren();
  if(!data)return;
- const q=input("object-search").trim().toLowerCase();
+ const valid=new Set(data.objects.map(o=>o.id));
+ for(const id of [...state.batchIds])if(!valid.has(id))state.batchIds.delete(id);
  const fragment=document.createDocumentFragment();
- for(const o of data.objects){
-  if(q&&!((o.name||"")+" "+o.id+" "+(o.objectType||"")).toLowerCase().includes(q))continue;
+ for(const o of filteredObjects()){
   const item=document.createElement("button");item.type="button";
   item.className="object-entry";item.setAttribute("role","listitem");
   item.setAttribute("aria-current",String(state.selectedId===o.id));
+  item.setAttribute("aria-pressed",String(state.batchIds.has(o.id)));
   const name=document.createElement("span");
-  name.textContent=(o.name||o.id)+(o.visible===false?" [非表示]":"");
-  const meta=document.createElement("span");meta.className="meta";meta.textContent="Lv"+(o.displayLevel??1)+" · "+(o.objectType||"object");
+  name.textContent=(batchMode()?(state.batchIds.has(o.id)?"☑ ":"☐ "):"")+
+   (o.name||o.id)+(o.visible===false?" [非表示]":"");
+  const meta=document.createElement("span");meta.className="meta";
+  meta.textContent="Lv"+(o.displayLevel??1)+" · "+(o.objectType||"object");
   item.append(name,meta);
-  item.addEventListener("click",()=>viewer.selectItemById(o.id,{focus:true,force:true}));
+  item.addEventListener("click",()=>{
+   if(batchMode()){
+    if(state.batchIds.has(o.id))state.batchIds.delete(o.id);else state.batchIds.add(o.id);
+    showObjects();
+   }else viewer.selectItemById(o.id,{focus:true,force:true});
+  });
   fragment.append(item);
  }
  list.append(fragment);
+ $("batch-controls").classList.toggle("hidden",!batchMode());
+ $("batch-count").textContent=state.batchIds.size+"件を選択";
 }
+
 function fillSelect(select,rows,value){
  select.replaceChildren();
  for(const [id,name] of rows){
@@ -157,6 +173,139 @@ function translateSelectedBy(dx,dy){
  }
  return applyScene(next,root.id);
 }
+// Batch editing does not introduce scene fields: only existing geometries move.
+function batchRoots(data){
+ const ids=new Set([...state.batchIds].filter(id=>data.objects.some(o=>o.id===id)));
+ const byId=new Map(data.objects.map(o=>[o.id,o]));
+ return data.objects.filter(o=>{
+  if(!ids.has(o.id))return false;
+  const seen=new Set();let parent=byId.get(o.parentId);
+  while(parent&&!seen.has(parent.id)){
+   if(ids.has(parent.id))return false;
+   seen.add(parent.id);parent=byId.get(parent.parentId);
+  }
+  return true;
+ });
+}
+function batchBounds(obj){
+ const g=obj.geometry||{};
+ let xs=[],ys=[];
+ if(g.type==="rect"){
+  const corners=[[g.x,g.y],[g.x+g.width,g.y],[g.x+g.width,g.y+g.height],[g.x,g.y+g.height]];
+  const rad=(Number(g.rotation)||0)*Math.PI/180,cx=g.x+g.width/2,cy=g.y+g.height/2;
+  for(const [x,y] of corners){
+   xs.push(cx+(x-cx)*Math.cos(rad)-(y-cy)*Math.sin(rad));
+   ys.push(cy+(x-cx)*Math.sin(rad)+(y-cy)*Math.cos(rad));
+  }
+ }else if(g.type==="circle"||g.type==="ring"){
+  const rad=g.outerRadius??g.radius;xs=[g.center[0]-rad,g.center[0]+rad];ys=[g.center[1]-rad,g.center[1]+rad];
+ }else if(Array.isArray(g.points)){xs=g.points.map(p=>p[0]);ys=g.points.map(p=>p[1])}
+ else if(Array.isArray(obj.label?.position)){xs=[obj.label.position[0]];ys=[obj.label.position[1]]}
+ if(!xs.length||!ys.length||!xs.every(Number.isFinite)||!ys.every(Number.isFinite))return null;
+ const left=Math.min(...xs),right=Math.max(...xs),top=Math.min(...ys),bottom=Math.max(...ys);
+ return{left,right,top,bottom,centerX:(left+right)/2,centerY:(top+bottom)/2,width:right-left,height:bottom-top};
+}
+function batchTranslate(data,moves){
+ const byId=new Map(data.objects.map(o=>[o.id,o])),offsets=new Map();
+ for(const [rootId,delta] of moves){
+  const root=byId.get(rootId);if(!root)continue;
+  if(root.interiorSource&&!data.objects.some(o=>o.parentId===rootId))
+   throw Error("建物内部を読み込んでから移動してください: "+(root.name||root.id));
+  const ids=new Set([rootId]);let more=true;
+  while(more){more=false;for(const o of data.objects){
+   if(!ids.has(o.id)&&ids.has(o.parentId)){ids.add(o.id);more=true}
+  }}
+  const walls=new Set([...ids].filter(id=>byId.get(id)?.objectType==="wall"));
+  for(const obj of data.objects)if(obj.objectType==="door"&&walls.has(obj.opening?.wallId))ids.add(obj.id);
+  for(const id of ids){
+   const previous=offsets.get(id);
+   if(previous&&(previous[0]!==delta[0]||previous[1]!==delta[1]))
+    throw Error("異なる移動量を指定した図形が子要素・扉を共有しています: "+id);
+   offsets.set(id,delta);
+  }
+ }
+ for(const [id,[dx,dy]] of offsets){
+  const obj=byId.get(id),g=obj.geometry||{};
+  if(g.type==="rect"){g.x+=dx;g.y+=dy}
+  else if(g.type==="circle"||g.type==="ring"){g.center[0]+=dx;g.center[1]+=dy}
+  else if(Array.isArray(g.points))for(const p of g.points){p[0]+=dx;p[1]+=dy}
+  if(Array.isArray(obj.label?.position)){obj.label.position[0]+=dx;obj.label.position[1]+=dy}
+  for(const key of ["fromAnchor","toAnchor"])if(Array.isArray(obj.connection?.[key])){
+   obj.connection[key][0]+=dx;obj.connection[key][1]+=dy;
+  }
+ }
+}
+function batchCommit(action,minimum=1){
+ const original=sceneNow();if(!original)return;
+ const roots=batchRoots(original);
+ if(roots.length<minimum){notice("選択する図形は"+minimum+"件以上必要です","error");return}
+ try{
+  const next=copy(original);
+  const changed=action(next,roots);
+  if(changed===false)return;
+  if(applyScene(next,state.selectedId)){
+   showObjects();
+   notice(roots.length+"件をまとめて変更しました（未保存）","success");
+  }
+ }catch(error){notice("一括操作に失敗: "+error.message,"error")}
+}
+bind("batch-mode",()=>{if(!batchMode())state.batchIds.clear();showObjects()});
+bind("batch-clear",()=>{state.batchIds.clear();showObjects()},"click");
+bind("batch-select-visible",()=>{
+ $("batch-mode").checked=true;
+ for(const o of filteredObjects())state.batchIds.add(o.id);
+ showObjects();
+},"click");
+bind("batch-move",()=>{
+ const dx=Number(input("batch-dx")),dy=Number(input("batch-dy"));
+ if(!Number.isFinite(dx)||!Number.isFinite(dy)){notice("移動量が数値ではありません","error");return}
+ batchCommit((next,roots)=>{batchTranslate(next,new Map(roots.map(o=>[o.id,[dx,dy]])))});
+},"click");
+bind("batch-align-apply",()=>{
+ const key=input("batch-align"),axis=["left","right","centerX"].includes(key)?"x":"y";
+ if(!["left","right","centerX","top","bottom","centerY"].includes(key))return;
+ batchCommit((next,roots)=>{
+  const bounds=roots.map(o=>batchBounds(o));
+  if(bounds.some(b=>!b))throw Error("外形のない図形は整列できません");
+  const target=bounds[0][key];
+  batchTranslate(next,new Map(roots.map((o,i)=>[o.id,axis==="x"?[target-bounds[i][key],0]:[0,target-bounds[i][key]]])));
+ },2);
+},"click");
+bind("batch-distribute-apply",()=>{
+ const axis=input("batch-distribute");if(!["x","y"].includes(axis))return;
+ batchCommit((next,roots)=>{
+  const entries=roots.map(o=>({o,b:batchBounds(o)}));
+  if(entries.some(e=>!e.b))throw Error("外形のない図形は等間隔に配置できません");
+  const start=axis==="x"?"left":"top",end=axis==="x"?"right":"bottom",length=axis==="x"?"width":"height";
+  entries.sort((a,b)=>a.b[start]-b.b[start]);
+  const extent=entries[entries.length-1].b[end]-entries[0].b[start];
+  const total=entries.reduce((sum,e)=>sum+e.b[length],0);
+  const gap=(extent-total)/(entries.length-1),deltas=new Map();
+  let cursor=entries[0].b[start];
+  for(const e of entries){
+   const shift=cursor-e.b[start];
+   deltas.set(e.o.id,axis==="x"?[shift,0]:[0,shift]);
+   cursor+=e.b[length]+gap;
+  }
+  batchTranslate(next,deltas);
+ },3);
+},"click");
+bind("batch-delete",()=>{
+ const original=sceneNow();if(!original)return;
+ const roots=batchRoots(original),ids=new Set(roots.map(o=>o.id));
+ if(!ids.size){notice("削除対象を選択してください","error");return}
+ for(const o of original.objects){
+  if(ids.has(o.id))continue;
+  if(ids.has(o.parentId)||ids.has(o.opening?.wallId)||
+   ids.has(o.connection?.targetId)||ids.has(o.connection?.toObjectId)){
+   notice("選択外の子オブジェクト・扉・接続から参照されています: "+o.id,"error");return;
+  }
+ }
+ const next=copy(original);next.objects=next.objects.filter(o=>!ids.has(o.id));
+ if(applyScene(next,ids.has(state.selectedId)?null:state.selectedId)){
+  state.batchIds.clear();showObjects();notice(roots.length+"件を削除しました（未保存）","success");
+ }
+},"click");
 function renderGeometry(obj){
  const g=obj.geometry||{type:"none"},target=$("geometry-fields");
  target.replaceChildren();
