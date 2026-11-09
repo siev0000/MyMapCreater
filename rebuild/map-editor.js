@@ -513,8 +513,10 @@ function initBuildingTemplates(){
   $("building-template-description").textContent=t.description+"｜"+(t.custom?"保存時 "+t.originalSize.join("×")+"座標":w+"×"+h+"マス（"+(w*.5)+"×"+(h*.5)+"m）")+"｜"+t.floors+"階";
   $("building-base-name").value=t.name;
  }
- bind("building-template",describe);
+ picker.onchange=describe;
  describe();
+ if(window.AAMapTemplatePreview&&$("template-preview-list"))
+  window.AAMapTemplatePreview.init(window.AAMapBuildingTemplates,picker);
 }
 const customStorageKey="mymapcreater:building-templates:v1";
 function loadCustomBuildingTemplates(){
@@ -541,6 +543,7 @@ bind("building-capture",()=>{
   });
   library.register(spec);persistCustomBuildingTemplates();initBuildingTemplates();
   $("building-template").value=spec.id;
+  $("building-template").onchange?.();
   $("building-template-description").textContent="保存済み：" + spec.name+"｜"+spec.objects.length+"オブジェクト";
   notice("自作テンプレートを登録しました。JSON保存で他端末にも持ち出せます。","success");
  }catch(error){notice("テンプレート登録できません："+error.message,"error")}
