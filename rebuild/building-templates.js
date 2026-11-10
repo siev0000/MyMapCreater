@@ -325,10 +325,14 @@ function generateModern(template,options){
   for(const [name,shape,fx,fy,fw,fh] of plan.items){
    if(fx<0||fy<0||fx+fw>w||fy+fh>h)throw Error("設置物が外周を越える："+name);
    const stair=shape==="stair";
-   const extra={shapePresetId:shape,detail:name+"。住戸の生活用設備です。"};
+   const extra={shapePresetId:shape,detail:shape==="stair"?
+    "折り返し階段の概念図。左下から上り、奥の踊り場でUターンして右下に上階側の出口。階段の実際の段数・高さは未設計です。":
+    name+"。住戸の生活用設備です。"};
    if(stair){
     extra.stairDesign={type:"switchback",flightWidthM:0.8,landingDepthM:0.85,
      footprintWidthM:fw*.5,footprintDepthM:fh*.5,
+     entrySide:"bottom-left",turnSide:"top",exitSide:"bottom-right",
+     path:["bottom-left","top-left","top-landing","top-right","bottom-right"],
      status:"concept-not-architecturally-verified"};
     extra.connection={id:prefix+"_stair_main",fromFloorId:floor,
      toFloorId:floors[z+1]?.id||floors[z-1]?.id,
