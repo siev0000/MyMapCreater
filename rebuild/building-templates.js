@@ -214,7 +214,8 @@ for(const item of [{"id":"jp_detached_single_2ldk","name":"一軒家・コンパ
 for(const plan of modernHousing)presets.push({
  id:plan.id,name:plan.name,cells:plan.cells,floors:plan.floors,layout:"custom-modern",
  category:"modern_housing",era:"modern-jp",use:"housing",
- description:plan.description,planSource:"original-layout-inspired-by-UR-LIFULL",
+ description:plan.description,planSource:plan.id.startsWith("jp_detached_")?"unverified-original-draft":"original-layout-inspired-by-UR-LIFULL",
+ designStatus:plan.id.startsWith("jp_detached_")?"draft-unverified":"example-layout",
  modernPlan:plan.plans
 });
 function generateModern(template,options){
@@ -228,7 +229,7 @@ function generateModern(template,options){
   geometry:rect(0,0,w,h),floors,visible:true,selectable:true,
   style:{fill:"rgba(90,143,153,.12)",stroke:"#a6cbd0",strokeWidth:1.4},
   label:{visible:true,text:baseName,position:at(w/2,h/2),fontSize:11},
-  detail:template.description,metadata:{templateId:template.id,generated:true,era:"modern-jp"}};
+  detail:template.description,metadata:{templateId:template.id,generated:true,era:"modern-jp",planSource:template.planSource,designStatus:template.designStatus}};
  objs.push(main);
  let count=0;
  const push=(name,kind,geometry,f,style,extra={})=>{
