@@ -536,6 +536,33 @@ function create(opts){
    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=edge;ctx.stroke()}
   };
   ctx.save();ctx.globalAlpha=1;ctx.lineWidth=edge;ctx.strokeStyle=accent;
+  // Editable top-down tree presets: canopy is visual, trunk is the obstacle reference.
+  if(kind==="tree"||kind.startsWith("tree_")){
+   const species=kind==="tree"?"tree_large":kind;
+   const dead=species==="tree_dead",needle=species==="tree_conifer";
+   const canopyVisible=obj.treeAppearance?.showCanopy!==false;
+   const alpha=Math.max(0,Math.min(1,Number.isFinite(obj.treeAppearance?.canopyOpacity)?obj.treeAppearance.canopyOpacity:.55));
+   const trunkRatio=Math.max(.035,Math.min(.4,Number.isFinite(obj.treeAppearance?.trunkRatio)?obj.treeAppearance.trunkRatio:.13));
+   const cx=x+w/2,cy=y+h/2,r=Math.min(w,h)*.46;
+   ctx.save();
+   if(canopyVisible){
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle=dead?"#a08c6d":needle?"#316a50":"#4b9765";
+    ctx.strokeStyle=dead?"#a08c6d":"#7ab18a";ctx.lineWidth=edge;
+    if(dead){ctx.setLineDash([4/scale(),3/scale()]);circle(.5,.5,.46,"rgba(161,139,103,.12)");ctx.setLineDash([])}
+    else if(needle){
+     for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.ellipse(cx+Math.cos(a)*r*.26,cy+Math.sin(a)*r*.26,r*.47,r*.72,a,0,Math.PI*2);ctx.fill();ctx.stroke()}
+    }else{
+     circle(.5,.5,.46,"#3b8056");
+     for(const [dx,dy] of [[-.18,-.13],[.19,-.11],[0,.20]])circle(.5+dx,.5+dy,.28,"#6ba879",null);
+    }
+   }
+   ctx.globalAlpha=1;ctx.fillStyle="#8b6849";ctx.strokeStyle="#654a33";ctx.lineWidth=edge;
+   ctx.beginPath();ctx.arc(cx,cy,Math.min(w,h)*trunkRatio/2,0,Math.PI*2);ctx.fill();ctx.stroke();
+   if(dead){for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r*.75,cy+Math.sin(a)*r*.75);ctx.stroke()}}
+   if(emphasized){ctx.strokeStyle="#ffefa7";ctx.strokeRect(x,y,w,h)}
+   ctx.restore();ctx.restore();return true;
+  }
   // Outer bounds always show the physical footprint, not an emoji.
   R(0,0,1,1,"#18333d");
   const services={
