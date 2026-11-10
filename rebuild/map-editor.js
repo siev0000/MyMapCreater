@@ -1066,7 +1066,14 @@ const householdFixturePresets={
  cabinet:{name:"収納棚",w:.9,h:.45,detail:"収納家具。扉を開く空間を確認してください。"},
  microwave:{name:"電子レンジ",w:.5,h:.45,detail:"電子レンジ。設置台が別途必要です。"},
  lamp:{name:"照明",w:.3,h:.3,detail:"照明の平面図上の記号。天井取付位置は別途指定してください。"},
- bin:{name:"ゴミ箱",w:.35,h:.35,detail:"ゴミ箱。"}
+ bin:{name:"ゴミ箱",w:.35,h:.35,detail:"ゴミ箱。"},
+ ventilation_fan:{name:"換気扇",w:.25,h:.25,detail:"換気設備。排気ダクトと屋外排気口は未確認。",service:true,ceiling:true},
+ range_hood:{name:"レンジフード",w:.6,h:.4,detail:"レンジフード。コンロ上と外壁への排気経路の確認が必要。",service:true,wall:true},
+ water_heater:{name:"給湯器",w:.6,h:.35,detail:"給湯設備。機種・屋外設置・給排気と配管は未検証。",service:true,wall:true},
+ air_conditioner:{name:"エアコン室内機",w:.8,h:.25,detail:"エアコン室内機。室外機・排水・室内気流は未設計。",service:true,wall:true},
+ power_outlet:{name:"コンセント",w:.2,h:.2,detail:"コンセント。回路・高さ・安全性を別途確認。",service:true,wall:true},
+ light_switch:{name:"スイッチ",w:.2,h:.2,detail:"照明スイッチ。開いた扉との位置関係を確認。",service:true,wall:true},
+ ceiling_light:{name:"天井照明",w:.35,h:.35,detail:"照明。電気回路や取り付け高さは別途確認。",service:true,ceiling:true}
 };
 bind("add-object",()=>{
  const scene=sceneNow();if(!scene)return;
@@ -1095,7 +1102,10 @@ bind("add-object",()=>{
    label:{visible:false,text:fixture.name,position:[pos[0],pos[1]],fontSize:9},
    detail:fixture.detail,
    metadata:{userPlaced:true,householdEquipment:true,
-    dimensionsM:[fixture.w,fixture.h],...(fixture.attachedShower?{attachedShower:true}:{})}};
+    dimensionsM:[fixture.w,fixture.h],
+    ...(fixture.service?{buildingService:true,installationStatus:"schematic-unverified",
+     fixtureCollisionExcluded:true,wallMounted:!!fixture.wall,ceilingMounted:!!fixture.ceiling}:{}),
+    ...(fixture.attachedShower?{attachedShower:true}:{})}};
   scene.objects.push(obj);
   if(applyScene(scene,id))notice(fixture.name+"を表示階に配置しました。位置・通路幅を確認して保存してください。","success");
   return;
