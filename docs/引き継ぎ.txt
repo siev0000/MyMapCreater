@@ -52,3 +52,12 @@ MyMapCreater 開発引き継ぎ（更新：2026-11-10）
 
 【検討中の案】
 - 複数階建て住宅を実在する参考平面図に基づいて再設計し、階段ペア・廊下・開口を検証可能な設計基準へ移行。
+
+【重要：2026-11-10 最終仕様更新・従来の階段分割案を上書き】
+ユーザーから、2階にU字階段を2基並べた案は不採用との指示。元の1つの折り返し階段に戻す。
+- rebuild/building-templates.js の jp_detached_urban_3story を、1階・2階・3階で同位置の階段1基に復旧済み。stairDesign.type=switchback、stairNavigationの左右↑↓を使用。階数ペアごとのswitchback-flightをこのテンプレートに使用しない。
+- rebuild/map-viewer.js（拡大表示）および rebuild/template-preview.js（縮小表示）からカーブした経路矢印・U字経路を削除。左列（上り側）の画面下端に近い最初の踏面線のみ非表示。その他の段線は残す。
+- rebuild/editor.html のキャッシュ版を更新。
+- rebuild/tests/stair-direction-navigation.test.js と rebuild/tests/detached-housing-layouts.test.js は分割前の1階1基の仕様に復帰。
+- 最新コード生成検査では住宅7種・階段11個・エラー0。JavaScript構文検査OK。実ブラウザー/スマホの目視確認・通行可能性は未確認。
+- 前段に記された『2Fに別の階段2基』は履歴であり今は適用されない。docs/specs/06-roadmap-and-acceptance.md の最新節を優先する。
