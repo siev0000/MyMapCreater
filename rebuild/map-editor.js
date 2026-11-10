@@ -581,7 +581,14 @@ function initBuildingTemplates(){
   const t=list.find(t=>t.id===input("building-template"));
   if(!t)return;
   const [w,h]=t.cells;
-  $("building-template-description").textContent=t.description+"｜"+(t.custom?"保存時 "+t.originalSize.join("×")+"座標":w+"×"+h+"マス（"+(w*.5)+"×"+(h*.5)+"m）")+"｜"+t.floors+"階";
+  const basis=Number(sceneNow()?.settings?.georeference?.worldUnitsPerMeter);
+  const scaleText=Number.isFinite(basis)&&basis>0
+   ?"｜配置時：1マス="+(basis*.5)+"座標単位（地図実寸基準）"
+   :"｜配置時：シーンの実寸縮尺が未登録（編集グリッドの仮換算）";
+  const draftText=t.designStatus==="draft-unverified"?"｜注意：独自の試作間取り・実物件図面と未照合":"";
+  $("building-template-description").textContent=t.description+"｜"+
+   (t.custom?"保存時 "+t.originalSize.join("×")+"座標":w+"×"+h+"マス（"+(w*.5)+"×"+(h*.5)+"m）")+
+   "｜"+t.floors+"階"+(t.custom?"":scaleText+draftText);
   $("building-base-name").value=t.name;
  }
  picker.onchange=()=>{describe();savePreviousEditorState()};
