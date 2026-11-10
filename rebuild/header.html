@@ -368,6 +368,20 @@ main{max-width:none;padding:0}
 const $=id=>document.getElementById(id);
 let gridPreference=null;
 try{const v=localStorage.getItem("map-preview-grid-visible");if(v==="true"||v==="false")gridPreference=v==="true"}catch(_){}
+const previewStateKey="mymapcreater:viewer-selection:v1";
+let restoringPreviewState=false,previewRestore=null;
+function readPreviewState(){
+ try{const data=JSON.parse(localStorage.getItem(previewStateKey)||"null");
+  return data?.version===1&&typeof data.mapId==="string"?data:null;
+ }catch(_){return null}
+}
+function storePreviewState(){
+ if(restoringPreviewState||!selected)return;
+ try{localStorage.setItem(previewStateKey,JSON.stringify({
+  version:1,mapId:selected,viewId:viewId||null,objectId:selectedObjectId||null,
+  floorId:viewer.getFloorContext()?.selectedFloorId||null
+ }))}catch(_){}
+}
 let buildingFloorState=null;
 function updateBuildingFloorOverlay(state){
  const box=$('building-floor-overlay');
@@ -404,6 +418,16 @@ const viewer=window.AAMapViewer.create({
    status.hidden=false;
   }else status.hidden=true;
   if(data){floorStructures.set(mapId,viewer.getHierarchy());initializedTreeMaps.delete(mapId)}
+  if(data&&previewRestore?.mapId===mapId){
+   const cached=previewRestore;previewRestore=null;
+   if(cached.objectId&&data.objects.some(o=>o.id===cached.objectId)){
+    restoringPreviewState=true;
+    try{
+     viewer.selectItemById(cached.objectId,{focus:true,force:true});
+     if(cached.floorId)viewer.setFloor(cached.floorId);
+    }finally{restoringPreviewState=false}
+   }
+  }
   else{floorStructures.delete(mapId);initializedTreeMaps.delete(mapId)}
   floorLoadErrors.delete(mapId);
   if(data)applyGridPreference();
@@ -429,6 +453,7 @@ const viewer=window.AAMapViewer.create({
  },
  onSelectionChanged:(mapId,item)=>{
   selectedObjectId=item?.id||null;
+  if(!(previewRestore?.mapId===mapId&&!item))storePreviewState();
   const levelChip=$('selected-display-level');
   levelChip.hidden=!(item&&Number.isSafeInteger(item.displayLevel));
   levelChip.textContent=levelChip.hidden?'':'Lv '+item.displayLevel;
@@ -592,6 +617,7 @@ function persist(){
  const state=selected===activeRoot().id?selected+'::'+viewId:selected;
  const hash=encodeURIComponent(state);
  if(location.hash.slice(1)!==hash)history.replaceState(null,'','#'+hash);
+ storePreviewState();
 }
 // Collapsible selector built from map-tree.json and the active floor's actual JSON.
 // An unassigned facility is NOT silently attributed to a nearby district.
@@ -701,6 +727,7 @@ function render(){
 }
 function select(id,mode){
  if(!nodes.has(id))return;
+ if(selected!==id)previewRestore=null;
  selected=id;
  const root=activeRoot();
  viewId=mode&&availableViews(root).some(v=>v.mapId===root.id&&v.viewId===mode)?
@@ -710,9 +737,13 @@ function select(id,mode){
 function choose(v){select(v.mapId,v.viewId)}
 function restoreState(){
  const raw=decodeURIComponent(location.hash.slice(1));
- const split=raw.split('::');
+ const cached=readPreviewState();
+ const explicit=raw&&(nodes.has(raw)||raw.split('::').length===2&&nodes.has(raw.split('::')[0]));
+ const target=explicit?raw:(cached?.viewId&&nodes.has(cached.mapId)?cached.mapId+'::'+cached.viewId:cached?.mapId||'');
+ const split=target.split('::');
+ previewRestore=!explicit&&nodes.has(cached?.mapId)?cached:null;
  if(split.length===2&&nodes.has(split[0])){select(split[0],split[1]);return}
- select(nodes.has(raw)?raw:(nodes.has(defaultMapId)?defaultMapId:roots[0].id),null);
+ select(nodes.has(target)?target:(nodes.has(defaultMapId)?defaultMapId:roots[0].id),null);
 }
 function selectMenuTab(tab){
  const map=tab==='map';
