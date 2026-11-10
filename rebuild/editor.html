@@ -264,7 +264,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 #template-preview-modal .template-preview-layout[data-picker-collapsed="true"] #template-sidebar-edge{display:block}
 #template-sidebar-toggle{margin-left:auto;cursor:pointer;touch-action:manipulation}
 @media(max-width:650px){#template-sidebar-edge{width:34px;min-height:100px}}
-#template-preview-modal .template-picker-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;font-size:12px;font-weight:700;color:#d5edf1;padding:3px 2px}\n#template-preview-modal .template-picker-head #template-sidebar-toggle{margin-left:auto;font-size:12px!important;padding:5px 9px;min-height:30px}\n/* Slightly translucent editor inspector, without fading its controls. */
+#template-preview-modal .template-picker-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;font-size:12px;font-weight:700;color:#d5edf1;padding:3px 2px}
+#template-preview-modal .template-picker-head #template-sidebar-toggle{margin-left:auto;font-size:12px!important;padding:5px 9px;min-height:30px}
+/* Slightly translucent editor inspector, without fading its controls. */
 .side{background:rgba(16,38,51,.89)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 @media (orientation: portrait){.side{background:rgba(16,38,51,.91)!important}}
 #template-preview-modal .template-picker-filters{flex:none;min-width:0;border:1px solid #456775;border-radius:6px;background:rgba(18,49,61,.7)}
@@ -704,7 +706,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   <div class="template-preview-layout">
    <button type="button" id="template-sidebar-edge" aria-label="絞り込みサイドバーを再表示" title="一覧を表示">▶</button>
    <aside id="template-preview-picker" class="template-preview-picker" aria-label="テンプレート一覧">
-    <div class="template-picker-head"><span>テンプレート一覧・絞り込み</span><button type="button" id="template-sidebar-toggle" aria-controls="template-preview-picker" aria-expanded="true" title="サイドバーを閉じる">閉じる ◀</button></div>
+    <div class="template-picker-head"><button type="button" id="template-sidebar-toggle" aria-controls="template-preview-picker" aria-expanded="true" title="サイドバーを閉じる">閉じる ◀</button></div>
     <details id="template-picker-filters" class="template-picker-filters">
      <summary>検索・絞り込み</summary>
      <div class="template-filter-fields">
