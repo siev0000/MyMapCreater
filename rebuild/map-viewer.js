@@ -244,6 +244,34 @@ function create(opts){
   const floor=owner.floors[b];
   return{symbol:b>a?"↑":"↓",label:floor.label||floor.id,id:floor.id};
  }
+ // A switchback stair has two selectable floor transitions at a landing:
+ // higher and lower floors are separate actions, not a single toFloorId.
+ function stairFloorTargets(obj){
+  if(obj?.objectType!=="stair"||obj?.stairDesign?.type!=="switchback"||!scene)return null;
+  const parents=new Map(scene.objects.map(o=>[o.id,o]));
+  let owner=parents.get(obj.parentId),seen=new Set();
+  while(owner&&!seen.has(owner.id)&&!Array.isArray(owner.floors)){
+   seen.add(owner.id);owner=parents.get(owner.parentId);
+  }
+  if(!Array.isArray(owner?.floors))return null;
+  const floors=owner.floors.filter(f=>typeof f.id==="string");
+  const index=floors.findIndex(f=>f.id===obj.floorId);
+  if(index<0)return null;
+  const format=(f)=>f?{id:f.id,label:f.label||f.id}:null;
+  return{up:format(floors[index+1]),down:format(floors[index-1])};
+ }
+ function stairDirectionalHit(obj,px,py){
+  const targets=stairFloorTargets(obj),g=obj?.geometry;
+  if(!targets||g?.type!=="rect")return null;
+  const [wx,wy]=worldAt(px,py);
+  if(wx<g.x||wx>g.x+g.width||wy<g.y||wy>g.y+g.height)return null;
+  // Left flight/label is UP, right flight/label is DOWN. On endpoint
+  // floors the whole stair area can select its only available direction.
+  if(targets.up&&!targets.down)return{direction:"up",destination:targets.up};
+  if(targets.down&&!targets.up)return{direction:"down",destination:targets.down};
+  const direction=wx<g.x+g.width/2?"up":"down";
+  return{direction,destination:targets[direction]};
+ }
  function initialDisplayLevel(){
   const level=scene?.settings?.initialDisplayLevel;
   return Number.isSafeInteger(level)&&level>=1?level:3;
@@ -803,6 +831,25 @@ function create(opts){
   for(const obj of objects){
    if(obj.objectType!=="stair"&&obj.shapePresetId!=="stair")continue;
    const g=obj.geometry;if(g?.type!=="rect")continue;
+   const destinations=stairFloorTargets(obj);
+   if(destinations){
+    const [leftX,leftY]=screenAt(g.x+g.width*.25,g.y+g.height*.53);
+    const [rightX,rightY]=screenAt(g.x+g.width*.75,g.y+g.height*.53);
+    for(const [target,sx,sy,arrow] of [[destinations.up,leftX,leftY,"↑"],[destinations.down,rightX,rightY,"↓"]]){
+     const caption=target?arrow+(target.label||target.id):"－";
+     ctx.font="bold 10px system-ui, sans-serif";
+     const labelWidth=ctx.measureText(caption).width;
+     const bw=Math.max(21,labelWidth+9),bh=19;
+     ctx.fillStyle=target?"rgba(10,45,59,.94)":"rgba(30,42,47,.72)";
+     ctx.fillRect(sx-bw/2,sy-bh/2,bw,bh);
+     ctx.lineWidth=1;ctx.strokeStyle=target?"#b4e1e8":"#64717b";
+     ctx.strokeRect(sx-bw/2,sy-bh/2,bw,bh);
+     ctx.textAlign="center";ctx.textBaseline="middle";
+     ctx.fillStyle=target?(arrow==="↑"?"#a9effb":"#ffcf92"):"#83939a";
+     ctx.fillText(caption,sx,sy);
+    }
+    continue;
+   }
    const dest=stairDestination(obj);
    const side=["top","bottom","left","right"].includes(obj.stair?.lowSide)?obj.stair.lowSide:null;
    const [x,y]=screenAt(g.x+g.width/2,g.y+g.height/2);
@@ -1529,9 +1576,14 @@ function create(opts){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
   }else if(clicked&&!suppressClick){
    const hit=pick(x,y);
-   if(hit?.objectType==="stair"&&hit.connection?.toFloorId){
-    // A stair switches the physical floor of its owning building, never the
-    // display level or the surrounding map.
+   const choice=hit?.objectType==="stair"?stairDirectionalHit(hit,x,y):null;
+   if(choice){
+    if(choice.destination){
+     showDetails(hit);
+     if(!setFloor(choice.destination.id))showDetails(hit);
+    }else showDetails(hit); // A disabled direction never moves floors.
+   }else if(hit?.objectType==="stair"&&hit.connection?.toFloorId){
+    // Legacy single-destination stair behavior stays intact.
     showDetails(hit);
     if(!setFloor(hit.connection.toFloorId))showDetails(hit);
    }else showDetails(hit||(viewRootId?scene.objects.find(o=>o.id===viewRootId):null));
