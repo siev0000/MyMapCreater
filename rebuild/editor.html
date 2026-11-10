@@ -313,6 +313,35 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 .editor-selection-chip strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .editor-selection-chip span{font-size:10px;color:#cfe3e8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:650px){.editor-selection-chip{bottom:44px;padding:5px 8px}.editor-selection-chip strong{font-size:11px}.editor-selection-chip span{font-size:9px}}
+
+/* Mobile-first secondary editor: keep all keyboard input outside the narrow footer. */
+#template-preview-modal .template-preview-result:has(#template-edit-controls:not([hidden])) .template-preview-info-footer{flex-basis:clamp(151px,24dvh,205px);height:clamp(151px,24dvh,205px)}
+#template-preview-modal .template-edit-actions{display:flex;flex-wrap:wrap;align-items:center;gap:5px;min-width:0}
+#template-preview-modal .template-edit-selected-name{flex:1 0 100%;font-size:12px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;color:#e8f5f7}
+#template-preview-modal .template-edit-actions button{flex:1 1 auto;min-height:32px;touch-action:manipulation;white-space:nowrap}
+#template-preview-modal .template-edit-actions #template-edit-open{flex:2 0 58%;background:#2a566b;color:#fff}
+#template-preview-modal .template-edit-actions button:disabled{opacity:.45;cursor:not-allowed}
+#template-preview-modal .template-field-modal{position:fixed;z-index:30;inset:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(0,12,20,.80)}
+#template-preview-modal .template-field-modal[hidden]{display:none!important}
+#template-preview-modal .template-field-dialog{box-sizing:border-box;display:flex;flex-direction:column;gap:12px;width:min(480px,100%);max-height:calc(100dvh - 24px);min-height:0;overflow-y:auto;padding:18px;background:#12323f;border:1px solid #7cabb8;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.55);color:#f0f7fa;overscroll-behavior:contain}
+#template-preview-modal .template-field-head{display:flex;align-items:center;gap:10px;justify-content:space-between}
+#template-preview-modal .template-field-head h3{font-size:17px;margin:0}
+#template-preview-modal .template-field-head button{min-height:38px;min-width:38px;font-size:24px}
+#template-preview-modal .template-field-help{font-size:12px;margin:0;color:#c0d9e1}
+#template-preview-modal .template-field-inputs{display:grid;gap:10px}
+#template-preview-modal .template-field-inputs label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600}
+#template-preview-modal .template-field-inputs label[hidden],#template-preview-modal #template-opening-link[hidden],#template-preview-modal #template-field-edit-pane[hidden],#template-preview-modal #template-field-save-pane[hidden]{display:none!important}
+#template-preview-modal .template-field-inputs input,#template-preview-modal .template-field-inputs textarea{box-sizing:border-box;width:100%;min-height:43px;padding:9px 10px;font-size:16px;line-height:1.35;background:#071e29;color:#fff;border:1px solid #648e9c;border-radius:7px}
+#template-preview-modal .template-field-inputs textarea{min-height:105px;resize:vertical}
+#template-preview-modal .template-field-dialog .template-field-primary{display:block;width:100%;min-height:44px;margin-top:14px;font-size:15px;font-weight:700;background:#2f7b94;color:#fff;border-radius:7px}
+#template-preview-modal .template-field-dialog .template-field-cancel{align-self:center;min-height:40px;min-width:125px}
+#template-preview-modal .template-field-dialog #template-field-status{margin:0;min-height:0;font-size:12px;overflow-wrap:anywhere}
+@media(max-width:650px){
+ #template-preview-modal .template-preview-result:has(#template-edit-controls:not([hidden])) .template-preview-info-footer{flex-basis:clamp(153px,28dvh,200px);height:clamp(153px,28dvh,200px)}
+ #template-preview-modal .template-edit-actions button{min-height:34px}
+ #template-preview-modal .template-field-modal{align-items:flex-end;padding:0}
+ #template-preview-modal .template-field-dialog{width:100%;max-height:calc(100dvh - 8px);padding:16px 15px max(16px,env(safe-area-inset-bottom));border-radius:15px 15px 0 0}
+}
 </style>
 </head>
 <body>
@@ -766,24 +795,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
       <label class="template-item-choice-internal" hidden>設置物 <select id="template-item-choice" aria-label="現在選択中の設置物"></select></label>
       <button type="button" id="template-item-add">中央に追加</button>
      </div>
-     <div class="template-edit-object">
-      <label>名前 <input id="template-edit-name" placeholder="設置物名"></label>
-      <label>説明 <input id="template-edit-detail" placeholder="設置物の説明"></label>
-      <label id="template-wall-thickness-label" hidden>壁厚(cm) <input id="template-wall-thickness" type="number" min="1" max="300" step="1" placeholder="10"></label>
-      <label id="template-dim-width-label" hidden>幅(cm) <input id="template-dim-width" type="number" min="1" max="5000" step="1"></label>
-      <label id="template-dim-height-label" hidden>奥行(cm) <input id="template-dim-height" type="number" min="1" max="5000" step="1"></label>
-      <label id="template-dim-rotation-label" hidden>回転(°) <input id="template-dim-rotation" type="number" min="-360" max="360" step="1"></label>
-      <label id="template-opening-width-label" hidden>開口幅(cm) <input id="template-opening-width" type="number" min="25" max="500" step="5"></label>
-      <button type="button" id="template-opening-link" hidden>最寄りの壁へ接続</button>
-      <button type="button" id="template-item-apply">選択中に反映</button>
-      <button type="button" id="template-item-delete">選択中を削除</button>
+     <div class="template-edit-actions">
+      <strong id="template-edit-selected-name" class="template-edit-selected-name">設置物を選択してください</strong>
+      <button type="button" id="template-edit-open" disabled>✎ 選択した設置物を編集</button>
+      <button type="button" id="template-item-delete" disabled>削除</button>
       <button type="button" id="template-undo">元に戻す</button>
       <button type="button" id="template-redo">やり直す</button>
-     </div>
-     <div class="template-edit-save">
-      <label>保存名 <input id="template-save-name" placeholder="カスタム住宅"></label>
-      <label>ID <input id="template-save-id" placeholder="my_custom_house"></label>
-      <button type="button" id="template-save-copy">別名で保存</button>
+      <button type="button" id="template-save-open">別名で保存</button>
      </div>
      <p class="note" id="template-edit-status">標準テンプレートは保護されています。編集後は別名で保存してください。</p>
      <p id="template-collision-status" class="note" role="status" aria-live="polite">干渉検査：待機中</p>
@@ -797,6 +815,37 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
    </section>
   </div>
  </section>
+ <div id="template-field-modal" class="template-field-modal" hidden>
+  <div class="template-field-dialog" role="dialog" aria-modal="true" aria-labelledby="template-field-title">
+   <div class="template-field-head">
+    <h3 id="template-field-title">設置物の編集</h3>
+    <button type="button" id="template-field-close" aria-label="入力画面を閉じる">×</button>
+   </div>
+   <p class="template-field-help" id="template-field-help">内容を入力して反映してください。</p>
+   <div id="template-field-edit-pane">
+    <div class="template-field-inputs">
+      <label>名前 <input id="template-edit-name" autocomplete="off" placeholder="設置物名"></label>
+      <label>説明 <textarea id="template-edit-detail" rows="4" placeholder="設置物の説明"></textarea></label>
+      <label id="template-wall-thickness-label" hidden>壁厚(cm) <input id="template-wall-thickness" type="number" min="1" max="300" step="1" placeholder="10"></label>
+      <label id="template-dim-width-label" hidden>幅(cm) <input id="template-dim-width" type="number" min="1" max="5000" step="1"></label>
+      <label id="template-dim-height-label" hidden>奥行(cm) <input id="template-dim-height" type="number" min="1" max="5000" step="1"></label>
+      <label id="template-dim-rotation-label" hidden>回転(°) <input id="template-dim-rotation" type="number" min="-360" max="360" step="1"></label>
+      <label id="template-opening-width-label" hidden>開口幅(cm) <input id="template-opening-width" type="number" min="25" max="500" step="5"></label>
+      <button type="button" id="template-opening-link" hidden>最寄りの壁へ接続</button>
+    </div>
+    <button type="button" id="template-item-apply" class="template-field-primary">選択中に反映</button>
+   </div>
+   <div id="template-field-save-pane" hidden>
+    <div class="template-field-inputs">
+      <label>保存名 <input id="template-save-name" autocomplete="off" placeholder="カスタム住宅"></label>
+      <label>ID <input id="template-save-id" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="my_custom_house"></label>
+    </div>
+    <button type="button" id="template-save-copy" class="template-field-primary">この名前で保存</button>
+   </div>
+   <p id="template-field-status" role="status" aria-live="polite" class="note"></p>
+   <button type="button" id="template-field-cancel" class="template-field-cancel">キャンセル</button>
+  </div>
+ </div>
 </div>
 
 <script>
