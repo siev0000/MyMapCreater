@@ -1576,13 +1576,13 @@ function create(opts){
    if(typeof opts.onObjectMoved==="function")opts.onObjectMoved(clone(movedObject),getScene());
   }else if(clicked&&!suppressClick){
    const hit=pick(x,y);
-   const choice=hit?.objectType==="stair"?stairDirectionalHit(hit,x,y):null;
+   const choice=!editMode&&hit?.objectType==="stair"?stairDirectionalHit(hit,x,y):null;
    if(choice){
     if(choice.destination){
      showDetails(hit);
      if(!setFloor(choice.destination.id))showDetails(hit);
     }else showDetails(hit); // A disabled direction never moves floors.
-   }else if(hit?.objectType==="stair"&&hit.connection?.toFloorId){
+   }else if(!editMode&&hit?.objectType==="stair"&&hit.connection?.toFloorId){
     // Legacy single-destination stair behavior stays intact.
     showDetails(hit);
     if(!setFloor(hit.connection.toFloorId))showDetails(hit);
