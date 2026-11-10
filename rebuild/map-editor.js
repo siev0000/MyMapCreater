@@ -1050,8 +1050,56 @@ bind("land-route-kind",()=>{
 // Keep draft separate from the map data when switching existing maps.
 bind("scene-select",()=>{if(lineDraft.active)lineDraftStop()},"change");
 
+const householdFixturePresets={
+ shower:{name:"シャワーブース",w:1,h:1,detail:"シャワーブース。給排水・換気・防水は別途確認が必要です。"},
+ bath:{name:"浴槽＋シャワー",w:1.6,h:1.6,detail:"シャワー付き浴槽。浴室の床防水・設備接続は別途確認が必要です。",attachedShower:true},
+ washer:{name:"洗濯機",w:.65,h:.65,detail:"洗濯機。給排水・防水パン・電源・前面クリアランスは未検証。"},
+ refrigerator:{name:"冷蔵庫",w:.7,h:.7,detail:"冷蔵庫。扉の開く向きと放熱余白は別途確認してください。"},
+ sink:{name:"洗面台",w:.65,h:.5,detail:"洗面台。給排水接続は別途確認してください。"},
+ toilet:{name:"トイレ",w:.75,h:1,detail:"便器。前方クリアランスと給排水は別途確認してください。"},
+ kitchen:{name:"システムキッチン",w:2.4,h:.65,detail:"調理台・流し・コンロを含むキッチン。"},
+ cooktop:{name:"コンロ",w:.65,h:.6,detail:"調理用コンロ。既存キッチンと重複しないよう確認してください。"},
+ bed:{name:"ベッド",w:1.1,h:1.9,detail:"寝具。出入りと家具間の通路幅を確認してください。"},
+ sofa:{name:"ソファ",w:1.8,h:.85,detail:"ソファ。"},
+ table:{name:"テーブル",w:1.2,h:.8,detail:"テーブル。"},
+ chair:{name:"椅子",w:.5,h:.5,detail:"椅子。"},
+ cabinet:{name:"収納棚",w:.9,h:.45,detail:"収納家具。扉を開く空間を確認してください。"},
+ microwave:{name:"電子レンジ",w:.5,h:.45,detail:"電子レンジ。設置台が別途必要です。"},
+ lamp:{name:"照明",w:.3,h:.3,detail:"照明の平面図上の記号。天井取付位置は別途指定してください。"},
+ bin:{name:"ゴミ箱",w:.35,h:.35,detail:"ゴミ箱。"}
+};
 bind("add-object",()=>{
  const scene=sceneNow();if(!scene)return;
+ const fixtureId=input("new-household-fixture");
+ const fixture=householdFixturePresets[fixtureId];
+ if(fixture){
+  const context=viewer.getFloorContext();
+  if(!context){
+   notice("住宅設備を設置するには、建物または内部の部屋を選び、表示階を指定してください。","error");
+   return;
+  }
+  const box=$("map-canvas").getBoundingClientRect();
+  const [worldX,worldY]=viewer.screenToWorld(box.width/2,box.height/2);
+  const unit=templateCellSpacing(scene)*2; // 1 real metre in scene coordinates.
+  const pos=snapPoint([worldX,worldY]);
+  const id=uniqueId("fixture",scene.objects);
+  const parent=scene.objects.find(o=>o.id===context.ownerId);
+  const level=Number.isSafeInteger(parent?.displayLevel)?parent.displayLevel+1:5;
+  const rect={type:"rect",x:pos[0]-fixture.w*unit/2,y:pos[1]-fixture.h*unit/2,
+   width:fixture.w*unit,height:fixture.h*unit};
+  const obj={id,name:fixture.name,parentId:context.ownerId,floorId:context.selectedFloorId,
+   displayLevel:level,objectType:"object",layer:"structures",zIndex:43,
+   geometry:rect,visible:true,selectable:true,
+   shapePresetId:fixtureId,
+   style:{fill:"rgba(46,91,110,.7)",stroke:"#9ec5ca",strokeWidth:1},
+   label:{visible:false,text:fixture.name,position:[pos[0],pos[1]],fontSize:9},
+   detail:fixture.detail,
+   metadata:{userPlaced:true,householdEquipment:true,
+    dimensionsM:[fixture.w,fixture.h],...(fixture.attachedShower?{attachedShower:true}:{})}};
+  scene.objects.push(obj);
+  if(applyScene(scene,id))notice(fixture.name+"を表示階に配置しました。位置・通路幅を確認して保存してください。","success");
+  return;
+ }
  const gtype=input("new-shape");
  const box=$("map-canvas").getBoundingClientRect();
  const [x,y]=viewer.screenToWorld(box.width/2,box.height/2);
