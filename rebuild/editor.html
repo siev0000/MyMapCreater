@@ -256,6 +256,14 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 #template-preview-modal .template-preview-layout[data-picker-collapsed="true"] .template-preview-picker{display:none!important}
 #template-preview-modal .template-preview-layout[data-picker-collapsed="true"] .template-preview-result{grid-column:1!important}
 #template-sidebar-toggle{margin-left:auto;font-size:12px!important;white-space:nowrap;padding:5px 9px}
+#template-preview-modal .template-preview-layout{position:relative}
+#template-preview-modal .template-preview-layout[data-picker-collapsed="true"]{grid-template-columns:minmax(0,1fr)!important;gap:0!important}
+#template-preview-modal .template-preview-layout[data-picker-collapsed="true"] .template-preview-result{grid-column:1!important;grid-row:1!important}
+#template-preview-modal .template-preview-layout[data-picker-collapsed="true"] .template-preview-picker{display:none!important}
+#template-sidebar-edge{display:none;position:absolute;z-index:20;left:0;top:50%;transform:translateY(-50%);width:28px;min-height:88px;padding:8px 3px;border-radius:0 9px 9px 0;background:#244d60;color:#fff;border:1px solid #8fbcc9;cursor:pointer;touch-action:manipulation}
+#template-preview-modal .template-preview-layout[data-picker-collapsed="true"] #template-sidebar-edge{display:block}
+#template-sidebar-toggle{margin-left:auto;cursor:pointer;touch-action:manipulation}
+@media(max-width:650px){#template-sidebar-edge{width:34px;min-height:100px}}
 /* Slightly translucent editor inspector, without fading its controls. */
 .side{background:rgba(16,38,51,.89)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 @media (orientation: portrait){.side{background:rgba(16,38,51,.91)!important}}
@@ -695,6 +703,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
    <button type="button" id="template-preview-close" aria-label="プレビューを閉じる">×</button>
   </div>
   <div class="template-preview-layout">
+   <button type="button" id="template-sidebar-edge" aria-label="絞り込みサイドバーを再表示" title="一覧を表示">▶</button>
    <aside id="template-preview-picker" class="template-preview-picker" aria-label="テンプレート一覧">
     <details id="template-picker-filters" class="template-picker-filters">
      <summary>検索・絞り込み</summary>
