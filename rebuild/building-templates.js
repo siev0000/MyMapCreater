@@ -170,6 +170,9 @@ presets.push(...[
  {id:"machine_mid_emergency_repair",name:"緊急修理・救護施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["応急修理室","診断・記録室","停止保管室","交換部品庫"],notionStatus:"layout-proposal"}
 ]);
 
+// Arbor Sector forest hall: a large editable zone, not a canonical footprint.
+presets.push({id:"machine_mid_giant_tree_grove",name:"アルボラセクター・大木育成区画",cells:[120,100],floors:1,layout:"open",description:"大型樹木を複数育成する人工森林区。天井人工降雨、局所水循環、管理通路を持つ仮配置。寸法は未確定。",category:"machine_midlayer",worldStyle:"machine",facilityMode:"giant_grove",entranceSide:"center"});
+
 /* Modern Japanese housing: original playable layouts informed by typical 1R/1K/LDK
    arrangements (UR Housing / LIFULL), not tracings of any advertised property. */
 const modernHousing=[
@@ -763,6 +766,32 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 // The AA machine-world templates use a purpose-built, room-accessible draft
 // instead of the legacy human-house/generic partition generator. All concrete
 // dimensions and layouts here are proposals, not assertions of Notion canon.
+// Large forest cultivation is an open landscape, not a corridor-and-four-rooms building.
+function generateGiantGrove(t,options={}){
+ const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
+ if(typeof prefix!=="string"||!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("大木育成区画の配置指定が不正です");
+ const [W,H]=t.cells,objs=[],at=(a,b)=>[x+a*spacing,y+b*spacing],rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
+ let n=0;const add=(name,kind,level,geometry,parent,extra={})=>{
+  const o={id:prefix+"_grove_"+(++n),name,objectType:kind,parentId:parent,displayLevel:level,floorId:"1F",layer:kind==="wall"||kind==="door"?"walls":"structures",zIndex:kind==="region"?31:kind==="wall"?47:kind==="door"?49:42,geometry,visible:true,selectable:true,style:kind==="region"?{fill:"rgba(45,124,73,.14)",stroke:"#659e73",strokeWidth:1}:{fill:"rgba(50,125,90,.27)",stroke:"#95bd9b",strokeWidth:1},label:{visible:kind==="region",text:name,fontSize:10},detail:"アルボラセクターの編集用試案。位置・寸法・設備数は未確定。",metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified"},...extra};objs.push(o);return o;
+ };
+ const root=add(baseName,"facility",displayLevel,rect(0,0,W,H),parentId,{floors:[{id:"1F",label:"1階",elevation:0,height:3}],detail:"大木を複数育成する森林区画。立体的な樹高と天井高は未確定。仮寸法・仮配置。"});
+ const zone=(name,a,b,w,h)=>{const z=add(name,"region",displayLevel+1,rect(a,b,w,h),prefix,{shapePresetId:"room_zone"});z.label.position=at(a+w/2,b+h/2);return z};
+ const grove=zone("大木育成・森林区",12,12,96,76);
+ const north=zone("人工降雨・水管理設備帯",12,0,96,10);
+ const south=zone("資材搬入・検査・管理帯",12,90,96,10);
+ const west=zone("管理・点検通路",0,0,10,H);
+ const east=zone("管理・点検通路",110,0,10,H);
+ const addObject=(name,shape,zoneObj,a,b,w,h,role)=>add(name,"object",displayLevel+2,rect(a,b,w,h),zoneObj.id,{shapePresetId:shape,label:{visible:false,text:name},metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",role}});
+ // Distinct trunks are selectable; spacing deliberately leaves substantial open ground.
+ for(let j=0;j<3;j++)for(let i=0;i<4;i++)addObject("育成大木 "+(j*4+i+1),"tree",grove,21+i*22,23+j*24,6,6,"cultivated-tree");
+ for(let i=0;i<5;i++)addObject("人工降雨制御端末","terminal_device",north,18+i*18,3,3,3,"rain-control");
+ for(let i=0;i<4;i++)addObject("水循環・排水監視端末","terminal_device",south,20+i*23,93,3,3,"water-monitor");
+ addObject("搬入資材保管","storage_container",south,94,92,7,5,"materials");
+ for(const [a,b,c,d] of [[0,0,W,0],[0,0,0,H],[W,0,W,H],[0,H,56,H],[64,H,W,H]])add("外周区画壁","wall",displayLevel+1,{type:"polyline",points:[at(a,b),at(c,d)]},prefix);
+ add("森林区画入口","door",displayLevel+1,{type:"polyline",points:[at(56,H),at(64,H)]},prefix,{door:{hinge:"start",swing:"inward",state:"closed",type:"sliding",slideDirection:"end"},opening:{kind:"entrance",width:8*spacing,external:true}});
+ return{template:copy(t),objects:objs};
+}
+
 function generateMachine(t,options={}){
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("機械施設の配置指定が不正です");
@@ -995,6 +1024,7 @@ function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
  if(!template)throw Error("不明な建物テンプレート: "+templateId);
  if(template.modernPlan)return generateModern(template,options);
+ if(template.facilityMode==="giant_grove")return generateGiantGrove(template,options);
  if(template.worldStyle==="machine")return generateMachine(template,options);
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
  if(typeof prefix!=="string"||!prefix)throw Error("建物IDが必要です");
