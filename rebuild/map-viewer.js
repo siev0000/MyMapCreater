@@ -296,6 +296,19 @@ function create(opts){
  }
  function visibleByDepth(obj){
   const level=Number.isSafeInteger(obj.displayLevel)?obj.displayLevel:1;
+  // A selected floor-bearing building (or any room/object inside it) reveals
+  // its room-level furniture too. Physical floor filtering still applies in
+  // visible() so selecting one room never hides the rest of that floor.
+  if(selected&&scene&&obj.floorId){
+   const owners=new Map(scene.objects.map(o=>[o.id,o]));
+   const chain=selectionPath();
+   let current=obj,seen=new Set();
+   while(current&&!seen.has(current.id)){
+    if(chain.has(current.id)&&Array.isArray(current.floors)&&
+       level<=current.displayLevel+2)return true;
+    seen.add(current.id);current=owners.get(current.parentId);
+   }
+  }
   // The overview always remains on screen, including when looking inside a
   // facility. Only the direct children along the current selection path open.
   if(level<=initialDisplayLevel())return true;
@@ -508,6 +521,7 @@ function create(opts){
  // normal geometry for selection, scaling and floor filtering.
  function traceIndoorShape(obj,emphasized=false){
   const kind=obj.shapePresetId||(obj.objectType==="stair"?"stair":null),g=obj.geometry;
+  if(kind==="room_zone")return false; // Room selection must not repaint an opaque rectangle over furniture.
   if(!kind||g?.type!=="rect"||g.width<=0||g.height<=0)return false;
   const {x,y,width:w,height:h}=g,accent=emphasized?"#ffefa7":"#9fc7d0";
   const edge=1.45/scale(),line=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()};
