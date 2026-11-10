@@ -465,6 +465,26 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 
     <label>レイヤー<select id="new-layer"></select></label>
    </div>
+   <label>住宅・生活設備<select id="new-household-fixture">
+    <option value="">指定なし（通常の図形を追加）</option>
+    <option value="shower">シャワーブース</option>
+    <option value="bath">浴槽＋シャワー</option>
+    <option value="washer">洗濯機</option>
+    <option value="refrigerator">冷蔵庫</option>
+    <option value="sink">洗面台・流し台</option>
+    <option value="toilet">トイレ（便器）</option>
+    <option value="kitchen">システムキッチン</option>
+    <option value="cooktop">コンロ</option>
+    <option value="bed">ベッド</option>
+    <option value="sofa">ソファ</option>
+    <option value="table">テーブル</option>
+    <option value="chair">椅子</option>
+    <option value="cabinet">収納棚</option>
+    <option value="microwave">電子レンジ</option>
+    <option value="lamp">照明</option>
+    <option value="bin">ゴミ箱</option>
+   </select></label>
+   <p class="note">生活設備は選択中の建物・区画の表示階に配置します。寸法は仮置き値です。設置後に位置と扉・通路との干渉を確認してください。</p>
    <div class="switches">
     <label><input id="new-parent-selected" type="checkbox"> 選択中の図形を親にする</label>
     <label><input id="new-when-parent-selected" type="checkbox"> 親を選択したときだけ表示</label>
