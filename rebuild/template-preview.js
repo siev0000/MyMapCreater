@@ -7,6 +7,8 @@
  let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null,editing=false,editPast=[],editFuture=[],beforeDrag=null;
  const renderCache=new Map();
  function previewSpacing(){
+  const mapScale=Number(global.AAMapTemplateCellSpacing?.());
+  if(Number.isFinite(mapScale)&&mapScale>0)return mapScale;
   const value=Number($("editor-grid-spacing")?.value);
   return Number.isFinite(value)&&value>0?value:2;
  }
