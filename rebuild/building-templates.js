@@ -198,7 +198,7 @@ const modernHousing=[
      ["entry","玄関",0,7,4,7],["ldk","LDK",8,0,8,14]],
     doors:[["bath","wash"],["wash","hall"],["wc","hall"],["entry","hall"],["hall","ldk"],["storage","entry","open"]],entry:"entry",
     items:[["浴槽","bath",.5,.5,2,2.5],["洗面台","sink",5,1,2,1],
-     ["トイレ","toilet",1,4.7,1.5,1.5],["収納棚","cabinet",1,9,2,1],
+     ["トイレ","toilet",1,4.2,1.5,1.5],["収納棚","cabinet",1,9,2,1],
      ["階段（折り返し・概念図）","stair",4.2,8.2,3.6,5.6],["キッチン","kitchen",9,1,4,1],
      ["食卓","table",10,5,3,2],["ソファ","sofa",10,10,4,2]]},
    {rooms:[["bed1","主寝室",0,0,6,8],["bed2","洋室A",6,0,5,8],
