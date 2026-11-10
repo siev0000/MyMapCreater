@@ -109,10 +109,23 @@
     "rotate("+g.rotation+" "+(g.x+g.width/2)+" "+(g.y+g.height/2)+")");
    svg.append(shape);
    if(type==="stair"&&g.type==="rect"){
-    const n=6,horizontal=g.height>=g.width;
-    for(let i=1;i<n;i++)svg.append(S("line",horizontal?
-     {x1:g.x,y1:g.y+i*g.height/n,x2:g.x+g.width,y2:g.y+i*g.height/n,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}:
-     {x1:g.x+i*g.width/n,y1:g.y,x2:g.x+i*g.width/n,y2:g.y+g.height,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}));
+    if(obj.stairDesign?.type==="switchback"){
+     // Draw two narrow runs and a turning landing: the full rectangular
+     // footprint is NOT the clear width of a single residential stair.
+     const middle=g.x+g.width/2,landing=g.y+g.height*.29;
+     svg.append(S("line",{x1:middle,y1:g.y,x2:middle,y2:g.y+g.height,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}));
+     svg.append(S("line",{x1:g.x,y1:landing,x2:g.x+g.width,y2:landing,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}));
+     for(let i=1;i<7;i++){
+      const yy=landing+(g.height-(landing-g.y))*i/7;
+      for(const [x1,x2] of [[g.x,middle],[middle,g.x+g.width]])
+       svg.append(S("line",{x1,y1:yy,x2,y2:yy,stroke:"#c0d7dc","stroke-width":strokeWidth*.55}));
+     }
+    }else{
+     const n=6,horizontal=g.height>=g.width;
+     for(let i=1;i<n;i++)svg.append(S("line",horizontal?
+      {x1:g.x,y1:g.y+i*g.height/n,x2:g.x+g.width,y2:g.y+i*g.height/n,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}:
+      {x1:g.x+i*g.width/n,y1:g.y,x2:g.x+i*g.width/n,y2:g.y+g.height,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}));
+    }
    }
   }
   return svg;
