@@ -402,7 +402,13 @@ function generateModern(template,options){
       // Near a room edge (with a small service margin) is preferred.
       const edge=Math.min(xx-room.x,yy-room.y,
        room.x+room.w-xx-rw,room.y+room.h-yy-rh);
-      candidates.push({item,score:edge*10+yy*.002+xx*.001});
+      const doorProximity=doors.reduce((sum,d)=>{
+       const cx=d.direction==="H"?d.start+d.length/2:d.fixed;
+       const cy=d.direction==="H"?d.fixed:d.start+d.length/2;
+       const dx=xx+rw/2-cx,dy=yy+rh/2-cy;
+       return sum+1/(dx*dx+dy*dy+.1);
+      },0);
+      candidates.push({item,score:edge*10+yy*.002+xx*.001+doorProximity*5});
      }
     if(candidates.length){
      candidates.sort((a,b)=>a.score-b.score);
