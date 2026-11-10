@@ -727,10 +727,168 @@ function generateModern(template,options){
 }
 
 const copy=x=>JSON.parse(JSON.stringify(x));
+// The AA machine-world templates use a purpose-built, room-accessible draft
+// instead of the legacy human-house/generic partition generator. All concrete
+// dimensions and layouts here are proposals, not assertions of Notion canon.
+function generateMachine(t,options={}){
+ const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
+ if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("機械施設の配置指定が不正です");
+ const [W,H]=t.cells,objs=[],floors=Array.from({length:t.floors},(_,i)=>({id:(i+1)+"F",label:(i+1)+"階",elevation:i*3,height:3}));
+ const at=(a,b)=>[x+a*spacing,y+b*spacing],rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
+ let serial=0;
+ const add=(name,kind,f,geo,extra={})=>{
+  const obj={id:prefix+"_machine_"+(++serial),name,objectType:kind,
+   parentId:prefix,displayLevel:displayLevel+1,floorId:f,
+   layer:kind==="wall"||kind==="door"?"walls":"structures",
+   zIndex:kind==="slab"?29:kind==="region"?31:kind==="wall"?47:kind==="door"?49:kind==="stair"?46:42,
+   geometry:geo,visible:true,selectable:kind!=="slab",
+   style:kind==="wall"?{stroke:"#cadfe6",strokeWidth:1.8}:
+    kind==="door"?{stroke:"#e8b97a",strokeWidth:1.8}:
+    kind==="region"?{fill:"rgba(68,113,128,.13)",stroke:null}:
+    {fill:"rgba(49,100,120,.32)",stroke:"#9ac1cd",strokeWidth:1},
+   label:{visible:kind==="region",text:name,fontSize:8},
+   detail:name+"。AA機械施設の間取り試案。個別寸法・運用は要検証。",
+   metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified"},...extra};
+  if(kind==="region")obj.label.position=at(geo.x/spacing-x/spacing+geo.width/spacing/2,geo.y/spacing-y/spacing+geo.height/spacing/2);
+  objs.push(obj);return obj;
+ };
+ const root={id:prefix,name:baseName,parentId,displayLevel,objectType:"facility",
+  layer:"subregions",zIndex:30,geometry:rect(0,0,W,H),floors,
+  visible:true,selectable:true,style:{fill:"rgba(67,113,133,.13)",stroke:"#a2d1dd",strokeWidth:1.3},
+  label:{visible:true,text:baseName,position:at(W/2,H/2),fontSize:11},
+  detail:t.description+"。間取りと設備の配置はNotion確定施設図ではなく編集用試案。",
+  metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified"}};
+ objs.push(root);
+ const corridorW=4,cL=Math.floor((W-corridorW)/2),cR=cL+corridorW;
+ const leftW=cL,rightW=W-cR;
+ const topH=Math.max(6,Math.floor(H*.50)),bottomH=H-topH;
+ const roomNames=t.facilityMode==="pods"?["休眠区画A","休眠区画B","休眠区画C","休眠区画D"]:
+  t.facilityMode==="housing"||["machine_residence","machine_rest"].includes(t.id)?
+   ["個体休止室A","共用充電室","個体休止室B","端末・燃料管理室"]:
+  t.facilityMode==="fuel"||t.id==="machine_fuel"?
+   ["燃料補給区A","登録・安全確認室","燃料補給区B","保守区"]:
+  t.facilityMode==="charging"?["充電区A","管理・制御室","充電区B","機器保守区"]:
+  t.facilityMode==="terminal"||t.id==="machine_terminal"?
+   ["登録端末室","通信・情報端末室","照会端末室","管理・記録室"]:
+  t.id==="machine_maintenance"?
+   ["整備作業室","充電・診断室","部品管理室","精密調整室"]:
+  t.id==="machine_supply"?
+   ["補給品保管区","補給管理室","燃料・電池庫","出庫・検査室"]:
+   ["作業区A","管理室","作業区B","保管室"];
+ const mode=t.facilityMode||"generic";
+ const line=(a,b,c,d)=>({type:"polyline",points:[at(a,b),at(c,d)]});
+ const addWall=(f,a,b,c,d)=>{if(Math.hypot(c-a,d-b)>1e-6)add("区画壁","wall",f,line(a,b,c,d))};
+ const addDoor=(f,a,b,c,d,external=false)=>{
+  const door=add(external?"施設入口":"区画扉","door",f,line(a,b,c,d),
+   {door:{hinge:"start",swing:"inward",state:"closed",type:"sliding",slideDirection:"end"},
+    opening:{kind:external?"entrance":"interior",width:Math.hypot(c-a,d-b)*spacing,external}});
+  door.metadata.openingWidthCm=Math.round(Math.hypot(c-a,d-b)*50);
+  return door;
+ };
+ const addFixture=(f,room,name,shape,px,py,pw,ph,extra={})=>{
+  if(px<room.x-.0001||py<room.y-.0001||px+pw>room.x+room.w+.0001||py+ph>room.y+room.h+.0001)return null;
+  const obj=add(name,"object",f,rect(px,py,pw,ph),{shapePresetId:shape,...extra});
+  obj.parentId=room.zone.id;obj.displayLevel=displayLevel+2;
+  obj.label.visible=false;obj.metadata={...obj.metadata,roomId:room.id};
+  return obj;
+ };
+ for(let z=0;z<floors.length;z++){
+  const floor=floors[z].id;
+  const stairs=t.floors>1;
+  const r=[
+   {id:"left_top",name:roomNames[0],x:0,y:0,w:leftW,h:topH,side:"left"},
+   {id:"right_top",name:stairs?"階段・共用設備室":roomNames[1],x:cR,y:0,w:rightW,h:topH,side:"right"},
+   {id:"left_bottom",name:roomNames[2],x:0,y:topH,w:leftW,h:bottomH,side:"left"},
+   {id:"right_bottom",name:roomNames[3],x:cR,y:topH,w:rightW,h:bottomH,side:"right"},
+   {id:"corridor",name:"共用通路・出入口",x:cL,y:0,w:corridorW,h:H,side:"middle"}
+  ];
+  add("床面 "+floor,"slab",floor,rect(0,0,W,H));
+  for(const room of r){
+   room.zone=add(room.name,"region",floor,rect(room.x,room.y,room.w,room.h),
+    {shapePresetId:"room_zone",metadata:{templateId:t.id,generated:true,roomId:room.id,worldStyle:"machine",designStatus:"draft-unverified"}});
+  }
+  addWall(floor,0,0,W,0);addWall(floor,0,0,0,H);addWall(floor,W,0,W,H);
+  const entryW=2.4,entryX=cL+(corridorW-entryW)/2;
+  addWall(floor,0,H,entryX,H);
+  if(z===0)addDoor(floor,entryX,H,entryX+entryW,H,true);
+  else addWall(floor,entryX,H,entryX+entryW,H);
+  addWall(floor,entryX+entryW,H,W,H);
+  const gapW=Math.min(2.2,Math.min(topH,bottomH)-1.6);
+  for(const room of r.filter(o=>o.side!=="middle")){
+   const wallX=room.side==="left"?cL:cR;
+   const centre=room.y+room.h/2;
+   const openA=centre-gapW/2,openB=centre+gapW/2;
+   addWall(floor,wallX,room.y,wallX,openA);
+   addDoor(floor,wallX,openA,wallX,openB);
+   addWall(floor,wallX,openB,wallX,room.y+room.h);
+  }
+  addWall(floor,0,topH,cL,topH);addWall(floor,cR,topH,W,topH);
+  // Each pair of rooms has independent access via the central corridor.
+  let devices=0;
+  for(const room of r.filter(o=>o.side!=="middle")){
+   if(stairs&&room.id==="right_top"){
+    // Stair footprint remains in one stairwell across every floor.
+    const sx=room.x+Math.max(.7,(room.w-3.6)/2),sy=room.y+Math.max(.6,(room.h-5.6)/2);
+    const sw=3.6,sh=Math.min(5.6,room.h-1.2);
+    const stair=add("階段","stair",floor,rect(sx,sy,sw,sh),
+      {shapePresetId:"stair",stairDesign:{type:"switchback",flightWidthM:.8,
+       footprintWidthM:sw*.5,footprintDepthM:sh*.5,
+       status:"concept-not-architecturally-verified"},
+       stairNavigation:{upFloorId:floors[z+1]?.id||null,downFloorId:floors[z-1]?.id||null,
+        upSide:"left",downSide:"right"},
+       connection:{id:prefix+"_main_stair",fromFloorId:floor,
+        toFloorId:floors[z+1]?.id||floors[z-1]?.id,
+        fromAnchor:at(sx+sw/2,sy+sh/2),toAnchor:at(sx+sw/2,sy+sh/2),
+        direction:z<floors.length-1?"up":"down"}});
+    // The stairwell is also a room. Its door opens directly to the corridor.
+    stair.metadata={...stair.metadata,roomId:room.id};continue;
+   }
+   const station=mode==="pods"||mode==="housing"?"dormancy_pod":
+    mode==="fuel"?"fuel_dispenser":mode==="charging"?"charging_station":
+    mode==="terminal"?"terminal_device":
+    t.id==="machine_maintenance"?(room.id==="left_top"?"workbench":"terminal_device"):
+    t.id==="machine_supply"?"storage_container":
+    room.name.includes("充電")?"charging_station":room.name.includes("燃料")?"fuel_dispenser":
+    room.name.includes("整備")?"workbench":"terminal_device";
+   const podMode=station==="dormancy_pod";
+   const margin=1.1,cellW=podMode?2.15:3.25,cellH=podMode?3.1:3.5;
+   const stepX=podMode?2.75:4.5,stepY=podMode?3.85:5.1;
+   const endX=room.x+room.w-1.0,endY=room.y+room.h-1.0;
+   for(let yy=room.y+margin;yy+cellH<=endY;yy+=stepY){
+    for(let xx=room.x+margin;xx+cellW<=endX;xx+=stepX){
+     // Do not fill the approach to a door in the centre of the room's inner wall.
+     const doorSide=room.side==="left"?room.x+room.w:room.x;
+     if(Math.abs(xx+cellW/2-doorSide)<2.1&&
+        Math.abs(yy+cellH/2-(room.y+room.h/2))<2.3)continue;
+     const limit=podMode?Math.max(1,t.podsPerFloor||8):room.id.endsWith("top")?3:2;
+     if(devices>=limit&&podMode)continue;
+     const name=podMode?"休眠ポッド "+(devices+1):
+      station==="fuel_dispenser"?"燃料補給機":station==="charging_station"?"充電設備":
+      station==="storage_container"?"資材保管コンテナ":
+      station==="workbench"?"整備台":"情報・制御端末";
+     const extra=podMode?{podGroup:room.id+"_"+floor,
+      metadata:{templateId:t.id,generated:true,role:"dormancy-pod",podIndex:devices+1,worldStyle:"machine",roomId:room.id}}:{};
+     if(addFixture(floor,room,name,station,xx,yy,cellW,cellH,extra))devices++;
+    }
+   }
+   // A wall-mounted service point is distinct from floor-occupying machinery.
+   const serv=addFixture(floor,room,"操作・診断端末","terminal_device",
+    room.x+.22,room.y+.22,1.2,1.0,
+    {metadata:{templateId:t.id,generated:true,role:"room-service",worldStyle:"machine",roomId:room.id}});
+   if(serv)serv.metadata.ceilingMounted=false;
+  }
+  // Public-facing information is accessible from the corridor, not behind a pod.
+  const hall=r.find(o=>o.id==="corridor");
+  addFixture(floor,hall,"共用案内端末","terminal_device",hall.x+.2,1,.85,1.1);
+ }
+ return{template:copy(t),objects:objs};
+}
+
 function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
  if(!template)throw Error("不明な建物テンプレート: "+templateId);
  if(template.modernPlan)return generateModern(template,options);
+ if(template.worldStyle==="machine")return generateMachine(template,options);
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
  if(typeof prefix!=="string"||!prefix)throw Error("建物IDが必要です");
  if(!Number.isFinite(spacing)||spacing<=0)throw Error("グリッド間隔が不正です");
