@@ -666,6 +666,54 @@ function generateModern(template,options){
   door.metadata={...door.metadata,swingDoorInterferenceCount:
    hinged.filter(o=>o!==door&&swingClash(door,o)).length};
  }
+ // Building services are small, selectable plan symbols. They are ceiling-
+ // or wall-mounted, and MUST NOT be treated as furniture occupying walkable
+ // floor area; connection routes are schematic and remain unverified.
+ const service=(floor,room,name,shape,rx,ry,detail,options={})=>{
+  const size=.48,px=Math.min(room.x+room.w-size-.08,Math.max(room.x+.08,rx)),
+   py=Math.min(room.y+room.h-size-.08,Math.max(room.y+.08,ry));
+  const obj=push(name,"object",rect(px,py,size,size),floor,
+   {fill:"rgba(45,89,107,.3)",stroke:"#a2cfde",strokeWidth:.8},
+   {shapePresetId:shape,detail,label:{visible:false,text:name},
+    metadata:{templateId:template.id,generated:true,buildingService:true,
+     ceilingMounted:!!options.ceiling,wallMounted:!!options.wall,
+     fixtureCollisionExcluded:true,installationStatus:"schematic-unverified"}});
+  obj.label.visible=false;
+  return obj;
+ };
+ for(let z=0;z<template.modernPlan.length;z++){
+  const floor=floors[z].id,plan=template.modernPlan[z];
+  const rooms=plan.rooms.map(([id,name,x,y,w,h])=>({id,name,x,y,w,h}));
+  const active=rooms.filter(r=>/LDK|居室|洋室|寝室|和室|書斎|廊下|ホール|玄関|洗面|脱衣|浴室|トイレ|家事/.test(r.name)&&!/収納|階段/.test(r.name));
+  for(const r of active){
+   service(floor,r,"天井照明","ceiling_light",r.x+r.w/2-.24,r.y+r.h/2-.24,
+    "天井照明の仮位置。照度・電源回路・高さは未設計。",{ceiling:true});
+   service(floor,r,"スイッチ","light_switch",r.x+.12,r.y+.12,
+    "照明スイッチの仮位置。設置高さと開閉扉との距離は要確認。",{wall:true});
+  }
+  for(const r of rooms.filter(r=>/LDK|居室|洋室|寝室|和室|書斎/.test(r.name))){
+   service(floor,r,"コンセント","power_outlet",r.x+r.w-.7,r.y+.12,
+    "電源コンセントの仮位置。回路・負荷・設置高さは未設計。",{wall:true});
+   // Only habitable rooms receive cooling. Bathroom/utility rooms are excluded.
+   service(floor,r,"エアコン","air_conditioner",r.x+.12,r.y+.12,
+    "室内機の仮位置。室外機・配管・室内気流は未設計。",{wall:true});
+  }
+  for(const r of rooms.filter(r=>/浴室|トイレ|洗面|脱衣/.test(r.name)))
+   service(floor,r,"換気扇","ventilation_fan",r.x+r.w-.7,r.y+.12,
+    "機械換気の仮位置。ダクト・排気先・必要風量は未検証。",{ceiling:true});
+  const kitchen=rooms.find(r=>/LDK|キッチン/.test(r.name));
+  if(kitchen&&z===0){
+   service(floor,kitchen,"レンジフード","range_hood",kitchen.x+.75,kitchen.y+.15,
+    "キッチンの排気フード。コンロとの位置・ダクト外壁貫通は未設計。",{wall:true});
+  }
+  if(z===0){
+   const utility=rooms.find(r=>/洗面|脱衣|家事/.test(r.name))||
+    rooms.find(r=>/玄関|ホール/.test(r.name));
+   if(utility)service(floor,utility,"給湯器（仮）","water_heater",
+    utility.x+.12,utility.y+utility.h-.7,
+    "給湯器の模式位置。実際の機種に応じた屋外設置・給排気・配管位置へ変更が必要。",{wall:true});
+  }
+ }
  return{template:copy(template),objects:objs};
 }
 
