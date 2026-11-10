@@ -291,6 +291,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  #template-preview-modal .template-item-shape{width:37px;height:35px}
  #template-preview-modal .template-item-shape svg{width:34px;height:31px}
 }
+
+/* Keep active selection identifiable while the sidebar is closed. */
+.editor-selection-chip{position:absolute;left:10px;bottom:48px;z-index:5;display:flex;flex-direction:column;gap:3px;box-sizing:border-box;max-width:calc(100% - 20px);padding:7px 11px;background:rgba(5,25,35,.94);border:2px solid #ffdb86;border-radius:8px;color:#fff8dc;box-shadow:0 0 0 2px rgba(15,40,55,.6);pointer-events:none;overflow:hidden}
+.editor-selection-chip[hidden]{display:none!important}
+.editor-selection-chip strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.editor-selection-chip span{font-size:10px;color:#cfe3e8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:650px){.editor-selection-chip{bottom:44px;padding:5px 8px}.editor-selection-chip strong{font-size:11px}.editor-selection-chip span{font-size:9px}}
 </style>
 </head>
 <body>
@@ -306,6 +313,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   <canvas id="map-canvas" aria-label="クリックして図形を選択。移動モードでは選択中の図形をドラッグできます"></canvas>
   <div id="land-route-draw-overlay" hidden aria-label="道路・線路・土地の経路点を指定" style="position:absolute;inset:0;z-index:6;cursor:crosshair;touch-action:manipulation;background:rgba(20,50,65,.04)"></div>
   <div class="name-chip" id="scene-name">マップ</div>
+  <div id="editor-selection-chip" class="editor-selection-chip" role="status" aria-live="polite" hidden><strong id="editor-selection-title"></strong><span id="editor-selection-meta"></span></div>
   <div class="editor-overlay" id="edit-hint">図形を選択して右のパネルで編集してください。</div>
   <div class="view-tools">
    <button id="zoom-out" title="縮小">−</button>
@@ -797,12 +805,12 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 </script>
 <script src="./sakihana-interiors.js?v=interiors-draft-v3"></script>
 <script src="./packed-scene-loader.js?v=sakihana-snapshot-v2"></script>
-<script src="./map-viewer.js?v=interior-focus-v11"></script>
+<script src="./map-viewer.js?v=selection-emphasis-v12"></script>
 <script src="./geo-data-import.js?v=generic-import-v1"></script>
 <script src="./object-catalog.js?v=residential-46-v2"></script>
 <script src="./building-templates.js?v=modern-housing-real-scale-v9"></script>
 <script src="./template-preview.js?v=footer-tabs-v20"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
- <script src="./map-editor.js?v=building-interiors-v17"></script>
+ <script src="./map-editor.js?v=selection-identity-v18"></script>
 </body></html>
