@@ -5,7 +5,7 @@ const src=fs.readFileSync(path.join(__dirname,"..","building-templates.js"),"utf
 const ctx={window:{}};vm.runInNewContext(src,ctx);
 const library=ctx.window.AAMapBuildingTemplates;
 const templates=library.allPresets().filter(t=>t.worldStyle==="machine");
-assert.equal(templates.length,16,"All historical machine template IDs retained");
+assert.equal(templates.length,22,"Original 16 plus six AA facility drafts");
 function overlaps(a,b,eps=1e-7){return a.x<b.x+b.width-eps&&a.x+a.width>b.x+eps&&
  a.y<b.y+b.height-eps&&a.y+a.height>b.y+eps}
 function onSegment(p,seg){const [a,b]=seg,eps=1e-7;
