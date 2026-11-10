@@ -140,16 +140,18 @@
       fill:"none",stroke:pathColor,"stroke-width":strokeWidth*1.4,
       "stroke-linecap":"round","stroke-linejoin":"round"}));
      if(!small){
-      const labelSize=Math.max(strokeWidth*3.5,g.width*.105);
-      const mark=(x,y,label,align="middle")=>{
+      // Keep all labels inside the footprint, so they do not collide with
+      // adjacent room labels or walls.
+      const labelSize=Math.min(g.width*.19,Math.max(strokeWidth*2.1,g.width*.115));
+      const mark=(x,y,label)=>{
        const txt=S("text",{x,y,fill:white,"font-size":labelSize,
-        "font-weight":"700","text-anchor":align,
-        stroke:"#17333c","stroke-width":labelSize*.24,"paint-order":"stroke"});
+        "font-weight":"700","text-anchor":"middle",
+        stroke:"#17333c","stroke-width":labelSize*.2,"paint-order":"stroke"});
        txt.textContent=label;svg.append(txt);
       };
-      mark(xLeft,bottom+labelSize*1.18,"上り口");
-      mark(mid,top-labelSize*.3,"折返し");
-      mark(xRight,bottom+labelSize*1.18,"上階側");
+      mark(xLeft,bottom-pad*.6,"入口");
+      mark(mid,top+pad*1.3,"折返");
+      mark(xRight,bottom-pad*.6,"出口");
      }
     }else{
      const n=6,horizontal=g.height>=g.width;
