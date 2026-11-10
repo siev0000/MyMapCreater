@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const S=(name,attrs={})=>{const el=document.createElementNS(ns,name);for(const [key,value] of Object.entries(attrs))el.setAttribute(key,String(value));return el};
  const T=(tag,cls,value)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(value!==undefined)node.textContent=value;return node};
- let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null,editing=false,editPast=[],editFuture=[],beforeDrag=null;
+ let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null,editing=false,editPast=[],editFuture=[],beforeDrag=null,fieldOpener=null;
  const renderCache=new Map();
  const savedPreviewKey="mymapcreater:template-preview-state:v1";
  function readSavedPreview(){
@@ -459,8 +459,55 @@
    root.append(button);
   }
  }
+
+ function closeFieldModal(){
+  const modal=$("template-field-modal");
+  if(modal.hidden)return;
+  modal.hidden=true;
+  $("template-field-status").textContent="";
+  if(fieldOpener?.isConnected&&fieldOpener.getClientRects().length)fieldOpener.focus();
+  fieldOpener=null;
+ }
+ function openFieldModal(mode){
+  if(!editing)return;
+  fieldOpener=document.activeElement;
+  if(mode==="edit"){
+   const selected=previewViewer?.getSelected();
+   if(!selected||selected.id==="preview_root"){setEditMessage("設置物を選択してから編集してください");return}
+   syncEditFields(selected);
+   $("template-field-title").textContent="設置物を編集";
+   $("template-field-help").textContent="名前・説明・必要な寸法を変更し、反映してください。";
+  }else{
+   const source=library.allPresets().find(t=>t.id===activeId);
+   const name=$("template-save-name"),id=$("template-save-id");
+   if(!name.value.trim())name.value=(source?.name||"建物")+"（カスタム）";
+   if(!id.value.trim()){
+    const stem=("custom_"+String(activeId||"building").replace(/[^a-z0-9_-]/gi,"_")).slice(0,80);
+    let candidate=stem,number=2;
+    while(library.allPresets().some(t=>t.id===candidate))candidate=stem+"_"+number++;
+    id.value=candidate;
+   }
+   $("template-field-title").textContent="別名で保存";
+   $("template-field-help").textContent="編集内容を新しいテンプレートとして保存します。標準テンプレートは変更されません。";
+  }
+  $("template-field-edit-pane").hidden=mode!=="edit";
+  $("template-field-save-pane").hidden=mode!=="save";
+  $("template-field-status").textContent="";
+  $("template-field-modal").hidden=false;
+  (mode==="edit"?$("template-edit-name"):$("template-save-name")).focus();
+ }
+ function confirmFieldModal(){
+  const saving=!$("template-field-save-pane").hidden;
+  const ok=saving?saveCopy():changeSelected(false);
+  if(ok)closeFieldModal();
+  else $("template-field-status").textContent=$("template-edit-status").textContent;
+ }
  function setEditMessage(s){$("template-edit-status").textContent=s}
  function syncEditFields(obj){
+  const selectable=!!editing&&!!obj&&obj.id!=="preview_root";
+  $("template-edit-selected-name").textContent=selectable?"選択中："+(obj.name||obj.id):"地図から設置物を選択してください";
+  $("template-edit-open").disabled=!selectable;
+  $("template-item-delete").disabled=!selectable;
   $("template-edit-name").value=editing&&obj?obj.name||"":"";
   $("template-edit-detail").value=editing&&obj?obj.detail||"":"";
   $("template-wall-thickness-label").hidden=!(editing&&obj?.objectType==="wall");
@@ -549,9 +596,9 @@
   scene.objects.push(obj);updateScene(scene,id);setEditMessage(item.name+"を追加しました");
  }
  function changeSelected(remove=false){
-  if(!editing)return;
+  if(!editing)return false;
   const selected=previewViewer?.getSelected();
-  if(!selected||selected.id==="preview_root"){setEditMessage("建物全体ではなく設置物を選択してください");return}
+  if(!selected||selected.id==="preview_root"){setEditMessage("建物全体ではなく設置物を選択してください");return false}
   const scene=previewViewer.getScene();
   snapshot();
   if(remove){
@@ -565,7 +612,7 @@
    if(obj.objectType==="object"&&obj.geometry?.type==="rect"){
     const w=Number($("template-dim-width").value),h=Number($("template-dim-height").value),rotation=Number($("template-dim-rotation").value);
     if(!Number.isFinite(w)||!Number.isFinite(h)||w<1||h<1||w>5000||h>5000||!Number.isFinite(rotation)||Math.abs(rotation)>360){
-     editPast.pop();setEditMessage("家具の幅・奥行は1〜5000cm、回転は±360°で入力してください");return;
+     editPast.pop();setEditMessage("家具の幅・奥行は1〜5000cm、回転は±360°で入力してください");return false;
     }
     const g=obj.geometry,cx=g.x+g.width/2,cy=g.y+g.height/2;
     g.width=w/50*previewSpacing();g.height=h/50*previewSpacing();
@@ -573,22 +620,23 @@
    }
    if(["door","window"].includes(obj.objectType)){
     const cm=Number($("template-opening-width").value);
-    if(!Number.isFinite(cm)||cm<25||cm>500){editPast.pop();setEditMessage("開口幅は25〜500cmで入力してください");return}
+    if(!Number.isFinite(cm)||cm<25||cm>500){editPast.pop();setEditMessage("開口幅は25〜500cmで入力してください");return false}
     const ps=obj.geometry.points,center=[(ps[0][0]+ps[1][0])/2,(ps[0][1]+ps[1][1])/2];
     if(!placeOpening(scene,obj,center,cm/50*previewSpacing(),true)){
-     editPast.pop();setEditMessage("開口幅に合う壁が近くにありません");return
+     editPast.pop();setEditMessage("開口幅に合う壁が近くにありません");return false
     }
    }
    if(obj.objectType==="wall"){
     const cm=Number($("template-wall-thickness").value);
-    if(!Number.isFinite(cm)||cm<1||cm>300){editPast.pop();setEditMessage("壁の厚さは1〜300cmで入力してください");return}
+    if(!Number.isFinite(cm)||cm<1||cm>300){editPast.pop();setEditMessage("壁の厚さは1〜300cmで入力してください");return false}
     obj.wall={...obj.wall,thickness:cm/50*previewSpacing()};
    }
    if(obj.label)obj.label.text=obj.name;
   }
   if(remove)for(const door of scene.objects)if(["door","window"].includes(door.objectType)&&door.opening?.wallId===selected.id){delete door.opening.wallId}
   updateScene(scene,remove?"preview_root":selected.id);
-  setEditMessage(remove?"設置物を削除しました":"名前と説明を変更しました");
+  setEditMessage(remove?"設置物を削除しました":"選択した設置物の変更を反映しました");
+  return true;
  }
  // Geometry helpers: metres use 1 cell = 0.5m, independent of map coordinate spacing.
  const EPS=1e-7;
@@ -752,7 +800,7 @@
   updateCollisionStatus(scene);updateAreaStatus(scene);
  }
  function saveCopy(){
-  if(!editing)return;
+  if(!editing)return false;
   const name=$("template-save-name").value.trim(),id=$("template-save-id").value.trim();
   try{
    const scene=previewViewer.getScene();
@@ -777,8 +825,8 @@
    renderCache.clear();
    $("template-era-filter").value="all";$("template-use-filter").value="all";
    refresh();selectTemplate(spec.id);
-   setEditMessage("別名保存しました");
-  }catch(e){setEditMessage("保存失敗："+e.message)}
+   setEditMessage("別名保存しました");return true;
+  }catch(e){setEditMessage("保存失敗："+e.message);return false}
  }
  function refresh(){
   if(!library)return;
@@ -836,12 +884,29 @@
    $("template-item-category").addEventListener("change",updateCatalog);
    $("template-item-choice").addEventListener("change",refreshItemList);
    $("template-item-add").addEventListener("click",addItem);
-   $("template-item-apply").addEventListener("click",()=>changeSelected(false));
+   $("template-edit-open").addEventListener("click",()=>openFieldModal("edit"));
+   $("template-save-open").addEventListener("click",()=>openFieldModal("save"));
+   $("template-field-close").addEventListener("click",closeFieldModal);
+   $("template-field-cancel").addEventListener("click",closeFieldModal);
+   $("template-item-apply").addEventListener("click",confirmFieldModal);
+   $("template-field-modal").addEventListener("click",e=>{if(e.target===$("template-field-modal"))closeFieldModal()});
+   $("template-field-modal").addEventListener("keydown",e=>{
+    // Keyboard shortcuts belong to the inner input modal, not the outer preview.
+    e.stopPropagation();
+    if(e.key==="Escape"){e.preventDefault();closeFieldModal();return}
+    if(e.key==="Enter"&&!e.isComposing&&e.target.tagName!=="TEXTAREA"){e.preventDefault();confirmFieldModal();return}
+    if(e.key==="Tab"){
+     const nodes=[...$("template-field-modal").querySelectorAll("button,input,textarea,select")].filter(el=>!el.disabled&&el.getClientRects().length);
+     const index=nodes.indexOf(document.activeElement);
+     if(e.shiftKey&&index===0){e.preventDefault();nodes[nodes.length-1]?.focus()}
+     else if(!e.shiftKey&&index===nodes.length-1){e.preventDefault();nodes[0]?.focus()}
+    }
+   });
    $("template-item-delete").addEventListener("click",()=>changeSelected(true));
    $("template-opening-link").addEventListener("click",()=>linkSelectedOpening());
    $("template-undo").addEventListener("click",()=>setHistory(editPast,editFuture));
    $("template-redo").addEventListener("click",()=>setHistory(editFuture,editPast));
-   $("template-save-copy").addEventListener("click",saveCopy);
+   $("template-save-copy").addEventListener("click",confirmFieldModal);
    $("template-preview-floor").addEventListener("change",e=>{activeFloor=e.target.value;drawModal();writeSavedPreview()});
    $("template-preview-grid").addEventListener("change",()=>{if(activeId)drawModal();writeSavedPreview()});
    $("template-preview-zoom-in").addEventListener("click",()=>previewViewer?.zoomBy(1.3));
