@@ -771,6 +771,14 @@ function renderSelected(){
  const data=sceneNow(),obj=data?.objects.find(o=>o.id===state.selectedId);
  $("selected-fields").classList.toggle("hidden",!obj);
  $("select-empty").classList.toggle("hidden",!!obj);
+ const interiorOwner=(()=>{const byId=new Map((data?.objects||[]).map(o=>[o.id,o]));let cur=obj;const seen=new Set();
+  while(cur&&!seen.has(cur.id)){if(Array.isArray(cur.floors)&&cur.floors.length)return cur;seen.add(cur.id);cur=byId.get(cur.parentId)}
+  return null})();
+ $("editor-interior-controls").hidden=!interiorOwner;
+ if(interiorOwner){
+  const floor=viewer.getFloorContext(),floorSelect=$("editor-interior-floor");
+  fillSelect(floorSelect,interiorOwner.floors.map(f=>[f.id,f.label||f.id]),floor?.selectedFloorId||interiorOwner.floors[0].id);
+ }
  if(!obj){updateVertexControls(null);buttonStatus();supplyOptions();return}
  $("obj-id").value=obj.id;
  $("obj-name").value=obj.name||"";
@@ -1033,6 +1041,16 @@ function restore(from,to){
 }
 bind("undo",()=>restore(state.undo,state.redo),"click");
 bind("redo",()=>restore(state.redo,state.undo),"click");
+bind("editor-interior-focus",()=>{
+ const scene=sceneNow(),id=state.selectedId;if(!scene||!id)return;
+ const selected=scene.objects.find(o=>o.id===id),byId=new Map(scene.objects.map(o=>[o.id,o]));let owner=selected;
+ while(owner&&!Array.isArray(owner.floors))owner=byId.get(owner.parentId);
+ if(owner)viewer.selectItemById(owner.id,{focus:true,force:true});
+},"click");
+bind("editor-interior-floor",()=>{
+ const id=input("editor-interior-floor");
+ if(viewer.setFloor(id))renderSelected();
+},"change");
 bind("object-search",showObjects,"input");
 bind("object-category-filter",showObjects,"change");
 bind("clear-search",()=>{$("object-search").value="";showObjects()},"click");
@@ -1271,6 +1289,7 @@ bind("apply-scene-json",()=>{
 },"click");
 
 window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.returnValue=""}});
+let interiorFocusGuard=false;
 viewer=window.AAMapViewer.create({
  host:$("viewport"),canvas:$("map-canvas"),info:$("detail-panel"),
  infoTitle:$("detail-title"),infoText:$("detail-text"),infoMeta:$("detail-meta"),
@@ -1301,6 +1320,14 @@ viewer=window.AAMapViewer.create({
  onLayoutError:(_map,error)=>notice("読み込みエラー："+error,"error"),
  onSelectionChanged:(_map,obj)=>{
   state.selectedId=obj?.id||null;showObjects();renderSelected();
+  // Canvas taps select without zoom. Make polygon/rect interior selection behave
+  // like the read-only viewer's focused building navigation.
+  if(!state.internal&&!interiorFocusGuard&&obj?.floors?.length&&
+     state.scene?.id==="sakihana_gosen_500m"){
+   interiorFocusGuard=true;
+   try{viewer.selectItemById(obj.id,{focus:true,force:true})}
+   finally{interiorFocusGuard=false}
+  }
  },
  onBeforeObjectDrag:(before)=>{state.dragBefore=before},
  onObjectMoved:()=>{
