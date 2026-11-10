@@ -1306,6 +1306,7 @@ bind("apply-scene-json",()=>{
 window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.returnValue=""}});
 let interiorFocusGuard=false;
 viewer=window.AAMapViewer.create({
+ editorSelectionEmphasis:true,
  host:$("viewport"),canvas:$("map-canvas"),info:$("detail-panel"),
  infoTitle:$("detail-title"),infoText:$("detail-text"),infoMeta:$("detail-meta"),
  legend:$("legend-footer"),legendContent:$("legend-content"),
