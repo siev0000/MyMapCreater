@@ -871,11 +871,25 @@ function generateMachine(t,options={}){
      if(addFixture(floor,room,name,station,xx,yy,cellW,cellH,extra))devices++;
     }
    }
-   // A wall-mounted service point is distinct from floor-occupying machinery.
-   const serv=addFixture(floor,room,"操作・診断端末","terminal_device",
-    room.x+.22,room.y+.22,1.2,1.0,
-    {metadata:{templateId:t.id,generated:true,role:"room-service",worldStyle:"machine",roomId:room.id}});
-   if(serv)serv.metadata.ceilingMounted=false;
+   // Choose an actually empty floor position for the control terminal;
+   // it must not overlap the mechanical pod or repair machinery.
+   const roomDevices=objs.filter(o=>o.floorId===floor&&o.objectType==="object"&&
+    o.parentId===room.zone.id);
+   const candidatePositions=[
+    [room.x+.2,room.y+.2],[room.x+room.w-1.4,room.y+.2],
+    [room.x+.2,room.y+room.h-1.2],[room.x+room.w-1.4,room.y+room.h-1.2]
+   ];
+   for(const [tx,ty] of candidatePositions){
+    const intersects=roomDevices.some(o=>{
+     const g=o.geometry,ax=x+tx*spacing,ay=y+ty*spacing;
+     return ax<g.x+g.width-.00001&&ax+1.2*spacing>g.x+.00001&&
+      ay<g.y+g.height-.00001&&ay+spacing>g.y+.00001;
+    });
+    if(intersects)continue;
+    const serv=addFixture(floor,room,"操作・診断端末","terminal_device",tx,ty,1.2,1,
+     {metadata:{templateId:t.id,generated:true,role:"room-service",worldStyle:"machine",roomId:room.id}});
+    if(serv){serv.metadata.ceilingMounted=false;break}
+   }
   }
   // Public-facing information is accessible from the corridor, not behind a pod.
   const hall=r.find(o=>o.id==="corridor");
