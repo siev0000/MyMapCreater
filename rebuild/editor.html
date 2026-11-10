@@ -251,6 +251,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  main[data-sidebar-open="false"] .side{display:none!important}
 }
 
+/* Collapsible template browser sidebar. The preview expands into freed space. */
+#template-preview-modal .template-preview-layout[data-picker-collapsed="true"]{grid-template-columns:minmax(0,1fr)!important}
+#template-preview-modal .template-preview-layout[data-picker-collapsed="true"] .template-preview-picker{display:none!important}
+#template-preview-modal .template-preview-layout[data-picker-collapsed="true"] .template-preview-result{grid-column:1!important}
+#template-sidebar-toggle{margin-left:auto;font-size:12px!important;white-space:nowrap;padding:5px 9px}
 /* Slightly translucent editor inspector, without fading its controls. */
 .side{background:rgba(16,38,51,.89)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 @media (orientation: portrait){.side{background:rgba(16,38,51,.91)!important}}
@@ -686,6 +691,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  <section class="template-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="template-preview-title">
   <div class="template-preview-modal-head">
    <h2>建物テンプレート一覧・間取りプレビュー</h2>
+   <button type="button" id="template-sidebar-toggle" aria-controls="template-preview-picker" aria-expanded="true" title="絞り込みサイドバーを最小化">一覧を隠す ◀</button>
    <button type="button" id="template-preview-close" aria-label="プレビューを閉じる">×</button>
   </div>
   <div class="template-preview-layout">
