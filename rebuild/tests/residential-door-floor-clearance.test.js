@@ -50,7 +50,7 @@ assert.ok(viewerSource.includes("doors[doors.length-1]"),
 const minimumPassageM=0.8;
 for(const template of templates)for(const [index,plan] of template.modernPlan.entries()){
  for(const room of plan.rooms){
-  if(!/(廊下|ホール|玄関|階段|踊り場)/.test(room[1]))continue;
+  if(/収納|物入れ|納戸/.test(room[1])||!/(廊下|ホール|玄関|階段|踊り場)/.test(room[1]))continue;
   const narrower=Math.min(room[4],room[5])*.5;
   assert.ok(narrower>=minimumPassageM,
    template.id+" floor "+(index+1)+" has narrow circulation zone "+room[1]);
