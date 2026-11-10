@@ -263,7 +263,19 @@
    infoTitle:$("template-preview-info-title"),
    infoMeta:$("template-preview-info-meta"),
    infoText:$("template-preview-info-text"),
-   onSelectionChanged:(_key,obj)=>{showObjectInfo(obj);syncEditFields(obj);if(editing)updateAreaStatus(previewViewer?.getScene())},
+   onSelectionChanged:(_key,obj)=>{
+    // Clicking a directional stair target changes the physical floor.
+    // Keep the preview floor selector and saved state in sync.
+    const currentFloor=previewViewer?.getFloorContext()?.selectedFloorId;
+    if(currentFloor&&activeFloor!==currentFloor){
+     activeFloor=currentFloor;
+     if([...$("template-preview-floor").options].some(o=>o.value===currentFloor))
+      $("template-preview-floor").value=currentFloor;
+     writeSavedPreview();
+    }
+    showObjectInfo(obj);syncEditFields(obj);
+    if(editing)updateAreaStatus(previewViewer?.getScene());
+   },
    onBeforeObjectDrag:scene=>{if(editing)beforeDrag=JSON.stringify(scene)},
    onObjectChanging:(_obj,scene)=>{if(editing)refreshChecks(scene)},
    onObjectMoved:()=>{if(editing&&beforeDrag){
