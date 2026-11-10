@@ -819,11 +819,12 @@ function generateMachine(t,options={}){
   const openBank=["pods","charging","fuel"].includes(mode)||
    ["machine_supply","machine_cargo_checkpoint"].includes(t.id);
   const r=openBank?[
-   {id:"left_full",name:roomNames[0],x:0,y:0,w:leftW,h:H,side:"left"},
+   {id:"left_full",name:t.id==="machine_cargo_checkpoint"?"貨物仕分け・仮置区":roomNames[0],x:0,y:0,w:leftW,h:H,side:"left"},
    ...(stairs?[
     {id:"right_top",name:"階段・共用設備室",x:cR,y:0,w:rightW,h:topH,side:"right"},
     {id:"right_bottom",name:roomNames[3],x:cR,y:topH,w:rightW,h:bottomH,side:"right"}
-   ]:[{id:"right_full",name:roomNames[1],x:cR,y:0,w:rightW,h:H,side:"right"}]),
+   ]:[{id:"right_full",name:t.id==="machine_cargo_checkpoint"?
+    "搬送検査・登録室":roomNames[1],x:cR,y:0,w:rightW,h:H,side:"right"}]),
    {id:"corridor",name:"中央通路・出入口",x:cL,y:0,w:corridorW,h:H,side:"middle"}
   ]:[
    {id:"left_top",name:roomNames[0],x:0,y:0,w:leftW,h:topH,side:"left"},
@@ -896,7 +897,7 @@ function generateMachine(t,options={}){
     mode==="fuel"?"fuel_dispenser":mode==="charging"?"charging_station":
     mode==="terminal"?"terminal_device":
     t.id==="machine_maintenance"?(room.id==="left_top"?"workbench":"terminal_device"):
-    t.id==="machine_supply"?"storage_container":
+    t.id==="machine_supply"?(room.id==="right_full"?"terminal_device":"storage_container"):
     t.id==="machine_reclaim_factory"?
      (room.name.includes("保管")?"storage_container":"workbench"):
     t.id==="machine_research_lab"?
@@ -946,7 +947,11 @@ function generateMachine(t,options={}){
       ay<g.y+g.height-.00001&&ay+spacing>g.y+.00001;
     });
     if(intersects)continue;
-    const serv=addFixture(floor,room,"操作・診断端末","terminal_device",tx,ty,1.2,1,
+    const needsCharging=(mode==="housing"&&room.id==="right_bottom")||
+     (t.id==="machine_rest"&&room.id==="left_bottom");
+    const serviceShape=needsCharging?"charging_station":"terminal_device";
+    const serviceName=needsCharging?"共用充電設備":"操作・診断端末";
+    const serv=addFixture(floor,room,serviceName,serviceShape,tx,ty,1.2,1,
      {metadata:{templateId:t.id,generated:true,role:"room-service",worldStyle:"machine",roomId:room.id}});
     if(serv){serv.metadata.ceilingMounted=false;break}
    }
