@@ -171,7 +171,7 @@ presets.push(...[
 ]);
 
 // Arbor Sector forest hall: a large editable zone, not a canonical footprint.
-presets.push({id:"machine_mid_giant_tree_grove",name:"アルボラセクター・大木育成区画",cells:[120,100],floors:1,layout:"open",description:"大型樹木を複数育成する人工森林区。天井人工降雨、局所水循環、管理通路を持つ仮配置。寸法は未確定。",category:"machine_midlayer",worldStyle:"machine",facilityMode:"giant_grove",entranceSide:"center"});
+presets.push({id:"machine_mid_giant_tree_grove",name:"アルボラセクター・大木育成区画",cells:[420,360],floors:1,layout:"open",description:"大型樹木を複数育成する人工森林区。天井人工降雨、局所水循環、管理通路を持つ仮配置。寸法は未確定。",category:"machine_midlayer",worldStyle:"machine",facilityMode:"giant_grove",entranceSide:"center"});
 
 /* Modern Japanese housing: original playable layouts informed by typical 1R/1K/LDK
    arrangements (UR Housing / LIFULL), not tracings of any advertised property. */
@@ -814,7 +814,7 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 function generateGiantGrove(t,options={}){
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
  if(typeof prefix!=="string"||!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("大木育成区画の配置指定が不正です");
- const [W,H]=t.cells,objs=[],at=(a,b)=>[x+a*spacing,y+b*spacing],rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
+ const [W,H]=[420,360],objs=[],at=(a,b)=>[x+a*spacing,y+b*spacing],rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
  let n=0;const add=(name,kind,level,geometry,parent,extra={})=>{
   const o={id:prefix+"_grove_"+(++n),name,objectType:kind,parentId:parent,displayLevel:level,floorId:"1F",layer:kind==="wall"||kind==="door"?"walls":"structures",zIndex:kind==="region"?31:kind==="wall"?47:kind==="door"?49:42,geometry,visible:true,selectable:true,style:kind==="region"?{fill:"rgba(45,124,73,.14)",stroke:"#659e73",strokeWidth:1}:{fill:"rgba(50,125,90,.27)",stroke:"#95bd9b",strokeWidth:1},label:{visible:kind==="region",text:name,fontSize:10},detail:"アルボラセクターの編集用試案。位置・寸法・設備数は未確定。",metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified"},...extra};objs.push(o);return o;
  };
@@ -822,19 +822,34 @@ function generateGiantGrove(t,options={}){
  root.id=prefix;
  delete root.floorId;
  const zone=(name,a,b,w,h)=>{const z=add(name,"region",displayLevel+1,rect(a,b,w,h),prefix,{shapePresetId:"room_zone"});z.label.position=at(a+w/2,b+h/2);return z};
- const grove=zone("大木育成・森林区",12,12,96,76);
- const north=zone("人工降雨・水管理設備帯",12,0,96,10);
- const south=zone("資材搬入・検査・管理帯",12,90,96,10);
- const west=zone("管理・点検通路",0,0,10,H);
- const east=zone("管理・点検通路",110,0,10,H);
+ const grove=zone("密生森林・迷路状育成域",12,12,W-24,H-30);
+ const north=zone("人工降雨・水管理設備帯",12,0,W-24,10);
+ const south=zone("資材搬入・検査・管理帯",12,H-16,W-24,16);
  const addObject=(name,shape,zoneObj,a,b,w,h,role)=>add(name,"object",displayLevel+2,rect(a,b,w,h),zoneObj.id,{shapePresetId:shape,label:{visible:false,text:name},metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",role}});
- // Distinct trunks are selectable; spacing deliberately leaves substantial open ground.
- for(let j=0;j<3;j++)for(let i=0;i<4;i++)addObject("育成大木 "+(j*4+i+1),"tree_large",grove,21+i*22,23+j*24,6,6,"cultivated-tree");
- for(let i=0;i<5;i++)addObject("人工降雨制御端末","terminal_device",north,18+i*18,3,3,3,"rain-control");
- for(let i=0;i<4;i++)addObject("水循環・排水監視端末","terminal_device",south,20+i*23,93,3,3,"water-monitor");
- addObject("搬入資材保管","storage_container",south,94,92,7,5,"materials");
- for(const [a,b,c,d] of [[0,0,W,0],[0,0,0,H],[W,0,W,H],[0,H,56,H],[64,H,W,H]])add("外周区画壁","wall",displayLevel+1,{type:"polyline",points:[at(a,b),at(c,d)]},prefix);
- add("森林区画入口","door",displayLevel+1,{type:"polyline",points:[at(56,H),at(64,H)]},prefix,{door:{hinge:"start",swing:"inward",state:"closed",type:"sliding",slideDirection:"end"},opening:{kind:"entrance",width:8*spacing,external:true}});
+ // Deterministic depth-first labyrinth: every clearing is reachable, with winding paths and branches.
+ const cols=19,rows=15,stepX=(W-36)/cols,stepY=(H-52)/rows;
+ const visited=Array.from({length:rows},()=>Array(cols).fill(false));
+ const open=Array.from({length:rows},()=>Array.from({length:cols},()=>[false,false,false,false]));
+ let seed=7331;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+ const stack=[[Math.floor(cols/2),rows-1]];visited[rows-1][Math.floor(cols/2)]=true;
+ const dirs=[[0,-1,0,2],[1,0,1,3],[0,1,2,0],[-1,0,3,1]];
+ while(stack.length){const [cx,cy]=stack[stack.length-1];const possible=dirs.filter(([dx,dy])=>cx+dx>=0&&cx+dx<cols&&cy+dy>=0&&cy+dy<rows&&!visited[cy+dy][cx+dx]);if(!possible.length){stack.pop();continue}const [dx,dy,side,back]=possible[Math.floor(rand()*possible.length)];open[cy][cx][side]=true;open[cy+dy][cx+dx][back]=true;visited[cy+dy][cx+dx]=true;stack.push([cx+dx,cy+dy])}
+ let count=0;
+ const tree=(xx,yy,large=false)=>{const d=large?8:4.8;addObject((large?"巨木 ":"樹木 ")+ ++count,large?"tree_giant":(rand()<.18?"tree_conifer":"tree_large"),grove,xx-d/2,yy-d/2,d,d,"cultivated-tree")};
+ // Dense stands mark blocked edges, while a small clearing remains in each maze cell.
+ for(let cy=0;cy<rows;cy++)for(let cx=0;cx<cols;cx++){
+  const px=18+(cx+.5)*stepX,py=16+(cy+.5)*stepY;
+  if(!open[cy][cx][0])for(let k=-1;k<=1;k++)tree(px+k*stepX*.28,py-stepY*.44,k===0&&rand()<.16);
+  if(!open[cy][cx][3])for(let k=-1;k<=1;k++)tree(px-stepX*.44,py+k*stepY*.28,k===0&&rand()<.16);
+  if(cy===rows-1&&!open[cy][cx][2])for(let k=-1;k<=1;k++)tree(px+k*stepX*.28,py+stepY*.44);
+  if(cx===cols-1&&!open[cy][cx][1])for(let k=-1;k<=1;k++)tree(px+stepX*.44,py+k*stepY*.28);
+  if(rand()<.25)tree(px+stepX*.28,py+stepY*.26,rand()<.12);
+ }
+ for(let i=0;i<9;i++)addObject("人工降雨制御端末","terminal_device",north,20+i*44,3,3,3,"rain-control");
+ for(let i=0;i<8;i++)addObject("水循環・排水監視端末","terminal_device",south,24+i*45,H-11,3,3,"water-monitor");
+ addObject("搬入資材保管","storage_container",south,W-36,H-12,10,7,"materials");
+ for(const [a,b,c,d] of [[0,0,W,0],[0,0,0,H],[W,0,W,H],[0,H,W/2-6,H],[W/2+6,H,W,H]])add("外周区画壁","wall",displayLevel+1,{type:"polyline",points:[at(a,b),at(c,d)]},prefix);
+ add("森林区画入口","door",displayLevel+1,{type:"polyline",points:[at(W/2-6,H),at(W/2+6,H)]},prefix,{door:{hinge:"start",swing:"inward",state:"closed",type:"sliding",slideDirection:"end"},opening:{kind:"entrance",width:12*spacing,external:true}});
  return{template:copy(t),objects:objs};
 }
 
