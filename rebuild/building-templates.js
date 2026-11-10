@@ -372,15 +372,67 @@ function generateModern(template,options){
    if(door.type==="sliding"){o.door.type="sliding";o.door.slideDirection="end"}
    if(door.external){o.opening.kind="entrance";o.opening.external=true}
   }
-  for(const [name,shape,fx,fy,fw,fh,stairPair,stairDirection] of plan.items){
+  // Add essential appliances without changing the authored rooms or fixtures.
+  // Coordinates are template cells (one cell = 0.5m). Candidates must fit
+  // inside the room, avoid the entrance and existing equipment, and not block doors.
+  const furnished=plan.items.map(item=>item.slice());
+  const existing=()=>furnished.filter(item=>item[1]!=="stair");
+  const intersects=(a,b,padding=0)=>a[2]<b[2]+b[4]+padding&&
+   a[2]+a[4]>b[2]-padding&&a[3]<b[3]+b[5]+padding&&
+   a[3]+a[5]>b[3]-padding;
+  const doorClear=([, ,fx,fy,fw,fh])=>doors.every(door=>{
+   const buffer=.35;
+   return door.direction==="H"?
+    (fy>=door.fixed+buffer||fy+fh<=door.fixed-buffer||
+     fx>=door.start+door.length+buffer||fx+fw<=door.start-buffer):
+    (fx>=door.fixed+buffer||fx+fw<=door.fixed-buffer||
+     fy>=door.start+door.length+buffer||fy+fh<=door.start-buffer);
+  });
+  const placeAppliance=(name,shape,rooms,dimensions)=>{
+   if(furnished.some(item=>item[1]===shape))return true;
+   for(const room of rooms){
+    const [rw,rh]=dimensions;
+    if(room.w<rw+.3||room.h<rh+.3)continue;
+    const candidates=[];
+    const step=.25;
+    for(let xx=room.x+.15;xx+rw<=room.x+room.w-.15;xx+=step)
+     for(let yy=room.y+.15;yy+rh<=room.y+room.h-.15;yy+=step){
+      const item=[name,shape,+xx.toFixed(3),+yy.toFixed(3),rw,rh];
+      if(!doorClear(item)||existing().some(other=>intersects(item,other,.10)))continue;
+      // Near a room edge (with a small service margin) is preferred.
+      const edge=Math.min(xx-room.x,yy-room.y,
+       room.x+room.w-xx-rw,room.y+room.h-yy-rh);
+      candidates.push({item,score:edge*10+yy*.002+xx*.001});
+     }
+    if(candidates.length){
+     candidates.sort((a,b)=>a.score-b.score);
+     furnished.push(candidates[0].item);
+     return true;
+    }
+   }
+   return false;
+  };
+  if(z===0){
+   const kitchenRooms=rooms.filter(r=>/LDK|キッチン|居室/.test(r.name));
+   placeAppliance("冷蔵庫","refrigerator",kitchenRooms,[1.35,1.35]);
+  }
+  const washRooms=rooms.filter(r=>/洗面|脱衣|家事/.test(r.name));
+  if(!furnished.some(item=>item[1]==="washer"))
+   placeAppliance("洗濯機","washer",washRooms,[1.3,1.3]);
+  for(const [name,shape,fx,fy,fw,fh,stairPair,stairDirection] of furnished){
    if(fx<0||fy<0||fx+fw>w||fy+fh>h)throw Error("設置物が外周を越える："+name);
    const stair=shape==="stair";
    const stairDesc=stairPair&&["up","down"].includes(stairDirection)
     ?(stairDirection==="up"?"上階へ上る専用階段区間です。":"下階へ下りる専用階段区間です。")+
      "同じ階段区間が上下2フロアに対応します。実際の段数・高さは未設計です。"
     :"折り返し階段の概念図。実際の段数・高さは未設計です。";
-   const extra={shapePresetId:shape,detail:stair?stairDesc:
-    name+"。住戸の生活用設備です。"};
+   const extra={shapePresetId:shape,detail:shape==="bath"?
+    "浴槽・シャワー一体設備。壁付けシャワーを含みます（別個のシャワーブースではありません）。":
+    shape==="washer"?"洗濯機（想定幅65cm）。給排水配管は模式図では省略。":
+    shape==="refrigerator"?"冷蔵庫（想定設置面積約68cm四方）。扉の開き・放熱余白は未検証。":
+    stair?stairDesc:name+"。住戸の生活用設備です。",
+    ...(shape==="bath"?{metadata:{templateId:template.id,generated:true,
+     attachedShower:true,installationType:"bath-with-shower"}}:{})};
    if(stair&&stairPair&&["up","down"].includes(stairDirection)){
     // A distinct pair of physical flights belongs to exactly two adjacent floors.
     const parts=stairPair.split("-");
