@@ -352,6 +352,11 @@ function generateModern(template,options){
      entrySide:"bottom-left",turnSide:"top",exitSide:"bottom-right",
      path:["bottom-left","top-left","top-landing","top-right","bottom-right"],
      status:"concept-not-architecturally-verified"};
+    extra.stairNavigation={
+     upFloorId:floors[z+1]?.id||null,
+     downFloorId:floors[z-1]?.id||null,
+     upSide:"left",downSide:"right"
+    };
     extra.connection={id:prefix+"_stair_main",fromFloorId:floor,
      toFloorId:floors[z+1]?.id||floors[z-1]?.id,
      fromAnchor:at(fx+fw/2,fy+fh/2),toAnchor:at(fx+fw/2,fy+fh/2),
