@@ -129,3 +129,12 @@ MyMapCreater 開発引き継ぎ（更新：2026-11-10）
 - rebuild/editor.html の building-templates.js アセットキャッシュ版を service-symbol-clearance-v26 に更新。
 - 未確認：ブラウザー/スマホの表示、実際の通行動線、窓の開閉と採光・換気条件、エアコン室外機/配管、給湯器の屋外設置、換気排気の行き先、電源回路、施工寸法。給湯器を室内の仮記号のまま施工済みと扱わない。
 - ユーザーが問題視した「住宅の扉の位置が不自然」という問題は、記号重複の修正とは別タスク。入口→扉→通路→階段の実際の歩行可能性を検査し、必要なら住宅間取りを再設計すること。
+
+【2026-11-10　部屋選択で家具が消える問題・Lv改修】
+- 直接原因：rebuild/map-viewer.js の traceIndoorShape() は room_zone に対して設備と同じ不透明背景を描き、選択部屋を最後に再描画するため家具/設備を隠していた。room_zone では設備描画を使わず、通常の領域描画／選択時の輪郭線だけに変更。
+- 構造原因：現代住宅の建物がLv4、部屋がLv5、家具・設備もLv5で建物直下になっていた。rebuild/building-templates.jsで新規生成物を建物Lv4→部屋Lv5→家具・室内設備・建築設備Lv6、親参照も各部屋に改修。壁/窓/扉/床/階段は建物直下Lv5のまま、floorIdを保持。
+- viewer visibleByDepth()は建物または内側の部屋/設備を選択しているとき同一建物内のLv5/6を引き続き表示し、別の物理階は従来どおり非表示。部屋選択でも他の家具が消えない。
+- 新規テスト rebuild/tests/residential-room-level-visibility.test.js：12現代住宅、計462個の家具・設備についてLv・親参照・部屋/建物選択時の表示対象をJavaScriptで検証PASS。既存テスト群もPASS。
+- rebuild/editor.html / rebuild/header.htmlのmap-viewer.jsキャッシュバージョンをroom-highlight-visibility-v21、editor.htmlのbuilding-templates.jsをroom-parent-hierarchy-v27に変更。
+- 未検証：GitHub Pagesとスマホの実描画、特に建物→部屋→家具選択と階切替。古い保存済み建物はviewer描画改善は受けるが、既存JSONのparentIdやdisplayLevelは自動変更しない。
+- 最新の仕様と受入条件はdocs/specs/06-roadmap-and-acceptance.md末尾を参照。
