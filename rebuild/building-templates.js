@@ -414,6 +414,48 @@ function generateModern(template,options){
     {fill:stair?"rgba(75,118,137,.5)":"rgba(46,91,110,.7)",stroke:"#9ec5ca",strokeWidth:1},extra);
   }
  }
+ // Find a less obstructed swing for each hinged door. This checks the
+ // moving leaf against furniture rectangles, not construction clearances.
+ for(const doorObj of objs.filter(o=>o.objectType==="door"&&o.door?.type!=="sliding")){
+  const [a,b]=doorObj.geometry.points||[];
+  if(!a||!b)continue;
+  const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
+  if(len<=1e-8)continue;
+  const fixtures=objs.filter(o=>o.floorId===doorObj.floorId&&
+   o.objectType==="object"&&o.geometry?.type==="rect");
+  const candidates=[];
+  for(const hinge of ["start","end"])for(const side of ["left","right"]){
+   const hpt=hinge==="end"?b:a,far=hinge==="end"?a:b;
+   const vx=(far[0]-hpt[0])/len,vy=(far[1]-hpt[1])/len;
+   const sign=side==="right"?-1:1,px=-vy*sign,py=vx*sign;
+   let penalty=0,hitIds=new Set();
+   for(let k=1;k<=12;k++){
+    const t=k/12*Math.PI/2,ux=vx*Math.cos(t)+px*Math.sin(t),
+     uy=vy*Math.cos(t)+py*Math.sin(t);
+    for(let m=1;m<=8;m++){
+     const qx=hpt[0]+len*m/8*ux,qy=hpt[1]+len*m/8*uy;
+     if(qx<x||qy<y||qx>x+w*spacing||qy>y+h*spacing)penalty+=10;
+     for(const item of fixtures){
+      const g=item.geometry,eps=spacing*.025;
+      if(qx>g.x-eps&&qx<g.x+g.width+eps&&
+       qy>g.y-eps&&qy<g.y+g.height+eps)hitIds.add(item.id);
+     }
+    }
+   }
+   penalty+=hitIds.size*100;
+   // Bottom-facing exterior entry normally opens into the house.
+   if(doorObj.opening?.external&&side!=="right")penalty+=5;
+   candidates.push({hinge,side,penalty,interferenceCount:hitIds.size});
+  }
+  candidates.sort((a,b)=>a.penalty-b.penalty||
+   (a.hinge==="start"?-1:1)-(b.hinge==="start"?-1:1));
+  const best=candidates[0];
+  doorObj.door.hinge=best.hinge;
+  doorObj.door.swingSide=best.side;
+  doorObj.metadata={...doorObj.metadata,
+   swingFurnitureInterferenceCount:best.interferenceCount,
+   swingChecked:"fixture-rectangles-only"};
+ }
  return{template:copy(template),objects:objs};
 }
 
