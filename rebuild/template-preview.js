@@ -6,6 +6,33 @@
  const T=(tag,cls,value)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(value!==undefined)node.textContent=value;return node};
  let library=null,picker=null,activeId=null,activeFloor=null,lastFocus=null,previewViewer=null,editing=false,editPast=[],editFuture=[],beforeDrag=null;
  const renderCache=new Map();
+ const savedPreviewKey="mymapcreater:template-preview-state:v1";
+ function readSavedPreview(){
+  try{
+   const v=JSON.parse(localStorage.getItem(savedPreviewKey)||"null");
+   return v?.version===1&&typeof v.id==="string"?v:null;
+  }catch(_){return null}
+ }
+ function writeSavedPreview(){
+  try{localStorage.setItem(savedPreviewKey,JSON.stringify({
+   version:1,id:activeId||picker?.value||"",
+   floorId:activeFloor||null,
+   open:!$("template-preview-modal").hidden,
+   query:$("template-preview-filter").value,
+   era:$("template-era-filter").value,
+   use:$("template-use-filter").value,
+   showGrid:$("template-preview-grid").checked
+  }))}catch(_){}
+ }
+ function restoreSavedPreviewFields(saved){
+  if(!saved)return;
+  for(const [id,v] of [["template-preview-filter",saved.query],["template-era-filter",saved.era],["template-use-filter",saved.use]]){
+   const el=$(id);
+   if(el&&typeof v==="string"&&(el.tagName!=="SELECT"||[...el.options].some(x=>x.value===v)))el.value=v;
+  }
+  if(typeof saved.showGrid==="boolean")$("template-preview-grid").checked=saved.showGrid;
+ }
+
  function previewSpacing(){
   const mapScale=Number(global.AAMapTemplateCellSpacing?.());
   if(Number.isFinite(mapScale)&&mapScale>0)return mapScale;
@@ -114,15 +141,21 @@
   drawModal({rebuild:true});
   for(const card of $("template-preview-list").children)
    card.setAttribute("aria-selected",String(card.dataset.templateId===id));
+  writeSavedPreview();
  }
  function open(){
   if(!library)return;
   lastFocus=document.activeElement;
   if(editing)setMode(false);
+  const saved=readSavedPreview();
+  restoreSavedPreviewFields(saved);
   $("template-preview-modal").hidden=false;
   renderCache.clear();refresh();
   $("template-picker-filters").open=false;
-  selectTemplate(picker.value||library.allPresets()[0]?.id);
+  const previous=library.allPresets().some(t=>t.id===saved?.id)?saved.id:null;
+  activeFloor=saved?.floorId||null;
+  selectTemplate(previous||picker.value||library.allPresets()[0]?.id);
+  writeSavedPreview();
   $("template-mode-toggle").focus();
  }
  function showObjectInfo(obj){
@@ -239,7 +272,10 @@
   if(editPast.length&&global.confirm&&!global.confirm("未保存の編集内容を破棄して閉じますか？"))return;
   if(editing)setMode(false);
   editPast=[];editFuture=[];
-  $("template-preview-modal").hidden=true;activeId=null;
+  writeSavedPreview();
+  $("template-preview-modal").hidden=true;
+  writeSavedPreview();
+  activeId=null;
   if(lastFocus?.focus)lastFocus.focus();
  }
  const eraNames={"common":"共通・未分類","modern-jp":"現代日本","japanese":"和風","historical-eu":"歴史欧州","fantasy":"異世界","machine":"機械","ruins":"終末・廃墟"};
@@ -701,9 +737,9 @@
    modal.dataset.initialized="1";
    $("template-preview-close").addEventListener("click",close);
    $("template-preview-open").addEventListener("click",open);
-   $("template-preview-filter").addEventListener("input",refresh);
-   $("template-era-filter").addEventListener("change",refresh);
-   $("template-use-filter").addEventListener("change",refresh);
+   $("template-preview-filter").addEventListener("input",()=>{refresh();writeSavedPreview()});
+   $("template-era-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
+   $("template-use-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
    $("template-mode-toggle").addEventListener("click",()=>setMode(!editing));
    $("template-detail-settings-tab").addEventListener("click",()=>setDetailTab("settings"));
    $("template-detail-description-tab").addEventListener("click",()=>setDetailTab("description"));
@@ -718,8 +754,8 @@
    $("template-undo").addEventListener("click",()=>setHistory(editPast,editFuture));
    $("template-redo").addEventListener("click",()=>setHistory(editFuture,editPast));
    $("template-save-copy").addEventListener("click",saveCopy);
-   $("template-preview-floor").addEventListener("change",e=>{activeFloor=e.target.value;drawModal()});
-   $("template-preview-grid").addEventListener("change",()=>{if(activeId)drawModal()});
+   $("template-preview-floor").addEventListener("change",e=>{activeFloor=e.target.value;drawModal();writeSavedPreview()});
+   $("template-preview-grid").addEventListener("change",()=>{if(activeId)drawModal();writeSavedPreview()});
    $("template-preview-zoom-in").addEventListener("click",()=>previewViewer?.zoomBy(1.3));
    $("template-preview-zoom-out").addEventListener("click",()=>previewViewer?.zoomBy(1/1.3));
    $("template-preview-fit").addEventListener("click",()=>previewViewer?.reset());
@@ -740,7 +776,14 @@
    });
    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden)close()});
   }
+  const saved=readSavedPreview();
+  restoreSavedPreviewFields(saved);
   refresh();
+  // Restore the modal only when it was open at reload; a deliberately closed
+  // preview must stay closed. Never restore unsaved template edits.
+  if(saved?.open&&saved.id&&library.allPresets().some(t=>t.id===saved.id)){
+   setTimeout(()=>{if($("template-preview-modal").hidden)open()},0);
+  }
  }
  global.AAMapTemplatePreview={init,refresh,renderPlan};
 })(window);
