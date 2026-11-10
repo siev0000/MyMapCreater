@@ -230,6 +230,52 @@ const modernHousing=[
 ];
 // Six independently planned detached homes; preserve all pre-existing template IDs.
 for(const item of [{"id":"jp_detached_single_2ldk","name":"一軒家・コンパクト平屋2LDK","cells":[16,14],"floors":1,"description":"平屋8×7m。寝室2室、LDK、玄関、浴室。","plans":[{"rooms":[["b0","主寝室",0,0,5,7],["b1","洋室",5,0,5,7],["ldk","LDK",10,0,6,14],["hall","廊下",0,7,10,3],["bath","浴室・洗面",0,10,4,4],["wc","トイレ",4,10,3,2],["storage","収納",4,12,3,2],["entry","玄関",7,10,3,4]],"doors":[["b0","hall"],["b1","hall"],["ldk","hall"],["bath","hall"],["wc","hall","sliding","end"],["entry","hall"],["storage","entry"]],"entry":"entry","items":[["浴槽","bath",0.2,11.3,2,2.4],["トイレ","toilet",4.1,10.6,1.1,1.2],["収納棚","cabinet",4.15,12.4,1.4,1],["キッチン","kitchen",11,1,3,1],["食卓","table",11,10,3,2],["洗面台","sink",2.65,12.65,1.1,0.8]]}]},{"id":"jp_detached_single_3ldk","name":"一軒家・平屋3LDK","cells":[20,16],"floors":1,"description":"平屋10×8m。寝室3室、LDKと玄関、水回り。","plans":[{"rooms":[["b0","主寝室",0,0,5,9],["b1","洋室A",5,0,5,9],["b2","洋室B",10,0,5,9],["ldk","LDK",15,0,5,16],["hall","廊下",0,9,15,3],["bath","浴室",0,12,4,4],["wash","洗面室",4,12,4,4],["wc","トイレ",8,12,3,2],["storage","収納",8,14,3,2],["entry","玄関",11,12,4,4]],"doors":[["b0","hall"],["b1","hall"],["b2","hall"],["ldk","hall"],["bath","wash"],["wash","hall"],["wc","hall","sliding","end"],["entry","hall"],["storage","entry"]],"entry":"entry","items":[["浴槽","bath",0.2,13.3,2.3,2.5],["洗面台","sink",6,14.2,1.5,1],["トイレ","toilet",8.1,12.5,1.1,1.2],["収納棚","cabinet",8.15,14.4,1.4,1],["キッチン","kitchen",16,1,3,1],["食卓","table",16,12,3,2],["洗濯機","washer",0.2,10.3,1.3,1.3]]}]},{"id":"jp_detached_standard_3ldk","name":"一軒家・標準2階建て3LDK","cells":[18,16],"floors":2,"description":"2階建て9×8m。1階LDK、2階3室。","plans":[{"rooms":[["bath","浴室",0,0,4,4],["wash","洗面・脱衣室",4,0,4,4],["wc","トイレ",0,4,4,2],["storage","納戸",0,6,4,5],["entry","玄関",0,11,4,5],["hall","廊下",4,4,4,12],["ldk","LDK",8,0,10,7],["utility","家事室・パントリー",8,7,6,9],["stairroom","階段室・踊り場",14,7,4,9]],"doors":[["bath","wash","sliding"],["wash","hall","sliding"],["wc","hall","sliding"],["storage","hall","sliding"],["entry","hall","sliding","end"],["hall","ldk","sliding"],["hall","utility","sliding"],["ldk","utility","sliding"],["utility","stairroom","sliding","end"]],"entry":"entry","items":[["浴槽","bath",0.2,0.2,2.5,2.5],["洗面台","sink",4.5,0.5,2,1],["トイレ","toilet",0.8,4.3,1.6,1.2],["収納棚","cabinet",0.6,7,2,1],["玄関収納","cabinet",0.5,12.2,2,1],["キッチン","kitchen",9,1,4,1],["食卓","table",13,3,3,2],["収納棚","cabinet",8.5,10.5,2,1],["階段（折り返し・概念図）","stair",14.2,7.2,3.6,5.6]]},{"rooms":[["b0","主寝室",0,0,7,7],["b1","洋室A",7,0,5,7],["b2","洋室B",12,0,6,7],["corridor","上階廊下",0,7,14,2],["storage","収納・多目的室",0,9,8,7],["hall","2階ホール",8,9,6,7],["stairroom","階段室・踊り場",14,7,4,9]],"doors":[["b0","corridor","sliding"],["b1","corridor","sliding"],["b2","corridor","sliding"],["corridor","hall","open"],["storage","hall","sliding"],["stairroom","hall","sliding","end"]],"items":[["階段（折り返し・概念図）","stair",14.2,7.2,3.6,5.6],["ベッド","bed",1,1,2.8,3.5],["ベッド","bed",7.7,1,2.4,3.5],["ベッド","bed",13,1,2.4,3.5]]}]},{"id":"jp_detached_narrow_3ldk","name":"一軒家・細長2階建て3LDK","cells":[12,20],"floors":2,"description":"2階建て6×10m。細長い敷地向け。","plans":[{"rooms":[["ldk","LDK",0,0,12,9],["wash","洗面・脱衣室",0,9,4,4],["bath","浴室",0,13,4,4],["storage","収納",0,17,4,3],["hall","廊下",4,9,4,8],["entry","玄関ホール",4,17,4,3],["wc","トイレ",8,9,4,2],["stairroom","階段室・下部踊り場",8,11,4,9]],"doors":[["ldk","hall","sliding"],["wash","hall","sliding"],["bath","wash","sliding"],["storage","entry","sliding"],["hall","entry","open"],["wc","hall","sliding"],["stairroom","entry","sliding","end"]],"entry":"entry","items":[["キッチン","kitchen",1,1,4,1],["洗面台","sink",2.2,9.4,1.4,1],["浴槽","bath",0.2,14.3,2.5,2.6],["トイレ","toilet",9,9.3,1.4,1.2],["収納棚","cabinet",0.5,17.5,2,1],["階段（折り返し・概念図）","stair",8.2,11.2,3.6,5.6],["洗濯機","washer",0.3,9.3,1.3,1.3]]},{"rooms":[["b0","主寝室",0,0,6,7],["b1","洋室A",6,0,6,7],["corridor","上階廊下",0,7,12,2],["b2","洋室B",0,9,6,8],["store2","リネン収納",8,9,4,2],["hall","2階ホール",6,9,2,11],["stairroom","階段室・踊り場",8,11,4,9],["store","収納",0,17,6,3]],"doors":[["b0","corridor","sliding"],["b1","corridor","sliding"],["corridor","hall","open"],["b2","hall","sliding"],["store2","corridor","sliding"],["store","hall","sliding"],["stairroom","hall","sliding","end"]],"items":[["階段（折り返し・概念図）","stair",8.2,11.2,3.6,5.6],["ベッド","bed",0.5,1,2.6,3.5],["ベッド","bed",6.5,1,2.6,3.5],["ベッド","bed",0.5,10,2.6,3.5]]}]},{"id":"jp_detached_large_4ldk","name":"一軒家・和室付き2階建て4LDK","cells":[20,18],"floors":2,"description":"2階建て10×9m。1階和室・LDK、2階3室。","plans":[{"rooms":[["guest","和室",0,0,8,8],["wash","洗面・脱衣室",0,8,4,4],["bath","浴室",0,12,4,4],["wc","トイレ",0,16,4,2],["hall","玄関・廊下",4,8,4,10],["ldk","LDK",8,0,12,10],["utility","家事室",8,10,5,8],["stairroom","階段室・踊り場",13,10,4,8],["sunroom","サンルーム",17,10,3,8]],"doors":[["guest","hall","sliding"],["guest","ldk","sliding"],["wash","hall","sliding"],["bath","wash","sliding"],["wc","hall","sliding"],["hall","ldk","sliding"],["hall","utility","sliding"],["ldk","utility","sliding"],["utility","stairroom","sliding","end"],["sunroom","ldk","sliding"]],"entry":"hall","items":[["浴槽","bath",0.2,13.3,2.5,2.5],["洗面台","sink",2,8.1,1.4,1],["トイレ","toilet",0.9,16.2,1.5,1.2],["キッチン","kitchen",9,1,4,1],["食卓","table",14,4,3,2],["収納","cabinet",9,14,2,1],["階段（折り返し・概念図）","stair",13.2,10.2,3.6,5.6],["洗濯機","washer",0.2,8.5,1.3,1.3]]},{"rooms":[["b0","主寝室",0,0,8,8],["b1","洋室A",8,0,5,8],["b2","洋室B",13,0,7,8],["corridor","上階廊下",0,8,20,2],["family","家族室・収納",0,10,8,8],["hall","2階ホール",8,10,5,8],["stairroom","階段室・踊り場",13,10,4,8],["store","収納",17,10,3,8]],"doors":[["b0","corridor","sliding"],["b1","corridor","sliding"],["b2","corridor","sliding"],["corridor","hall","open"],["family","hall","sliding"],["stairroom","hall","sliding","end"],["store","corridor","sliding"]],"items":[["階段（折り返し・概念図）","stair",13.2,10.2,3.6,5.6],["ベッド","bed",1,1,2.6,3.5],["ベッド","bed",8.6,1,2.6,3.5],["ベッド","bed",14,1,2.6,3.5]]}]},{"id":"jp_detached_urban_3story","name":"一軒家・都市型3階建て3LDK＋書斎","cells":[12,16],"floors":3,"description":"都市型3階建て6×8m。2階2室・3階洋室と書斎。","plans":[{"rooms":[["ldk","LDK",0,0,12,8],["wc","トイレ",0,8,4,2],["wash","洗面室",0,10,4,2],["bath","浴室",0,12,4,4],["hall","玄関・廊下",4,8,4,8],["stairroom","階段・踊り場",8,8,4,8]],"doors":[["ldk","hall","sliding"],["wc","hall","sliding"],["wash","hall","sliding"],["bath","hall","sliding"],["stairroom","hall","sliding","end"]],"entry":"hall","items":[["キッチン","kitchen",1,1,4,1],["浴槽","bath",0.5,12.5,2,2],["洗面台","sink",0.6,10.3,2,1],["トイレ","toilet",1.1,8.3,1.4,1.2],["階段（折り返し・概念図）","stair",8.2,8.2,3.6,5.6]]},{"rooms":[["b0","主寝室",0,0,5,8],["b1","洋室",5,0,7,8],["hallL","共用廊下",0,8,4,3],["hall","廊下",4,8,4,8],["storageL","収納",0,11,4,5],["stairroom","階段・踊り場",8,8,4,8]],"doors":[["b0","hallL","sliding"],["b1","hall","sliding"],["hallL","hall","sliding"],["storageL","hall","sliding"],["stairroom","hall","sliding","end"]],"entry":null,"items":[["ベッド","bed",0.5,1,2.4,3.5],["ベッド","bed",6,1,2.4,3.5],["階段（折り返し・概念図）","stair",8.2,8.2,3.6,5.6]]},{"rooms":[["study","書斎",0,0,5,8],["bed","洋室",5,0,7,8],["hallL","共用廊下",0,8,4,3],["hall","廊下",4,8,4,8],["storageL","収納",0,11,4,5],["stairroom","階段・踊り場",8,8,4,8]],"doors":[["study","hallL","sliding"],["bed","hall","sliding"],["hallL","hall","sliding"],["storageL","hall","sliding"],["stairroom","hall","sliding","end"]],"entry":null,"items":[["書斎机","table",1,2,2,2],["ベッド","bed",6,1,2.4,4],["階段（折り返し・概念図）","stair",8.2,8.2,3.6,5.6]]}]}])modernHousing.push(item);
+// 35-tsubo single-storey family house: 22 x 21 half-metre cells = 115.5 m² (34.94 tsubo).
+// Conceptual layout; room areas are gross rectangles and do not deduct wall thickness.
+modernHousing.push({
+ id:"jp_detached_single_35tsubo_5ldk",name:"一軒家・35坪平屋（和室＋4寝室）",
+ cells:[22,21],floors:1,
+ description:"平屋約35坪（11×10.5m、115.5㎡）。LDK・和室・主寝室・洋室3室と水回り・収納。間取り試案。",
+ plans:[{
+  rooms:[
+   ["master","主寝室",0,0,6,8],
+   ["bed1","洋室1",6,0,4,8],
+   ["bed2","洋室2",10,0,4,8],
+   ["bed3","洋室3",14,0,4,8],
+   ["washitsu","和室",18,0,4,8],
+   ["hall","共用廊下",0,8,22,3],
+   ["ldk","LDK",0,11,12,10],
+   ["bath","浴室",12,11,4,4],
+   ["wash","洗面脱衣室",16,11,4,4],
+   ["wc","トイレ",20,11,2,4],
+   ["storage","収納",12,15,4,6],
+   ["entry","玄関",16,15,4,6],
+   ["pantry","収納・物入",20,15,2,6]
+  ],
+  doors:[
+   ["master","hall"],["bed1","hall"],["bed2","hall"],["bed3","hall"],
+   ["washitsu","hall","sliding"],["ldk","hall","sliding"],
+   ["bath","wash","sliding"],["wash","hall","sliding"],["wc","hall","sliding"],
+   ["storage","ldk","sliding"],["entry","wash","sliding"],["pantry","entry","sliding"]
+  ],
+  entry:"entry",
+  items:[
+   ["ベッド","bed",1,1,2.5,4],
+   ["ベッド","bed",6.5,1,2.2,3.5],
+   ["ベッド","bed",10.5,1,2.2,3.5],
+   ["ベッド","bed",14.5,1,2.2,3.5],
+   ["キッチン","kitchen",1,12,4,1.5],
+   ["食卓","table",7,13,3,2],
+   ["浴槽","bath",12.5,11.5,2.5,2.5],
+   ["洗面台","sink",16.4,11.5,1.8,1],
+   ["洗濯機","washer",18.3,11.5,1.3,1.3],
+   ["トイレ","toilet",20.3,11.5,1.3,1.5],
+   ["収納棚","cabinet",12.5,16,2,1],
+   ["玄関収納","cabinet",16.4,16,1.4,1],
+   ["収納棚","cabinet",20.2,16,1.4,1]
+  ]
+ }]
+});
 for(const plan of modernHousing)presets.push({
  id:plan.id,name:plan.name,cells:plan.cells,floors:plan.floors,layout:"custom-modern",
  category:"modern_housing",era:"modern-jp",use:"housing",
