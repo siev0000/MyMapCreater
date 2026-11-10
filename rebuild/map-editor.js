@@ -767,8 +767,23 @@ function placeSupply(){
 }
 $("supply-place").addEventListener("click",placeSupply);
 $("supply-store").addEventListener("click",storeSupply);
+function renderSelectionIdentity(){
+ const data=sceneNow(),byId=new Map((data?.objects||[]).map(o=>[o.id,o]));
+ const selected=byId.get(state.selectedId),chip=$("editor-selection-chip");
+ chip.hidden=!selected;
+ if(!selected){$("editor-selection-title").textContent="";$("editor-selection-meta").textContent="";return}
+ const kinds={facility:"建物・施設",room:"部屋",wall:"壁",door:"扉・出入口",window:"窓",object:"設置物・地物",stair:"階段",road:"道路",railway:"鉄道",region:"区画",supply:"物資"};
+ const feature=selected.metadata?.featureKind;
+ const kind=feature==="building"?"建物":feature==="railway"?"鉄道":feature==="road"?"道路":
+   (kinds[selected.objectType]||selected.objectType||"図形");
+ const parents=[],seen=new Set();let cur=byId.get(selected.parentId);
+ while(cur&&!seen.has(cur.id)&&parents.length<3){seen.add(cur.id);parents.unshift(cur.name||cur.id);cur=byId.get(cur.parentId)}
+ $("editor-selection-title").textContent="選択中："+(selected.name||selected.id);
+ $("editor-selection-meta").textContent=[kind,parents.length?"所属："+parents.join(" › "):"",selected.floorId?"階："+(selected.floorId.split("__").pop()):""].filter(Boolean).join(" ｜ ");
+}
 function renderSelected(){
  const data=sceneNow(),obj=data?.objects.find(o=>o.id===state.selectedId);
+ renderSelectionIdentity();
  $("selected-fields").classList.toggle("hidden",!obj);
  $("select-empty").classList.toggle("hidden",!!obj);
  const interiorOwner=(()=>{const byId=new Map((data?.objects||[]).map(o=>[o.id,o]));let cur=obj;const seen=new Set();
