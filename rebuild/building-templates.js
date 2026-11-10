@@ -820,6 +820,7 @@ function generateGiantGrove(t,options={}){
  };
  const root=add(baseName,"facility",displayLevel,rect(0,0,W,H),parentId,{floors:[{id:"1F",label:"1階",elevation:0,height:3}],detail:"大木を複数育成する森林区画。立体的な樹高と天井高は未確定。仮寸法・仮配置。"});
  root.id=prefix;
+ delete root.floorId;
  const zone=(name,a,b,w,h)=>{const z=add(name,"region",displayLevel+1,rect(a,b,w,h),prefix,{shapePresetId:"room_zone"});z.label.position=at(a+w/2,b+h/2);return z};
  const grove=zone("大木育成・森林区",12,12,96,76);
  const north=zone("人工降雨・水管理設備帯",12,0,96,10);
