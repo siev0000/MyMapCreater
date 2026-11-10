@@ -586,6 +586,39 @@ function create(opts){
    for(const fx of [.34,.5,.66])circle(fx,.76,.045,"#b0d0cd",null);
   }else if(kind==="storage_container"){
    for(const f of [.2,.4,.6,.8])line(x+w*f,y,x+w*f,y+h);
+  }else if(kind==="stair"&&obj.stairDesign?.type==="switchback"){
+   // Full-size interactive canvas view (also used by the template modal).
+   // The SVG thumbnail uses a different renderer: keep both consistent.
+   const mid=x+w/2,turn=y+h*.29,lowY=y+h*.9;
+   const pathColor="#ffd17a",treadColor="#9dbfc8",edgeColor="#d8edf2";
+   ctx.lineWidth=1.2/scale();ctx.strokeStyle=edgeColor;
+   line(mid,turn,mid,y+h);
+   line(x,turn,x+w,turn);
+   ctx.fillStyle="rgba(109,169,182,.20)";
+   ctx.fillRect(x,y,w,turn-y);
+   ctx.strokeStyle=treadColor;ctx.lineWidth=.9/scale();
+   for(let i=1;i<7;i++){
+    const yy=turn+(y+h-turn)*i/7;
+    line(x,yy,mid,yy);line(mid,yy,x+w,yy);
+   }
+   // One continuous yellow U-route: lower-left -> upper-left -> turn ->
+   // upper-right -> lower-right. Arrow points at the upper-floor exit.
+   const leftX=x+w*.25,rightX=x+w*.75,topY=y+h*.13;
+   ctx.beginPath();ctx.moveTo(leftX,lowY);ctx.lineTo(leftX,turn);
+   ctx.quadraticCurveTo(leftX,topY,mid,topY);
+   ctx.quadraticCurveTo(rightX,topY,rightX,turn);
+   ctx.lineTo(rightX,lowY);
+   ctx.strokeStyle=pathColor;ctx.lineWidth=2.8/scale();ctx.lineCap="round";ctx.stroke();
+   const head=Math.min(w,h)*.11;
+   ctx.beginPath();ctx.moveTo(rightX-head*.65,lowY-head);
+   ctx.lineTo(rightX,lowY);ctx.lineTo(rightX+head*.65,lowY-head);
+   ctx.stroke();
+   // Endpoint blocks show which side is the entry and which is the exit.
+   ctx.fillStyle="#8fe0df";
+   ctx.beginPath();ctx.arc(leftX,lowY,Math.max(1.8/scale(),w*.045),0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=pathColor;
+   ctx.beginPath();ctx.arc(rightX,lowY,Math.max(1.8/scale(),w*.045),0,Math.PI*2);ctx.fill();
+   ctx.lineCap="butt";
   }else if(kind==="stair"){
    const n=Math.max(4,Math.min(12,Math.round(Math.max(w,h)/2)));
    const horizontal=h>=w;
