@@ -1114,7 +1114,8 @@ function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
  if(!template)throw Error("不明な建物テンプレート: "+templateId);
  if(template.modernPlan)return generateModern(template,options);
- if(template.facilityMode==="middle_layer_frame")return generateMiddleLayerFrame(template,options);\n if(template.facilityMode==="giant_grove")return generateGiantGrove(template,options);
+ if(template.facilityMode==="middle_layer_frame")return generateMiddleLayerFrame(template,options);
+ if(template.facilityMode==="giant_grove")return generateGiantGrove(template,options);
  if(template.worldStyle==="machine")return generateMachine(template,options);
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
  if(typeof prefix!=="string"||!prefix)throw Error("建物IDが必要です");
