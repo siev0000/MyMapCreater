@@ -108,6 +108,12 @@
    if(g.type==="rect"&&Number.isFinite(g.rotation)&&g.rotation)shape.setAttribute("transform",
     "rotate("+g.rotation+" "+(g.x+g.width/2)+" "+(g.y+g.height/2)+")");
    svg.append(shape);
+   if(g.type==="rect"&&obj.metadata?.attachedShower){
+    // Match the bathtub-mounted shower indicator used in the large canvas.
+    const radius=Math.max(.12,Math.min(g.width,g.height)*.085);
+    svg.append(S("circle",{cx:g.x+g.width*.77,cy:g.y+g.height*.22,
+     r:radius,fill:"#d5eff1",stroke:"#315d70","stroke-width":strokeWidth*.35}));
+   }
    if(type==="stair"&&g.type==="rect"){
     if(obj.stairDesign?.type==="switchback-flight"){
      const left=g.x,right=g.x+g.width,top=g.y,bottom=g.y+g.height;
@@ -253,7 +259,11 @@
    }else if(obj.objectType==="door")explanation="開口部に配置する扉です。出入口と通行経路を確認できます。";
    else if(obj.objectType==="wall")explanation="間仕切り・外壁を構成する壁です。";
    else if(obj.objectType==="slab")explanation="この階の床面です。";
-   else explanation=hints[obj.shapePresetId]||"「"+(obj.name||kind)+"」として配置された設置物です。具体的な機能はテンプレート側で未設定です。";
+   else explanation=hints[obj.shapePresetId]||
+    (obj.shapePresetId==="refrigerator"?"冷蔵庫です。設置位置を確認できます。":
+    obj.shapePresetId==="washer"?"洗濯機です。給排水への接続は別途確認が必要です。":
+    obj.shapePresetId==="bath"&&obj.metadata?.attachedShower?"浴槽と付属シャワーです。":
+    "「"+(obj.name||kind)+"」として配置された設置物です。具体的な機能はテンプレート側で未設定です。");
   }
   detail.textContent=explanation;
  }
