@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,"..");
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,"building-templates.js"),"utf8"),context);
 const library=context.window.AAMapBuildingTemplates;
-const ids=["jp_detached_single_2ldk","jp_detached_single_3ldk","jp_detached_standard_3ldk","jp_detached_narrow_3ldk","jp_detached_large_4ldk","jp_detached_urban_3story"];
+const ids=["jp_detached_2story","jp_detached_single_2ldk","jp_detached_single_3ldk","jp_detached_standard_3ldk","jp_detached_narrow_3ldk","jp_detached_large_4ldk","jp_detached_urban_3story"];
 const shared=(a,b)=>{
  const overlap=(s,e,u,v)=>Math.min(e,v)-Math.max(s,u);
  return (Math.abs(a[2]+a[4]-b[2])<1e-7||Math.abs(b[2]+b[4]-a[2])<1e-7)&&overlap(a[3],a[3]+a[5],b[3],b[3]+b[5])>=2
@@ -39,6 +39,18 @@ for(const id of ids){
    adjacency.get(a).push(b);adjacency.get(b).push(a);
   }
   const stairs=plan.items.filter(i=>i[1]==="stair");
+  if(stairs.length){
+   const floorStairObjects=geometry.objects.filter(o=>o.objectType==="stair"&&o.floorId===(floor+1)+"F");
+   assert.equal(floorStairObjects.length,1,id+" staircase count by floor");
+   const stairData=floorStairObjects[0].stairDesign;
+   assert.equal(stairData?.type,"switchback",id+" stair needs compact return-flight plan");
+   assert.equal(stairData?.flightWidthM,0.8,id+" flight clear width");
+   assert.ok(Math.abs(stairData.footprintWidthM-1.8)<1e-8,id+" total stair width");
+   assert.ok(Math.abs(stairData.footprintDepthM-2.8)<1e-8,id+" total stair depth");
+   const shape=stairs[0],host=plan.rooms.find(r=>shape[2]>=r[2]&&shape[3]>=r[3]&&
+      shape[2]+shape[4]<=r[2]+r[4]&&shape[3]+shape[5]<=r[3]+r[5]);
+   assert.ok(host,id+" stair must stay inside a circulation room");
+  }
   if(id==="jp_detached_urban_3story"){
    assert.equal(stairs.length,1,"Each urban townhouse floor must have exactly one staircase");
    const stair=stairs[0],entryRoom=plan.entry&&roomMap.get(plan.entry);
