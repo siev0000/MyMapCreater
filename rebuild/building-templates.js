@@ -831,12 +831,12 @@ function generateGiantGrove(t,options={}){
  const inClearing=(xx,yy)=>clearings.some(([cx,cy,rx,ry])=>((xx-cx)/rx)**2+((yy-cy)/ry)**2<1);
  let count=0;const planted=[];
  // Uneven clusters, rather than a grid or a maze with tree walls.
- for(let group=0;group<95;group++){
-  const cx=19+rand()*(W-38),cy=20+rand()*(H-48),density=3+Math.floor(rand()*7);
+ for(let group=0;group<46;group++){
+  const cx=19+rand()*(W-38),cy=20+rand()*(H-48),density=2+Math.floor(rand()*4);
   for(let j=0;j<density;j++){
    const xx=cx+(rand()+rand()+rand()-1.5)*30,yy=cy+(rand()+rand()+rand()-1.5)*25;
    if(xx<17||xx>W-17||yy<18||yy>H-25||nearTrail(xx,yy)||inClearing(xx,yy))continue;
-   const large=rand()<.10,d=large?8:3.5+rand()*3.5;
+   const large=rand()<.18,d=large?11:6+rand()*5;
    if(planted.some(([tx,ty,td])=>(xx-tx)**2+(yy-ty)**2<((d+td)*.43)**2))continue;
    planted.push([xx,yy,d]);
    addObject((large?"巨木 ":"樹木 ")+ ++count,large?"tree_giant":rand()<.14?"tree_conifer":rand()<.22?"tree_mature":"tree_large",grove,xx-d/2,yy-d/2,d,d,"cultivated-tree");
