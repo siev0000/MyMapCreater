@@ -326,6 +326,27 @@ function generateModern(template,options){
    if(!entry||entry.y+entry.h!==h||entry.w<1.8)throw Error("外部入口が不正："+template.id);
    placeDoor({direction:"H",fixed:h,lo:entry.x,hi:entry.x+entry.w},90,true,"hinged");
   }
+  // Residential daylight/ventilation windows: place openings in the *actual*
+  // exterior wall runs, rather than drawing panes on top of solid walls.
+  for(const room of rooms){
+   const habitable=/LDK|居室|寝室|洋室|和室|書斎/.test(room.name);
+   const wet=/浴室|洗面|脱衣|トイレ/.test(room.name);
+   if(!habitable&&!wet)continue;
+   const length=habitable?2:1.2; // opening width: ~1.0m / frosted ~0.6m
+   const options=[];
+   if(room.y===0&&room.w>=length+1)options.push({direction:"H",fixed:0,lo:room.x,hi:room.x+room.w});
+   if(room.x===0&&room.h>=length+1)options.push({direction:"V",fixed:0,lo:room.y,hi:room.y+room.h});
+   if(room.x+room.w===w&&room.h>=length+1)options.push({direction:"V",fixed:w,lo:room.y,hi:room.y+room.h});
+   if(room.y+room.h===h&&room.w>=length+1)options.push({direction:"H",fixed:h,lo:room.x,hi:room.x+room.w});
+   for(const side of options){
+    const start=side.lo+(side.hi-side.lo-length)/2;
+    if(doors.some(d=>d.direction===side.direction&&Math.abs(d.fixed-side.fixed)<1e-8&&
+     start<d.start+d.length+.25&&start+length>d.start-.25))continue;
+    doors.push({...side,start,length,widthCm:length*50,external:true,
+     type:"window",privacyGlass:wet});
+    break; // One appropriately sized real wall opening per room for now.
+   }
+  }
   // Build the true continuous wall segments, then subtract precise door gaps.
   // Never round a 0.7–0.9 m door up to two whole 0.5 m cells.
   for(const [map,direction] of [[edgeH,"H"],[edgeV,"V"]]){
@@ -364,6 +385,15 @@ function generateModern(template,options){
    if(door.type==="open")continue;
    const g=door.direction==="H"?line(door.start,door.fixed,door.start+door.length,door.fixed):
     line(door.fixed,door.start,door.fixed,door.start+door.length);
+   if(door.type==="window"){
+    const win=push(door.privacyGlass?"型板ガラス窓":"外窓","window",g,floor,
+     {fill:null,stroke:"#84ddef",strokeWidth:2},
+     {detail:door.privacyGlass?"水回り用の目隠し窓（防水・換気連動は未設計）。":
+      "採光・通風用の外窓。窓種や開閉・網戸は未設計。"});
+    win.opening={kind:"window",external:true,width:door.length*spacing*2*.5};
+    win.metadata={...win.metadata,openingWidthCm:door.widthCm,privacyGlass:door.privacyGlass};
+    continue;
+   }
    const o=push(door.external?"玄関扉":"室内扉","door",g,floor,
     {fill:null,stroke:"#e8b97a",strokeWidth:2},
     {detail:(door.external?"玄関":"室内")+"の開口幅 "+door.widthCm+"cm（建具の有効幅とは別）"});
