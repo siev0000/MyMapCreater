@@ -1046,9 +1046,26 @@ function create(opts){
   if(!obj||(!force&&obj.selectable===false))return false;
   if(focus){
    const g=obj.geometry||{};
-   if(Array.isArray(obj.floors)&&obj.floors.length&&g.type==="rect"){
-    const targetScale=Math.min(width/Math.max(1,g.width*1.75),height/Math.max(1,g.height*1.75));
-    zoom=Math.min(30,Math.max(zoom,targetScale/Math.max(initialScale,.000001)));
+   if(Array.isArray(obj.floors)&&obj.floors.length){
+    // Focus every interior-bearing footprint, including OSM polygon buildings.
+    // A center-only pan left polygon interiors too small to inspect in the editor.
+    let footprintWidth=0,footprintHeight=0;
+    if(g.type==="rect"){
+     footprintWidth=g.width;footprintHeight=g.height;
+    }else if((g.type==="polygon"||g.type==="polyline")&&g.points?.length){
+     const xs=g.points.map(p=>p[0]),ys=g.points.map(p=>p[1]);
+     footprintWidth=Math.max(...xs)-Math.min(...xs);
+     footprintHeight=Math.max(...ys)-Math.min(...ys);
+    }else if(g.type==="circle"&&Number.isFinite(g.radius)){
+     footprintWidth=g.radius*2;footprintHeight=g.radius*2;
+    }
+    if(footprintWidth>0&&footprintHeight>0){
+     const axes=getAxes();
+     const projectedWidth=Math.abs(axes[0][0])*footprintWidth+Math.abs(axes[0][1])*footprintHeight;
+     const projectedHeight=Math.abs(axes[1][0])*footprintWidth+Math.abs(axes[1][1])*footprintHeight;
+     const targetScale=Math.min(width/Math.max(1,projectedWidth*1.75),height/Math.max(1,projectedHeight*1.75));
+     zoom=Math.min(30,Math.max(zoom,targetScale/Math.max(initialScale,.000001)));
+    }
    }
    let p=obj.label?.position||g.center||[0,0];
    if(g.type==="rect")p=[g.x+g.width/2,g.y+g.height/2];
