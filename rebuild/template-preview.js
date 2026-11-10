@@ -815,9 +815,9 @@
     const layout=$("template-preview-picker").parentElement;
     layout.dataset.pickerCollapsed=String(collapsed);
     const toggle=$("template-sidebar-toggle");
-    toggle.textContent=collapsed?"一覧を表示 ▶":"一覧を隠す ◀";
+    toggle.textContent="閉じる ◀";
     toggle.setAttribute("aria-expanded",String(!collapsed));
-    toggle.title=collapsed?"絞り込みサイドバーを表示":"絞り込みサイドバーを最小化";
+    toggle.title="サイドバーを閉じる";
     $("template-sidebar-edge").hidden=!collapsed;
     if(typeof previewViewer!=="undefined"&&previewViewer?.redraw)previewViewer.redraw();
    };
