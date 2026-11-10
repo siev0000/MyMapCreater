@@ -138,3 +138,15 @@ MyMapCreater 開発引き継ぎ（更新：2026-11-10）
 - rebuild/editor.html / rebuild/header.htmlのmap-viewer.jsキャッシュバージョンをroom-highlight-visibility-v21、editor.htmlのbuilding-templates.jsをroom-parent-hierarchy-v27に変更。
 - 未検証：GitHub Pagesとスマホの実描画、特に建物→部屋→家具選択と階切替。古い保存済み建物はviewer描画改善は受けるが、既存JSONのparentIdやdisplayLevelは自動変更しない。
 - 最新の仕様と受入条件はdocs/specs/06-roadmap-and-acceptance.md末尾を参照。
+
+【2026-11-10 最重要：AA機械世界22種の大規模改修／現在の最新状態】
+- 作業正本：Notion世界共通00参照索引→AA固有制作ルール→AA時代設定→エリア→上層/中層/下層（これらの最新ページ取得済み）。機械世界の建物内部はNotionに確定詳細がないため、世界設定ではなく**汎用の未検証編集用ひな型**としてのみ変更。Notionの正本は未編集。事件後設備・正式な登録道路/リフトの扱いに注意。
+- rebuild/building-templates.js：既存機械世界16種を同じIDのまま汎用generatorからgenerateMachineへ切替。研究/再処理/任務/人工自然管理/認証/貨物の6汎用施設を新規追加し計22種。用途により2種類の間取り：独立室型と広い設備区画型。中央通路を挟んで各区画へ引き戸の実開口を設け、1Fの施設入口も設置。
+- 機械施設のLv階層：建物Lv4、区画Lv5、ポッド・充電・燃料・診断/登録端末・整備台・保管等Lv6。家具系objectは所属room regionのparentIdに設定。扉・床・壁・階段はLv5、floorIdを保持。部屋選択時に内部設備を隠さない既存共通ビューア仕様に対応。
+- 階段：複数階の右上専用室の奥側に同じ座標で設置し、手前下部に出入口と踊り場用スペース。上階スラブに階段外形の床開口を生成。上り下りはstairNavigationとconnectionを保持。実施工寸法の検証は未実施。
+- 各住宅や施設へ人間向け浴槽/家具を流用しない。機械共同住宅には休眠ポッド＋共用充電、共用休止施設には充電＋燃料補給。大型休眠棟では既存設定のpodsPerFloor数を確保。
+- rebuild/tests/machine-building-layouts.test.js 新規追加：22種/40フロア/180区画/668設備のLv・親子構造・扉・階段接続・床開口・設備配置・ポッド数等を確認PASS。住宅系7件と合わせ8回帰テストPASS（GitHub取得JSで実行した検証）。実Node CLIや実ブラウザ描画は未確認。
+- rebuild/editor.html でbuilding-templates.jsのキャッシュバージョンを更新すること（未実施なら次工程の最初に確認）。主要残タスクは docs/specs/06-roadmap-and-acceptance.md 末尾「AA機械世界の建物22種類を大規模改修」参照。
+- 不変事項：既に置いた機械施設や保存JSON、旧テンプレートID、AA正式地図の登録道路、共通・上層・中層・下層のNotion設定を勝手に上書きしない。世代・設備の確定時期を遡らせない。
+- 未確認：GitHub Pagesスマホ実表示、施設ごとの独自間取り・用途動線、超大型個体や貨物の通行幅、換気・配線・排熱・隔離・防火、階段の実際の段数・高さ・出入口。汎用間取りの2類型のみで詳細な個別施設設計は別工程。
+- 次のチャット：GitHub main 最新コードを取得し、機械テンプレート22種の縮小/拡大表示・選択階層・施設内移動を実画面で確認。不自然な入口・通路・設備位置を用途別に修正し、Nodeでtests/machine-building-layouts.test.jsを実行。ロードマップ更新。
