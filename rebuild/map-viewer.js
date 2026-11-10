@@ -612,6 +612,37 @@ function create(opts){
    for(const fx of [.34,.5,.66])circle(fx,.76,.045,"#b0d0cd",null);
   }else if(kind==="storage_container"){
    for(const f of [.2,.4,.6,.8])line(x+w*f,y,x+w*f,y+h);
+  }else if(kind==="stair"&&obj.stairDesign?.type==="switchback-flight"){
+   // One selectable, physically distinct connection between exactly two floors.
+   // A U-shaped flight has ONE destination on the current floor, not an up/down
+   // toggle overlaid on the same stairwell.
+   const direction=obj.stairDesign.direction;
+   const goingUp=direction==="up",cx=x+w/2,top=y+h*.15,turn=y+h*.28,base=y+h*.88;
+   const l=x+w*.25,r=x+w*.75;
+   ctx.fillStyle="rgba(109,169,182,.20)";
+   ctx.fillRect(x,y,w,turn-y);
+   ctx.strokeStyle="#bad6df";ctx.lineWidth=1.1/scale();
+   line(cx,turn,cx,y+h);line(x,turn,x+w,turn);
+   ctx.strokeStyle="#96becb";ctx.lineWidth=.85/scale();
+   for(let i=1;i<7;i++){
+    const yy=turn+(y+h-turn)*i/7;
+    line(x,yy,cx,yy);line(cx,yy,x+w,yy);
+   }
+   // On the lower floor the route runs left -> right; on the upper floor
+   // a descending traveler uses the same physical flight in reverse.
+   const route=goingUp?[[l,base],[l,turn],[cx,top],[r,turn],[r,base]]:
+    [[r,base],[r,turn],[cx,top],[l,turn],[l,base]];
+   ctx.beginPath();ctx.moveTo(...route[0]);
+   ctx.lineTo(...route[1]);ctx.quadraticCurveTo(route[1][0],top,...route[2]);
+   ctx.quadraticCurveTo(route[3][0],top,...route[3]);ctx.lineTo(...route[4]);
+   ctx.strokeStyle=goingUp?"#82e3f4":"#ffc875";
+   ctx.lineWidth=2.8/scale();ctx.lineCap="round";ctx.stroke();
+   const xEnd=goingUp?r:l,head=Math.min(w,h)*.10;
+   ctx.beginPath();ctx.moveTo(xEnd-head*.65,base-head);
+   ctx.lineTo(xEnd,base);ctx.lineTo(xEnd+head*.65,base-head);
+   ctx.stroke();ctx.lineCap="butt";
+   ctx.fillStyle=goingUp?"#82e3f4":"#ffc875";
+   ctx.beginPath();ctx.arc(route[0][0],base,Math.max(1.5/scale(),w*.04),0,Math.PI*2);ctx.fill();
   }else if(kind==="stair"&&obj.stairDesign?.type==="switchback"){
    // Full-size interactive canvas view (also used by the template modal).
    // The SVG thumbnail uses a different renderer: keep both consistent.
