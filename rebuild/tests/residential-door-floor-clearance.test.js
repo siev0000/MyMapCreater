@@ -36,6 +36,10 @@ for(const template of templates){
     template.id+" no unobstructed swing or valid sliding pocket");
   assert.ok(["fixture-rectangles-only","sliding-parked-leaf-clear-of-fixtures",undefined]
    .includes(door.metadata.swingChecked),template.id+" clearance status");
+  if(door.door.type!=="sliding")
+   assert.equal(door.metadata.swingDoorInterferenceCount,0,
+    template.id+" hinged door must not sweep across another hinged door");
+
  }
 }
 assert.ok(viewerSource.includes("doorOpenOverrides.set(hit.id,nextOpen)"),
@@ -43,5 +47,14 @@ assert.ok(viewerSource.includes("doorOpenOverrides.set(hit.id,nextOpen)"),
 assert.ok(viewerSource.includes("doorIsOpen(obj)"),"Door renderer must use live state");
 assert.ok(viewerSource.includes("doors[doors.length-1]"),
  "Door hit test must not be masked by a room");
+const minimumPassageM=0.8;
+for(const template of templates)for(const [index,plan] of template.modernPlan.entries()){
+ for(const room of plan.rooms){
+  if(!/(廊下|ホール|玄関|階段|踊り場)/.test(room[1]))continue;
+  const narrower=Math.min(room[4],room[5])*.5;
+  assert.ok(narrower>=minimumPassageM,
+   template.id+" floor "+(index+1)+" has narrow circulation zone "+room[1]);
+ }
+}
 console.log("PASS",templates.length,"modern residential templates,",
  doorsChecked,"doors,",stairHoles,"upper-floor openings");
