@@ -38,6 +38,21 @@ for(const t of presets){
  for(let floorIndex=0;floorIndex<t.modernPlan.length;floorIndex++){
   const plan=t.modernPlan[floorIndex],floor=(floorIndex+1)+"F";
   const os=objects.filter(o=>o.floorId===floor);
+  const staircase=os.find(o=>o.objectType==="stair");
+  if(staircase){
+   const g=staircase.geometry;
+   const stairZone=plan.rooms.find(r=>r[2]<=g.x&&r[3]<=g.y&&
+    r[2]+r[4]>=g.x+g.width&&r[3]+r[5]>=g.y+g.height);
+   assert.ok(stairZone&&/階段/.test(stairZone[1]),
+    t.id+"/"+floor+" staircase must be in its own named room");
+   assert.ok(stairZone[3]+stairZone[5]-(g.y+g.height)>=1.5,
+    t.id+"/"+floor+" lower stair landing below 75cm");
+   assert.ok(os.some(door=>door.objectType==="door"&&!door.opening?.external&&
+    door.geometry?.points?.length===2&&
+    door.geometry.points.every(p=>Math.abs(p[0]-stairZone[2])<1e-8)&&
+    Math.min(...door.geometry.points.map(p=>p[1]))>g.y+g.height),
+    t.id+"/"+floor+" staircase must open onto a lower landing, not a tread");
+  }
   const walls=os.filter(o=>o.objectType==="wall").map(o=>o.geometry.points);
   const solids=os.filter(o=>o.objectType==="stair"||
    (o.objectType==="object"&&!o.metadata?.fixtureCollisionExcluded)).map(o=>o.geometry);
