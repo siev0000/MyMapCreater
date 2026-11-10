@@ -39,42 +39,32 @@ for(const id of ids){
    adjacency.get(a).push(b);adjacency.get(b).push(a);
   }
   const stairs=plan.items.filter(i=>i[1]==="stair");
-  const generatedStairs=geometry.objects.filter(o=>o.objectType==="stair"&&o.floorId===(floor+1)+"F");
-  assert.equal(generatedStairs.length,stairs.length,id+" stair object count");
+  if(stairs.length){
+   const floorStairObjects=geometry.objects.filter(o=>o.objectType==="stair"&&o.floorId===(floor+1)+"F");
+   assert.equal(floorStairObjects.length,1,id+" staircase count by floor");
+   const stairData=floorStairObjects[0].stairDesign;
+   assert.equal(stairData?.type,"switchback",id+" stair needs compact return-flight plan");
+   assert.deepEqual(Array.from(stairData.path),["bottom-left","top-left","top-landing","top-right","bottom-right"],id+" explicit staircase travel path");
+   assert.equal(stairData.entrySide,"bottom-left",id+" ascent starts on left");
+   assert.equal(stairData.turnSide,"top",id+" landing at far end");
+   assert.equal(stairData.exitSide,"bottom-right",id+" upper floor exit on right");
+   assert.equal(stairData?.flightWidthM,0.8,id+" flight clear width");
+   assert.ok(Math.abs(stairData.footprintWidthM-1.8)<1e-8,id+" total stair width");
+   assert.ok(Math.abs(stairData.footprintDepthM-2.8)<1e-8,id+" total stair depth");
+   const shape=stairs[0],host=plan.rooms.find(r=>shape[2]>=r[2]&&shape[3]>=r[3]&&
+      shape[2]+shape[4]<=r[2]+r[4]&&shape[3]+shape[5]<=r[3]+r[5]);
+   assert.ok(host,id+" stair must stay inside a circulation room");
+  }
   if(id==="jp_detached_urban_3story"){
-   const expected=floor===1?2:1;
-   assert.equal(stairs.length,expected,"Urban townhouse: 2F has two independent stairs");
-   const landing=roomMap.get("landing");
-   assert.ok(landing,"All urban floors need a shared landing");
-   for(const obj of generatedStairs){
-    assert.equal(obj.stairDesign?.type,"switchback-flight","Separate stair flight required");
-    const pair=obj.stairDesign?.pairId,direction=obj.stairDesign?.direction;
-    const expectedDestination=direction==="up"?String(floor+2)+"F":String(floor)+"F";
-    assert.equal(obj.connection.toFloorId,expectedDestination);
-    const matches=stairs.find(x=>x[6]===pair&&x[7]===direction);
-    assert.ok(matches,"Stair metadata must match a unique source item");
-    assert.ok(Math.abs(obj.stairDesign.footprintWidthM-1.8)<1e-8);
-    assert.ok(Math.abs(obj.stairDesign.footprintDepthM-2.8)<1e-8);
-   }
-   const openConnections=plan.doors.filter(x=>x[2]==="open"&&x[1]==="landing");
-   assert.equal(openConnections.length,stairs.length,
-    "Every separate flight needs a walkable landing opening");
-   for(const [source] of openConnections){
-    const zone=roomMap.get(source);
-    assert.ok(zone,"Stair zone must exist");
-    const matching=stairs.find(x=>x[2]>=zone[2]&&x[3]>=zone[3]&&
-     x[2]+x[4]<=zone[2]+zone[4]&&x[3]+x[5]<=zone[3]+zone[5]);
-    assert.ok(matching,"Opening must serve a real staircase");
-   }
-  }else if(stairs.length){
-   assert.equal(stairs.length,1,id+" conventional stair count");
-   const d=generatedStairs[0].stairDesign;
-   assert.equal(d?.type,"switchback");
-   assert.deepEqual(Array.from(d.path),["bottom-left","top-left","top-landing","top-right","bottom-right"]);
-   assert.equal(d.entrySide,"bottom-left");assert.equal(d.turnSide,"top");assert.equal(d.exitSide,"bottom-right");
-   assert.equal(d.flightWidthM,.8);
-   assert.ok(Math.abs(d.footprintWidthM-1.8)<1e-8);
-   assert.ok(Math.abs(d.footprintDepthM-2.8)<1e-8);
+   assert.equal(stairs.length,1,"Each urban townhouse floor must have exactly one staircase");
+   const stair=stairs[0],entryRoom=plan.entry&&roomMap.get(plan.entry);
+   const stairRoom=roomMap.get("stairroom");
+   assert.ok(stairRoom,"Urban townhouse must have a separate stairwell");
+   assert.ok(stair[2]>=stairRoom[2]&&stair[3]>=stairRoom[3]&&
+    stair[2]+stair[4]<=stairRoom[2]+stairRoom[4]&&
+    stair[3]+stair[5]<=stairRoom[3]+stairRoom[5],"Stair must fit inside the stairwell");
+   if(entryRoom)assert.ok(!(stair[2]<entryRoom[2]+entryRoom[4]&&stair[2]+stair[4]>entryRoom[2]&&
+    stair[3]<entryRoom[3]+entryRoom[5]&&stair[3]+stair[5]>entryRoom[3]),"Stairs obstruct the front entry");
   }
   const origin=plan.entry||plan.rooms.find(r=>stairs.some(s=>s[2]>=r[2]&&s[3]>=r[3]&&s[2]+s[4]<=r[2]+r[4]&&s[3]+s[5]<=r[3]+r[5]))?.[0];
   assert.ok(origin&&roomMap.has(origin),id+" missing floor access");
@@ -83,22 +73,13 @@ for(const id of ids){
   assert.equal(visited.size,plan.rooms.length,id+" inaccessible rooms");
   for(const [name,kind,x,y,fw,fh] of plan.items)
    assert.ok(plan.rooms.some(r=>x>=r[2]&&y>=r[3]&&x+fw<=r[2]+r[4]&&y+fh<=r[3]+r[5]),id+" item crosses rooms: "+name);
-  if(floor>0&&id!=="jp_detached_urban_3story")assert.equal(JSON.stringify(stairs.map(s=>s.slice(2))),JSON.stringify(previousStair),id+" stairs not aligned");
+  if(floor>0)assert.equal(JSON.stringify(stairs.map(s=>s.slice(2))),JSON.stringify(previousStair),id+" stairs not aligned");
   previousStair=stairs.map(s=>s.slice(2));
  }
  if(id==="jp_detached_urban_3story"){
   const doors=geometry.objects.filter(o=>o.objectType==="door");
   const roomDoors=doors.filter(o=>!o.opening?.external);
-  assert.ok(roomDoors.filter(o=>o.door?.type==="sliding").length>=8,"Townhouse indoor doors should avoid swing congestion");
-  const segments=geometry.objects.filter(o=>o.objectType==="stair");
-  assert.equal(segments.length,4,"One stair on 1F/3F and two on 2F");
-  for(const pair of ["1F-2F","2F-3F"]){
-   const both=segments.filter(o=>o.stairDesign.pairId===pair);
-   assert.equal(both.length,2,"Each physical pair must appear on both connected floors");
-   assert.equal(JSON.stringify(both[0].geometry),JSON.stringify(both[1].geometry),
-    "The same flight must align between the two connected floors");
-   assert.notEqual(both[0].floorId,both[1].floorId);
-  }
+  assert.ok(roomDoors.filter(o=>o.door?.type==="sliding").length>=10,"Townhouse indoor doors should avoid swing congestion");
  }
  console.log("PASS",id,template.modernPlan.length,"floors",geometry.objects.length,"objects");
 }
