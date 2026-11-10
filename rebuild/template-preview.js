@@ -110,15 +110,46 @@
    svg.append(shape);
    if(type==="stair"&&g.type==="rect"){
     if(obj.stairDesign?.type==="switchback"){
-     // Draw two narrow runs and a turning landing: the full rectangular
-     // footprint is NOT the clear width of a single residential stair.
-     const middle=g.x+g.width/2,landing=g.y+g.height*.29;
-     svg.append(S("line",{x1:middle,y1:g.y,x2:middle,y2:g.y+g.height,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}));
-     svg.append(S("line",{x1:g.x,y1:landing,x2:g.x+g.width,y2:landing,stroke:"#c0d7dc","stroke-width":strokeWidth*.6}));
-     for(let i=1;i<7;i++){
-      const yy=landing+(g.height-(landing-g.y))*i/7;
-      for(const [x1,x2] of [[g.x,middle],[middle,g.x+g.width]])
-       svg.append(S("line",{x1,y1:yy,x2,y2:yy,stroke:"#c0d7dc","stroke-width":strokeWidth*.55}));
+     // The U shape is a plan-direction diagram, not six parallel rectangles.
+     // Read it from the lower-left entrance, up the left flight, across the
+     // top landing, and down the right flight to the upper-floor exit.
+     const left=g.x,right=g.x+g.width,top=g.y,bottom=g.y+g.height;
+     const mid=(left+right)/2,turn=top+g.height*.28;
+     const pad=Math.min(g.width,g.height)*.08;
+     const white="#effcff",pathColor="#f8ca68";
+     svg.append(S("rect",{x:left,y:top,width:g.width,height:turn-top,fill:"rgba(92,144,160,.4)",stroke:"#bad6df","stroke-width":strokeWidth*.55}));
+     svg.append(S("line",{x1:mid,y1:turn,x2:mid,y2:bottom,stroke:white,"stroke-width":strokeWidth*.7}));
+     svg.append(S("line",{x1:left,y1:turn,x2:right,y2:turn,stroke:white,"stroke-width":strokeWidth*.7}));
+     for(let step=1;step<=6;step++){
+      const yy=turn+(bottom-turn)*step/7;
+      for(const [x1,x2] of [[left,mid],[mid,right]])
+       svg.append(S("line",{x1,y1:yy,x2,y2:yy,stroke:"#abcbd4","stroke-width":strokeWidth*.48}));
+     }
+     // Both flight arrows are deliberately separate from stair tread lines.
+     const xLeft=(left+mid)/2,xRight=(mid+right)/2;
+     const yLo=bottom-pad,yHi=turn+pad;
+     const route="M"+xLeft+" "+yLo+" L"+xLeft+" "+yHi+
+      " Q"+xLeft+" "+(top+pad)+" "+mid+" "+(top+pad)+
+      " Q"+xRight+" "+(top+pad)+" "+xRight+" "+yHi+
+      " L"+xRight+" "+yLo;
+     svg.append(S("path",{d:route,fill:"none",stroke:pathColor,"stroke-width":strokeWidth*1.4,
+      "stroke-linecap":"round","stroke-linejoin":"round","stroke-dasharray":"none"}));
+     const tip=pad*.53;
+     svg.append(S("path",{d:"M"+(xRight-tip)+" "+(yLo-tip*1.5)+
+      " L"+xRight+" "+yLo+" L"+(xRight+tip)+" "+(yLo-tip*1.5),
+      fill:"none",stroke:pathColor,"stroke-width":strokeWidth*1.4,
+      "stroke-linecap":"round","stroke-linejoin":"round"}));
+     if(!small){
+      const labelSize=Math.max(strokeWidth*3.5,g.width*.105);
+      const mark=(x,y,label,align="middle")=>{
+       const txt=S("text",{x,y,fill:white,"font-size":labelSize,
+        "font-weight":"700","text-anchor":align,
+        stroke:"#17333c","stroke-width":labelSize*.24,"paint-order":"stroke"});
+       txt.textContent=label;svg.append(txt);
+      };
+      mark(xLeft,bottom+labelSize*1.18,"上り口");
+      mark(mid,top-labelSize*.3,"折返し");
+      mark(xRight,bottom+labelSize*1.18,"上階側");
      }
     }else{
      const n=6,horizontal=g.height>=g.width;
