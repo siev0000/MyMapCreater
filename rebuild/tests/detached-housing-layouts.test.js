@@ -39,6 +39,17 @@ for(const id of ids){
    adjacency.get(a).push(b);adjacency.get(b).push(a);
   }
   const stairs=plan.items.filter(i=>i[1]==="stair");
+  if(id==="jp_detached_urban_3story"){
+   assert.equal(stairs.length,1,"Each urban townhouse floor must have exactly one staircase");
+   const stair=stairs[0],entryRoom=plan.entry&&roomMap.get(plan.entry);
+   const stairRoom=roomMap.get("stairroom");
+   assert.ok(stairRoom,"Urban townhouse must have a separate stairwell");
+   assert.ok(stair[2]>=stairRoom[2]&&stair[3]>=stairRoom[3]&&
+    stair[2]+stair[4]<=stairRoom[2]+stairRoom[4]&&
+    stair[3]+stair[5]<=stairRoom[3]+stairRoom[5],"Stair must fit inside the stairwell");
+   if(entryRoom)assert.ok(!(stair[2]<entryRoom[2]+entryRoom[4]&&stair[2]+stair[4]>entryRoom[2]&&
+    stair[3]<entryRoom[3]+entryRoom[5]&&stair[3]+stair[5]>entryRoom[3]),"Stairs obstruct the front entry");
+  }
   const origin=plan.entry||plan.rooms.find(r=>stairs.some(s=>s[2]>=r[2]&&s[3]>=r[3]&&s[2]+s[4]<=r[2]+r[4]&&s[3]+s[5]<=r[3]+r[5]))?.[0];
   assert.ok(origin&&roomMap.has(origin),id+" missing floor access");
   const visited=new Set([origin]),queue=[origin];
@@ -48,6 +59,11 @@ for(const id of ids){
    assert.ok(plan.rooms.some(r=>x>=r[2]&&y>=r[3]&&x+fw<=r[2]+r[4]&&y+fh<=r[3]+r[5]),id+" item crosses rooms: "+name);
   if(floor>0)assert.equal(JSON.stringify(stairs.map(s=>s.slice(2))),JSON.stringify(previousStair),id+" stairs not aligned");
   previousStair=stairs.map(s=>s.slice(2));
+ }
+ if(id==="jp_detached_urban_3story"){
+  const doors=geometry.objects.filter(o=>o.objectType==="door");
+  const roomDoors=doors.filter(o=>!o.opening?.external);
+  assert.ok(roomDoors.filter(o=>o.door?.type==="sliding").length>=10,"Townhouse indoor doors should avoid swing congestion");
  }
  console.log("PASS",id,template.modernPlan.length,"floors",geometry.objects.length,"objects");
 }
