@@ -143,6 +143,33 @@ const communalLayouts=[
 for(const [id,name,cells,floors,layout,description,category,facilityMode,podsPerFloor] of communalLayouts)
  presets.push({id,name,cells,floors,layout,description,category,facilityMode,podsPerFloor,worldStyle:"machine",entranceSide:"center"});
 
+// Middle-layer proposals: no canonical facility placement or layout is asserted.
+presets.push(...[
+ {id:"machine_mid_personal_workshop",name:"個人工房・小型",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["個別設計・作業室","依頼相談室","部品保管室","試作調整室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_weapon_workshop",name:"武器製造・改造工房",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["武器加工室","制御・設計室","銃器調整室","部品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_armor_workshop",name:"機体整備・外装工房",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["外装整備室","機体診断室","装甲加工室","部品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_electronics_workshop",name:"精密電子機器工房",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["電子制御調整室","計測室","センサー組立室","部品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_prototype_lab",name:"装備開発・試作ラボ",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"lab",roomNames:["試作開発室","設計記録室","性能測定室","試作品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_selrink_workshop",name:"セルリンクの工房（仮間取り）",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["汎用改造作業室","規格変換・設計室","互換部品保管室","複合装備調整室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_kerank_workshop",name:"ケランクの工房（仮間取り）",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["重火器作業室","機械強度検査室","装甲加工室","重量部品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_borsko_workshop",name:"ボルスコの工房（仮間取り）",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["精密射撃調整室","照準・計測室","センサー統合室","電子部品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_equipment_shop",name:"武器・装備販売店",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"market",roomNames:["装備展示・販売区","販売管理室","受渡・相談区","商品保管区"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_parts_shop",name:"素材・部品販売店",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"market",roomNames:["部品販売区","査定・登録室","工具・素材販売区","在庫保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_market",name:"市場・交易施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"market",roomNames:["交易・売場区","取引管理室","受渡・検品区","貨物保管区"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_guild_reception",name:"ギルド受付・報酬施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"guild",roomNames:["任務受付室","依頼検索室","完了報告室","報酬査定室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_guild_storage",name:"ギルド倉庫・支給品管理所",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"storage",roomNames:["装備一時保管室","登録管理室","回収品検品室","支給品倉庫"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_plant_processing",name:"植物素材加工場",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"production",roomNames:["植物原料加工室","品質検査室","乾燥・選別室","加工品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_fuel_refinery",name:"燃料精製・製造施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"production",roomNames:["燃料加工室","安全監視室","精製制御室","製品保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_fiber_resin",name:"樹脂・繊維加工場",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"production",roomNames:["繊維加工室","品質検査室","樹脂加工室","原料保管室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_nursery",name:"栽培温室・育成施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"greenhouse",roomNames:["育苗区","環境制御室","栽培区","培養資材室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_creature_holding",name:"生物飼育・一時保管施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"containment",roomNames:["生物保管区","環境監視室","飼育管理区","捕獲器材庫"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_lounge",name:"交流・娯楽施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"social",roomNames:["交流ラウンジ","情報端末室","共用活動室","設備管理室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_communications",name:"通信所・情報掲示施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"terminal",roomNames:["情報掲示室","通信管理室","照会端末室","記録室"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_heavy_bay",name:"大型機体整備・搬入口",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["大型機整備室","安全管理室","搬入・点検室","交換部品庫"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_quarantine",name:"生物隔離・検査施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"containment",roomNames:["隔離検査室","監視制御室","隔離待機室","防護器材庫"],notionStatus:"layout-proposal"},
+ {id:"machine_mid_emergency_repair",name:"緊急修理・救護施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["応急修理室","診断・記録室","停止保管室","交換部品庫"],notionStatus:"layout-proposal"}
+]);
+
 /* Modern Japanese housing: original playable layouts informed by typical 1R/1K/LDK
    arrangements (UR Housing / LIFULL), not tracings of any advertised property. */
 const modernHousing=[
@@ -768,7 +795,7 @@ function generateMachine(t,options={}){
  const corridorW=4,cL=Math.floor((W-corridorW)/2),cR=cL+corridorW;
  const leftW=cL,rightW=W-cR;
  const topH=Math.max(6,Math.floor(H*.50)),bottomH=H-topH;
- const roomNames=t.facilityMode==="pods"?["休眠区画A","休眠区画B","休眠区画C","休眠区画D"]:
+ const roomNames=t.roomNames||(t.facilityMode==="pods"?["休眠区画A","休眠区画B","休眠区画C","休眠区画D"]:
   t.facilityMode==="housing"||["machine_residence","machine_rest"].includes(t.id)?
    ["個体休止室A","共用充電室","個体休止室B","端末・燃料管理室"]:
   t.facilityMode==="fuel"||t.id==="machine_fuel"?
@@ -792,7 +819,7 @@ function generateMachine(t,options={}){
    ["認証検査室","警備制御室","通行照合室","隔離待機室"]:
   t.id==="machine_cargo_checkpoint"?
    ["貨物搬入検査室","搬送制御室","仕分け・仮置室","登録記録室"]:
-   ["作業区A","管理室","作業区B","保管室"];
+   ["作業区A","管理室","作業区B","保管室"]);
  const mode=t.facilityMode||"generic";
  const line=(a,b,c,d)=>({type:"polyline",points:[at(a,b),at(c,d)]});
  const addWall=(f,a,b,c,d)=>{if(Math.hypot(c-a,d-b)>1e-6)add("区画壁","wall",f,line(a,b,c,d))};
@@ -816,7 +843,7 @@ function generateMachine(t,options={}){
   // Use two genuinely different plan archetypes. Pod halls, charging bays
   // and bulk logistics need open banks; residences, labs, inspections and
   // offices need enclosed individual rooms. Do not merely rename one plan.
-  const openBank=["pods","charging","fuel"].includes(mode)||
+  const openBank=["pods","charging","fuel","market","storage","greenhouse"].includes(mode)||
    ["machine_supply","machine_cargo_checkpoint"].includes(t.id);
   const r=openBank?[
    {id:"left_full",name:t.id==="machine_cargo_checkpoint"?"貨物仕分け・仮置区":roomNames[0],x:0,y:0,w:leftW,h:H,side:"left"},
@@ -896,6 +923,7 @@ function generateMachine(t,options={}){
    const station=mode==="pods"||mode==="housing"?"dormancy_pod":
     mode==="fuel"?"fuel_dispenser":mode==="charging"?"charging_station":
     mode==="terminal"?"terminal_device":
+    t.roomNames?(room.name.includes("保管")||room.name.includes("倉庫")?"storage_container":room.name.includes("燃料")?"fuel_dispenser":room.name.includes("加工")||room.name.includes("作業")||room.name.includes("整備")||room.name.includes("組立")||room.name.includes("試作")?"workbench":"terminal_device"):
     t.id==="machine_maintenance"?(room.id==="left_top"?"workbench":"terminal_device"):
     t.id==="machine_supply"?(room.id==="right_full"?"terminal_device":"storage_container"):
     t.id==="machine_reclaim_factory"?
