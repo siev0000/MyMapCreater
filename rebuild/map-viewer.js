@@ -521,6 +521,19 @@ function create(opts){
  // normal geometry for selection, scaling and floor filtering.
  function traceIndoorShape(obj,emphasized=false){
   const kind=obj.shapePresetId||(obj.objectType==="stair"?"stair":null),g=obj.geometry;
+  if(kind==="forest_canopy_cluster"){
+   const trees=Array.isArray(obj.forestCanopies)?obj.forestCanopies:[];
+   ctx.save();
+   ctx.globalAlpha=.77;
+   for(const [tx,ty,diameter,needle] of trees){
+    if(!Number.isFinite(tx)||!Number.isFinite(ty)||!Number.isFinite(diameter)||diameter<=0)continue;
+    ctx.fillStyle=needle?"#356e53":"#438a5b";
+    ctx.beginPath();ctx.arc(tx,ty,diameter*.47,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=needle?"#4b8967":"#66a477";
+    ctx.beginPath();ctx.arc(tx-diameter*.12,ty-diameter*.12,diameter*.25,0,Math.PI*2);ctx.fill();
+   }
+   ctx.restore();return true;
+  }
   if(kind==="room_zone")return false; // Room selection must not repaint an opaque rectangle over furniture.
   if(!kind||g?.type!=="rect"||g.width<=0||g.height<=0)return false;
   const {x,y,width:w,height:h}=g,accent=emphasized?"#ffefa7":"#9fc7d0";
