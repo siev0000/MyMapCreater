@@ -75,6 +75,16 @@ for(const t of templates){
    const pods=equipment.filter(x=>x.shapePresetId==="dormancy_pod");
    assert.equal(pods.length,t.podsPerFloor,t.id+" requested pod count");
   }
+  if(t.facilityMode==="housing"||t.id==="machine_rest")
+   assert.ok(equipment.some(x=>x.shapePresetId==="charging_station"),
+    t.id+" a machine residence requires a usable charging point");
+  if(t.id==="machine_rest")
+   assert.ok(equipment.some(x=>x.shapePresetId==="fuel_dispenser"),
+    "The shared rest facility must retain fuel service");
+  if(["machine_supply","machine_cargo_checkpoint"].includes(t.id)){
+   assert.ok(equipment.some(x=>x.shapePresetId==="storage_container"),t.id+" storage is required");
+   assert.ok(equipment.some(x=>x.shapePresetId==="terminal_device"),t.id+" management terminal is required");
+  }
   roomCount+=rooms.length;
  }
 }
