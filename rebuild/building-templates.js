@@ -843,7 +843,7 @@ function generateMachine(t,options={}){
   // Use two genuinely different plan archetypes. Pod halls, charging bays
   // and bulk logistics need open banks; residences, labs, inspections and
   // offices need enclosed individual rooms. Do not merely rename one plan.
-  const openBank=["pods","charging","fuel","market","storage","greenhouse"].includes(mode)||
+  const openBank=["pods","charging","fuel"].includes(mode)||
    ["machine_supply","machine_cargo_checkpoint"].includes(t.id);
   const r=openBank?[
    {id:"left_full",name:t.id==="machine_cargo_checkpoint"?"貨物仕分け・仮置区":roomNames[0],x:0,y:0,w:leftW,h:H,side:"left"},
