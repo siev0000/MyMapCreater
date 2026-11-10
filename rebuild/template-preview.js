@@ -109,7 +109,40 @@
     "rotate("+g.rotation+" "+(g.x+g.width/2)+" "+(g.y+g.height/2)+")");
    svg.append(shape);
    if(type==="stair"&&g.type==="rect"){
-    if(obj.stairDesign?.type==="switchback"){
+    if(obj.stairDesign?.type==="switchback-flight"){
+     const left=g.x,right=g.x+g.width,top=g.y,bottom=g.y+g.height;
+     const mid=(left+right)/2,turn=top+g.height*.28;
+     const yHi=top+g.height*.15,yLo=top+g.height*.88;
+     const l=left+g.width*.25,r=left+g.width*.75;
+     const up=obj.stairDesign.direction==="up",color=up?"#82e3f4":"#ffc875";
+     svg.append(S("rect",{x:left,y:top,width:g.width,height:turn-top,
+      fill:"rgba(92,144,160,.4)",stroke:"#bad6df","stroke-width":strokeWidth*.55}));
+     svg.append(S("line",{x1:mid,y1:turn,x2:mid,y2:bottom,
+      stroke:"#c3dde4","stroke-width":strokeWidth*.6}));
+     for(let k=1;k<7;k++){
+      const yy=turn+(bottom-turn)*k/7;
+      for(const [a,b] of [[left,mid],[mid,right]])
+       svg.append(S("line",{x1:a,y1:yy,x2:b,y2:yy,stroke:"#9fbdc8",
+        "stroke-width":strokeWidth*.45}));
+     }
+     const xStart=up?l:r,xEnd=up?r:l;
+     const route="M"+xStart+" "+yLo+" L"+xStart+" "+turn+
+      " Q"+xStart+" "+yHi+" "+mid+" "+yHi+
+      " Q"+xEnd+" "+yHi+" "+xEnd+" "+turn+" L"+xEnd+" "+yLo;
+     svg.append(S("path",{d:route,fill:"none",stroke:color,
+      "stroke-width":strokeWidth*1.4,"stroke-linecap":"round"}));
+     const head=g.width*.07;
+     svg.append(S("path",{d:"M"+(xEnd-head)+" "+(yLo-head)+" L"+xEnd+" "+yLo+
+      " L"+(xEnd+head)+" "+(yLo-head),fill:"none",stroke:color,
+      "stroke-width":strokeWidth*1.35}));
+     if(!small){
+      const txt=S("text",{x:mid,y:turn+g.height*.15,fill:color,
+       "text-anchor":"middle","font-size":Math.max(strokeWidth*2.3,g.width*.2),
+       "font-weight":"700",stroke:"#12303d","stroke-width":strokeWidth*.8,
+       "paint-order":"stroke"});
+      txt.textContent=up?"上階へ":"下階へ";svg.append(txt);
+     }
+    }else if(obj.stairDesign?.type==="switchback"){
      // The U shape is a plan-direction diagram, not six parallel rectangles.
      // Read it from the lower-left entrance, up the left flight, across the
      // top landing, and down the right flight to the upper-floor exit.
