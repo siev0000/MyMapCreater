@@ -56,6 +56,19 @@ for(const id of ids){
    assert.ok(host,id+" stair must stay inside a circulation room");
   }
   if(id==="jp_detached_urban_3story"){
+   const stairObj=geometry.objects.find(o=>o.objectType==="stair"&&o.floorId===(floor+1)+"F");
+   const stair=stairs[0],stairBottom=stair[3]+stair[5],stairRoom=roomMap.get("stairroom");
+   const hall=roomMap.get("hall");
+   assert.ok(hall&&stairRoom,"Townhouse hallway and stairwell are required");
+   assert.equal(hall[2]+hall[4],stairRoom[2],"Hall must meet the stairwell");
+   const entryDoor=geometry.objects.filter(o=>o.objectType==="door"&&o.floorId===(floor+1)+"F")
+    .find(o=>o.geometry?.points?.length===2&&o.geometry.points.every(p=>Math.abs(p[0]/2-stairRoom[2])<1e-7)&&
+     Math.min(...o.geometry.points.map(p=>p[1]/2))>stairBottom);
+   assert.ok(entryDoor,"Stairwell must be entered through a doorway below the stair footprint");
+   assert.ok(Math.max(...entryDoor.geometry.points.map(p=>p[1]/2))<=stairRoom[3]+stairRoom[5],"Stair entry must fit inside the lower clear landing");
+   assert.equal(stairObj?.stairDesign?.type,"switchback");
+  }
+  if(id==="jp_detached_urban_3story"){
    assert.equal(stairs.length,1,"Each urban townhouse floor must have exactly one staircase");
    const stair=stairs[0],entryRoom=plan.entry&&roomMap.get(plan.entry);
    const stairRoom=roomMap.get("stairroom");
