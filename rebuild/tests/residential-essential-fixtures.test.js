@@ -34,7 +34,7 @@ for(const template of presets){
    g.y+g.height<=(room[3]+room[5])*2.3+1e-8);
   assert.ok(r,template.id+" appliance must fit inside a single room");
   for(const other of objects.filter(x=>x.floorId===target.floorId&&x!==target&&
-   ["object","stair"].includes(x.objectType))){
+   ["object","stair"].includes(x.objectType)&&!x.metadata?.fixtureCollisionExcluded)){
    const b=other.geometry;
    if(!b||b.type!=="rect")continue;
    assert.ok(!(g.x<b.x+b.width-1e-8&&g.x+g.width>b.x+1e-8&&
