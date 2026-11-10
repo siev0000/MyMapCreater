@@ -131,6 +131,9 @@ function create(opts){
  let scene=null,selected=null,viewRootId=null,sceneKey="",request=0,projection=null;
  const interiorCache=new Map(),interiorPending=new Map(),interiorLoaded=new Set();
  const linkedDoors=new Map();
+ // Door opening is a viewer interaction, never an implicit edit to saved Scene JSON.
+ const doorOpenOverrides=new Map();
+ const doorIsOpen=obj=>doorOpenOverrides.has(obj.id)?doorOpenOverrides.get(obj.id):obj.door?.state==="open";
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
  let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null,handleDrag=null,suppressClick=false;
  let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
@@ -380,6 +383,18 @@ function create(opts){
   const [a,b]=points,dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
   if(len<=0)return false;
   const door=obj.door||{};
+  const isOpen=doorIsOpen(obj);
+  if(!isOpen){
+   // A closed leaf occupies the actual opening. Do not fake a wall:
+   // linked walls and permanent door gaps remain unchanged.
+   ctx.save();ctx.strokeStyle=emphasized?"#ffefa7":(obj.style?.stroke||"#f0be72");
+   ctx.lineWidth=(emphasized?3.8:3)/scale();
+   ctx.lineCap="butt";ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();
+   const cx=(a[0]+b[0])/2,cy=(a[1]+b[1])/2;
+   ctx.fillStyle=ctx.strokeStyle;
+   ctx.beginPath();ctx.arc(cx,cy,Math.max(.85/scale(),len*.025),0,Math.PI*2);ctx.fill();
+   ctx.restore();return true;
+  }
   if(door.leafCount===2){
    // Both leaf types share the same full opening [a,b]; no extra wall gaps or IDs.
    const vx=dx/len,vy=dy/len,half=len/2;
@@ -1218,7 +1233,7 @@ function create(opts){
  function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;handleDrag=null;draw();return editMode}
  function replaceScene(next,{preserveView=true,selectedId=null}={}){
   const valid=sceneCheck(clone(next));
-  ++request;scene=valid;viewRootId=null;objectDrag=null;handleDrag=null;
+  ++request;scene=valid;doorOpenOverrides.clear();viewRootId=null;objectDrag=null;handleDrag=null;
   interiorLoaded.clear();
   for(const obj of scene.objects)if(obj.interiorSource&&scene.objects.some(child=>child.parentId===obj.id))interiorLoaded.add(obj.id);
   if(!preserveView){initialScale=computeScale();zoom=1;panX=0;panY=0}
@@ -1294,6 +1309,10 @@ function create(opts){
   const [x,y]=worldAt(px,py),tol=8/scale();
   const candidates=sortedVisible().filter(o=>o.selectable!==false&&contains(o,x,y,tol));
   if(!candidates.length)return null;
+  // A door line is narrower than its room polygon; prefer it at the tap point.
+  // Otherwise the encompassing room receives the click and doors cannot toggle.
+  const doors=candidates.filter(o=>o.objectType==="door"&&o.geometry?.type==="polyline");
+  if(doors.length)return doors[doors.length-1];
   const lookup=new Map(scene.objects.map(o=>[o.id,o]));
   const ancestors=o=>{
    let n=o,ids=[];while(n){ids.unshift(n.id);n=lookup.get(n.parentId)}
@@ -1440,7 +1459,7 @@ function create(opts){
  async function show(mapId,viewId,source){
   const key=[mapId,viewId||"",source||""].join("::");
   if(key===projection&&scene)return;
-  projection=key;sceneKey=mapId;selected=null;viewRootId=null;scene=null;interiorLoaded.clear();
+  projection=key;sceneKey=mapId;selected=null;viewRootId=null;scene=null;interiorLoaded.clear();doorOpenOverrides.clear();
   if(opts.info)opts.info.hidden=true;
   reset();
   const myRequest=++request;
@@ -1598,6 +1617,14 @@ function create(opts){
     // Legacy single-destination stair behavior stays intact.
     showDetails(hit);
     if(!setFloor(hit.connection.toFloorId))showDetails(hit);
+   }else if(!editMode&&hit?.objectType==="door"){
+    const nextOpen=!doorIsOpen(hit);
+    doorOpenOverrides.set(hit.id,nextOpen);
+    showDetails(hit);
+    if(opts.infoText)opts.infoText.textContent=(nextOpen?"開いています":"閉じています")+
+     "。扉をもう一度タップすると"+(nextOpen?"閉められます。":"開けられます。")+
+     (hit.detail?" "+hit.detail:"");
+    if(typeof opts.onDoorToggled==="function")opts.onDoorToggled(hit.id,nextOpen);
    }else showDetails(hit||(viewRootId?scene.objects.find(o=>o.id===viewRootId):null));
   }
  }
