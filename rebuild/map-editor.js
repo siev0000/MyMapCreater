@@ -10,6 +10,37 @@ const checked=id=>$(id).checked;
 const state={scene:null,selectedId:null,options:[],undo:[],redo:[],dragBefore:null,
  savingName:"",dirty:false,internal:false,currentOptionKey:null,currentWorldId:null,worlds:[],batchIds:new Set()};
 let viewer;
+let restoringPreviousSelection=false;
+const editorSessionKey="mymapcreater:editor-view-state:v1";
+function readPreviousEditorState(){
+ try{const x=JSON.parse(localStorage.getItem(editorSessionKey)||"null");
+  return x&&x.version===1&&typeof x.mapKey==="string"?x:null;
+ }catch(_){return null}
+}
+function savePreviousEditorState(){
+ if(restoringPreviousSelection||!state.currentOptionKey)return;
+ try{localStorage.setItem(editorSessionKey,JSON.stringify({
+  version:1,mapKey:state.currentOptionKey,worldId:state.currentWorldId,
+  objectId:state.selectedId||null,
+  category:$("object-category-filter")?.value||"",
+  search:$("object-search")?.value||"",
+  template:$("building-template")?.value||"",
+  stagedWorld:$("world-select")?.value||state.currentWorldId,
+  stagedMap:$("world-map-select")?.value||null
+ }))}catch(_){}
+}
+function restorePreviousEditorFields(saved){
+ if(!saved)return;
+ for(const [id,value] of [["object-category-filter",saved.category],["object-search",saved.search],["building-template",saved.template]]){
+  const element=$(id);
+  if(element&&typeof value==="string"){
+   if(element.tagName!=="SELECT"||[...element.options].some(o=>o.value===value))element.value=value;
+  }
+ }
+ const candidate=state.options.find(o=>o.key===saved.stagedMap);
+ if(candidate&&candidate.worldId===saved.stagedWorld)stageWorldChoice(candidate.worldId,candidate.key);
+ showObjects();
+}
 const gridDefaults={visible:true,snap:true,spacing:2,fraction:.5,originX:0,originY:0};
 let gridState={...gridDefaults};
 function readGridFields(){
@@ -553,7 +584,7 @@ function initBuildingTemplates(){
   $("building-template-description").textContent=t.description+"｜"+(t.custom?"保存時 "+t.originalSize.join("×")+"座標":w+"×"+h+"マス（"+(w*.5)+"×"+(h*.5)+"m）")+"｜"+t.floors+"階";
   $("building-base-name").value=t.name;
  }
- picker.onchange=describe;
+ picker.onchange=()=>{describe();savePreviousEditorState()};
  describe();
  if(window.AAMapTemplatePreview&&$("template-preview-list"))
   window.AAMapTemplatePreview.init(window.AAMapBuildingTemplates,picker);
@@ -1066,9 +1097,9 @@ bind("editor-interior-floor",()=>{
  const id=input("editor-interior-floor");
  if(viewer.setFloor(id))renderSelected();
 },"change");
-bind("object-search",showObjects,"input");
-bind("object-category-filter",showObjects,"change");
-bind("clear-search",()=>{$("object-search").value="";showObjects()},"click");
+bind("object-search",()=>{showObjects();savePreviousEditorState()},"input");
+bind("object-category-filter",()=>{showObjects();savePreviousEditorState()},"change");
+bind("clear-search",()=>{$("object-search").value="";showObjects();savePreviousEditorState()},"click");
 bind("move-mode",()=>{
  const enabled=viewer.setEditMode(checked("move-mode"));
  $("edit-hint").textContent=enabled?
@@ -1336,6 +1367,7 @@ viewer=window.AAMapViewer.create({
  onLayoutError:(_map,error)=>notice("読み込みエラー："+error,"error"),
  onSelectionChanged:(_map,obj)=>{
   state.selectedId=obj?.id||null;showObjects();renderSelected();
+  savePreviousEditorState();
   // Canvas taps select without zoom. Make polygon/rect interior selection behave
   // like the read-only viewer's focused building navigation.
   if(!state.internal&&!interiorFocusGuard&&obj?.floors?.length&&
@@ -1420,10 +1452,21 @@ async function init(){
   if(!opts.length)throw Error("JSONの参照先マップがありません");
   state.options=opts;
   const hash=decodeURIComponent(location.hash.slice(1));
+  const saved=readPreviousEditorState();
   const fallback=opts.find(o=>o.id===config.defaultMapId)||opts[0];
-  const first=opts.find(o=>o.key===hash||o.id===hash)||fallback;
+  const first=opts.find(o=>o.key===hash||o.id===hash)||
+   opts.find(o=>o.key===saved?.mapKey)||fallback;
   renderWorldSelection(first.worldId,first.key);
-  await load(first);
+  restoringPreviousSelection=true;
+  try{
+   await load(first);
+   restorePreviousEditorFields(saved);
+   if(saved?.mapKey===first.key&&typeof saved.objectId==="string"&&
+      sceneNow()?.objects.some(o=>o.id===saved.objectId)){
+    viewer.selectItemById(saved.objectId,{focus:true,force:true});
+   }
+  }finally{restoringPreviousSelection=false}
+  savePreviousEditorState();
   if(new URLSearchParams(location.search).has("import")){
    window.AAMapEditorUI?.selectTab("files",true);
    $("geo-import-panel").hidden=false;
@@ -1460,6 +1503,7 @@ async function load(option){
   setDirty(false);
  }else await viewer.show(option.id,option.projection||null,option.source);
  geoButtons();
+ savePreviousEditorState();
  if(sceneNow())notice("編集する図形を選択してください");
 }
 bind("scene-select",async()=>{
@@ -1472,11 +1516,12 @@ bind("scene-select",async()=>{
 });
 bind("world-select",()=>{
  const wanted=input("world-select");
- stageWorldChoice(wanted);
+ stageWorldChoice(wanted);savePreviousEditorState();
 },"change");
 bind("world-map-select",()=>{
  const choice=state.options.find(o=>o.key===input("world-map-select"));
  $("world-map-open").disabled=!choice;
+ savePreviousEditorState();
  $("world-open-status").textContent=choice
   ?"選択中："+choice.title+"。「開く」でプレビューに反映します。"
   :"開くマップを選んでください。";
