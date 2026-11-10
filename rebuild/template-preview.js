@@ -437,8 +437,9 @@
   description.hidden=editing&&settings;
   $("template-detail-settings-tab").setAttribute("aria-selected",String(editing&&settings));
   $("template-detail-description-tab").setAttribute("aria-selected",String(!editing||!settings));
-  $("template-detail-settings-tab").hidden=!editing;
-  $("template-detail-description-tab").hidden=!editing;
+  // Keep both tabs visible in preview and edit modes so users can switch back.
+  $("template-detail-settings-tab").hidden=false;
+  $("template-detail-description-tab").hidden=false;
  }
  function refreshItemList(){
   const root=$("template-item-list");if(!root)return;
@@ -828,7 +829,7 @@
    $("template-era-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
    $("template-use-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
    $("template-mode-toggle").addEventListener("click",()=>setMode(!editing));
-   $("template-detail-settings-tab").addEventListener("click",()=>setDetailTab("settings"));
+   $("template-detail-settings-tab").addEventListener("click",()=>{if(!editing)setMode(true);setDetailTab("settings")});
    $("template-detail-description-tab").addEventListener("click",()=>setDetailTab("description"));
    fillOptions($("template-item-category"),Object.keys(palette()).map(name=>[name,name]));
    updateCatalog();
