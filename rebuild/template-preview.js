@@ -811,6 +811,16 @@
   if(!modal.dataset.initialized){
    modal.dataset.initialized="1";
    $("template-preview-close").addEventListener("click",close);
+   $("template-sidebar-toggle").addEventListener("click",()=>{
+    const layout=$("template-preview-picker").parentElement;
+    const collapsed=layout.dataset.pickerCollapsed!=="true";
+    layout.dataset.pickerCollapsed=String(collapsed);
+    const toggle=$("template-sidebar-toggle");
+    toggle.textContent=collapsed?"一覧を表示 ▶":"一覧を隠す ◀";
+    toggle.setAttribute("aria-expanded",String(!collapsed));
+    toggle.title=collapsed?"絞り込みサイドバーを表示":"絞り込みサイドバーを最小化";
+    if(typeof previewViewer!=="undefined"&&previewViewer?.redraw)previewViewer.redraw();
+   });
    $("template-preview-open").addEventListener("click",open);
    $("template-preview-filter").addEventListener("input",()=>{refresh();writeSavedPreview()});
    $("template-era-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
