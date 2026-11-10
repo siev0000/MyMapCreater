@@ -802,7 +802,23 @@ function generateMachine(t,options={}){
    {id:"right_bottom",name:roomNames[3],x:cR,y:topH,w:rightW,h:bottomH,side:"right"},
    {id:"corridor",name:"共用通路・出入口",x:cL,y:0,w:corridorW,h:H,side:"middle"}
   ];
-  add("床面 "+floor,"slab",floor,rect(0,0,W,H));
+  const stairRoom=stairs?r.find(a=>a.id==="right_top"):null;
+  const stairBox=stairRoom?{
+   x:stairRoom.x+stairRoom.w-4.2,y:stairRoom.y+.5,w:3.6,h:5.6
+  }:null;
+  if(stairBox&&(stairBox.x<stairRoom.x+.5||stairBox.y+stairBox.h>stairRoom.y+stairRoom.h-2.5))
+   throw Error("階段と下側踊り場の寸法が不足："+t.id);
+  if(z>0&&stairBox){
+   const st=stairBox;
+   // Ground floor remains a complete slab; upper floors have a matching
+   // conceptual cut-out for the aligned staircase.
+   for(const [ax,ay,aw,ah] of [[0,0,W,st.y],[0,st.y,st.x,st.h],
+     [st.x+st.w,st.y,W-st.x-st.w,st.h],[0,st.y+st.h,W,H-st.y-st.h]]){
+    if(aw>1e-7&&ah>1e-7)add("床面 "+floor,"slab",floor,rect(ax,ay,aw,ah),
+     {metadata:{templateId:t.id,generated:true,worldStyle:"machine",
+       stairFloorOpening:true,designStatus:"draft-unverified"}});
+   }
+  }else add("床面 "+floor,"slab",floor,rect(0,0,W,H));
   for(const room of r){
    room.zone=add(room.name,"region",floor,rect(room.x,room.y,room.w,room.h),
     {shapePresetId:"room_zone",metadata:{templateId:t.id,generated:true,roomId:room.id,worldStyle:"machine",designStatus:"draft-unverified"}});
@@ -816,7 +832,10 @@ function generateMachine(t,options={}){
   const gapW=Math.min(2.2,Math.min(topH,bottomH)-1.6);
   for(const room of r.filter(o=>o.side!=="middle")){
    const wallX=room.side==="left"?cL:cR;
-   const centre=room.y+room.h/2;
+   // A staircase door belongs beside the bottom approach/landing,
+   // never at the height of a stair flight in the wall.
+   const centre=stairs&&room.id==="right_top"?
+    room.y+room.h-1.4:room.y+room.h/2;
    const openA=centre-gapW/2,openB=centre+gapW/2;
    addWall(floor,wallX,room.y,wallX,openA);
    addDoor(floor,wallX,openA,wallX,openB);
@@ -828,8 +847,7 @@ function generateMachine(t,options={}){
   for(const room of r.filter(o=>o.side!=="middle")){
    if(stairs&&room.id==="right_top"){
     // Stair footprint remains in one stairwell across every floor.
-    const sx=room.x+Math.max(.7,(room.w-3.6)/2),sy=room.y+Math.max(.6,(room.h-5.6)/2);
-    const sw=3.6,sh=Math.min(5.6,room.h-1.2);
+    const sx=stairBox.x,sy=stairBox.y,sw=stairBox.w,sh=stairBox.h;
     const stair=add("階段","stair",floor,rect(sx,sy,sw,sh),
       {shapePresetId:"stair",stairDesign:{type:"switchback",flightWidthM:.8,
        footprintWidthM:sw*.5,footprintDepthM:sh*.5,
