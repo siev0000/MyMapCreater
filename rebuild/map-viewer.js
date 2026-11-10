@@ -946,7 +946,27 @@ function create(opts){
    if(pass.kind==="grid")drawGrid();
    else traceStroke(pass.obj,false);
   }
-  if(selected&&visible(selected))traceStroke(selected,true);
+  if(selected&&visible(selected)){
+   if(opts.editorSelectionEmphasis){
+    const g=selected.geometry||{};
+    ctx.save();
+    // Opt-in editor-only halo; never change saved geometry or styling.
+    if(g.type==="rect"&&rectRotation(g)){
+     const cx=g.x+g.width/2,cy=g.y+g.height/2;
+     ctx.translate(cx,cy);ctx.rotate(rectRotation(g)*Math.PI/180);ctx.translate(-cx,-cy);
+    }
+    if(g.type!=="none"&&trace(ctx,g)){
+     if(g.type==="rect"||g.type==="polygon"||g.type==="circle"||g.type==="ring"){
+      ctx.fillStyle="rgba(255,211,110,.15)";
+      ctx.fill(g.type==="ring"?"evenodd":"nonzero");
+     }
+     ctx.strokeStyle="#ffbd56";ctx.lineWidth=6/Math.max(.0001,scale());
+     ctx.lineJoin="round";ctx.stroke();
+    }
+    ctx.restore();
+   }
+   traceStroke(selected,true);
+  }
   drawEditorGrid();
   drawLabels(list);
   drawStairIndicators(list);
