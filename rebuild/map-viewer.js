@@ -568,7 +568,12 @@ function create(opts){
    ctx.fillStyle="#b4d1d8";ctx.fill();ctx.strokeStyle=accent;ctx.stroke();
   }else if(kind==="bath"||kind==="shower"){
    R(.08,.08,.84,.84,"#8ab4c2");R(.15,.15,.70,.70,"#366b83");
-   if(kind==="shower")circle(.75,.23,.075,"#bce2e9");
+   if(kind==="shower"||obj.metadata?.attachedShower){
+    // Compact Japanese bathrooms often use a bathtub-mounted shower.
+    circle(.77,.22,.085,"#d5eff1");
+    ctx.strokeStyle="#d5eff1";ctx.lineWidth=edge;
+    line(x+w*.77,y+h*.22,x+w*.86,y+h*.10);
+   }
   }else if(kind==="refrigerator"||kind==="cabinet"){
    line(x+w*.5,y,x+w*.5,y+h);
    R(.07,.09,.86,.83,"#537783",null);
