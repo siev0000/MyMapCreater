@@ -677,7 +677,7 @@ function generateModern(template,options){
    service(floor,r,"コンセント","power_outlet",r.x+r.w-.7,r.y+.12,
     "電源コンセントの仮位置。回路・負荷・設置高さは未設計。",{wall:true});
    // Only habitable rooms receive cooling. Bathroom/utility rooms are excluded.
-   service(floor,r,"エアコン","air_conditioner",r.x+.12,r.y+.12,
+   service(floor,r,"エアコン","air_conditioner",r.x+r.w/2-.24,r.y+.12,
     "室内機の仮位置。室外機・配管・室内気流は未設計。",{wall:true});
   }
   for(const r of rooms.filter(r=>/浴室|バス|トイレ|洗面|脱衣/.test(r.name)))
