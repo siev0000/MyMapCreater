@@ -116,7 +116,13 @@ const mechanical=[
  ["machine_fuel","燃料補給ステーション",[22,16],1,"front","燃料補給設備と登録端末を持つ施設","shop"],
  ["machine_terminal","端末・情報施設",[20,18],2,"cross","登録・案内・通信のための端末施設","office"],
  ["machine_maintenance","整備・充電工房",[28,22],1,"split","保守台・充電設備・診断端末を持つ工房","workshop"],
- ["machine_supply","機械物資補給所",[28,20],1,"open","燃料・部品・バッテリーなどを管理する補給所","warehouse"]
+ ["machine_supply","機械物資補給所",[28,20],1,"open","燃料・部品・バッテリーなどを管理する補給所","warehouse"],
+ ["machine_research_lab","機械研究・測定棟（汎用）",[34,26],2,"cross","AA上層などの研究・計測・試験用の編集ひな型","research"],
+ ["machine_reclaim_factory","廃部品回収・再処理棟（汎用）",[34,26],1,"cross","回収物の検査・選別・再利用を扱う編集ひな型","workshop"],
+ ["machine_guild_center","任務受付・作戦棟（汎用）",[32,24],2,"cross","任務検索・作戦会議・装備管理の編集ひな型","office"],
+ ["machine_greenhouse_control","人工自然管理・制御棟（汎用）",[30,24],1,"cross","栽培・環境・生物管理用の制御区画ひな型","research"],
+ ["machine_security_checkpoint","通行認証・検査棟（汎用）",[26,22],1,"front","通行認証・装備検査・待機区の編集ひな型","office"],
+ ["machine_cargo_checkpoint","貨物検査・仕分け棟（汎用）",[34,24],1,"cross","搬入検査・仮置・物流記録の編集ひな型","warehouse"]
 ];
 for(const [id,name,cells,floors,layout,description,category] of mechanical)
  presets.push({id,name,cells,floors,layout,description,category,worldStyle:"machine",entranceSide:"center"});
@@ -774,6 +780,18 @@ function generateMachine(t,options={}){
    ["整備作業室","充電・診断室","部品管理室","精密調整室"]:
   t.id==="machine_supply"?
    ["補給品保管区","補給管理室","燃料・電池庫","出庫・検査室"]:
+  t.id==="machine_research_lab"?
+   ["研究・計測室","情報記録室","材料分析室","試料保管室"]:
+  t.id==="machine_reclaim_factory"?
+   ["回収物検査室","再処理制御室","分解・選別室","再利用部品保管室"]:
+  t.id==="machine_guild_center"?
+   ["任務受付室","作戦会議室","検索端末室","装備・報酬管理室"]:
+  t.id==="machine_greenhouse_control"?
+   ["栽培環境制御室","生物管理室","水・土壌検査室","資材記録室"]:
+  t.id==="machine_security_checkpoint"?
+   ["認証検査室","警備制御室","通行照合室","隔離待機室"]:
+  t.id==="machine_cargo_checkpoint"?
+   ["貨物搬入検査室","搬送制御室","仕分け・仮置室","登録記録室"]:
    ["作業区A","管理室","作業区B","保管室"];
  const mode=t.facilityMode||"generic";
  const line=(a,b,c,d)=>({type:"polyline",points:[at(a,b),at(c,d)]});
@@ -866,6 +884,17 @@ function generateMachine(t,options={}){
     mode==="terminal"?"terminal_device":
     t.id==="machine_maintenance"?(room.id==="left_top"?"workbench":"terminal_device"):
     t.id==="machine_supply"?"storage_container":
+    t.id==="machine_reclaim_factory"?
+     (room.name.includes("保管")?"storage_container":"workbench"):
+    t.id==="machine_research_lab"?
+     (room.name.includes("試料")?"storage_container":"terminal_device"):
+    t.id==="machine_guild_center"?
+     (room.name.includes("装備")?"storage_container":"terminal_device"):
+    t.id==="machine_greenhouse_control"?
+     (room.name.includes("検査")?"workbench":"terminal_device"):
+    t.id==="machine_security_checkpoint"?"terminal_device":
+    t.id==="machine_cargo_checkpoint"?
+     (room.name.includes("仮置")?"storage_container":"terminal_device"):
     room.name.includes("充電")?"charging_station":room.name.includes("燃料")?"fuel_dispenser":
     room.name.includes("整備")?"workbench":"terminal_device";
    const podMode=station==="dormancy_pod";
