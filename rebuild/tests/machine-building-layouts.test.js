@@ -26,8 +26,12 @@ for(const t of templates){
   const rooms=objects.filter(o=>o.objectType==="region"),doors=objects.filter(o=>o.objectType==="door");
   const equipment=objects.filter(o=>o.objectType==="object"),stairs=objects.filter(o=>o.objectType==="stair");
   const slabs=objects.filter(o=>o.objectType==="slab"),walls=objects.filter(o=>o.objectType==="wall");
-  assert.equal(rooms.length,5,t.id+" five corridor-accessible zones per floor");
-  assert.equal(doors.length,z===0?5:4,t.id+" four interior doors and ground entrance");
+  const openBank=["pods","charging","fuel"].includes(t.facilityMode)||
+   ["machine_supply","machine_cargo_checkpoint"].includes(t.id);
+  const expectedRooms=openBank?(t.floors>1?4:3):5;
+  assert.equal(rooms.length,expectedRooms,t.id+" correct open-bay/enclosed-room archetype");
+  assert.equal(doors.length,expectedRooms-1+(z===0?1:0),
+   t.id+" every zone has a corridor door, plus the ground-floor entrance");
   assert.equal(stairs.length,t.floors>1?1:0,t.id+" stair should occupy one room");
   for(const room of rooms){assert.equal(room.displayLevel,5);assert.equal(room.parentId,root.id)}
   for(const o of equipment){
