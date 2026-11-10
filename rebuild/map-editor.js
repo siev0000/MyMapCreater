@@ -643,6 +643,13 @@ bind("building-import-file",async()=>{
   notice(items.length+"件の建物テンプレートを読み込みました","success");
  }catch(error){notice("テンプレートを読み込めません："+error.message,"error")}
 });
+// Templates use 0.5m design cells. An explicitly georeferenced map controls
+// the conversion to scene units, independently of the user's visual grid.
+function templateCellSpacing(scene){
+ const units=Number(scene?.settings?.georeference?.worldUnitsPerMeter);
+ return Number.isFinite(units)&&units>0?units*.5:gridState.spacing;
+}
+window.AAMapTemplateCellSpacing=()=>templateCellSpacing(sceneNow());
 function addBuildingTemplates(){
  const scene=sceneNow(),library=window.AAMapBuildingTemplates;
  if(!scene||!library){notice("建物テンプレートを読み込めません","error");return}
@@ -665,7 +672,11 @@ function addBuildingTemplates(){
  }
  // When aligning a template to a selected OSM footprint, it is a location anchor,
  // not a hierarchy parent. The imported footprint remains available for comparison.
- const spacing=gridState.spacing;
+ const spacing=templateCellSpacing(scene);
+ const units=Number(scene.settings?.georeference?.worldUnitsPerMeter);
+ if(Number.isFinite(units)&&units>0&&Math.abs(spacing-gridState.spacing)>1e-8){
+  notice("地図の実寸縮尺を優先します：0.5m/マス="+spacing+"座標単位（画面グリッド設定="+gridState.spacing+"）。","success");
+ }
  const box=$("map-canvas").getBoundingClientRect();
  const anchorObject=checked("town-building-at-selection")?selection:null;
  const p=anchorObject?snapPoint(centerOf(anchorObject.geometry)):snapPoint(viewer.screenToWorld(box.width/2,box.height/2));
@@ -698,7 +709,11 @@ function addBuildingTemplates(){
    if(generatedRoot)generatedRoot.interiorSource="./buildings/generated/"+id+".interior.json";
    next.objects.push(...generated.objects);
   }
-  if(applyScene(next,firstId)){viewer.selectItemById(firstId,{focus:true,force:true});notice(count+"棟の建物を追加しました。保存して確定してください（未保存）","success")}
+  if(applyScene(next,firstId)){viewer.selectItemById(firstId,{focus:true,force:true});
+  const meterBasis=Number(scene.settings?.georeference?.worldUnitsPerMeter);
+  const explanation=Number.isFinite(meterBasis)&&meterBasis>0?"地理座標の縮尺に合わせて配置":"グリッドの仮縮尺で配置（実測寸法未確認）";
+  notice(count+"棟を追加しました。"+explanation+"。JSON保存で確定してください（未保存）","success")
+ }
  }catch(error){notice("建物を追加できません："+error.message,"error")}
 }
 bind("building-add",addBuildingTemplates,"click");
