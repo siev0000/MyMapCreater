@@ -217,7 +217,7 @@ function addStationInterior(scene){
  };
  zone("waiting","駅待合スペース（仮）",{type:"rect",x,y,width:w*.65,height:h});
  zone("service","駅内設備（仮）",{type:"rect",x:x+w*.70,y:y+h*.15,width:w*.20,height:h*.35},"object");
- zone("entrance","駅出入口（仮位置）",{type:"rect",x:x+w*.3,y:y+h*.88,width:w*.25,height:h*.10},"door",
+ zone("entrance","駅出入口候補（駅舎輪郭未確認）",{type:"rect",x:x+w*.3,y:y+h*.88,width:w*.25,height:h*.10},"object",
   {fill:"#dab979",stroke:"#ffdf9c",strokeWidth:1,opacity:1});
  zone("platform","ホーム方向（模式図）",
   {type:"rect",x:x-w*.15,y:y-h*.32,width:w*1.3,height:h*.22},"object",
@@ -234,7 +234,10 @@ function enrich(scene){
  // Station stays inside the same 500m map: its original coordinate marker is the parent.
  scene.settings={...scene.settings,sakihanaInteriorDraft:VERSION,
   interiorDraftNotice:"既存建物の室内構成は参考用の仮間取りで、現地調査・公開図面による検証はしていません。駅の実際の駅舎形状も未確認です。",
-  interiorDraftCounts:{existingBuildingCount:buildings.length,generatedBuildingCount:generated,skippedBuildingCount:skipped,stationLinked}};
+  interiorDraftCounts:{existingBuildingCount:buildings.length,generatedBuildingCount:generated,skippedBuildingCount:skipped,stationLinked,
+   entranceCandidateCount:buildings.filter(o=>o.metadata?.entranceDraft===true).length,
+   roomDoorCandidateCount:buildings.reduce((n,o)=>n+(o.metadata?.interiorDoorsDraft||0),0),
+   circulationVerifiedCount:0,completedBuildingCount:0}};
  return scene;
 }
 root.AASakihanaInteriorDraft={enrich,version:VERSION};
