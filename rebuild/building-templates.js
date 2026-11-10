@@ -255,6 +255,20 @@ function generateModern(template,options){
   }
   const rooms=plan.rooms.map(([id,name,rx,ry,rw,rh])=>({id,name,x:rx,y:ry,w:rw,h:rh}));
   const roomMap=new Map(rooms.map(r=>[r.id,r]));
+  const roomObjectIds=new Map();
+  const containingRoom=(rx,ry,rw,rh)=>rooms.find(room=>
+   rx>=room.x-1e-7&&ry>=room.y-1e-7&&
+   rx+rw<=room.x+room.w+1e-7&&ry+rh<=room.y+room.h+1e-7);
+  const assignRoomParent=(obj,rx,ry,rw,rh)=>{
+   const room=containingRoom(rx,ry,rw,rh);
+   const parentRoom=room&&roomObjectIds.get(room.id);
+   if(parentRoom){
+    obj.parentId=parentRoom;
+    obj.displayLevel=displayLevel+2;
+    obj.metadata={...obj.metadata,roomId:room.id};
+   }
+   return obj;
+  };
   const edgeH=new Map(),edgeV=new Map(),blockedH=new Set(),blockedV=new Set();
   const addEdge=(map,key)=>map.set(key,true);
   for(const room of rooms){
@@ -268,6 +282,7 @@ function generateModern(template,options){
     {fill:z%2?"rgba(69,115,124,.11)":"rgba(81,122,133,.12)",stroke:null},
     {shapePresetId:"room_zone",detail:room.name+"。部屋の用途を示す領域です。"});
    zone.label.position=at(room.x+room.w/2,room.y+room.h/2);
+   roomObjectIds.set(room.id,zone.id);
   }
   const doors=[];
   const shared=(a,b)=>{
@@ -503,8 +518,9 @@ function generateModern(template,options){
      fromAnchor:at(fx+fw/2,fy+fh/2),toAnchor:at(fx+fw/2,fy+fh/2),
      direction:z<template.modernPlan.length-1?"up":"down"};
    }
-   push(name,stair?"stair":"object",rect(fx,fy,fw,fh),floor,
+   const placed=push(name,stair?"stair":"object",rect(fx,fy,fw,fh),floor,
     {fill:stair?"rgba(75,118,137,.5)":"rgba(46,91,110,.7)",stroke:"#9ec5ca",strokeWidth:1},extra);
+   if(!stair)assignRoomParent(placed,fx,fy,fw,fh);
   }
  }
  // Find a less obstructed swing for each hinged door. This checks the
@@ -661,6 +677,17 @@ function generateModern(template,options){
      ceilingMounted:!!options.ceiling,wallMounted:!!options.wall,
      fixtureCollisionExcluded:true,installationStatus:"schematic-unverified"}});
   obj.label.visible=false;
+  // Service symbols are mounted within a room and must follow the room's
+  // display hierarchy, while retaining a correct physical floorId.
+  const floorIndex=floors.findIndex(f=>f.id===floor);
+  const roomZone=template.modernPlan[floorIndex]?.rooms.find(r=>r[0]===room.id);
+  const regionObj=roomZone&&objs.find(o=>o.floorId===floor&&o.objectType==="region"&&
+   o.name===room.name&&o.geometry?.x===x+room.x*spacing&&o.geometry?.y===y+room.y*spacing);
+  if(regionObj){
+   obj.parentId=regionObj.id;
+   obj.displayLevel=displayLevel+2;
+   obj.metadata={...obj.metadata,roomId:room.id};
+  }
   return obj;
  };
  for(let z=0;z<template.modernPlan.length;z++){
