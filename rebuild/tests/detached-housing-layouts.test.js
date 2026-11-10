@@ -44,6 +44,10 @@ for(const id of ids){
    assert.equal(floorStairObjects.length,1,id+" staircase count by floor");
    const stairData=floorStairObjects[0].stairDesign;
    assert.equal(stairData?.type,"switchback",id+" stair needs compact return-flight plan");
+   assert.deepEqual(Array.from(stairData.path),["bottom-left","top-left","top-landing","top-right","bottom-right"],id+" explicit staircase travel path");
+   assert.equal(stairData.entrySide,"bottom-left",id+" ascent starts on left");
+   assert.equal(stairData.turnSide,"top",id+" landing at far end");
+   assert.equal(stairData.exitSide,"bottom-right",id+" upper floor exit on right");
    assert.equal(stairData?.flightWidthM,0.8,id+" flight clear width");
    assert.ok(Math.abs(stairData.footprintWidthM-1.8)<1e-8,id+" total stair width");
    assert.ok(Math.abs(stairData.footprintDepthM-2.8)<1e-8,id+" total stair depth");
