@@ -274,51 +274,69 @@ function generateModern(template,options){
      lo:Math.max(a.x,b.x),hi:Math.min(a.x+a.w,b.x+b.w)};
    return null;
   };
+  const widthCmFor=(a,b,external)=>external?90:
+   [a,b].some(id=>/^(wc|toilet)$/i.test(id))?70:
+   [a,b].some(id=>/^(bath|wash)$/i.test(id))?75:80;
+  const placeDoor=(join,widthCm,external,type)=>{
+   const length=widthCm/50;
+   if(join.hi-join.lo+1e-8<length)throw Error("扉の幅が共有壁を超過："+template.id+"/"+floor);
+   // Use a fractional grid position so a 70–90 cm opening does not grow to 1 m.
+   const start=join.lo+(join.hi-join.lo-length)/2;
+   const same=doors.filter(d=>d.direction===join.direction&&Math.abs(d.fixed-join.fixed)<1e-8);
+   for(const previous of same)if(start<previous.start+previous.length-1e-8&&start+length>previous.start+1e-8)
+    throw Error("同じ壁で扉が重複："+template.id+"/"+floor);
+   doors.push({direction:join.direction,fixed:join.fixed,start,length,widthCm,external,type});
+  };
   for(const [aId,bId,doorType] of plan.doors){
    const a=roomMap.get(aId),b=roomMap.get(bId),join=a&&b&&shared(a,b);
-   if(!join||join.hi-join.lo<2)throw Error("間仕切り接続が不正："+template.id+"/"+floor+"/"+aId+"-"+bId);
-   const openingWidth=2,start=join.lo+Math.floor((join.hi-join.lo-openingWidth)/2);
-   for(let d=start;d<start+openingWidth;d++)
-    (join.direction==="H"?blockedH:blockedV).add(
-      join.direction==="H"?d+","+join.fixed:join.fixed+","+d);
-   doors.push({direction:join.direction,fixed:join.fixed,start,external:false,type:doorType||"hinged"});
+   if(!join||join.hi-join.lo<1.4)throw Error("間仕切り接続が不正："+template.id+"/"+floor+"/"+aId+"-"+bId);
+   placeDoor(join,widthCmFor(aId,bId,false),false,doorType||"hinged");
   }
   if(plan.entry){
    const entry=roomMap.get(plan.entry);
-   if(!entry||entry.y+entry.h!==h||entry.w<2)throw Error("外部入口が不正："+template.id);
-   const start=entry.x+Math.floor((entry.w-2)/2);
-   blockedH.add(start+","+h);blockedH.add((start+1)+","+h);
-   doors.push({direction:"H",fixed:h,start,external:true});
+   if(!entry||entry.y+entry.h!==h||entry.w<1.8)throw Error("外部入口が不正："+template.id);
+   placeDoor({direction:"H",fixed:h,lo:entry.x,hi:entry.x+entry.w},90,true,"hinged");
   }
-  // Emit maximal, collinear wall segments; each doorway is a real wall gap.
-  for(const [map,blocked,direction] of [[edgeH,blockedH,"H"],[edgeV,blockedV,"V"]]){
-   const coordinates=[...map.keys()].filter(k=>!blocked.has(k)).map(k=>k.split(",").map(Number));
+  // Build the true continuous wall segments, then subtract precise door gaps.
+  // Never round a 0.7–0.9 m door up to two whole 0.5 m cells.
+  for(const [map,direction] of [[edgeH,"H"],[edgeV,"V"]]){
    const groups=new Map();
-   for(const [a,b] of coordinates){
+   for(const key of map.keys()){
+    const [a,b]=key.split(",").map(Number);
     const fixed=direction==="H"?b:a,pos=direction==="H"?a:b;
     if(!groups.has(fixed))groups.set(fixed,[]);
     groups.get(fixed).push(pos);
    }
    for(const [fixed,positions] of groups){
     positions.sort((a,b)=>a-b);
+    const openings=doors.filter(d=>d.direction===direction&&Math.abs(d.fixed-fixed)<1e-8)
+      .sort((a,b)=>a.start-b.start);
     for(let i=0;i<positions.length;){
-     let first=positions[i],end=first+1;i++;
+     const first=positions[i];let end=first+1;i++;
      while(i<positions.length&&positions[i]===end){end++;i++}
-     push("壁","wall",direction==="H"?line(first,fixed,end,fixed):line(fixed,first,fixed,end),floor,
-      {fill:null,stroke:"#d3e6e8",strokeWidth:2},
-      {wall:{thickness:(fixed===0||fixed===(direction==="H"?h:w)?15:10)/50*spacing},
-       metadata:{templateId:template.id,generated:true,wallThicknessCm:fixed===0||fixed===(direction==="H"?h:w)?15:10}});
+     const relevant=openings.filter(d=>d.start>=first-1e-8&&d.start+d.length<=end+1e-8);
+     let cursor=first;
+     const emit=(from,to)=>{
+      if(to-from<=1e-8)return;
+      const exterior=direction==="H"?(fixed===0||fixed===h):(fixed===0||fixed===w);
+      push("壁","wall",direction==="H"?line(from,fixed,to,fixed):line(fixed,from,fixed,to),floor,
+       {fill:null,stroke:"#d3e6e8",strokeWidth:2},
+       {wall:{thickness:(exterior?15:10)/50*spacing},
+        metadata:{templateId:template.id,generated:true,wallThicknessCm:exterior?15:10}});
+     };
+     for(const gap of relevant){emit(cursor,gap.start);cursor=gap.start+gap.length}
+     emit(cursor,end);
     }
    }
   }
   for(const door of doors){
-   const g=door.direction==="H"?line(door.start,door.fixed,door.start+2,door.fixed):
-    line(door.fixed,door.start,door.fixed,door.start+2);
+   const g=door.direction==="H"?line(door.start,door.fixed,door.start+door.length,door.fixed):
+    line(door.fixed,door.start,door.fixed,door.start+door.length);
    const o=push(door.external?"玄関扉":"室内扉","door",g,floor,
     {fill:null,stroke:"#e8b97a",strokeWidth:2},
-    {detail:door.external?"住戸の出入口です。":"区画をつなぐ室内扉です。"});
-   // Door opening is 2 cells (1 metre); the adjacent wall already has
-   // a real geometric gap instead of a line drawn underneath the leaf.
+    {detail:(door.external?"玄関":"室内")+"の開口幅 "+door.widthCm+"cm（建具の有効幅とは別）"});
+   o.metadata={...o.metadata,openingWidthCm:door.widthCm};
+   o.opening.width=door.widthCm/100*spacing*2;
    if(door.type==="sliding"){o.door.type="sliding";o.door.slideDirection="end"}
    if(door.external){o.opening.kind="entrance";o.opening.external=true}
   }
