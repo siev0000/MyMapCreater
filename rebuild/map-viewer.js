@@ -524,6 +524,20 @@ function create(opts){
   ctx.save();ctx.globalAlpha=1;ctx.lineWidth=edge;ctx.strokeStyle=accent;
   // Outer bounds always show the physical footprint, not an emoji.
   R(0,0,1,1,"#18333d");
+  const services={
+   ceiling_light:["照","#f1d57a"],light_switch:["S","#d2e8ee"],
+   power_outlet:["⊙","#c9eddf"],air_conditioner:["AC","#94cbea"],
+   ventilation_fan:["換","#b7e9e1"],range_hood:["排","#deb7a8"],
+   water_heater:["湯","#edbfa3"]
+  };
+  if(services[kind]){
+   const [symbol,color]=services[kind],radius=.32;
+   circle(.5,.5,radius,"rgba(91,151,170,.20)",color);
+   ctx.fillStyle=color;ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.font="bold "+Math.min(w*.58,h*.58)+"px system-ui,sans-serif";
+   ctx.fillText(symbol,x+w/2,y+h/2);
+   ctx.restore();return true;
+  }
   if(kind==="shelf"){
    for(const f of [.25,.5,.75])line(x,y+h*f,x+w,y+h*f);
    R(.05,.035,.12,.93,"#678f9d",null);R(.83,.035,.12,.93,"#678f9d",null);
