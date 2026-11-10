@@ -40,6 +40,6 @@ for(const template of templates){
 for(const type of serviceTypes){
  assert.ok(html.includes('<option value="'+type+'">'),"Editor option missing: "+type);
  assert.ok(editor.includes(type+':{'),"Editor size missing: "+type);
- assert.ok(viewer.includes('kind==="'+type+'"'),"Viewer symbol missing: "+type);
+ assert.ok(viewer.includes(type+':["'),"Viewer symbol missing: "+type);
 }
 console.log("PASS",templates.length,"modern homes: window openings and seven service categories, zero overlaps");
