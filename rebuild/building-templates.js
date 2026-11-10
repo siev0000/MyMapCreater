@@ -417,7 +417,7 @@ function generateModern(template,options){
    placeAppliance("冷蔵庫","refrigerator",kitchenRooms,[1.35,1.35]);
   }
   const washRooms=rooms.filter(r=>/洗面|脱衣|家事/.test(r.name));
-  if(!furnished.some(item=>item[1]==="washer")){
+  if(z===0&&!furnished.some(item=>item[1]==="washer")){
    const washInstalled=placeAppliance("洗濯機","washer",washRooms,[1.3,1.3]);
    // Compact apartments sometimes place a washer in an indoor kitchen/
    // hall utility recess. Do not force it into a tiny bathroom or toilet.
