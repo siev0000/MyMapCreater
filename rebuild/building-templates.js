@@ -417,8 +417,16 @@ function generateModern(template,options){
    placeAppliance("冷蔵庫","refrigerator",kitchenRooms,[1.35,1.35]);
   }
   const washRooms=rooms.filter(r=>/洗面|脱衣|家事/.test(r.name));
-  if(!furnished.some(item=>item[1]==="washer"))
-   placeAppliance("洗濯機","washer",washRooms,[1.3,1.3]);
+  if(!furnished.some(item=>item[1]==="washer")){
+   const washInstalled=placeAppliance("洗濯機","washer",washRooms,[1.3,1.3]);
+   // Compact apartments sometimes place a washer in an indoor kitchen/
+   // hall utility recess. Do not force it into a tiny bathroom or toilet.
+   if(!washInstalled){
+    const utilityRooms=rooms.filter(r=>/家事|キッチン|廊下/.test(r.name)&&
+     !/階段/.test(r.name));
+    placeAppliance("洗濯機","washer",utilityRooms,[1.3,1.3]);
+   }
+  }
   for(const [name,shape,fx,fy,fw,fh,stairPair,stairDirection] of furnished){
    if(fx<0||fy<0||fx+fw>w||fy+fh>h)throw Error("設置物が外周を越える："+name);
    const stair=shape==="stair";
