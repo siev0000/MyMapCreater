@@ -251,7 +251,25 @@ function generateModern(template,options){
  };
  for(let z=0;z<template.modernPlan.length;z++){
   const plan=template.modernPlan[z],floor=floors[z].id;
-  push("床面 "+floor,"slab",rect(0,0,w,h),floor,{fill:"rgba(48,81,88,.64)",stroke:null});
+  // Upper-floor slabs must have a real opening around the stairwell.
+  // Keep the lower (ground) floor continuous. Each upper floor is represented
+  // by non-overlapping slab rectangles outside the stair footprint.
+  const floorStairs=plan.items.filter(item=>item[1]==="stair");
+  const slabStyle={fill:"rgba(48,81,88,.64)",stroke:null};
+  if(z>0&&floorStairs.length===1){
+   const [, ,sx,sy,sw,sh]=floorStairs[0];
+   const pieces=[
+    [0,0,w,sy],[0,sy,sx,sh],
+    [sx+sw,sy,w-(sx+sw),sh],[0,sy+sh,w,h-(sy+sh)]
+   ];
+   const validHole=sx>=0&&sy>=0&&sw>0&&sh>0&&sx+sw<=w&&sy+sh<=h;
+   if(!validHole)throw Error("階段床開口が外形を超過："+template.id+"/"+floor);
+   for(const [px,py,pw,ph] of pieces)if(pw>1e-8&&ph>1e-8)
+    push("床面 "+floor,"slab",rect(px,py,pw,ph),floor,slabStyle,
+     {metadata:{templateId:template.id,generated:true,stairFloorOpening:true}});
+  }else{
+   push("床面 "+floor,"slab",rect(0,0,w,h),floor,slabStyle);
+  }
   const rooms=plan.rooms.map(([id,name,rx,ry,rw,rh])=>({id,name,x:rx,y:ry,w:rw,h:rh}));
   const roomMap=new Map(rooms.map(r=>[r.id,r]));
   const edgeH=new Map(),edgeV=new Map(),blockedH=new Set(),blockedV=new Set();
