@@ -698,7 +698,7 @@ function generateModern(template,options){
    service(floor,r,"エアコン","air_conditioner",r.x+.12,r.y+.12,
     "室内機の仮位置。室外機・配管・室内気流は未設計。",{wall:true});
   }
-  for(const r of rooms.filter(r=>/浴室|トイレ|洗面|脱衣/.test(r.name)))
+  for(const r of rooms.filter(r=>/浴室|バス|トイレ|洗面|脱衣/.test(r.name)))
    service(floor,r,"換気扇","ventilation_fan",r.x+r.w-.7,r.y+.12,
     "機械換気の仮位置。ダクト・排気先・必要風量は未検証。",{ceiling:true});
   const kitchen=rooms.find(r=>/LDK|キッチン/.test(r.name));
