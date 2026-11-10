@@ -814,28 +814,33 @@ function generateGiantGrove(t,options={}){
  root.id=prefix;
  delete root.floorId;
  const zone=(name,a,b,w,h)=>{const z=add(name,"region",displayLevel+1,rect(a,b,w,h),prefix,{shapePresetId:"room_zone"});z.label.position=at(a+w/2,b+h/2);return z};
- const grove=zone("密生森林・迷路状育成域",12,12,W-24,H-30);
+ const grove=zone("自然林・大木育成域",12,12,W-24,H-30);
  const north=zone("人工降雨・水管理設備帯",12,0,W-24,10);
  const south=zone("資材搬入・検査・管理帯",12,H-16,W-24,16);
  const addObject=(name,shape,zoneObj,a,b,w,h,role)=>add(name,"object",displayLevel+2,rect(a,b,w,h),zoneObj.id,{shapePresetId:shape,label:{visible:false,text:name},metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",role}});
- // Deterministic depth-first labyrinth: every clearing is reachable, with winding paths and branches.
- const cols=19,rows=15,stepX=(W-36)/cols,stepY=(H-52)/rows;
- const visited=Array.from({length:rows},()=>Array(cols).fill(false));
- const open=Array.from({length:rows},()=>Array.from({length:cols},()=>[false,false,false,false]));
+ // Naturalistic woodland: clustered stands, irregular clearings and soft winding trails.
  let seed=7331;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
- const stack=[[Math.floor(cols/2),rows-1]];visited[rows-1][Math.floor(cols/2)]=true;
- const dirs=[[0,-1,0,2],[1,0,1,3],[0,1,2,0],[-1,0,3,1]];
- while(stack.length){const [cx,cy]=stack[stack.length-1];const possible=dirs.filter(([dx,dy])=>cx+dx>=0&&cx+dx<cols&&cy+dy>=0&&cy+dy<rows&&!visited[cy+dy][cx+dx]);if(!possible.length){stack.pop();continue}const [dx,dy,side,back]=possible[Math.floor(rand()*possible.length)];open[cy][cx][side]=true;open[cy+dy][cx+dx][back]=true;visited[cy+dy][cx+dx]=true;stack.push([cx+dx,cy+dy])}
- let count=0;
- const tree=(xx,yy,large=false)=>{const d=large?8:4.8;addObject((large?"巨木 ":"樹木 ")+ ++count,large?"tree_giant":(rand()<.18?"tree_conifer":"tree_large"),grove,xx-d/2,yy-d/2,d,d,"cultivated-tree")};
- // Dense stands mark blocked edges, while a small clearing remains in each maze cell.
- for(let cy=0;cy<rows;cy++)for(let cx=0;cx<cols;cx++){
-  const px=18+(cx+.5)*stepX,py=16+(cy+.5)*stepY;
-  if(!open[cy][cx][0])for(let k=-1;k<=1;k++)tree(px+k*stepX*.28,py-stepY*.44,k===0&&rand()<.16);
-  if(!open[cy][cx][3])for(let k=-1;k<=1;k++)tree(px-stepX*.44,py+k*stepY*.28,k===0&&rand()<.16);
-  if(cy===rows-1&&!open[cy][cx][2])for(let k=-1;k<=1;k++)tree(px+k*stepX*.28,py+stepY*.44);
-  if(cx===cols-1&&!open[cy][cx][1])for(let k=-1;k<=1;k++)tree(px+stepX*.44,py+k*stepY*.28);
-  if(rand()<.25)tree(px+stepX*.28,py+stepY*.26,rand()<.12);
+ const trails=[
+  yy=>W*.5+34*Math.sin(yy/57)+19*Math.sin(yy/23),
+  yy=>W*.27+24*Math.sin(yy/43+1.4),
+  yy=>W*.76+30*Math.sin(yy/65+2.1)
+ ];
+ const clearings=[[W*.49,H*.42,25,19],[W*.23,H*.68,18,13],[W*.77,H*.27,23,17],[W*.63,H*.78,15,12]];
+ const nearTrail=(xx,yy)=>trails.some((fn,i)=>Math.abs(xx-fn(yy))<(i===0?8:5))||
+  (Math.abs(yy-(H*.55+13*Math.sin(xx/36)))<4&&xx>W*.25&&xx<W*.77);
+ const inClearing=(xx,yy)=>clearings.some(([cx,cy,rx,ry])=>((xx-cx)/rx)**2+((yy-cy)/ry)**2<1);
+ let count=0;const planted=[];
+ // Uneven clusters, rather than a grid or a maze with tree walls.
+ for(let group=0;group<95;group++){
+  const cx=19+rand()*(W-38),cy=20+rand()*(H-48),density=3+Math.floor(rand()*7);
+  for(let j=0;j<density;j++){
+   const xx=cx+(rand()+rand()+rand()-1.5)*30,yy=cy+(rand()+rand()+rand()-1.5)*25;
+   if(xx<17||xx>W-17||yy<18||yy>H-25||nearTrail(xx,yy)||inClearing(xx,yy))continue;
+   const large=rand()<.10,d=large?8:3.5+rand()*3.5;
+   if(planted.some(([tx,ty,td])=>(xx-tx)**2+(yy-ty)**2<((d+td)*.43)**2))continue;
+   planted.push([xx,yy,d]);
+   addObject((large?"巨木 ":"樹木 ")+ ++count,large?"tree_giant":rand()<.14?"tree_conifer":rand()<.22?"tree_mature":"tree_large",grove,xx-d/2,yy-d/2,d,d,"cultivated-tree");
+  }
  }
  for(let i=0;i<9;i++)addObject("人工降雨制御端末","terminal_device",north,20+i*44,3,3,3,"rain-control");
  for(let i=0;i<8;i++)addObject("水循環・排水監視端末","terminal_device",south,24+i*45,H-11,3,3,"water-monitor");
