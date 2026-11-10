@@ -369,14 +369,14 @@ const $=id=>document.getElementById(id);
 let gridPreference=null;
 try{const v=localStorage.getItem("map-preview-grid-visible");if(v==="true"||v==="false")gridPreference=v==="true"}catch(_){}
 const previewStateKey="mymapcreater:viewer-selection:v1";
-let restoringPreviewState=false,previewRestore=null;
+let restoringPreviewState=false,previewRestore=null,restoringMapSelection=false;
 function readPreviewState(){
  try{const data=JSON.parse(localStorage.getItem(previewStateKey)||"null");
   return data?.version===1&&typeof data.mapId==="string"?data:null;
  }catch(_){return null}
 }
 function storePreviewState(){
- if(restoringPreviewState||!selected)return;
+ if(restoringPreviewState||previewRestore||!selected)return;
  try{localStorage.setItem(previewStateKey,JSON.stringify({
   version:1,mapId:selected,viewId:viewId||null,objectId:selectedObjectId||null,
   floorId:viewer.getFloorContext()?.selectedFloorId||null
@@ -727,8 +727,9 @@ function render(){
 }
 function select(id,mode){
  if(!nodes.has(id))return;
- if(selected!==id)previewRestore=null;
+ if(selected!==id&&!restoringMapSelection)previewRestore=null;
  selected=id;
+ if(!restoringMapSelection)selectedObjectId=null;
  const root=activeRoot();
  viewId=mode&&availableViews(root).some(v=>v.mapId===root.id&&v.viewId===mode)?
   mode:(root.views?.[0]?.id||'default');
@@ -741,9 +742,13 @@ function restoreState(){
  const explicit=raw&&(nodes.has(raw)||raw.split('::').length===2&&nodes.has(raw.split('::')[0]));
  const target=explicit?raw:(cached?.viewId&&nodes.has(cached.mapId)?cached.mapId+'::'+cached.viewId:cached?.mapId||'');
  const split=target.split('::');
- previewRestore=!explicit&&nodes.has(cached?.mapId)?cached:null;
- if(split.length===2&&nodes.has(split[0])){select(split[0],split[1]);return}
- select(nodes.has(target)?target:(nodes.has(defaultMapId)?defaultMapId:roots[0].id),null);
+ const chosenId=split.length===2?split[0]:target;
+ previewRestore=nodes.has(cached?.mapId)&&chosenId===cached.mapId?cached:null;
+ restoringMapSelection=true;
+ try{
+  if(split.length===2&&nodes.has(split[0])){select(split[0],split[1]);return}
+  select(nodes.has(target)?target:(nodes.has(defaultMapId)?defaultMapId:roots[0].id),null);
+ }finally{restoringMapSelection=false}
 }
 function selectMenuTab(tab){
  const map=tab==='map';
