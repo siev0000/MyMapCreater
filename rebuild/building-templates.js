@@ -455,6 +455,39 @@ function generateModern(template,options){
   doorObj.metadata={...doorObj.metadata,
    swingFurnitureInterferenceCount:best.interferenceCount,
    swingChecked:"fixture-rectangles-only"};
+  if(best.interferenceCount){
+   // When no hinged orientation clears furniture, try a genuine sliding
+   // leaf along a continuous adjacent wall (not into another wall opening).
+   // Only convert when the parked leaf has a full supporting wall and the
+   // park zone does not intersect a nearby furniture rectangle.
+   const walls=objs.filter(o=>o.floorId===doorObj.floorId&&o.objectType==="wall");
+   const vertical=Math.abs(a[0]-b[0])<1e-8,axis=vertical?1:0,normal=vertical?0:1;
+   const low=Math.min(a[axis],b[axis]),high=Math.max(a[axis],b[axis]);
+   const size=high-low;
+   for(const option of ["start","end"]){
+    const lo=option==="start"?low-size:high;
+    const hi=option==="start"?low:high+size;
+    const coverage=walls.reduce((sum,wall)=>{
+     const points=wall.geometry.points;
+     if(!points||points.length!==2||points.some(p=>Math.abs(p[normal]-a[normal])>1e-7))return sum;
+     return sum+Math.max(0,Math.min(hi,Math.max(points[0][axis],points[1][axis]))-
+      Math.max(lo,Math.min(points[0][axis],points[1][axis])));
+    },0);
+    if(coverage<size-1e-7)continue;
+    const blocked=fixtures.some(o=>{
+     const g=o.geometry,epsilon=spacing*.09;
+     return vertical
+      ?g.y<hi&&g.y+g.height>lo&&g.x-epsilon<a[0]&&g.x+g.width+epsilon>a[0]
+      :g.x<hi&&g.x+g.width>lo&&g.y-epsilon<a[1]&&g.y+g.height+epsilon>a[1];
+    });
+    if(blocked)continue;
+    doorObj.door.type="sliding";
+    doorObj.door.slideDirection=option;
+    doorObj.metadata.swingFurnitureInterferenceCount=0;
+    doorObj.metadata.swingChecked="sliding-parked-leaf-clear-of-fixtures";
+    break;
+   }
+  }
  }
  return{template:copy(template),objects:objs};
 }
