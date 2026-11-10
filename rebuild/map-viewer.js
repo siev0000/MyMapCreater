@@ -265,10 +265,8 @@ function create(opts){
   if(!targets||g?.type!=="rect")return null;
   const [wx,wy]=worldAt(px,py);
   if(wx<g.x||wx>g.x+g.width||wy<g.y||wy>g.y+g.height)return null;
-  // Left flight/label is UP, right flight/label is DOWN. On endpoint
-  // floors the whole stair area can select its only available direction.
-  if(targets.up&&!targets.down)return{direction:"up",destination:targets.up};
-  if(targets.down&&!targets.up)return{direction:"down",destination:targets.down};
+  // Left side is UP; right side is DOWN. Unavailable directions remain
+  // visible but disabled even on the first or last floor.
   const direction=wx<g.x+g.width/2?"up":"down";
   return{direction,destination:targets[direction]};
  }
