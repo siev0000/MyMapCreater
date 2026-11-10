@@ -829,19 +829,23 @@ function generateGiantGrove(t,options={}){
  const nearTrail=(xx,yy)=>trails.some((fn,i)=>Math.abs(xx-fn(yy))<(i===0?8:5))||
   (Math.abs(yy-(H*.55+13*Math.sin(xx/36)))<4&&xx>W*.25&&xx<W*.77);
  const inClearing=(xx,yy)=>clearings.some(([cx,cy,rx,ry])=>((xx-cx)/rx)**2+((yy-cy)/ry)**2<1);
- let count=0;const planted=[];
+ let count=0;const planted=[],decorative=[];
  // Uneven clusters, rather than a grid or a maze with tree walls.
- for(let group=0;group<46;group++){
-  const cx=19+rand()*(W-38),cy=20+rand()*(H-48),density=2+Math.floor(rand()*4);
+ for(let group=0;group<110;group++){
+  const cx=19+rand()*(W-38),cy=20+rand()*(H-48),density=5+Math.floor(rand()*6);
   for(let j=0;j<density;j++){
    const xx=cx+(rand()+rand()+rand()-1.5)*30,yy=cy+(rand()+rand()+rand()-1.5)*25;
    if(xx<17||xx>W-17||yy<18||yy>H-25||nearTrail(xx,yy)||inClearing(xx,yy))continue;
    const large=rand()<.18,d=large?11:6+rand()*5;
    if(planted.some(([tx,ty,td])=>(xx-tx)**2+(yy-ty)**2<((d+td)*.43)**2))continue;
    planted.push([xx,yy,d]);
-   addObject((large?"巨木 ":"樹木 ")+ ++count,large?"tree_giant":rand()<.14?"tree_conifer":rand()<.22?"tree_mature":"tree_large",grove,xx-d/2,yy-d/2,d,d,"cultivated-tree");
+   count++;
+   if(large&&count%3===0)addObject("重要巨木 "+count,"tree_giant",grove,xx-d/2,yy-d/2,d,d,"cultivated-tree");
+   else decorative.push([xx,yy,d,rand()<.16?1:0]);
   }
  }
+ // Decorative canopy is drawn in a single lightweight scene object; significant trees remain editable.
+ add("森林の樹冠群","object",displayLevel+2,rect(12,12,W-24,H-30),grove.id,{shapePresetId:"forest_canopy_cluster",selectable:false,layer:"structures",zIndex:39,label:{visible:false,text:""},forestCanopies:decorative.map(([xx,yy,d,needle])=>[xx*spacing+x,yy*spacing+y,d*spacing,needle]),metadata:{templateId:t.id,generated:true,role:"forest-canopy-batch",designStatus:"draft-unverified"}});
  for(let i=0;i<9;i++)addObject("人工降雨制御端末","terminal_device",north,20+i*44,3,3,3,"rain-control");
  for(let i=0;i<8;i++)addObject("水循環・排水監視端末","terminal_device",south,24+i*45,H-11,3,3,"water-monitor");
  addObject("搬入資材保管","storage_container",south,W-36,H-12,10,7,"materials");
