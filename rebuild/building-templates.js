@@ -821,6 +821,7 @@ function generateGiantGrove(t,options={}){
   const o={id:prefix+"_grove_"+(++n),name,objectType:kind,parentId:parent,displayLevel:level,floorId:"1F",layer:kind==="wall"||kind==="door"?"walls":"structures",zIndex:kind==="region"?31:kind==="wall"?47:kind==="door"?49:42,geometry,visible:true,selectable:true,style:kind==="region"?{fill:"rgba(45,124,73,.14)",stroke:"#659e73",strokeWidth:1}:{fill:"rgba(50,125,90,.27)",stroke:"#95bd9b",strokeWidth:1},label:{visible:kind==="region",text:name,fontSize:10},detail:"アルボラセクターの編集用試案。位置・寸法・設備数は未確定。",metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified"},...extra};objs.push(o);return o;
  };
  const root=add(baseName,"facility",displayLevel,rect(0,0,W,H),parentId,{floors:[{id:"1F",label:"1階",elevation:0,height:3}],detail:"大木を複数育成する森林区画。立体的な樹高と天井高は未確定。仮寸法・仮配置。"});
+ root.id=prefix;
  const zone=(name,a,b,w,h)=>{const z=add(name,"region",displayLevel+1,rect(a,b,w,h),prefix,{shapePresetId:"room_zone"});z.label.position=at(a+w/2,b+h/2);return z};
  const grove=zone("大木育成・森林区",12,12,96,76);
  const north=zone("人工降雨・水管理設備帯",12,0,96,10);
