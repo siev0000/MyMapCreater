@@ -170,6 +170,9 @@ presets.push(...[
  {id:"machine_mid_emergency_repair",name:"緊急修理・救護施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["応急修理室","診断・記録室","停止保管室","交換部品庫"],notionStatus:"layout-proposal"}
 ]);
 
+// Middle-layer parent layout: Notion footprint is 4000 x 2500 m, with sector center [-150,900] and size 1500 x 500 m.
+// Forest size and vertical clearances remain provisional; fit its draft geometry inside the documented sector.
+presets.push({id:"machine_middle_layer_frame",name:"中層《アームドヴェイン階層》・施設配置枠",cells:[2000,1250],floors:1,layout:"open",description:"中層の親枠とアルボラセクター子枠、屋内森林をまとめた編集用配置案。森林の寸法・高さは仮設定。",category:"machine_midlayer",worldStyle:"machine",facilityMode:"middle_layer_frame",entranceSide:"center"});
 // Arbor Sector forest hall: a large editable zone, not a canonical footprint.
 presets.push({id:"machine_mid_giant_tree_grove",name:"アルボラセクター・大木育成区画",cells:[420,360],floors:1,layout:"open",description:"大型樹木を複数育成する人工森林区。天井人工降雨、局所水循環、管理通路を持つ仮配置。寸法は未確定。",category:"machine_midlayer",worldStyle:"machine",facilityMode:"giant_grove",entranceSide:"center"});
 
@@ -803,6 +806,31 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 // instead of the legacy human-house/generic partition generator. All concrete
 // dimensions and layouts here are proposals, not assertions of Notion canon.
 // Large forest cultivation is an open landscape, not a corridor-and-four-rooms building.
+function generateMiddleLayerFrame(t,options={}){
+ const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
+ if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("中層配置枠の指定が不正です");
+ const unit=spacing/2; // template grid default 2m/cell; canonical footprint in meters
+ const root={id:prefix,name:baseName,objectType:"building",parentId,displayLevel,
+  layer:"structures",zIndex:20,geometry:{type:"rect",x,y,width:4000*unit,height:2500*unit},
+  visible:true,selectable:true,style:{fill:"rgba(37,73,86,.06)",stroke:"#81aeb8",strokeWidth:3},
+  label:{visible:true,text:baseName,fontSize:16},floors:[{id:"1F",label:"中層配置平面"}],
+  metadata:{templateId:t.id,generated:true,designStatus:"draft-unverified",coordinateOrigin:"center",meterScale:unit}};
+ const sector={id:prefix+"_arbora",name:"自然管理区画《アルボラセクター》",objectType:"region",
+  parentId:root.id,displayLevel:displayLevel+1,floorId:"1F",layer:"structures",zIndex:22,
+  geometry:{type:"rect",x:x+1100*unit,y:y+1900*unit,width:1500*unit,height:500*unit},
+  visible:true,selectable:true,style:{fill:"rgba(57,129,83,.12)",stroke:"#71b488",strokeWidth:2},
+  label:{visible:true,text:"アルボラセクター",fontSize:12},
+  metadata:{templateId:t.id,generated:true,designStatus:"notion-area-footprint"}};
+ const grove=presets.find(v=>v.id==="machine_mid_giant_tree_grove");
+ const forest=generateGiantGrove(grove,{prefix:prefix+"_forest",parentId:sector.id,
+  displayLevel:displayLevel+2,x:sector.geometry.x+80*unit,y:sector.geometry.y+34*unit,
+  spacing:unit*1.15,baseName:"アルボラセクター・大木育成区画"});
+ // Keep the forest's draft footprint within the Notion sector; it is not a canonical forest size.
+ forest.objects[0].metadata={...forest.objects[0].metadata,designStatus:"draft-unverified",indoorForest:true,
+  resourceUses:["燃料用樹液","樹皮","繊維","樹脂","木質素材"],ceilingHeightM:null};
+ return{template:t,objects:[root,sector,...forest.objects]};
+}
+
 function generateGiantGrove(t,options={}){
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
  if(typeof prefix!=="string"||!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("大木育成区画の配置指定が不正です");
@@ -1086,7 +1114,7 @@ function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
  if(!template)throw Error("不明な建物テンプレート: "+templateId);
  if(template.modernPlan)return generateModern(template,options);
- if(template.facilityMode==="giant_grove")return generateGiantGrove(template,options);
+ if(template.facilityMode==="middle_layer_frame")return generateMiddleLayerFrame(template,options);\n if(template.facilityMode==="giant_grove")return generateGiantGrove(template,options);
  if(template.worldStyle==="machine")return generateMachine(template,options);
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
  if(typeof prefix!=="string"||!prefix)throw Error("建物IDが必要です");
