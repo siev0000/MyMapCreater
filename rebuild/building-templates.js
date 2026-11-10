@@ -783,7 +783,7 @@ function generateGiantGrove(t,options={}){
  const east=zone("管理・点検通路",110,0,10,H);
  const addObject=(name,shape,zoneObj,a,b,w,h,role)=>add(name,"object",displayLevel+2,rect(a,b,w,h),zoneObj.id,{shapePresetId:shape,label:{visible:false,text:name},metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",role}});
  // Distinct trunks are selectable; spacing deliberately leaves substantial open ground.
- for(let j=0;j<3;j++)for(let i=0;i<4;i++)addObject("育成大木 "+(j*4+i+1),"tree",grove,21+i*22,23+j*24,6,6,"cultivated-tree");
+ for(let j=0;j<3;j++)for(let i=0;i<4;i++)addObject("育成大木 "+(j*4+i+1),"tree_large",grove,21+i*22,23+j*24,6,6,"cultivated-tree");
  for(let i=0;i<5;i++)addObject("人工降雨制御端末","terminal_device",north,18+i*18,3,3,3,"rain-control");
  for(let i=0;i<4;i++)addObject("水循環・排水監視端末","terminal_device",south,20+i*23,93,3,3,"water-monitor");
  addObject("搬入資材保管","storage_container",south,94,92,7,5,"materials");
