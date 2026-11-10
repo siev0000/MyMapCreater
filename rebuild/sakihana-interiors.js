@@ -3,7 +3,7 @@
  * 既存の建物外形・駅座標・標高・道路・鉄道を一切変更せず、子オブジェクトのみ追加する。
  */
 (function(root){"use strict";
-const VERSION="sakihana-interiors-draft-v3";
+const VERSION="sakihana-interiors-draft-v4";
 function bounds(g){
  if(!g)return null;
  let p=g.type==="polygon"?g.points:(g.type==="rect"?[[g.x,g.y],[g.x+g.width,g.y+g.height]]:null);
@@ -83,6 +83,77 @@ function localClip(poly,frame,u0,u1,v0,v1){
  }
  return result;
 }
+
+function lineAtLocalU(poly,f,target,minV,maxV){
+ const u=p=>p[0]*f.c+p[1]*f.t,v=p=>-p[0]*f.t+p[1]*f.c;
+ const hits=[];
+ for(let i=0;i<poly.length;i++){
+  const a=poly[i],b=poly[(i+1)%poly.length],ua=u(a),ub=u(b);
+  if(Math.abs(ua-ub)<1e-7){
+   if(Math.abs(ua-target)<1e-5){hits.push(a,b)}
+   continue;
+  }
+  const t=(target-ua)/(ub-ua);
+  if(t>=-1e-7&&t<=1+1e-7)hits.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);
+ }
+ const values=[...new Set(hits.map(p=>Math.round(v(p)*1e5)/1e5)),minV,maxV].sort((a,b)=>a-b);
+ let candidate=null;
+ for(let i=1;i<values.length;i++){
+  const low=Math.max(minV,values[i-1]),high=Math.min(maxV,values[i]);
+  if(high-low<1.8)continue;
+  const mid=(low+high)/2;
+  const p=[target*f.c-mid*f.t,target*f.t+mid*f.c];
+  if(!inside(p[0],p[1],poly))continue;
+  if(!candidate||high-low>candidate[1]-candidate[0])candidate=[low,high];
+ }
+ return candidate?[[target*f.c-candidate[0]*f.t,target*f.t+candidate[0]*f.c],
+                   [target*f.c-candidate[1]*f.t,target*f.t+candidate[1]*f.c]]:null;
+}
+function wallLine(scene,owner,id,a,b,kind){
+ return add(scene,owner,"wall_"+id,kind==="outer"?"外壁（仮）":"間仕切り（仮）","wall",
+ {type:"polyline",points:[a,b]},2,{fill:null,stroke:"#d4e2e6",strokeWidth:1.3,opacity:1},
+ {wall:{thickness:.3},metadata:{generated:true,source:"schematic-draft",verifiedInterior:false,interiorDraftVersion:VERSION,kind}});
+}
+function doorOnWall(scene,owner,id,wall,kind,fromId,toId){
+ const [a,b]=wall.geometry.points,dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy);
+ if(length<2.2)return null;
+ const width=Math.min(3.6,length*.34),half=width/(2*length);
+ const t0=.5-half,t1=.5+half;
+ const start=[a[0]+dx*t0,a[1]+dy*t0],end=[a[0]+dx*t1,a[1]+dy*t1];
+ return add(scene,owner,"door_"+id,kind==="exterior"?"屋外出入口（仮）":"室内扉（仮）","door",
+ {type:"polyline",points:[start,end]},2,{fill:null,stroke:"#f3c279",strokeWidth:2,opacity:1},
+ {opening:{wallId:wall.id,width},door:{type:"hinged",leafCount:1},
+  metadata:{generated:true,source:"schematic-draft",verifiedInterior:false,interiorDraftVersion:VERSION,kind,
+   connections:{from:fromId,to:toId},connectionVerified:false}});
+}
+function makeDoorAndWalls(scene,owner,poly,f,rooms){
+ const exterior=[];
+ const u=p=>p[0]*f.c+p[1]*f.t,v=p=>-p[0]*f.t+p[1]*f.c;
+ for(let i=0;i<poly.length;i++){
+  const a=poly[i],b=poly[(i+1)%poly.length],len=Math.hypot(b[0]-a[0],b[1]-a[1]);
+  if(len<1e-4)continue;
+  const wall=wallLine(scene,owner,"outer_"+i,a,b,"outer");
+  if(len>=4){
+   const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2],uMid=u(mid),vMid=v(mid);
+   // Prefer the side bordering the common/entry zone. No street-side assertion.
+   const inCommon=uMid<=f.u0+(f.u1-f.u0)*.53&&vMid>=f.v0&&vMid<=f.v1;
+   exterior.push({wall,len,score:inCommon?len+10000:len});
+  }
+ }
+ exterior.sort((a,b)=>b.score-a.score);
+ const entrance=exterior[0]?doorOnWall(scene,owner,"exterior",exterior[0].wall,"exterior","outside",rooms.main):null;
+ const roomLinks=[];
+ for(const {id,roomId,vStart,vEnd} of [{id:"a",roomId:rooms.a,vStart:.035,vEnd:.5},{id:"b",roomId:rooms.b,vStart:.5,vEnd:.965}]){
+  if(!roomId)continue;
+  const a=lineAtLocalU(poly,f,f.u0+(f.u1-f.u0)*.5,
+   f.v0+(f.v1-f.v0)*vStart,f.v0+(f.v1-f.v0)*vEnd);
+  if(!a)continue;
+  const wall=wallLine(scene,owner,"partition_"+id,a[0],a[1],"partition");
+  const door=doorOnWall(scene,owner,"room_"+id,wall,"interior",rooms.main,roomId);
+  if(door)roomLinks.push(door.id);
+ }
+ return{entrance:entrance?.id||null,roomLinks};
+}
 function build(scene,owner,ordinal){
  const g=owner.geometry;
  const poly=g.type==="polygon"?g.points:g.type==="rect"?[[g.x,g.y],[g.x+g.width,g.y],[g.x+g.width,g.y+g.height],[g.x,g.y+g.height]]:null;
@@ -90,7 +161,7 @@ function build(scene,owner,ordinal){
  const f=orientedFrame(poly);if(!f)return false;
  const w=f.u1-f.u0,h=f.v1-f.v0;if(w<2||h<2)return false;
  const slice=(a,b,c,d)=>localClip(poly,f,f.u0+a*w,f.u0+b*w,f.v0+c*h,f.v0+d*h);
- const common=slice(.035,.515,.035,.965);
+ const common=slice(.035,.5,.035,.965);
  if(!common)return false;
  const isStation=/咲花|駅|station/i.test(owner.name||"")&&!/周辺/.test(owner.name||"");
  const large=Math.max(w,h)>=50;
@@ -101,9 +172,15 @@ function build(scene,owner,ordinal){
    {metadata:{generated:true,source:"schematic-draft",verifiedInterior:false,interiorDraftVersion:VERSION,kind}});
  };
  addShape("room_0",isStation?"駅待合室（仮）":large?"共用空間（仮）":"玄関・共用室（仮）","room",common,"main");
- addShape("room_1",large?"室内区画A（仮）":"居室（仮）","room",slice(.52,.965,.035,.51),"room");
- addShape("room_2",large?"室内区画B（仮）":"水回り（仮）","room",slice(.52,.965,.52,.965),"room");
- addShape("object_entry","出入口付近の設備（仮）","object",slice(.10,.20,.12,.25),"entry");
+ addShape("room_1",large?"室内区画A（仮）":"居室（仮）","room",slice(.5,.965,.035,.5),"room");
+ addShape("room_2",large?"室内区画B（仮）":"水回り（仮）","room",slice(.5,.965,.5,.965),"room");
+ const roomIds={main:owner.id+"__room_0",a:scene.objects.some(o=>o.id===owner.id+"__room_1")?owner.id+"__room_1":null,
+  b:scene.objects.some(o=>o.id===owner.id+"__room_2")?owner.id+"__room_2":null};
+ const layout=makeDoorAndWalls(scene,owner,poly,f,roomIds);
+ // Keep this distinction explicit: geometrically linked != walkability verified.
+ owner.metadata={...(owner.metadata||{}),entranceDraft:!!layout.entrance,interiorDoorsDraft:layout.roomLinks.length,
+  interiorConnectionsVerified:false};
+
  if(large)addShape("object_storage","収納設備（仮）","object",slice(.70,.82,.14,.27),"storage");
  const floorsNumber=Number(owner.metadata?.buildingLevels);
  const floors=Number.isFinite(floorsNumber)&&floorsNumber>=1?Math.min(4,Math.floor(floorsNumber)):1;
@@ -111,7 +188,7 @@ function build(scene,owner,ordinal){
  owner.objectType="facility";
  owner.floors=Array.from({length:floors},(_,i)=>({id:owner.id+"__"+(i+1)+"F",label:(i+1)+"階",elevation:i*3,height:3}));
  owner.detail=(owner.detail?owner.detail+"\\n":"")+"室内配置は実測ではなく編集用の仮案。";
- owner.metadata={...(owner.metadata||{}),interiorDraftVersion:VERSION,verifiedInterior:false,interiorDraft:true};
+ owner.metadata={...(owner.metadata||{}),interiorDraftVersion:VERSION,verifiedInterior:false,interiorDraft:true,interiorConnectionsVerified:false};
  return true;
 }
 function addStationInterior(scene){
