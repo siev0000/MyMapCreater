@@ -489,6 +489,72 @@ function generateModern(template,options){
    }
   }
  }
+ // Second pass: resolve hinged-door vs hinged-door swing collisions.
+ // Furniture clearance alone misses opposing doors at corridor corners.
+ const hinged=objs.filter(o=>o.objectType==="door"&&o.door?.type!=="sliding");
+ const segment=(o,t)=>{
+  const [a,b]=o.geometry.points,dist=Math.hypot(b[0]-a[0],b[1]-a[1]);
+  const pivot=o.door.hinge==="end"?b:a,far=o.door.hinge==="end"?a:b;
+  const ux=(far[0]-pivot[0])/dist,uy=(far[1]-pivot[1])/dist;
+  const sign=o.door.swingSide==="right"?-1:1;
+  const vx=ux*Math.cos(t)-uy*sign*Math.sin(t);
+  const vy=uy*Math.cos(t)+ux*sign*Math.sin(t);
+  return[pivot,[pivot[0]+dist*vx,pivot[1]+dist*vy]];
+ };
+ const intersects=(a,b,c,d)=>{
+  const orient=(p,q,r)=>(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);
+  return orient(a,b,c)*orient(a,b,d)<-1e-8&&orient(c,d,a)*orient(c,d,b)<-1e-8;
+ };
+ const swingClash=(a,b)=>{
+  if(a.floorId!==b.floorId)return false;
+  const mid=o=>o.geometry.points.map(p=>p).reduce((v,p)=>[v[0]+p[0]/2,v[1]+p[1]/2],[0,0]);
+  const ca=mid(a),cb=mid(b),len=o=>Math.hypot(
+   o.geometry.points[0][0]-o.geometry.points[1][0],
+   o.geometry.points[0][1]-o.geometry.points[1][1]);
+  if(Math.hypot(ca[0]-cb[0],ca[1]-cb[1])>len(a)+len(b))return false;
+  for(let i=0;i<=8;i++)for(let j=0;j<=8;j++){
+   const [p,q]=segment(a,i*Math.PI/16),[u,v]=segment(b,j*Math.PI/16);
+   if(intersects(p,q,u,v))return true;
+  }
+  return false;
+ };
+ const furnitureClash=door=>{
+  const fixtures=objs.filter(o=>o.floorId===door.floorId&&
+   o.objectType==="object"&&o.geometry?.type==="rect");
+  for(let i=1;i<=8;i++){
+   const [p,q]=segment(door,i*Math.PI/16);
+   for(let k=1;k<=8;k++){
+    const x=p[0]+(q[0]-p[0])*k/8,y=p[1]+(q[1]-p[1])*k/8;
+    if(fixtures.some(f=>{const g=f.geometry,eps=spacing*.025;
+     return x>g.x-eps&&x<g.x+g.width+eps&&y>g.y-eps&&y<g.y+g.height+eps;
+    }))return true;
+   }
+  }
+  return false;
+ };
+ for(let round=0;round<3;round++){
+  let changed=false;
+  for(const door of hinged){
+   const adjacent=hinged.filter(o=>o!==door&&o.floorId===door.floorId);
+   const conflicts=adjacent.filter(o=>swingClash(door,o));
+   if(!conflicts.length)continue;
+   const original={hinge:door.door.hinge,swingSide:door.door.swingSide};
+   let solved=false;
+   for(const hinge of ["start","end"])for(const side of ["left","right"]){
+    door.door.hinge=hinge;door.door.swingSide=side;
+    if(!furnitureClash(door)&&adjacent.every(o=>!swingClash(door,o))){
+     solved=true;break;
+    }
+   }
+   if(!solved){door.door.hinge=original.hinge;door.door.swingSide=original.swingSide}
+   else changed=true;
+  }
+  if(!changed)break;
+ }
+ for(const door of hinged){
+  door.metadata={...door.metadata,swingDoorInterferenceCount:
+   hinged.filter(o=>o!==door&&swingClash(door,o)).length};
+ }
  return{template:copy(template),objects:objs};
 }
 
