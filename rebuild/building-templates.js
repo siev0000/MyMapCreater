@@ -389,7 +389,7 @@ function generateModern(template,options){
      fy>=door.start+door.length+buffer||fy+fh<=door.start-buffer);
   });
   const placeAppliance=(name,shape,rooms,dimensions)=>{
-   if(furnished.some(item=>item[1]===shape))return true;
+   if(shape!=="bed"&&furnished.some(item=>item[1]===shape))return true;
    for(const room of rooms){
     const [rw,rh]=dimensions;
     if(room.w<rw+.3||room.h<rh+.3)continue;
@@ -432,6 +432,21 @@ function generateModern(template,options){
      !/階段/.test(r.name));
     placeAppliance("洗濯機","washer",utilityRooms,[1.3,1.3]);
    }
+  }
+  // Every bedroom should contain a bed; previously the two flat house
+  // designs had rooms labelled bedrooms without any sleeping furniture.
+  for(const room of rooms.filter(r=>/主寝室|洋室|寝室/.test(r.name))){
+   const hasBed=furnished.some(item=>item[1]==="bed"&&
+    item[2]>=room.x&&item[3]>=room.y&&
+    item[2]+item[4]<=room.x+room.w&&item[3]+item[5]<=room.y+room.h);
+   if(!hasBed){
+    placeAppliance("ベッド","bed",[room],[2.2,3.5]);
+   }
+  }
+  // A dedicated washroom needs its own handwash basin; the kitchenette
+  // sink alone is not a substitute.
+  if(z===0&&!furnished.some(item=>item[1]==="sink")){
+   placeAppliance("洗面台","sink",rooms.filter(r=>/洗面|脱衣/.test(r.name)),[1.2,.85]);
   }
   for(const [name,shape,fx,fy,fw,fh,stairPair,stairDirection] of furnished){
    if(fx<0||fy<0||fx+fw>w||fy+fh>h)throw Error("設置物が外周を越える："+name);
