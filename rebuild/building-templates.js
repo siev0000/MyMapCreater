@@ -813,7 +813,19 @@ function generateMachine(t,options={}){
  for(let z=0;z<floors.length;z++){
   const floor=floors[z].id;
   const stairs=t.floors>1;
-  const r=[
+  // Use two genuinely different plan archetypes. Pod halls, charging bays
+  // and bulk logistics need open banks; residences, labs, inspections and
+  // offices need enclosed individual rooms. Do not merely rename one plan.
+  const openBank=["pods","charging","fuel"].includes(mode)||
+   ["machine_supply","machine_cargo_checkpoint"].includes(t.id);
+  const r=openBank?[
+   {id:"left_full",name:roomNames[0],x:0,y:0,w:leftW,h:H,side:"left"},
+   ...(stairs?[
+    {id:"right_top",name:"階段・共用設備室",x:cR,y:0,w:rightW,h:topH,side:"right"},
+    {id:"right_bottom",name:roomNames[3],x:cR,y:topH,w:rightW,h:bottomH,side:"right"}
+   ]:[{id:"right_full",name:roomNames[1],x:cR,y:0,w:rightW,h:H,side:"right"}]),
+   {id:"corridor",name:"中央通路・出入口",x:cL,y:0,w:corridorW,h:H,side:"middle"}
+  ]:[
    {id:"left_top",name:roomNames[0],x:0,y:0,w:leftW,h:topH,side:"left"},
    {id:"right_top",name:stairs?"階段・共用設備室":roomNames[1],x:cR,y:0,w:rightW,h:topH,side:"right"},
    {id:"left_bottom",name:roomNames[2],x:0,y:topH,w:leftW,h:bottomH,side:"left"},
@@ -859,7 +871,8 @@ function generateMachine(t,options={}){
    addDoor(floor,wallX,openA,wallX,openB);
    addWall(floor,wallX,openB,wallX,room.y+room.h);
   }
-  addWall(floor,0,topH,cL,topH);addWall(floor,cR,topH,W,topH);
+  if(r.some(room=>room.id==="left_bottom"))addWall(floor,0,topH,cL,topH);
+  if(r.some(room=>room.id==="right_bottom"))addWall(floor,cR,topH,W,topH);
   // Each pair of rooms has independent access via the central corridor.
   let devices=0;
   for(const room of r.filter(o=>o.side!=="middle")){
