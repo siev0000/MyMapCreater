@@ -357,8 +357,11 @@ function generateModern(template,options){
   for(const [name,shape,fx,fy,fw,fh,stairPair,stairDirection] of plan.items){
    if(fx<0||fy<0||fx+fw>w||fy+fh>h)throw Error("設置物が外周を越える："+name);
    const stair=shape==="stair";
-   const extra={shapePresetId:shape,detail:shape==="stair"?
-    "折り返し階段の概念図。左下から上り、奥の踊り場でUターンして右下に上階側の出口。階段の実際の段数・高さは未設計です。":
+   const stairDesc=stairPair&&["up","down"].includes(stairDirection)
+    ?(stairDirection==="up"?"上階へ上る専用階段区間です。":"下階へ下りる専用階段区間です。")+
+     "同じ階段区間が上下2フロアに対応します。実際の段数・高さは未設計です。"
+    :"折り返し階段の概念図。実際の段数・高さは未設計です。";
+   const extra={shapePresetId:shape,detail:stair?stairDesc:
     name+"。住戸の生活用設備です。"};
    if(stair&&stairPair&&["up","down"].includes(stairDirection)){
     // A distinct pair of physical flights belongs to exactly two adjacent floors.
