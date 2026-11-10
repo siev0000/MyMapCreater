@@ -199,13 +199,13 @@ const modernHousing=[
     doors:[["bath","wash"],["wash","hall"],["wc","hall"],["entry","hall"],["hall","ldk"]],entry:"entry",
     items:[["浴槽","bath",.5,.5,2,2.5],["洗面台","sink",5,1,2,1],
      ["トイレ","toilet",1,4.7,1.5,1.5],["収納棚","cabinet",1,9,2,1],
-     ["階段","stair",4.5,10,3,3],["キッチン","kitchen",9,1,4,1],
+     ["階段（折り返し・概念図）","stair",4.2,8.2,3.6,5.6],["キッチン","kitchen",9,1,4,1],
      ["食卓","table",10,5,3,2],["ソファ","sofa",10,10,4,2]]},
    {rooms:[["bed1","主寝室",0,0,6,8],["bed2","洋室A",6,0,5,8],
      ["bed3","洋室B",11,0,5,8],["hall","2階ホール・階段",0,8,16,6]],
     doors:[["bed1","hall"],["bed2","hall"],["bed3","hall"]],
     items:[["ベッド","bed",1,1,2.8,4],["ベッド","bed",7,1,2,4],
-     ["ベッド","bed",12,1,2,4],["階段","stair",4.5,10,3,3],
+     ["ベッド","bed",12,1,2,4],["階段（折り返し・概念図）","stair",4.2,8.2,3.6,5.6],
      ["収納棚","cabinet",11,10,3,1]]}
   ]}
 ];
@@ -327,6 +327,9 @@ function generateModern(template,options){
    const stair=shape==="stair";
    const extra={shapePresetId:shape,detail:name+"。住戸の生活用設備です。"};
    if(stair){
+    extra.stairDesign={type:"switchback",flightWidthM:0.8,landingDepthM:0.85,
+     footprintWidthM:fw*.5,footprintDepthM:fh*.5,
+     status:"concept-not-architecturally-verified"};
     extra.connection={id:prefix+"_stair_main",fromFloorId:floor,
      toFloorId:floors[z+1]?.id||floors[z-1]?.id,
      fromAnchor:at(fx+fw/2,fy+fh/2),toAnchor:at(fx+fw/2,fy+fh/2),
