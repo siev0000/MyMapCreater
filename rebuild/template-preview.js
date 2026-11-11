@@ -217,6 +217,15 @@
   writeSavedPreview();
   $("template-mode-toggle").focus();
  }
+ function wallCm(obj){
+  const units=Number(obj?.metadata?.wallUnitsPerMeter);
+  const perMeter=Number.isFinite(units)&&units>0?units:previewSpacing()*2;
+  return Number.isFinite(obj?.wall?.thickness)?obj.wall.thickness/perMeter*100:null;
+ }
+ function wallUnitsPerMeter(obj){
+  const units=Number(obj?.metadata?.wallUnitsPerMeter);
+  return Number.isFinite(units)&&units>0?units:previewSpacing()*2;
+ }
  function showObjectInfo(obj){
   const t=library?.allPresets().find(item=>item.id===activeId);
   const title=$("template-preview-info-title"),meta=$("template-preview-info-meta"),
@@ -234,7 +243,7 @@
   const floor=record(t)?.floors.find(f=>f.id===obj.floorId);
   const g=obj.geometry||{};
   const dimension=g.type==="rect"?(obj.objectType==="object"?" / "+Number((g.width/previewSpacing()*50).toFixed(1))+" × "+Number((g.height/previewSpacing()*50).toFixed(1))+"cm":" / "+Number((g.width/previewSpacing()).toFixed(1))+" × "+Number((g.height/previewSpacing()).toFixed(1))+"マス"):"";
-  meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension+(obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?" / 壁厚"+Number((obj.wall.thickness/previewSpacing()*50).toFixed(1))+"cm":"")+(["door","window"].includes(obj.objectType)&&obj.geometry?.points?.length===2?" / 開口"+Number((length2(obj.geometry.points[0],obj.geometry.points[1])/previewSpacing()*50).toFixed(1))+"cm":"");
+  meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension+(obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?" / 壁厚"+Number((wallCm(obj)).toFixed(1))+"cm":"")+(["door","window"].includes(obj.objectType)&&obj.geometry?.points?.length===2?" / 開口"+Number((length2(obj.geometry.points[0],obj.geometry.points[1])/previewSpacing()*50).toFixed(1))+"cm":"");
   if(obj.id==="preview_root"){
    detail.textContent=t?.description||obj.detail||"建物の概要";
    return;
@@ -595,7 +604,7 @@
   $("template-edit-detail").value=editing&&obj?obj.detail||"":"";
   $("template-wall-thickness-label").hidden=!(editing&&obj?.objectType==="wall");
   syncWallGuide(obj);
-  $("template-wall-thickness").value=editing&&obj?.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/previewSpacing()*50).toFixed(2))):"";
+  $("template-wall-thickness").value=editing&&obj?.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?String(Number((wallCm(obj)).toFixed(2))):"";
   const rect=editing&&obj?.geometry?.type==="rect"&&obj.objectType==="object";
   for(const [label,input] of [["template-dim-width-label","template-dim-width"],["template-dim-height-label","template-dim-height"],["template-dim-rotation-label","template-dim-rotation"]])
    $(label).hidden=!rect;
@@ -721,7 +730,7 @@
    if(obj.objectType==="wall"){
     const cm=Number($("template-wall-thickness").value);
     if(!Number.isFinite(cm)||cm<1||cm>300){editPast.pop();setEditMessage("壁の厚さは1〜300cmで入力してください");return false}
-    obj.wall={...obj.wall,thickness:cm/50*previewSpacing()};
+    obj.wall={...obj.wall,thickness:cm/100*wallUnitsPerMeter(obj)};
     obj.metadata={...obj.metadata,wallThicknessCm:cm,wallRole:$("template-wall-role").value,wallThicknessStatus:"user-edited"};
    }
    if(obj.label)obj.label.text=obj.name;
