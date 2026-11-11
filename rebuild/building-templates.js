@@ -851,7 +851,7 @@ function generateMiddleLayerFrame(t,options={}){
  const grove=presets.find(v=>v.id==="machine_mid_giant_tree_grove");
  const forest=generateGiantGrove(grove,{prefix:prefix+"_forest",parentId:sector.id,
   displayLevel:displayLevel+2,x:sector.geometry.x+80*unit,y:sector.geometry.y+34*unit,
-  spacing:unit*1.15,baseName:"アルボラセクター・大木育成区画"});
+  spacing:unit*1.15,wallUnitsPerMeter:unit,baseName:"アルボラセクター・大木育成区画"});
  // Keep the forest's draft footprint within the Notion sector; it is not a canonical forest size.
  forest.objects[0].metadata={...forest.objects[0].metadata,designStatus:"draft-unverified",indoorForest:true,
   resourceUses:["燃料用樹液","樹皮","繊維","樹脂","木質素材"],ceilingHeightM:null};
@@ -862,6 +862,8 @@ function generateGiantGrove(t,options={}){
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
  if(typeof prefix!=="string"||!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("大木育成区画の配置指定が不正です");
  const [W,H]=[420,360],objs=[],at=(a,b)=>[x+a*spacing,y+b*spacing],rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
+ const wallUnitsPerMeter=Number.isFinite(options.wallUnitsPerMeter)&&options.wallUnitsPerMeter>0
+  ?options.wallUnitsPerMeter:spacing*2;
  let n=0;const add=(name,kind,level,geometry,parent,extra={})=>{
   const o={id:prefix+"_grove_"+(++n),name,objectType:kind,parentId:parent,displayLevel:level,floorId:"1F",layer:kind==="wall"||kind==="door"?"walls":"structures",zIndex:kind==="region"?31:kind==="wall"?47:kind==="door"?49:42,geometry,visible:true,selectable:true,style:kind==="region"?{fill:"rgba(45,124,73,.14)",stroke:"#659e73",strokeWidth:1}:{fill:"rgba(50,125,90,.27)",stroke:"#95bd9b",strokeWidth:1},label:{visible:kind==="region",text:name,fontSize:10},detail:"アルボラセクターの編集用試案。位置・寸法・設備数は未確定。",metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified"},...extra};objs.push(o);return o;
  };
@@ -904,7 +906,17 @@ function generateGiantGrove(t,options={}){
  for(let i=0;i<9;i++)addObject("人工降雨制御端末","terminal_device",north,20+i*44,3,3,3,"rain-control");
  for(let i=0;i<8;i++)addObject("水循環・排水監視端末","terminal_device",south,24+i*45,H-11,3,3,"water-monitor");
  addObject("搬入資材保管","storage_container",south,W-36,H-12,10,7,"materials");
- for(const [a,b,c,d] of [[0,0,W,0],[0,0,0,H],[W,0,W,H],[0,H,W/2-6,H],[W/2+6,H,W,H]])add("外周区画壁","wall",displayLevel+1,{type:"polyline",points:[at(a,b),at(c,d)]},prefix);
+ // Giant enclosed halls use a fixed provisional *display* thickness, not
+ // a calculated structural section; the physical design is still unresolved.
+ const groveWallThicknessCm=60;
+ for(const [a,b,c,d] of [[0,0,W,0],[0,0,0,H],[W,0,W,H],[0,H,W/2-6,H],[W/2+6,H,W,H]]){
+  add("外周区画壁","wall",displayLevel+1,{type:"polyline",points:[at(a,b),at(c,d)]},prefix,{
+   wall:{thickness:groveWallThicknessCm/100*wallUnitsPerMeter},
+   metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",
+    wallThicknessCm:groveWallThicknessCm,wallRole:"exterior",wallUnitsPerMeter,
+    wallThicknessRule:"large-sector-provisional-v1",wallThicknessStatus:"special-draft"}
+  });
+ }
  add("森林区画入口","door",displayLevel+1,{type:"polyline",points:[at(W/2-6,H),at(W/2+6,H)]},prefix,{door:{hinge:"start",swing:"inward",state:"closed",type:"sliding",slideDirection:"end"},opening:{kind:"entrance",width:12*spacing,external:true}});
  return{template:copy(t),objects:objs};
 }
