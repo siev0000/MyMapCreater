@@ -1073,7 +1073,7 @@ function generateRegistlinkDome(t,options={}){
   layer:"subregions",zIndex:18,geometry:{type:"rect",x,y,width:m(500),height:m(500)},
   floors:[{id:floorId,label:"中層・1階仮平面",elevation:0,height:8}],visible:true,selectable:true,
   style:{fill:null,stroke:null},label:{visible:false,text:baseName},detail:t.description,
-  metadata:{...meta,rectIsEditBoundsOnly:true,layoutMode:"terminal-integrated-ring"}};
+  metadata:{...meta,rectIsEditBoundsOnly:true,layoutMode:"terminal-integrated-ring",showAllDetailsWhenSelected:true}};
  objects.push(root);let counter=0;
  const add=(name,kind,geometry,extra={})=>{
   const parent=extra.parentId||prefix,level=extra.displayLevel||displayLevel+1;
