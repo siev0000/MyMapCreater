@@ -941,7 +941,16 @@ function generateMachine(t,options={}){
    ["作業区A","管理室","作業区B","保管室"]);
  const mode=t.facilityMode||"generic";
  const line=(a,b,c,d)=>({type:"polyline",points:[at(a,b),at(c,d)]});
- const addWall=(f,a,b,c,d)=>{if(Math.hypot(c-a,d-b)>1e-6)add("区画壁","wall",f,line(a,b,c,d))};
+ const addWall=(f,a,b,c,d)=>{
+  if(Math.hypot(c-a,d-b)<=1e-6)return;
+  const exterior=(a===c&&(a===0||a===W))||(b===d&&(b===0||b===H));
+  const wallThicknessCm=exterior?30:20; // editable draft defaults, not canonical material specifications
+  add(exterior?"外周壁":"区画壁","wall",f,line(a,b,c,d),{
+   wall:{thickness:wallThicknessCm/50*spacing},
+   metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",
+    wallThicknessCm,wallThicknessStatus:"editor-default"}
+  });
+ };
  const addDoor=(f,a,b,c,d,external=false)=>{
   const door=add(external?"施設入口":"区画扉","door",f,line(a,b,c,d),
    {door:{hinge:"start",swing:"inward",state:"closed",type:"sliding",slideDirection:"end"},
