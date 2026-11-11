@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-open-reception-heavy-roads",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-short-rectangular-lift-passages",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1461,7 +1461,19 @@ function generateTerminalDomeV2(t,options={}){
    wall(kind+"昇降機"+(i+1)+"・側壁右",corners[1],corners[2],shaft.id,wallThickness.shaftCm);
    const d=add(kind+"昇降機"+(i+1)+"・外向き扉","door",{type:"polyline",points:[dl,dr]},shaft.id,{role:"door",accessControl:kind==="一般"?"public":"heavy-cargo",connectedRoomId:shaft.id});
    d.door={type:"sliding",slideDirection:"end",state:"closed"};d.opening={kind:"interior",width:routeWidth*k,clearHeightM:7};
-   add(kind+"昇降機"+(i+1)+"・外向き通路","route",{type:"polyline",points:[pt(0,h/2),pt(0,76-r)]},lifts.id,{role:"lift-exit-route",clearWidthM:routeWidth,kind});
+   // Short rectangular vestibule immediately outside the shaft door.
+   const passageLength=kind==="一般"?9:12;
+   const nearL=pt(-routeWidth/2,h/2),nearR=pt(routeWidth/2,h/2);
+   const farL=pt(-routeWidth/2,h/2+passageLength),farR=pt(routeWidth/2,h/2+passageLength);
+   const passage=add(kind+"昇降機"+(i+1)+"・乗降通路","region",{type:"polyline",points:[nearL,nearR,farR,farL,nearL]},lifts.id,
+    {role:"lift-vestibule",kind,clearWidthM:routeWidth,lengthM:passageLength,orientation:"radial"});
+   passage.style={fill:"rgba(110,170,175,.28)",stroke:"#91c6d3",strokeWidth:2};
+   wall(kind+"昇降機"+(i+1)+"・通路左壁",nearL,farL,passage.id,wallThickness.roomCm);
+   wall(kind+"昇降機"+(i+1)+"・通路右壁",nearR,farR,passage.id,wallThickness.roomCm);
+   const hallDoor=add(kind+"昇降機"+(i+1)+"・ホール側扉","door",{type:"polyline",points:[farL,farR]},passage.id,
+    {role:"door",accessControl:kind==="一般"?"public":"heavy-cargo"});
+   hallDoor.door={type:"sliding",slideDirection:"end",state:"closed"};
+   hallDoor.opening={kind:"interior",width:routeWidth*k,clearHeightM:7};
   }
  }
  // Open reception counters are fixtures in the main hall, not enclosed rooms.
