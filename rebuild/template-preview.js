@@ -62,7 +62,12 @@
   const order={slab:1,room:2,region:2,object:3,stair:4,wall:5,door:6,window:6};
   const visible=objects.filter(o=>o.id!==root.id&&(!o.floorId||o.floorId===floorId)&&o.visible!==false)
    .sort((a,b)=>(order[a.objectType]||3)-(order[b.objectType]||3));
-  const strokeWidth=Math.max(.2,Math.min(w,h)*(small?.012:.01));
+  // A 500m circular complex contains rooms as small as 8m across.
+  // The generic 1–1.2% floorplan outline equals ~5–6 metres here, which
+  // paints over the small rooms. Keep the actual wall widths independent.
+  const strokeWidth=template.facilityMode==="registlink_dome"
+   ?Math.max(1.8,Math.min(w,h)*(small?.0028:.002))
+   :Math.max(.2,Math.min(w,h)*(small?.012:.01));
   for(const obj of visible){
    const g=obj.geometry||{},type=obj.objectType;
    let shape=null;
