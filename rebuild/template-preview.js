@@ -233,7 +233,7 @@
   }[obj.objectType]||obj.objectType||"オブジェクト";
   const floor=record(t)?.floors.find(f=>f.id===obj.floorId);
   const g=obj.geometry||{};
-  const dimension=g.type==="rect"?" / "+String(Number((g.width/previewSpacing()).toFixed(1)))+" × "+String(Number((g.height/previewSpacing()).toFixed(1)))+"マス":"";
+  const dimension=g.type==="rect"?(obj.objectType==="object"?" / "+Number((g.width/previewSpacing()*50).toFixed(1))+" × "+Number((g.height/previewSpacing()*50).toFixed(1))+"cm":" / "+Number((g.width/previewSpacing()).toFixed(1))+" × "+Number((g.height/previewSpacing()).toFixed(1))+"マス"):"";
   meta.textContent=kind+(floor?" / "+(floor.label||floor.id):"")+dimension+(obj.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?" / 壁厚"+Number((obj.wall.thickness/previewSpacing()*50).toFixed(1))+"cm":"")+(["door","window"].includes(obj.objectType)&&obj.geometry?.points?.length===2?" / 開口"+Number((length2(obj.geometry.points[0],obj.geometry.points[1])/previewSpacing()*50).toFixed(1))+"cm":"");
   if(obj.id==="preview_root"){
    detail.textContent=t?.description||obj.detail||"建物の概要";
@@ -356,18 +356,21 @@
   if(lastFocus?.focus)lastFocus.focus();
  }
  const eraNames={"common":"共通・未分類","modern-jp":"現代日本","japanese":"和風","historical-eu":"歴史欧州","fantasy":"異世界","machine":"機械","ruins":"終末・廃墟"};
+ // All dimensions below are centimetres (width × depth), editable sample sizes.
+ // Generic residential fixtures match the matching real-scale items in object-catalog.js.
+ // Machine fixtures are provisional editor defaults; do not treat these as Notion lore.
  const catalog={
-  "建築":[["wall","壁",0,0],["door","扉",0,0],["window","窓",0,0],["room","部屋の区画",6,6]],
-  "生活設備":[["kitchen","キッチン",4,2],["toilet","トイレ",2,2],["sink","洗面台",2,1],["bath","浴槽",3,2]],
-  "家具":[["bed","ベッド",3,5],["table","机",3,2],["chair","椅子",1,1],["shelf","収納棚",3,1]],
-  "商業設備":[["counter","カウンター",5,2],["display_shelf","商品棚",4,1]],
-  "作業設備":[["workbench","作業台",6,3],["tool_cabinet","工具棚",3,1]],
-  "機械設備":[["charging_station","充電設備",4,3],["fuel_dispenser","燃料補給機",4,3],["dormancy_pod","休眠ポッド",2.2,3.3],["terminal_device","端末",2,2]],
-  "特殊設備":[["research_table","研究台",5,2],["storage_container","大型保管庫",5,4]]
+  "建築":[["wall","壁",0,0],["door","扉",0,0],["window","窓",0,0],["room","部屋の区画",300,300]],
+  "生活設備":[["kitchen","キッチン",240,65],["toilet","トイレ",40,75],["sink","洗面台",75,55],["bath","浴槽",160,80]],
+  "家具":[["bed","ベッド",100,200],["table","机",110,60],["chair","椅子",60,60],["shelf","収納棚",90,30]],
+  "商業設備":[["counter","カウンター",250,100],["display_shelf","商品棚",200,50]],
+  "作業設備":[["workbench","作業台",300,150],["tool_cabinet","工具棚",150,50]],
+  "機械設備":[["charging_station","充電設備",200,150],["fuel_dispenser","燃料補給機",200,150],["dormancy_pod","休眠ポッド",110,165],["terminal_device","端末",100,100]],
+  "特殊設備":[["research_table","研究台",250,100],["storage_container","大型保管庫",250,200]]
  };
  function palette(){
   const combined=Object.fromEntries(Object.entries(catalog).map(([category,items])=>[category,items.map(item=>({
-   id:item[0],name:item[1],widthCm:(item[2]||4)*50,depthCm:(item[3]||2)*50,shape:item[0],icon:"",description:item[1]+"の設置範囲です。"
+   id:item[0],name:item[1],widthCm:item[2],depthCm:item[3],shape:item[0],icon:"",description:item[1]+"の設置範囲です。寸法は編集用の初期値です。"
   }))]));
   const residential=global.AAMapObjectCatalog?.residential||[];
   for(const item of residential){
