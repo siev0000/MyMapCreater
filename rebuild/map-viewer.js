@@ -306,7 +306,8 @@ function create(opts){
    let current=obj,seen=new Set();
    while(current&&!seen.has(current.id)){
     if(chain.has(current.id)&&Array.isArray(current.floors)&&
-       level<=current.displayLevel+2)return true;
+       (current.metadata?.showAllDetailsWhenSelected===true||
+        level<=current.displayLevel+2))return true;
     seen.add(current.id);current=owners.get(current.parentId);
    }
   }
