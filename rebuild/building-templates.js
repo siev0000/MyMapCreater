@@ -1293,36 +1293,59 @@ function generateRegistlinkDome(t,options={}){
    if(L)left+=w+3;else right+=w+3;
   }
  }
+ // Four axial circulation links, measured in real 0.5m grid cells.
+ const gateways=[0,pi/2,pi,3*pi/2].map((angle,i)=>({
+  angle,heavy:i%2===0,widthM:i%2===0?12:8,heightM:i%2===0?8:7}));
+ for(let i=0;i<4;i++){
+  const g=gateways[i],half=g.widthM/2;
+  add((g.heavy?"大型機":"一般")+"リフト接続通路"+(i+1),"route",{
+   type:"polygon",points:[point(95,-half,g.angle),point(245,-half,g.angle),
+    point(245,half,g.angle),point(95,half,g.angle)]},{
+   parentId:terminal.id,displayLevel:displayLevel+3,
+   style:{fill:g.heavy?"rgba(157,126,192,.24)":"rgba(110,185,180,.22)",
+    stroke:g.heavy?"#ba9edd":"#97d5d1",strokeWidth:1},
+   label:{visible:false,text:""},
+   metadata:{role:g.heavy?"heavy-machine-passage":"general-passage",
+    clearWidthM:g.widthM,clearHeightM:g.heightM,gridWidthCells:g.widthM*2,
+    connectedRadiusRangeM:[95,245],routeStatus:"draft"}});
+  add("警備認証ゲート"+(i+1),"region",{type:"polygon",points:roomCorners(139,g.angle,g.widthM+4,8)},{
+   parentId:dome.id,displayLevel:displayLevel+4,
+   label:{visible:true,text:"警備"+(i+1),position:pos(139,g.angle),fontSize:8},
+   style:{fill:"rgba(176,144,95,.14)",stroke:"#cfb38b",strokeWidth:1},
+   metadata:{role:"security-checkpoint",clearWidthM:g.widthM,clearHeightM:g.heightM,
+    accessControl:"HOST-managed",positionStatus:"draft"}});
+ }
  const arcWall=(radius,from,to,outer)=>{
-  const points=[],N=16,thicknessCm=outer?guide.outerCm:guide.innerCm;
+  const points=[],N=18,cm=60;
   for(let i=0;i<=N;i++)points.push(pos(radius,from+(to-from)*i/N));
-  add(outer?"円環外周壁":"円環内周壁","wall",{type:"polyline",points},{
+  add(outer?"円環外周構造壁":"円環内周構造壁","wall",{type:"polyline",points},{
    parentId:dome.id,displayLevel:displayLevel+3,
-   wall:{thickness:thicknessCm/100*unit},
-   metadata:{wallRole:outer?"exterior":"partition",wallThicknessCm:thicknessCm,
-    wallThicknessRule:guide.version,wallThicknessStatus:"editor-default"}
+   wall:{thickness:m(cm/100)},label:{visible:false,text:""},
+   metadata:{role:"ring-structural-wall",wallRole:outer?"exterior":"partition",
+    wallThicknessCm:cm,wallThicknessRule:"guild-ring-structural-v2",
+    wallThicknessStatus:"editor-default",gridThicknessCells:cm/50}
   });
  };
- const gap=.06; // door arc half-angle (draft)
- for(let k=0;k<4;k++){
-  const ang=k*pi/2,heavy=k%2===0,kind=heavy?"大型機専用":"一般";
-  arcWall(130,ang+gap,ang+pi/2-gap,false);
-  arcWall(210,ang+gap,ang+pi/2-gap,true);
-  for(const rad of [130,210]){
-   add(kind+(rad===130?"・内側":"・外側")+"連絡口","door",
-    {type:"polyline",points:[pos(rad,ang-gap),pos(rad,ang+gap)]},{
-     parentId:dome.id,displayLevel:displayLevel+3,
-     door:{type:"sliding",slideDirection:"end",state:"closed"},
-     opening:{kind:"entrance",external:rad===210,width:2*rad*gap*unit},
-     metadata:{role:heavy?"heavy-machine-access":"passenger-access",designStatus:"draft-unverified"}
-    });
-  }
-  add(kind+"・乗降連絡路","route",
-   {type:"polyline",points:[pos(90,ang),pos(130,ang),pos(210,ang),pos(242,ang)]},{
-    parentId:terminal.id,displayLevel:displayLevel+3,
-    style:{stroke:heavy?"#c2abdf":"#98d9d4",strokeWidth:2},
-    metadata:{role:heavy?"heavy-machine-lane":"pedestrian-lane",routeStatus:"draft"}
+ // Different radii must get the SAME physical clear opening, not equal angular spans.
+ for(const radius of [130,210]){
+  const gateArcs=gateways.map(g=>({...g,half:Math.asin(g.widthM/(2*radius))}));
+  for(let i=0;i<4;i++){
+   const g=gateArcs[i],next=gateArcs[(i+1)%4];
+   arcWall(radius,g.angle+g.half,next.angle+(i===3?2*pi:0)-next.half,radius===210);
+   const a=pos(radius,g.angle-g.half),b=pos(radius,g.angle+g.half);
+   const actual=Math.hypot(a[0]-b[0],a[1]-b[1])/unit;
+   if(Math.abs(actual-g.widthM)>1e-7)throw Error("円環ゲート有効幅の計算誤差");
+   add((g.heavy?"大型機":"一般")+(radius===130?"内側":"外側")+"出入口"+(i+1),
+    "door",{type:"polyline",points:[a,b]},{
+    parentId:dome.id,displayLevel:displayLevel+3,
+    door:{type:"sliding",slideDirection:"end",state:"closed"},
+    opening:{kind:"entrance",external:radius===210,width:m(g.widthM),clearHeightM:g.heightM},
+    label:{visible:false,text:""},
+    metadata:{role:g.heavy?"heavy-machine-access":"passenger-access",
+     clearWidthM:g.widthM,clearHeightM:g.heightM,
+     gridWidthCells:g.widthM*2,sourceLayout:"middle.scene.json",dimensionStatus:"draft"}
    });
+  }
  }
  return{template:copy(t),objects};
 }
