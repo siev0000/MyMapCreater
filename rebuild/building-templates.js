@@ -1472,7 +1472,7 @@ function generateTerminalDomeV2(t,options={}){
  testRoom("作戦会議室・試験",170,180,20,16,"meeting-room");
  testRoom("管理事務室・試験",170,270,20,16,"administration");
  testRoom("危険物隔離庫・試験",194,45,18,14,"hazard-storage",wallThickness.hazardCm);
- return{template:{...t,gridUnitM:0.5,wallThicknessCm},objects};
+ return{template:{...t,gridUnitM:0.5,wallThicknessCm:wallThickness},objects};
 }
 
 function generate(templateId,options={}){
