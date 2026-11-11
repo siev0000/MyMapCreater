@@ -439,7 +439,19 @@ function updateVertexControls(obj){
   $("geo-height-m").value=Number.isFinite(obj.metadata?.heightM)?String(obj.metadata.heightM):"";
  }
  $("wall-thickness-fields").classList.toggle("hidden",obj?.objectType!=="wall");
- if(obj?.objectType==="wall")$("wall-thickness").value=Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/gridState.spacing*50).toFixed(2))):"";
+ const guideContext=getSelectedWallGuide(data,obj);
+ $("wall-guide-panel").hidden=!guideContext;
+ if(obj?.objectType==="wall"){
+  const cell=templateCellSpacing(data);
+  $("wall-thickness").value=Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/cell*50).toFixed(2))):"";
+  if(guideContext){
+   const g=guideContext.guide;
+   $("wall-guide-role").value=guideContext.role;
+   $("wall-guide-summary").textContent=
+    "長辺 "+Number(g.longestSideM.toFixed(1))+"m・"+g.floors+"階：外周壁 "+g.outerCm+"cm／区画壁 "+g.innerCm+
+    "cm（"+(g.strength==="sturdy"?"頑丈な施設":"通常施設")+"の編集用目安）";
+  }
+ }
 }
 bind("vertex-add",()=>{
  const current=sceneNow()?.objects.find(o=>o.id===state.selectedId),points=current?.geometry?.points;
@@ -534,11 +546,38 @@ bind("stair-low-side",()=>{
 });
 bind("wall-thickness",()=>{
  const raw=input("wall-thickness").trim();
- if(raw===""){changeObject(o=>{if(o.objectType==="wall"&&o.wall)delete o.wall.thickness});return}
+ if(raw===""){
+  changeObject(o=>{
+   if(o.objectType!=="wall")return;
+   if(o.wall)delete o.wall.thickness;
+   o.metadata={...o.metadata};
+   delete o.metadata.wallThicknessCm;
+   o.metadata.wallThicknessStatus="user-edited";
+  });
+  return;
+ }
  const thickness=Number(raw);
  if(!Number.isFinite(thickness)||thickness<1||thickness>300){notice("壁厚は1〜300cmで指定してください","error");renderSelected();return}
- changeObject(o=>{if(o.objectType!=="wall")return;o.wall={...o.wall,thickness:thickness/50*gridState.spacing}});
+ changeObject(o=>{
+  if(o.objectType!=="wall")return;
+  o.wall={...o.wall,thickness:thickness/50*templateCellSpacing(sceneNow())};
+  o.metadata={...o.metadata,wallThicknessCm:thickness,wallThicknessStatus:"user-edited"};
+ });
 });
+bind("wall-guide-apply",()=>{
+ const scene=sceneNow(),wall=scene?.objects.find(o=>o.id===state.selectedId);
+ const context=getSelectedWallGuide(scene,wall);
+ if(!context){notice("この壁には施設サイズの自動目安を適用できません","error");return}
+ const role=input("wall-guide-role");
+ if(role!=="exterior"&&role!=="partition")return;
+ const thickness=role==="exterior"?context.guide.outerCm:context.guide.innerCm;
+ if(changeObject(o=>{
+  if(o.objectType!=="wall")return;
+  o.wall={...o.wall,thickness:thickness/50*templateCellSpacing(scene)};
+  o.metadata={...o.metadata,wallThicknessCm:thickness,wallRole:role,
+   wallThicknessRule:context.guide.version,wallThicknessStatus:"user-edited"};
+ }))notice("施設規模に合わせて壁厚 "+thickness+"cmを適用しました（未保存）","success");
+},"click");
 function geoNumberEdit(field,raw,min=0){
  const text=raw.trim();
  if(text!==""&&(!Number.isFinite(Number(text))||Number(text)<min)){
@@ -833,6 +872,46 @@ function renderSelectionIdentity(){
  while(cur&&!seen.has(cur.id)&&parents.length<3){seen.add(cur.id);parents.unshift(cur.name||cur.id);cur=byId.get(cur.parentId)}
  $("editor-selection-title").textContent="選択中："+(selected.name||selected.id);
  $("editor-selection-meta").textContent=[kind,parents.length?"所属："+parents.join(" › "):"",selected.floorId?"階："+(selected.floorId.split("__").pop()):""].filter(Boolean).join(" ｜ ");
+}
+// Retrieve the size-based wall guide only for recognised building templates.
+// Object and wall dimensions are converted using the template's 0.5m/cell scale.
+function getSelectedWallGuide(data,wall){
+ if(!data||wall?.objectType!=="wall")return null;
+ const lib=window.AAMapBuildingTemplates;
+ if(!lib?.wallThicknessGuide)return null;
+ const byId=new Map(data.objects.map(o=>[o.id,o]));
+ let owner=byId.get(wall.parentId);
+ const seen=new Set();
+ while(owner&&!seen.has(owner.id)){
+  seen.add(owner.id);
+  if(owner.objectType==="facility"&&owner.geometry?.type==="rect"&&owner.metadata?.templateId)break;
+  owner=byId.get(owner.parentId);
+ }
+ if(!owner||owner.objectType!=="facility"||owner.geometry?.type!=="rect")return null;
+ const source=lib.allPresets().find(t=>t.id===owner.metadata?.templateId);
+ if(!source||["middle_layer_frame","giant_grove"].includes(source.facilityMode))return null;
+ const cell=templateCellSpacing(data);
+ if(!Number.isFinite(cell)||cell<=0)return null;
+ const g=owner.geometry;
+ try{
+  const guide=lib.wallThicknessGuide(source,{
+   dimensionsM:[g.width/cell*.5,g.height/cell*.5],
+   floors:owner.floors?.length||source.floors||1,
+   strength:(source.worldStyle==="machine"||source.era==="machine")?"sturdy":"standard"
+  });
+  let role=wall.metadata?.wallRole;
+  if(role!=="exterior"&&role!=="partition"){
+   role="partition";
+   const pts=wall.geometry?.points;
+   if(pts?.length===2){
+    const near=(a,b)=>Math.abs(a-b)<=Math.max(1e-7,cell*.00001);
+    if((near(pts[0][0],pts[1][0])&&(near(pts[0][0],g.x)||near(pts[0][0],g.x+g.width)))||
+       (near(pts[0][1],pts[1][1])&&(near(pts[0][1],g.y)||near(pts[0][1],g.y+g.height))))
+     role="exterior";
+   }
+  }
+  return{guide,role};
+ }catch(_){return null}
 }
 function renderSelected(){
  const data=sceneNow(),obj=data?.objects.find(o=>o.id===state.selectedId);
