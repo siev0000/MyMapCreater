@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-short-rectangular-lift-passages",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-compact-lift-zone",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1441,8 +1441,8 @@ function generateTerminalDomeV2(t,options={}){
  const perimeter=add("ターミナル外周壁","wall",{type:"circle",center:[cx,cy],radius:250*k},terminal.id,{role:"outer-wall",wallThicknessCm:wallThickness.outerCm});
  perimeter.layer="walls";perimeter.zIndex=47;perimeter.wall={thickness:wallThickness.outerCm/100*k};perimeter.style={stroke:"#bed4df",strokeWidth:2};
  const pillar=add("中央構造柱","region",circle(22),terminal.id,{role:"pillar"});
- const lifts=add("昇降機・物流帯","region",ring(24,76),terminal.id,{role:"lift-zone"});
- add("昇降機側・一般案内待機帯","region",ring(78,125),terminal.id,{role:"inward-arrivals"});
+ const lifts=add("昇降機・物流帯","region",ring(24,57),terminal.id,{role:"lift-zone"});
+ add("昇降機側・一般案内待機帯","region",ring(59,125),terminal.id,{role:"inward-arrivals"});
  const dome=add("レジストリンク・ドーム","region",ring(130,244),terminal.id,{role:"guild-ring"});
  add("ドーム外向き分散受付帯","region",ring(205,242),terminal.id,{role:"outward-arrivals"});
  for(let i=0;i<4;i++){
@@ -1462,7 +1462,7 @@ function generateTerminalDomeV2(t,options={}){
    const d=add(kind+"昇降機"+(i+1)+"・外向き扉","door",{type:"polyline",points:[dl,dr]},shaft.id,{role:"door",accessControl:kind==="一般"?"public":"heavy-cargo",connectedRoomId:shaft.id});
    d.door={type:"sliding",slideDirection:"end",state:"closed"};d.opening={kind:"interior",width:routeWidth*k,clearHeightM:7};
    // Short rectangular vestibule immediately outside the shaft door.
-   const passageLength=kind==="一般"?9:12;
+   const passageLength=1; // Two 0.5m grid cells
    const nearL=pt(-routeWidth/2,h/2),nearR=pt(routeWidth/2,h/2);
    const farL=pt(-routeWidth/2,h/2+passageLength),farR=pt(routeWidth/2,h/2+passageLength);
    const passage=add(kind+"昇降機"+(i+1)+"・乗降通路","region",{type:"polyline",points:[nearL,nearR,farR,farL,nearL]},lifts.id,
