@@ -344,6 +344,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 }
 
 /* A separate display-level picker filters edit hit-tests without hiding floors. */
+#template-preview-modal .template-preview-toolbar:has(.template-selection-tools:not([hidden])){height:auto;min-height:29px;overflow:visible;flex-wrap:wrap}
 #template-preview-modal .template-selection-tools{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0;min-width:0}
 #template-preview-modal .template-selection-tools[hidden]{display:none!important}
 #template-preview-modal .template-selection-tools label{font-size:11px;white-space:nowrap}
@@ -915,11 +916,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 </script>
 <script src="./sakihana-interiors.js?v=entrances-v4"></script>
 <script src="./packed-scene-loader.js?v=sakihana-snapshot-v2"></script>
-<script src="./map-viewer.js?v=forest-batch-v2"></script>
+<script src="./map-viewer.js?v=select-level-v3"></script>
 <script src="./geo-data-import.js?v=generic-import-v1"></script>
 <script src="./object-catalog.js?v=tree-presets-v1"></script>
 <script src="./building-templates.js?v=middle-frame-v9"></script>
-<script src="./template-preview.js?v=auto-template-id-v28"></script>
+<script src="./template-preview.js?v=pick-level-size-v29"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
  <script src="./map-editor.js?v=service-palette-v25"></script>
