@@ -1012,8 +1012,7 @@
    $("template-field-cancel").addEventListener("click",closeFieldModal);
    $("template-wall-guide-apply").addEventListener("click",applySuggestedWallThickness);
    $("template-wall-role").addEventListener("change",()=>{
-    const selected=previewViewer?.getSelected();
-    syncWallGuide(selected);
+    // Keep the unsaved user choice; syncWallGuide is only for a new selection.
     $("template-field-status").textContent="壁の種類を変更しました。目安値を使う場合はボタンを押してください。";
    });
    $("template-item-apply").addEventListener("click",confirmFieldModal);
