@@ -65,6 +65,9 @@
 5. ユーザーが指定した壁厚を優先する。手動変更を保存した場合は `wallThicknessStatus: "user-edited"` とする。
 6. 生成時の仮値は `wallThicknessStatus: "editor-default"`、使用ルールは `wallThicknessRule: "facility-wall-size-v1"` として区別する。
 7. 既存マップ・既存カスタムテンプレート・保存済み壁は移行時に書き換えない。必要時のみ個別に再適用する。
+8. **通常マップの「選択した図形の設定」**でも、テンプレート由来の施設内にある壁には長辺・階数・外周/区画の候補を表示する。「施設サイズに合う壁厚を入力」を押したときだけ壁厚を反映する（地図自体は未保存状態）。
+9. 通常マップの手動入力でも `wallThicknessCm` と `wallThicknessStatus: "user-edited"` を同期して、以前の目安値がメタデータに残らないようにする。
+10. 実寸の座標換算は、地理参照の `worldUnitsPerMeter` がある場合 `0.5m × worldUnitsPerMeter` を優先し、ない場合は編集グリッド間隔を使う。
 
 ## 6. 大規模施設の例外
 
