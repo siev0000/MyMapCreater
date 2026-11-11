@@ -195,11 +195,19 @@ presets.push(...[
 
 // Official facility and function; dimensions and rooms below are a draft for map rebuilding.
 presets.push({
- id:"machine_mid_registlink_dome",name:"ギルド複合区《レジストリンク・ドーム》",
+ id:"machine_mid_registlink_dome",name:"【旧試作・保管】ギルド複合区《レジストリンク・ドーム》",
  cells:[1000,1000],floors:1,layout:"terminal-integrated-ring",category:"machine_midlayer",
  worldStyle:"machine",facilityMode:"registlink_dome",notionStatus:"map-draft-restored",
  designStatus:"draft-unverified",
  description:"テンプレート先行制作案。直径500mの中央リンクターミナルと円環ギルドを統合。斜め4群×一般・大型各1基の昇降機と乗降扉、外向き分散受付、施設間認証ゲート。動線接続・扉位置は検証前の試作。",
+ notionPage:"https://app.notion.com/p/1defa1b30dc9808f857ccbc8f17ef5b9"
+});
+// Clean rebuild: independent template ID, never overwrite the preserved legacy draft.
+presets.push({
+ id:"machine_mid_link_terminal_dome_v2",name:"リンクターミナル＋レジストリンク・ドーム【新規設計】",
+ cells:[1000,1000],floors:1,layout:"terminal-integrated-ring-v2",category:"machine_midlayer",
+ worldStyle:"machine",facilityMode:"terminal_dome_v2",designStatus:"draft-unverified",
+ description:"新規設計テンプレート。中央柱、斜め4組の一般・大型昇降機、乗降扉と独立した通路、外向き受付、施設間許可ゲートを設計する。旧試作とは別管理。詳細動線は検証前。",
  notionPage:"https://app.notion.com/p/1defa1b30dc9808f857ccbc8f17ef5b9"
 });
 // Middle-layer weapon complex: independent from the small weapon workshop.
@@ -1383,6 +1391,50 @@ function generateMachine(t,options={}){
  return{template:copy(t),objects:objs};
 }
 
+function generateTerminalDomeV2(t,options={}){
+ const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
+ if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
+ const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
+ const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-independent"};
+ const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
+  geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
+  visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
+  metadata:{...base,rectIsEditBoundsOnly:true}};
+ objects.push(root);let n=0;
+ const add=(name,type,geometry,owner=prefix,meta={})=>{
+  const o={id:prefix+"_v2_"+(++n),name,parentId:owner,objectType:type,floorId:fid,displayLevel:displayLevel+1,
+   layer:type==="door"?"walls":type==="route"?"routes":"structures",zIndex:type==="door"?50:type==="route"?45:35,
+   geometry,selectable:true,visible:true,
+   style:type==="door"?{stroke:"#e7cb9d",strokeWidth:2}:type==="route"?{stroke:"#91c6d3",strokeWidth:2}:
+    {fill:"rgba(72,130,157,.12)",stroke:"#9dc7d3",strokeWidth:1},
+   label:{visible:type==="region",text:name,fontSize:9},metadata:{...base,...meta}};
+  objects.push(o);return o;
+ };
+ const circle=(r)=>({type:"circle",center:[cx,cy],radius:r*k});
+ const ring=(a,b)=>({type:"ring",center:[cx,cy],innerRadius:a*k,outerRadius:b*k});
+ const rect=(p,w,h)=>({type:"rect",x:p[0]-w*k/2,y:p[1]-h*k/2,width:w*k,height:h*k});
+ const door=(name,p,w,owner,access)=>{const o=add(name,"door",{type:"polyline",points:[[p[0]-w*k/2,p[1]],[p[0]+w*k/2,p[1]]]},owner,{role:"door",accessControl:access});o.door={type:"sliding",slideDirection:"end",state:"closed"};o.opening={kind:"interior",external:false,width:w*k,clearHeightM:7};return o;};
+ const terminal=add("リンクターミナル外形","region",circle(250),prefix,{role:"terminal"});
+ const pillar=add("中央構造柱","region",circle(22),terminal.id,{role:"pillar"});
+ const lifts=add("昇降機・物流帯","region",ring(25,94),terminal.id,{role:"lift-zone"});
+ add("昇降機側・一般案内待機帯","region",ring(95,125),terminal.id,{role:"inward-arrivals"});
+ const dome=add("レジストリンク・ドーム","region",ring(130,210),terminal.id,{role:"guild-ring"});
+ add("ドーム外向き分散受付帯","region",ring(210,238),terminal.id,{role:"outward-arrivals"});
+ for(let i=0;i<4;i++){
+  const a=45+90*i;
+  for(const [kind,r,w,h,routeWidth] of [["一般",54,12,14,6],["大型機・貨物",78,16,18,10]]){
+   const p=xy(r,a),shaft=add(kind+"昇降機"+(i+1),"region",rect(p,w,h),lifts.id,{role:"lift-shaft",cluster:i+1,kind});
+   const entry=xy(r+(kind==="一般"?9:12),a);
+   door(kind+"昇降機"+(i+1)+"・扉",entry,routeWidth,shaft.id,kind==="一般"?"public":"heavy-cargo");
+   add(kind+"昇降機"+(i+1)+"・乗降動線","route",{type:"polyline",points:[entry,xy(r+19,a)]},lifts.id,{role:"lift-exit-route",clearWidthM:routeWidth,kind});
+  }
+ }
+ for(let i=0;i<8;i++){const a=22.5+i*45,p=xy(224,a),r=add("外向き受付"+(i+1),"region",rect(p,20,14),dome.id,{role:"distributed-reception",facing:"outward"});door("外周入口"+(i+1),xy(233,a),8,r.id,"public");}
+ for(let i=0;i<4;i++){const a=i*90;const gate=door("施設間許可ゲート"+(i+1),xy(128,a),8,terminal.id,"permit-or-security");add("施設間連絡"+(i+1),"route",{type:"polyline",points:[xy(124,a),xy(142,a)]},gate.id,{role:"controlled-interfacility-route"});}
+ return{template:{...t},objects};
+}
+
 function generate(templateId,options={}){
  const template=presets.find(t=>t.id===templateId);
  if(!template)throw Error("不明な建物テンプレート: "+templateId);
@@ -1390,6 +1442,7 @@ function generate(templateId,options={}){
  if(template.facilityMode==="middle_layer_frame")return generateMiddleLayerFrame(template,options);
  if(template.facilityMode==="giant_grove")return generateGiantGrove(template,options);
  if(template.facilityMode==="registlink_dome")return generateRegistlinkDome(template,options);
+ if(template.facilityMode==="terminal_dome_v2")return generateTerminalDomeV2(template,options);
  if(template.facilityMode==="weapons_yard")return generateWeaponsYard(template,options);
  if(template.worldStyle==="machine")return generateMachine(template,options);
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
