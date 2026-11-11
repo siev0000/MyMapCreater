@@ -1161,7 +1161,7 @@ function generateRegistlinkDome(t,options={}){
   point(r+d/2,w/2,a),point(r+d/2,-w/2,a)];
  const roomRecords=[];
  const room=(name,r,a,w,d,role,opts={})=>{
-  const controlled=Boolean(opts.controlled),doorW=opts.doorW??(w<=8?4:6),
+  const controlled=Boolean(opts.controlled),doorW=opts.doorW??6,
    doorH=opts.doorH??6,cm=opts.wallCm??(controlled?35:25);
   if([r,w,d,doorW,doorH].some(v=>!Number.isFinite(v)||v<=0)||
    w*2%1||d*2%1||doorW>w-2)throw Error("部屋・扉の実寸が不正: "+name);
@@ -1288,7 +1288,7 @@ function generateRegistlinkDome(t,options={}){
    const controlled=["guard-ready","common-storage","equipment-storage","reward-storage",
     "hazard-storage","bio-storage","data-comms","security-control"].includes(role);
    const sealed=role==="hazard-storage"||role==="bio-storage";
-   const doorW=sealed?10:role==="guard-ready"?8:role==="private-comms"?4:
+   const doorW=sealed?10:role==="guard-ready"?8:
     role.endsWith("storage")?10:6;
    const doorH=sealed?8:role==="guard-ready"?7:6;
    const loc=room(name,193,ang,w,d,role,{controlled,doorW,doorH,
