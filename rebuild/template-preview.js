@@ -479,16 +479,11 @@
    $("template-field-help").textContent="名前・説明・必要な寸法を変更し、反映してください。";
   }else{
    const source=library.allPresets().find(t=>t.id===activeId);
-   const name=$("template-save-name"),id=$("template-save-id");
-   if(!name.value.trim())name.value=(source?.name||"建物")+"（カスタム）";
-   if(!id.value.trim()){
-    const stem=("custom_"+String(activeId||"building").replace(/[^a-z0-9_-]/gi,"_")).slice(0,80);
-    let candidate=stem,number=2;
-    while(library.allPresets().some(t=>t.id===candidate))candidate=stem+"_"+number++;
-    id.value=candidate;
-   }
+   const name=$("template-save-name");
+   // Only a display name is needed. Offer an unused name, even on repeated saves.
+   name.value=suggestUniqueTemplateName((source?.name||"建物")+"（カスタム）");
    $("template-field-title").textContent="別名で保存";
-   $("template-field-help").textContent="編集内容を新しいテンプレートとして保存します。標準テンプレートは変更されません。";
+   $("template-field-help").textContent="保存名のみ入力してください。IDは自動生成されます。同じ名前のテンプレートは保存できません。";
   }
   $("template-field-edit-pane").hidden=mode!=="edit";
   $("template-field-save-pane").hidden=mode!=="save";
@@ -799,10 +794,33 @@
  function refreshChecks(scene){
   updateCollisionStatus(scene);updateAreaStatus(scene);
  }
+ function normalizedTemplateName(value){
+  return String(value||"").normalize("NFKC").trim().replace(/\\s+/g," ").toLocaleLowerCase();
+ }
+ function templateNameExists(name){
+  const normalized=normalizedTemplateName(name);
+  return library.allPresets().some(t=>normalizedTemplateName(t.name)===normalized);
+ }
+ function suggestUniqueTemplateName(base){
+  let suggestion=base,number=2;
+  while(templateNameExists(suggestion))suggestion=base+"（"+number+++"）";
+  return suggestion;
+ }
+ function nextTemplateId(){
+  const used=new Set(library.allPresets().map(t=>t.id));
+  for(let index=1;index<=999999;index++){
+   const candidate="custom_"+String(index).padStart(6,"0");
+   if(!used.has(candidate))return candidate;
+  }
+  throw Error("利用できるテンプレートIDがありません");
+ }
  function saveCopy(){
   if(!editing)return false;
-  const name=$("template-save-name").value.trim(),id=$("template-save-id").value.trim();
+  const name=$("template-save-name").value.trim();
   try{
+   if(!name)throw Error("保存名を入力してください");
+   if(templateNameExists(name))throw Error("同じ名前のテンプレートがあります。別の保存名を入力してください");
+   const id=nextTemplateId();
    const scene=previewViewer.getScene();
    const collisions=checkFixtureCollisions(scene);
    if(collisions.length)throw Error("設備の貫通・重複を修正してください："+collisions.slice(0,3).map(e=>e.message).join("、")+(collisions.length>3?" ほか"+(collisions.length-3)+"件":""));
