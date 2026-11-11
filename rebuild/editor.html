@@ -342,6 +342,19 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  #template-preview-modal .template-field-modal{align-items:flex-end;padding:0}
  #template-preview-modal .template-field-dialog{width:100%;max-height:calc(100dvh - 8px);padding:16px 15px max(16px,env(safe-area-inset-bottom));border-radius:15px 15px 0 0}
 }
+
+/* A separate display-level picker filters edit hit-tests without hiding floors. */
+#template-preview-modal .template-selection-tools{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0;min-width:0}
+#template-preview-modal .template-selection-tools[hidden]{display:none!important}
+#template-preview-modal .template-selection-tools label{font-size:11px;white-space:nowrap}
+#template-preview-modal .template-selection-tools select{box-sizing:border-box;min-height:30px;min-width:0;max-width:100%;font-size:12px;padding:3px 5px}
+#template-preview-modal #template-selection-level{width:91px;flex:0 0 auto}
+#template-preview-modal #template-selection-object{width:160px;flex:1 1 130px}
+@media(max-width:650px){
+ #template-preview-modal .template-preview-toolbar{flex-wrap:wrap}
+ #template-preview-modal .template-selection-tools{flex:1 1 100%;min-width:0}
+ #template-preview-modal #template-selection-object{flex:1 1 130px;width:0}
+}
 </style>
 </head>
 <body>
@@ -769,6 +782,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
     <div class="template-preview-toolbar" aria-label="階層とマップ表示操作">
      <label for="template-preview-floor">表示階</label>
      <select id="template-preview-floor" aria-label="プレビューする階層"></select>
+     <div id="template-selection-tools" class="template-selection-tools" hidden>
+      <label for="template-selection-level">選択Lv</label>
+      <select id="template-selection-level" aria-label="クリックで選択する表示レベル"><option value="all">すべて</option></select>
+      <select id="template-selection-object" aria-label="同じ位置に重なる設置物を一覧から選択"><option value="">設置物を一覧から選択</option></select>
+     </div>
      <button type="button" id="template-preview-zoom-out" title="縮小">−</button>
      <button type="button" id="template-preview-zoom-in" title="拡大">＋</button>
      <button type="button" id="template-preview-fit">全体表示</button>
