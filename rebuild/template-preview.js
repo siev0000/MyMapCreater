@@ -667,6 +667,7 @@
     const cm=Number($("template-wall-thickness").value);
     if(!Number.isFinite(cm)||cm<1||cm>300){editPast.pop();setEditMessage("壁の厚さは1〜300cmで入力してください");return false}
     obj.wall={...obj.wall,thickness:cm/50*previewSpacing()};
+    obj.metadata={...obj.metadata,wallThicknessCm:cm,wallThicknessStatus:"user-edited"};
    }
    if(obj.label)obj.label.text=obj.name;
   }
