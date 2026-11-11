@@ -291,6 +291,7 @@
      writeSavedPreview();
     }
     showObjectInfo(obj);syncEditFields(obj);
+    syncSelectionObjectValue(obj);
     if(editing)updateAreaStatus(previewViewer?.getScene());
    },
    onBeforeObjectDrag:scene=>{if(editing)beforeDrag=JSON.stringify(scene)},
@@ -341,6 +342,7 @@
    throw Error("プレビューの階層を切り替えられません");
   viewer.redraw();
   showObjectInfo(viewer.getSelected());
+  if(editing)refreshSelectionChoices();
   refreshChecks(viewer.getScene());
  }
  function close(){
@@ -428,6 +430,41 @@
    add("rect",{x:12,y:13,width:24,height:14,rx:2,fill:"none",stroke:accent,"stroke-width":2});
   }
   outer.append(svg);return outer;
+ }
+ function editSelectEligible(obj){
+  return obj&&obj.visible!==false&&obj.selectable!==false&&
+   (!obj.floorId||obj.floorId===activeFloor);
+ }
+ function syncSelectionObjectValue(obj){
+  const select=$("template-selection-object");
+  if(select)select.value=obj&&[...select.options].some(o=>o.value===obj.id)?obj.id:"";
+ }
+ function refreshSelectionChoices(){
+  const host=$("template-selection-tools"),levelSelect=$("template-selection-level"),
+   objectSelect=$("template-selection-object");
+  host.hidden=!editing;
+  if(!editing){previewViewer?.setSelectionDisplayLevel(null);return}
+  const scene=previewViewer?.getScene();
+  if(!scene)return;
+  const eligible=scene.objects.filter(editSelectEligible);
+  const levels=[...new Set(eligible.map(o=>o.displayLevel).filter(Number.isSafeInteger))].sort((a,b)=>a-b);
+  const previous=levelSelect.value||"all";
+  levelSelect.replaceChildren();
+  levelSelect.append(new Option("すべて","all"));
+  for(const lv of levels)levelSelect.append(new Option("Lv"+lv,String(lv)));
+  levelSelect.value=previous==="all"||levels.includes(Number(previous))?previous:"all";
+  const level=levelSelect.value==="all"?null:Number(levelSelect.value);
+  previewViewer?.setSelectionDisplayLevel(level);
+  const options=eligible.filter(o=>o.id!=="preview_root"&&(level===null||o.displayLevel===level))
+   .sort((a,b)=>(a.displayLevel||1)-(b.displayLevel||1)||
+    String(a.name||a.id).localeCompare(String(b.name||b.id),"ja"));
+  objectSelect.replaceChildren();
+  objectSelect.append(new Option("対象物を直接選択",""));
+  for(const obj of options){
+   const text="Lv"+(obj.displayLevel||1)+"・"+(obj.name||obj.id);
+   objectSelect.append(new Option(text,obj.id));
+  }
+  syncSelectionObjectValue(previewViewer?.getSelected());
  }
  function setDetailTab(tab){
   const settings=tab==="settings";
@@ -534,6 +571,7 @@
    pickerSide.insertBefore(palettePanel,itemList);
   }
   previewViewer?.setEditMode(editing);
+  refreshSelectionChoices();
   if(editing){syncEditFields(previewViewer?.getSelected());setEditMessage("配置物を選択して編集、保存時は別名で登録します")}
  }
  function snapshot(){if(!editing||!previewViewer)return;editPast.push(previewViewer.getScene());if(editPast.length>45)editPast.shift();editFuture=[]}
@@ -543,6 +581,7 @@
   if(activeFloor&&previewViewer.getFloorContext()?.selectedFloorId!==activeFloor)previewViewer.setFloor(activeFloor);
   showObjectInfo(previewViewer.getSelected());
   syncEditFields(previewViewer.getSelected());
+  refreshSelectionChoices();
   refreshChecks(previewViewer.getScene());
  }
  function setHistory(from,to){
@@ -901,6 +940,12 @@
    updateCatalog();
    $("template-item-category").addEventListener("change",updateCatalog);
    $("template-item-choice").addEventListener("change",refreshItemList);
+   $("template-selection-level").addEventListener("change",refreshSelectionChoices);
+   $("template-selection-object").addEventListener("change",e=>{
+    const id=e.target.value;
+    if(!id||!editing)return;
+    if(!previewViewer?.selectItemById(id,{focus:false}))setEditMessage("選択できない設置物です");
+   });
    $("template-item-add").addEventListener("click",addItem);
    $("template-edit-open").addEventListener("click",()=>openFieldModal("edit"));
    $("template-save-open").addEventListener("click",()=>openFieldModal("save"));
