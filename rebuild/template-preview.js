@@ -538,6 +538,54 @@
   else $("template-field-status").textContent=$("template-edit-status").textContent;
  }
  function setEditMessage(s){$("template-edit-status").textContent=s}
+ function wallGuideForCurrentFacility(){
+  const t=library?.allPresets().find(item=>item.id===activeId);
+  if(!t||["middle_layer_frame","giant_grove"].includes(t.facilityMode)||!library?.wallThicknessGuide)return null;
+  const root=previewViewer?.getScene()?.objects.find(o=>o.id==="preview_root");
+  const g=root?.geometry;
+  if(!g||g.type!=="rect")return null;
+  const spacing=previewSpacing();
+  if(!Number.isFinite(spacing)||spacing<=0)return null;
+  try{
+   return library.wallThicknessGuide(t,{dimensionsM:[g.width/spacing*.5,g.height/spacing*.5],
+    floors:root.floors?.length||t.floors||1,
+    strength:t.worldStyle==="machine"?"sturdy":"standard"});
+  }catch(_){return null}
+ }
+ function wallRoleFor(obj){
+  if(obj?.metadata?.wallRole==="exterior"||obj?.metadata?.wallRole==="partition")
+   return obj.metadata.wallRole;
+  const p=obj?.geometry?.points,root=previewViewer?.getScene()?.objects.find(o=>o.id==="preview_root");
+  const g=root?.geometry;
+  if(g?.type==="rect"&&Array.isArray(p)&&p.length===2){
+   const close=(a,b)=>Math.abs(a-b)<1e-6;
+   if((close(p[0][0],p[1][0])&&(close(p[0][0],g.x)||close(p[0][0],g.x+g.width)))||
+      (close(p[0][1],p[1][1])&&(close(p[0][1],g.y)||close(p[0][1],g.y+g.height))))
+    return "exterior";
+  }
+  return "partition";
+ }
+ function syncWallGuide(obj){
+  const isWall=editing&&obj?.objectType==="wall";
+  for(const id of ["template-wall-role-label","template-wall-guide-note","template-wall-guide-apply"])
+   $(id).hidden=!isWall;
+  if(!isWall)return;
+  const role=wallRoleFor(obj),guide=wallGuideForCurrentFacility();
+  $("template-wall-role").value=role;
+  $("template-wall-guide-apply").disabled=!guide;
+  $("template-wall-guide-note").textContent=guide?
+   "長辺 "+Number(guide.longestSideM.toFixed(1))+"m・"+guide.floors+"階／外周 "+guide.outerCm+"cm、区画 "+guide.innerCm+
+   "cm（制作上の目安。施工・耐久性の保証ではありません）":
+   "この施設には自動の壁厚目安を適用できません。手動で指定してください。";
+ }
+ function applySuggestedWallThickness(){
+  const guide=wallGuideForCurrentFacility(),selected=previewViewer?.getSelected();
+  if(!guide||selected?.objectType!=="wall")return;
+  const role=$("template-wall-role").value;
+  const thickness=role==="exterior"?guide.outerCm:guide.innerCm;
+  $("template-wall-thickness").value=thickness;
+  $("template-field-status").textContent=thickness+"cmを入力しました。「選択中に反映」で確定してください。";
+ }
  function syncEditFields(obj){
   const selectable=!!editing&&!!obj&&obj.id!=="preview_root";
   $("template-edit-selected-name").textContent=selectable?"選択中："+(obj.name||obj.id):"地図から設置物を選択してください";
@@ -546,6 +594,7 @@
   $("template-edit-name").value=editing&&obj?obj.name||"":"";
   $("template-edit-detail").value=editing&&obj?obj.detail||"":"";
   $("template-wall-thickness-label").hidden=!(editing&&obj?.objectType==="wall");
+  syncWallGuide(obj);
   $("template-wall-thickness").value=editing&&obj?.objectType==="wall"&&Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/previewSpacing()*50).toFixed(2))):"";
   const rect=editing&&obj?.geometry?.type==="rect"&&obj.objectType==="object";
   for(const [label,input] of [["template-dim-width-label","template-dim-width"],["template-dim-height-label","template-dim-height"],["template-dim-rotation-label","template-dim-rotation"]])
@@ -622,7 +671,13 @@
    style:{fill:kind==="object"?"rgba(65,110,130,.65)":null,stroke:kind==="door"?"#e8b97a":"#a8d7dd",strokeWidth:1.5},
    shapePresetId:item.shape||key,label:{visible:false,text:item.name},detail:item.description||item.name+"（設置物の説明を編集できます）",
    metadata:{generated:false,templateEditor:true,catalogItemId:key}};
-  if(kind==="wall"){obj.wall={thickness:previewSpacing()*30/50};obj.metadata.wallThicknessCm=30;obj.metadata.wallThicknessStatus="editor-default";}
+  if(kind==="wall"){
+   const guide=wallGuideForCurrentFacility();
+   const cm=guide?.innerCm||20; // Center placement creates an interior partition by default.
+   obj.wall={thickness:previewSpacing()*cm/50};
+   obj.metadata={...obj.metadata,wallThicknessCm:cm,wallRole:"partition",
+    wallThicknessRule:guide?.version||"manual-default",wallThicknessStatus:"editor-default"};
+  }
   if(kind==="door")obj.door={hinge:"start",swing:"inward",state:"closed",swingSide:"left"};
   if(kind==="region"){obj.label={visible:true,text:obj.name,position:[x+w/2,y+h/2],fontSize:9};obj.shapePresetId="room_zone"}
   if(kind==="door"||kind==="window"){
@@ -667,7 +722,7 @@
     const cm=Number($("template-wall-thickness").value);
     if(!Number.isFinite(cm)||cm<1||cm>300){editPast.pop();setEditMessage("壁の厚さは1〜300cmで入力してください");return false}
     obj.wall={...obj.wall,thickness:cm/50*previewSpacing()};
-    obj.metadata={...obj.metadata,wallThicknessCm:cm,wallThicknessStatus:"user-edited"};
+    obj.metadata={...obj.metadata,wallThicknessCm:cm,wallRole:$("template-wall-role").value,wallThicknessStatus:"user-edited"};
    }
    if(obj.label)obj.label.text=obj.name;
   }
@@ -955,6 +1010,12 @@
    $("template-save-open").addEventListener("click",()=>openFieldModal("save"));
    $("template-field-close").addEventListener("click",closeFieldModal);
    $("template-field-cancel").addEventListener("click",closeFieldModal);
+   $("template-wall-guide-apply").addEventListener("click",applySuggestedWallThickness);
+   $("template-wall-role").addEventListener("change",()=>{
+    const selected=previewViewer?.getSelected();
+    syncWallGuide(selected);
+    $("template-field-status").textContent="壁の種類を変更しました。目安値を使う場合はボタンを押してください。";
+   });
    $("template-item-apply").addEventListener("click",confirmFieldModal);
    $("template-field-modal").addEventListener("click",e=>{if(e.target===$("template-field-modal"))closeFieldModal()});
    $("template-field-modal").addEventListener("keydown",e=>{
