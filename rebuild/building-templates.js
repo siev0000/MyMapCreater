@@ -1196,6 +1196,20 @@ function generateRegistlinkDome(t,options={}){
    metadata:{role:"room-door",clearWidthM:doorW,clearHeightM:doorH,
     gridWidthCells:doorW*2,accessControl:controlled?"restricted":"public"}
   });
+  // Every door has a registered link to the annular corridor.
+  const ringEdge=r<175?146:182,roomEdge=r-d/2;
+  if(roomEdge>ringEdge+.01){
+   add(name+"・環状通路接続路","route",{
+    type:"polygon",points:[point(ringEdge,-doorW/2,a),point(roomEdge,-doorW/2,a),
+     point(roomEdge,doorW/2,a),point(ringEdge,doorW/2,a)]},{
+    parentId:region.id,displayLevel:displayLevel+5,
+    style:{fill:"rgba(112,182,184,.18)",stroke:"#99c6c9",strokeWidth:1},
+    label:{visible:false,text:""},
+    metadata:{role:"room-corridor-link",connectedRoomId:region.id,
+     connectedRing:r<175?"public-ring":"staff-ring",
+     clearWidthM:doorW,clearHeightM:doorH,gridWidthCells:doorW*2}
+   });
+  }
   roomRecords.push({name,role,r,a,w,d,pts});
   return region;
  };
@@ -1279,7 +1293,9 @@ function generateRegistlinkDome(t,options={}){
    const doorH=sealed?8:role==="guard-ready"?7:6;
    const loc=room(name,193,ang,w,d,role,{controlled,doorW,doorH,
     wallCm:sealed?100:controlled?35:25,
-    metadata:role==="guard-ready"?{securityDuty:"armed-guard-standby",
+    metadata:role==="security-control"?{facilityOperator:"HOST",controlFunctions:
+     ["警報","入退室認証","隔壁閉鎖","館内設備制御"]}:
+    role==="guard-ready"?{securityDuty:"armed-guard-standby",
      maxGuardHeightM:4,equipmentAndCharging:"draft",
      rapidResponseSector:i+1}:{}});
    if(role==="guard-ready"){
@@ -1299,15 +1315,15 @@ function generateRegistlinkDome(t,options={}){
  for(let i=0;i<4;i++){
   const g=gateways[i],half=g.widthM/2;
   add((g.heavy?"大型機":"一般")+"リフト接続通路"+(i+1),"route",{
-   type:"polygon",points:[point(95,-half,g.angle),point(245,-half,g.angle),
-    point(245,half,g.angle),point(95,half,g.angle)]},{
+   type:"polygon",points:[point(95,-half,g.angle),point(250,-half,g.angle),
+    point(250,half,g.angle),point(95,half,g.angle)]},{
    parentId:terminal.id,displayLevel:displayLevel+3,
    style:{fill:g.heavy?"rgba(157,126,192,.24)":"rgba(110,185,180,.22)",
     stroke:g.heavy?"#ba9edd":"#97d5d1",strokeWidth:1},
    label:{visible:false,text:""},
    metadata:{role:g.heavy?"heavy-machine-passage":"general-passage",
     clearWidthM:g.widthM,clearHeightM:g.heightM,gridWidthCells:g.widthM*2,
-    connectedRadiusRangeM:[95,245],routeStatus:"draft"}});
+    connectedRadiusRangeM:[95,250],routeStatus:"draft"}});
   add("警備認証ゲート"+(i+1),"region",{type:"polygon",points:roomCorners(139,g.angle,g.widthM+4,8)},{
    parentId:dome.id,displayLevel:displayLevel+4,
    label:{visible:true,text:"警備"+(i+1),position:pos(139,g.angle),fontSize:8},
@@ -1327,19 +1343,30 @@ function generateRegistlinkDome(t,options={}){
   });
  };
  // Different radii must get the SAME physical clear opening, not equal angular spans.
- for(const radius of [130,210]){
+ // The 250m terminal perimeter is a separate 1m thick structural shell.
+ // Re-use the same protected openings on all three concentric boundaries.
+ for(const radius of [130,210,250]){
   const gateArcs=gateways.map(g=>({...g,half:Math.asin(g.widthM/(2*radius))}));
   for(let i=0;i<4;i++){
    const g=gateArcs[i],next=gateArcs[(i+1)%4];
-   arcWall(radius,g.angle+g.half,next.angle+(i===3?2*pi:0)-next.half,radius===210);
+   if(radius===250){
+    const from=g.angle+g.half,to=next.angle+(i===3?2*pi:0)-next.half,points=[],N=28;
+    for(let p=0;p<=N;p++)points.push(pos(radius,from+(to-from)*p/N));
+    add("ターミナル外殻壁","wall",{type:"polyline",points},{
+     parentId:terminal.id,displayLevel:displayLevel+3,
+     wall:{thickness:m(1)},label:{visible:false,text:""},
+     metadata:{role:"terminal-perimeter-wall",wallThicknessCm:100,wallRole:"exterior",
+      wallThicknessRule:"guild-outer-shell-draft-v1",wallThicknessStatus:"editor-default"}
+    });
+   }else arcWall(radius,g.angle+g.half,next.angle+(i===3?2*pi:0)-next.half,radius===210);
    const a=pos(radius,g.angle-g.half),b=pos(radius,g.angle+g.half);
    const actual=Math.hypot(a[0]-b[0],a[1]-b[1])/unit;
    if(Math.abs(actual-g.widthM)>1e-7)throw Error("円環ゲート有効幅の計算誤差");
-   add((g.heavy?"大型機":"一般")+(radius===130?"内側":"外側")+"出入口"+(i+1),
+   add((g.heavy?"大型機":"一般")+(radius===130?"内側":radius===210?"外側":"塔外殻")+"出入口"+(i+1),
     "door",{type:"polyline",points:[a,b]},{
-    parentId:dome.id,displayLevel:displayLevel+3,
+    parentId:radius===250?terminal.id:dome.id,displayLevel:displayLevel+3,
     door:{type:"sliding",slideDirection:"end",state:"closed"},
-    opening:{kind:"entrance",external:radius===210,width:m(g.widthM),clearHeightM:g.heightM},
+    opening:{kind:"entrance",external:radius>=210,width:m(g.widthM),clearHeightM:g.heightM},
     label:{visible:false,text:""},
     metadata:{role:g.heavy?"heavy-machine-access":"passenger-access",
      clearWidthM:g.widthM,clearHeightM:g.heightM,
