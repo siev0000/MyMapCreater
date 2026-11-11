@@ -58,7 +58,7 @@
   const svg=S("svg",{viewBox:[r.x-pad,r.y-pad,w+2*pad,h+2*pad].join(" "),
    preserveAspectRatio:"xMidYMid meet",role:"img","aria-label":template.name+"、"+floorId+"の間取り"});
   svg.classList.add("template-floorplan");
-  svg.append(S("rect",{x:r.x,y:r.y,width:w,height:h,fill:"#294a52",stroke:"#a9cbd0","stroke-width":Math.max(.3,Math.min(w,h)*.015)}));
+  svg.append(S("rect",{x:r.x,y:r.y,width:w,height:h,fill:"#294a52",stroke:template.facilityMode==="registlink_dome"?"none":"#a9cbd0","stroke-width":Math.max(.3,Math.min(w,h)*.015)}));
   const order={slab:1,room:2,region:2,object:3,stair:4,wall:5,door:6,window:6};
   const visible=objects.filter(o=>o.id!==root.id&&(!o.floorId||o.floorId===floorId)&&o.visible!==false)
    .sort((a,b)=>(order[a.objectType]||3)-(order[b.objectType]||3));
