@@ -549,7 +549,7 @@
   try{
    return library.wallThicknessGuide(t,{dimensionsM:[g.width/spacing*.5,g.height/spacing*.5],
     floors:root.floors?.length||t.floors||1,
-    strength:t.worldStyle==="machine"?"sturdy":"standard"});
+    strength:t.worldStyle==="machine"||t.era==="machine"?"sturdy":"standard"});
   }catch(_){return null}
  }
  function wallRoleFor(obj){
