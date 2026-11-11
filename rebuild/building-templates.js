@@ -1495,10 +1495,13 @@ function capture(scene,rootId,info){
  const id=String(info?.id||"").trim(),name=String(info?.name||root.name||"").trim();
  if(!/^[a-z0-9_-]{3,80}$/i.test(id)||!name)throw Error("英数字ID（3〜80文字）と名称が必要です");
  if(subset.length>500)throw Error("選択した建物には500個超のオブジェクトがあります");
+ const source=allPresets().find(t=>t.id===root.metadata?.templateId);
+ const tags=Array.isArray(info?.tags)?info.tags:Array.isArray(source?.tags)?source.tags:[];
  const position=[root.geometry.x,root.geometry.y];
  // Geometry remains in scene-coordinate units. Relative offsets are restored on placement.
  return{schema:"map-building-template-v1",id,name,category:"custom",description:info?.description||"",
-   rootId:root.id,origin:position,originalSize:[root.geometry.width,root.geometry.height],objects:subset};
+   rootId:root.id,origin:position,originalSize:[root.geometry.width,root.geometry.height],
+   tags:[...new Set(tags.filter(x=>typeof x==="string"))],objects:subset};
 }
 function generateCustom(templateId,options={}){
  const t=custom.find(v=>v.id===templateId);
@@ -1528,9 +1531,9 @@ function generateCustom(templateId,options={}){
   o.metadata={...o.metadata,templateId:t.id,generated:true};
   return o;
  });
- return{template:{id:t.id,name:t.name,cells:[t.originalSize[0]/(options.spacing||2),t.originalSize[1]/(options.spacing||2)],floors:out[0].floors?.length||1,description:t.description,category:"custom",era:t.era||"common",use:t.use||"special",originalSize:t.originalSize},objects:out};
+ return{template:{id:t.id,name:t.name,cells:[t.originalSize[0]/(options.spacing||2),t.originalSize[1]/(options.spacing||2)],floors:out[0].floors?.length||1,description:t.description,category:"custom",era:t.era||"common",use:t.use||"special",tags:t.tags||[],originalSize:t.originalSize},objects:out};
 }
-function allPresets(){return[...presets,...custom.map(t=>({id:t.id,name:t.name,category:"custom",description:t.description||"保存した建物",cells:[...t.originalSize],floors:t.objects.find(o=>o.id===t.rootId)?.floors?.length||1,custom:true,era:t.era||"common",use:t.use||"special",originalSize:t.originalSize}))]}
+function allPresets(){return[...presets,...custom.map(t=>({id:t.id,name:t.name,category:"custom",description:t.description||"保存した建物",cells:[...t.originalSize],floors:t.objects.find(o=>o.id===t.rootId)?.floors?.length||1,custom:true,era:t.era||"common",use:t.use||"special",tags:Array.isArray(t.tags)?t.tags:[],originalSize:t.originalSize}))]}
 function generateAny(templateId,options){return custom.some(t=>t.id===templateId)?generateCustom(templateId,options):generate(templateId,options)}
 global.AAMapBuildingTemplates={presets,custom,allPresets,generate:generateAny,register,capture,wallThicknessGuide};
 
