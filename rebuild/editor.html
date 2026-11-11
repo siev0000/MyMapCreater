@@ -366,6 +366,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 #template-preview-modal .template-tier-tag{display:inline-flex;align-items:center;border:1px solid #658e9b;
  border-radius:4px;color:#d2e8f0;padding:1px 5px;margin-top:3px;font-size:10px;line-height:1.2;font-weight:600;white-space:nowrap}
 #template-preview-modal .template-filter-fields #template-area-filter{min-width:0}
+#template-preview-modal #template-middle-quick-filter{font-size:12px;white-space:nowrap;min-height:32px;padding:4px 10px;
+ border-radius:6px;border:1px solid #537f8d;background:#163b4b;color:#e0edf0}
+#template-preview-modal #template-middle-quick-filter[aria-pressed="true"]{background:#38768b;border-color:#a2d8e5;color:#fff;font-weight:700}
 </style>
 </head>
 <body>
@@ -764,7 +767,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   <div class="template-preview-layout">
    <button type="button" id="template-sidebar-edge" aria-label="絞り込みサイドバーを再表示" title="一覧を表示">▶</button>
    <aside id="template-preview-picker" class="template-preview-picker" aria-label="テンプレート一覧">
-    <div class="template-picker-head"><button type="button" id="template-sidebar-toggle" aria-controls="template-preview-picker" aria-expanded="true" title="サイドバーを閉じる">閉じる ◀</button></div>
+    <div class="template-picker-head"><button type="button" id="template-middle-quick-filter" aria-pressed="false" aria-label="中層の施設テンプレートに絞り込む">中層</button><button type="button" id="template-sidebar-toggle" aria-controls="template-preview-picker" aria-expanded="true" title="サイドバーを閉じる">閉じる ◀</button></div>
     <details id="template-picker-filters" class="template-picker-filters">
      <summary>検索・絞り込み</summary>
      <div class="template-filter-fields">
@@ -942,7 +945,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./geo-data-import.js?v=generic-import-v1"></script>
 <script src="./object-catalog.js?v=tree-presets-v1"></script>
 <script src="./building-templates.js?v=middle-tags-registlink-v13"></script>
-<script src="./template-preview.js?v=middle-tag-filter-v34"></script>
+<script src="./template-preview.js?v=middle-quicktag-v35"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
  <script src="./map-editor.js?v=middle-tier-category-v29"></script>
