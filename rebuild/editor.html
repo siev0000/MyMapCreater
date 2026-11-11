@@ -658,8 +658,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
       <p class="note">標高の未取得は空欄のまま保持します。既知のDEM値や手入力値のみ保存し、標高着色は地形セルに反映します。</p>
      </div>
      <div id="wall-thickness-fields" class="hidden">
-      <label>壁の厚さ（cm・1マス＝50cm）<input id="wall-thickness" type="number" min="1" max="300" step="1" placeholder="例：30"></label>
-      <p class="note">壁の中心線を基準に厚みを表示します。数値はcmで入力し、グリッド間隔に応じて地図座標へ換算・保存します。</p>
+      <label>壁の厚さ（cm・建物テンプレートの1マス＝50cm）<input id="wall-thickness" type="number" min="1" max="300" step="1" placeholder="例：30"></label>
+      <div id="wall-guide-panel" hidden>
+       <label>壁の用途 <select id="wall-guide-role"><option value="exterior">外周壁</option><option value="partition">内部区画壁</option></select></label>
+       <p id="wall-guide-summary" class="note" aria-live="polite"></p>
+       <button type="button" id="wall-guide-apply">施設サイズに合う壁厚を入力</button>
+      </div>
+      <p class="note">壁の中心線を基準に厚みを表示します。施設の長辺と階数による数値はマップ編集用の仮目安です。既存の壁厚は自動で変更しません。</p>
      </div>
     </fieldset>
     <fieldset class="fieldset"><legend>色・線</legend>
@@ -932,5 +937,5 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./template-preview.js?v=wall-size-guide-v32"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
- <script src="./map-editor.js?v=service-palette-v25"></script>
+ <script src="./map-editor.js?v=wall-guide-editor-v26"></script>
 </body></html>
