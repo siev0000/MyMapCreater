@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-central-lifts-radial-rooms",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-open-reception-heavy-roads",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1443,8 +1443,8 @@ function generateTerminalDomeV2(t,options={}){
  const pillar=add("中央構造柱","region",circle(22),terminal.id,{role:"pillar"});
  const lifts=add("昇降機・物流帯","region",ring(24,76),terminal.id,{role:"lift-zone"});
  add("昇降機側・一般案内待機帯","region",ring(78,125),terminal.id,{role:"inward-arrivals"});
- const dome=add("レジストリンク・ドーム","region",ring(130,210),terminal.id,{role:"guild-ring"});
- add("ドーム外向き分散受付帯","region",ring(210,238),terminal.id,{role:"outward-arrivals"});
+ const dome=add("レジストリンク・ドーム","region",ring(130,244),terminal.id,{role:"guild-ring"});
+ add("ドーム外向き分散受付帯","region",ring(205,242),terminal.id,{role:"outward-arrivals"});
  for(let i=0;i<4;i++){
   const a=45+90*i,theta=a*Math.PI/180;
   // Both shafts sit beside the central pillar, rather than one behind the other.
@@ -1464,14 +1464,40 @@ function generateTerminalDomeV2(t,options={}){
    add(kind+"昇降機"+(i+1)+"・外向き通路","route",{type:"polyline",points:[pt(0,h/2),pt(0,76-r)]},lifts.id,{role:"lift-exit-route",clearWidthM:routeWidth,kind});
   }
  }
- for(let i=0;i<8;i++){const a=22.5+i*45,p=xy(224,a),r=add("外向き受付"+(i+1),"region",rect(p,20,14),dome.id,{role:"distributed-reception",facing:"outward"});door("外周入口"+(i+1),xy(233,a),8,r.id,"public");}
+ // Open reception counters are fixtures in the main hall, not enclosed rooms.
+ for(let i=0;i<8;i++){
+  const a=i*45,p=xy(219,a);
+  const counter=add("開放受付カウンター"+(i+1),"fixture",rect(p,12,3),dome.id,{role:"open-reception-counter",noEnclosure:true});
+  counter.label.visible=false;
+ }
+ // Four heavy-vehicle roads run from the cargo lift mouths to the outer vehicle entrances.
+ for(let i=0;i<4;i++){
+  const a=45+i*90,theta=a*Math.PI/180,radial=[Math.cos(theta),Math.sin(theta)],tan=[-Math.sin(theta),Math.cos(theta)];
+  const cargoMouth=[cx+k*(radial[0]*50+tan[0]*10),cy+k*(radial[1]*50+tan[1]*10)];
+  const end=xy(250,a);
+  const road=add("大型機搬送道路"+(i+1),"route",{type:"polyline",points:[cargoMouth,xy(76,a),xy(130,a),xy(190,a),end]},terminal.id,
+   {role:"heavy-vehicle-road",clearWidthM:12,connects:"cargo-lift-to-exterior",access:"heavy-cargo"});
+  road.style={stroke:"#e6a866",strokeWidth:12*k};
+  const gate=add("大型搬出入口"+(i+1),"door",{type:"polyline",points:[
+   [end[0]-tan[0]*6*k,end[1]-tan[1]*6*k],[end[0]+tan[0]*6*k,end[1]+tan[1]*6*k]]},terminal.id,
+   {role:"external-vehicle-entrance",accessControl:"heavy-cargo",clearWidthM:12});
+  gate.opening={kind:"exterior",external:true,width:12*k,clearHeightM:9};
+ }
+ // Pedestrian entrances occupy the axes between vehicle roads.
+ for(let i=0;i<4;i++){
+  const a=i*90,p=xy(250,a),th=a*Math.PI/180,tan=[-Math.sin(th),Math.cos(th)];
+  const e=add("外周歩行者入口"+(i+1),"door",{type:"polyline",points:[[p[0]-tan[0]*4*k,p[1]-tan[1]*4*k],[p[0]+tan[0]*4*k,p[1]+tan[1]*4*k]]},terminal.id,
+   {role:"external-pedestrian-entrance",accessControl:"public"});
+  e.opening={kind:"exterior",external:true,width:8*k,clearHeightM:7};
+  add("外周歩行者通路"+(i+1),"route",{type:"polyline",points:[xy(130,a),xy(205,a),p]},terminal.id,{role:"pedestrian-route",clearWidthM:8});
+ }
  for(let i=0;i<4;i++){const a=i*90;const gate=door("施設間許可ゲート"+(i+1),xy(128,a),8,terminal.id,"permit-or-security");add("施設間連絡"+(i+1),"route",{type:"polyline",points:[xy(124,a),xy(142,a)]},gate.id,{role:"controlled-interfacility-route"});}
  // Trial rooms are placed in the guild ring; all dimensions are metres (2 cells per metre).
  testRoom("一般資材倉庫・試験",170,0,24,20,"warehouse",wallThickness.warehouseCm);
  testRoom("装備保管庫・試験",170,90,24,20,"equipment-storage",wallThickness.warehouseCm);
  testRoom("作戦会議室・試験",170,180,20,16,"meeting-room");
  testRoom("管理事務室・試験",170,270,20,16,"administration");
- testRoom("危険物隔離庫・試験",194,45,18,14,"hazard-storage",wallThickness.hazardCm);
+ testRoom("危険物隔離庫・試験",194,65,18,14,"hazard-storage",wallThickness.hazardCm);
  return{template:{...t,gridUnitM:0.5,wallThicknessCm:wallThickness},objects};
 }
 
