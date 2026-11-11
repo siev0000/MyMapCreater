@@ -193,6 +193,19 @@ presets.push(...[
  {id:"machine_mid_emergency_repair",name:"緊急修理・救護施設",cells:[32,24],floors:1,layout:"cross",description:"中層向け編集用施設案。Notion上の用途に対応する仮間取りで、正式な寸法・配置・室構成ではない。",category:"machine_midlayer",worldStyle:"machine",entranceSide:"center",facilityMode:"workshop",roomNames:["応急修理室","診断・記録室","停止保管室","交換部品庫"],notionStatus:"layout-proposal"}
 ]);
 
+// Official facility and function; dimensions and rooms below are a draft for map rebuilding.
+presets.push({
+ id:"machine_mid_registlink_dome",name:"ギルド複合区《レジストリンク・ドーム》",
+ cells:[96,72],floors:1,layout:"guild-hub",category:"machine_midlayer",
+ worldStyle:"machine",facilityMode:"registlink_dome",notionStatus:"layout-proposal",
+ designStatus:"draft-unverified",
+ description:"中層のギルド複合区。共通任務受付・報酬、作戦会議、ストレージゾーン、アルキメリア、バイオノームがある。48×36m・1階の間取りは編集用仮案であり確定設定ではない。",
+ notionPage:"https://app.notion.com/p/1defa1b30dc9808f857ccbc8f17ef5b9"
+});
+// World style and ship level are separate facets in template search.
+for(const t of presets)if(t.category==="machine_midlayer")
+ t.tags=[...new Set([...(Array.isArray(t.tags)?t.tags:[]),"中層"])];
+
 // Middle-layer parent layout: Notion footprint is 4000 x 2500 m, with sector center [-150,900] and size 1500 x 500 m.
 // Forest size and vertical clearances remain provisional; fit its draft geometry inside the documented sector.
 presets.push({id:"machine_middle_layer_frame",name:"中層《アームドヴェイン階層》・施設配置枠",cells:[2000,1250],floors:1,layout:"open",description:"中層の親枠とアルボラセクター子枠、屋内森林をまとめた編集用配置案。森林の寸法・高さは仮設定。",category:"machine_midlayer",worldStyle:"machine",facilityMode:"middle_layer_frame",entranceSide:"center"});
@@ -921,6 +934,105 @@ function generateGiantGrove(t,options={}){
  return{template:copy(t),objects:objs};
 }
 
+function generateRegistlinkDome(t,options={}){
+ const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
+ if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("ドームの配置指定が不正です");
+ const [W,H]=t.cells,floorId="1F",objects=[];
+ const at=(a,b)=>[x+a*spacing,y+b*spacing];
+ const rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
+ const line=(a,b,c,d)=>({type:"polyline",points:[at(a,b),at(c,d)]});
+ const guide=wallThicknessGuide(t,{strength:"sturdy"});
+ const meta={templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified"};
+ let serial=0;
+ const add=(name,kind,geometry,extra={})=>{
+  const obj={
+   id:prefix+"_registlink_"+(++serial),name,objectType:kind,
+   parentId:prefix,displayLevel:displayLevel+1,floorId,
+   layer:kind==="wall"||kind==="door"?"walls":"structures",
+   zIndex:kind==="slab"?29:kind==="region"?31:kind==="wall"?47:kind==="door"?49:44,
+   geometry,visible:true,selectable:kind!=="slab",
+   style:kind==="wall"?{stroke:"#b6d7df",strokeWidth:1.8}:
+    kind==="door"?{stroke:"#e8bd7b",strokeWidth:2}:
+    kind==="region"?{fill:"rgba(60,108,139,.15)",stroke:"#7ea7b5",strokeWidth:1}:
+    {fill:"rgba(77,129,150,.43)",stroke:"#9bc5d0",strokeWidth:1},
+   label:{visible:kind==="region",text:name,fontSize:8},
+   detail:name+"。役割は現行Notionに準拠、配置と寸法は編集用仮案。",
+   metadata:{...meta},...extra
+  };
+  objects.push(obj);return obj;
+ };
+ const root={id:prefix,name:baseName,objectType:"facility",parentId,displayLevel,
+  layer:"subregions",zIndex:30,geometry:rect(0,0,W,H),
+  floors:[{id:floorId,label:"1階（仮）",elevation:0,height:3}],
+  visible:true,selectable:true,style:{fill:"rgba(65,120,142,.12)",stroke:"#b4d4dc",strokeWidth:2},
+  label:{visible:true,text:baseName,position:at(W/2,H/2),fontSize:12},
+  detail:t.description,metadata:{...meta,notionPage:t.notionPage,layoutStatus:"draft-only"}};
+ objects.push(root);
+ add("床面","slab",rect(0,0,W,H),{selectable:false});
+ const wall=(a,b,c,d,exterior=false)=>{
+  if(Math.hypot(c-a,d-b)<.001)return;
+  const cm=exterior?guide.outerCm:guide.innerCm;
+  add(exterior?"外周壁":"区画壁","wall",line(a,b,c,d),{
+   wall:{thickness:cm/50*spacing},
+   metadata:{...meta,wallRole:exterior?"exterior":"partition",wallThicknessCm:cm,
+    wallThicknessRule:guide.version,wallThicknessStatus:"editor-default"}
+  });
+ };
+ const door=(a,b,c,d,external=false)=>{
+  add(external?"ギルド複合区入口":"室内扉","door",line(a,b,c,d),{
+   door:{hinge:"start",swing:"inward",state:"closed",type:"sliding",slideDirection:"end"},
+   opening:{kind:external?"entrance":"interior",width:Math.hypot(c-a,d-b)*spacing,external}
+  });
+ };
+ // Draft six-area arrangement: room counts and positions are NOT Notion canon.
+ const cL=42,cR=54,band=H/3;
+ const specs=[
+  ["共通任務受付・検索区",0,0,cL,band,"reception"],
+  ["アルキメリア区画",0,band,cL,band,"alchimeria"],
+  ["バイオノーム区画",0,band*2,cL,band,"bionome"],
+  ["作戦会議区",cR,0,W-cR,band,"briefing"],
+  ["個別通信ブース区",cR,band,W-cR,band,"communication"],
+  ["ストレージゾーン",cR,band*2,W-cR,band,"storage"]
+ ];
+ const rooms=new Map();
+ for(const [name,xx,yy,ww,hh,role] of specs){
+  const zone=add(name,"region",rect(xx,yy,ww,hh),{
+   shapePresetId:"room_zone",metadata:{...meta,role}});
+  zone.label.position=at(xx+ww/2,yy+hh/2);
+  rooms.set(role,zone);
+ }
+ const hall=add("共用通路・案内区","region",rect(cL,0,cR-cL,H),{
+  shapePresetId:"room_zone",metadata:{...meta,role:"concourse"}});
+ hall.label.position=at((cL+cR)/2,H/2);
+ const entry=4;
+ wall(0,0,W,0,true);wall(0,0,0,H,true);wall(W,0,W,H,true);
+ wall(0,H,W/2-entry,H,true);door(W/2-entry,H,W/2+entry,H,true);
+ wall(W/2+entry,H,W,H,true);
+ for(const cy of [band/2,band*1.5,band*2.5])for(const xx of [cL,cR]){
+  const half=2.5;
+  wall(xx,cy-band/2,xx,cy-half);
+  door(xx,cy-half,xx,cy+half);
+  wall(xx,cy+half,xx,cy+band/2);
+ }
+ for(const left of [0,cR])for(const yy of [band,band*2])wall(left,yy,left+cL,yy);
+ const fixture=(role,name,shape,xx,yy,ww,hh)=>{
+  const room=rooms.get(role);
+  add(name,"object",rect(xx,yy,ww,hh),{
+   parentId:room.id,displayLevel:displayLevel+2,shapePresetId:shape,
+   label:{visible:false,text:name},metadata:{...meta,role:"draft-fixture"}
+  });
+ };
+ fixture("reception","任務検索・受付端末","terminal_device",5,6,5,3);
+ fixture("reception","報酬・実績処理カウンター","counter",22,7,9,3);
+ fixture("alchimeria","素材鑑定カウンター","counter",7,band+8,8,3);
+ fixture("bionome","採取・生物回収依頼端末","terminal_device",7,band*2+7,5,3);
+ fixture("briefing","作戦会議テーブル","table",cR+12,8,12,7);
+ fixture("communication","個別通信端末","terminal_device",cR+9,band+7,5,3);
+ fixture("storage","装備・回収品保管棚","shelf",cR+6,band*2+8,9,3);
+ fixture("storage","密閉容器保管区","storage_container",cR+24,band*2+8,7,5);
+ return{template:copy(t),objects};
+}
+
 function generateMachine(t,options={}){
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("機械施設の配置指定が不正です");
@@ -1166,6 +1278,7 @@ function generate(templateId,options={}){
  if(template.modernPlan)return generateModern(template,options);
  if(template.facilityMode==="middle_layer_frame")return generateMiddleLayerFrame(template,options);
  if(template.facilityMode==="giant_grove")return generateGiantGrove(template,options);
+ if(template.facilityMode==="registlink_dome")return generateRegistlinkDome(template,options);
  if(template.worldStyle==="machine")return generateMachine(template,options);
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=template.name}=options;
  if(typeof prefix!=="string"||!prefix)throw Error("建物IDが必要です");
