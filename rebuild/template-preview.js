@@ -622,7 +622,7 @@
    style:{fill:kind==="object"?"rgba(65,110,130,.65)":null,stroke:kind==="door"?"#e8b97a":"#a8d7dd",strokeWidth:1.5},
    shapePresetId:item.shape||key,label:{visible:false,text:item.name},detail:item.description||item.name+"（設置物の説明を編集できます）",
    metadata:{generated:false,templateEditor:true,catalogItemId:key}};
-  if(kind==="wall")obj.wall={thickness:previewSpacing()*10/50};
+  if(kind==="wall"){obj.wall={thickness:previewSpacing()*30/50};obj.metadata.wallThicknessCm=30;obj.metadata.wallThicknessStatus="editor-default";}
   if(kind==="door")obj.door={hinge:"start",swing:"inward",state:"closed",swingSide:"left"};
   if(kind==="region"){obj.label={visible:true,text:obj.name,position:[x+w/2,y+h/2],fontSize:9};obj.shapePresetId="room_zone"}
   if(kind==="door"||kind==="window"){
