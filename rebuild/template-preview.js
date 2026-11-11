@@ -96,7 +96,15 @@
    }
    else if(g.type==="polygon")shape=S("polygon",{points:(g.points||[]).map(p=>p.join(",")).join(" ")});
    else if(g.type==="circle")shape=S("circle",{cx:g.center[0],cy:g.center[1],r:g.radius});
-   else if(g.type==="ring")shape=S("circle",{cx:g.center[0],cy:g.center[1],r:g.outerRadius,fill:"none"});
+   else if(g.type==="ring"){
+    // Preserve the transparent centre: the previous preview drew a filled
+    // outer circle, hiding the terminal lifts inside an annular guild.
+    const cx=g.center[0],cy=g.center[1],outer=g.outerRadius,inner=g.innerRadius;
+    const d=[outer,inner].map(r=>
+     "M"+(cx+r)+" "+cy+" A"+r+" "+r+" 0 1 0 "+(cx-r)+" "+cy+
+     " A"+r+" "+r+" 0 1 0 "+(cx+r)+" "+cy+" Z").join(" ");
+    shape=S("path",{d,"fill-rule":"evenodd"});
+   }
    if(!shape)continue;
    const fill=type==="slab"?"rgba(36,69,80,.66)":type==="wall"?"none":type==="door"||type==="window"?"none":
      type==="stair"?"rgba(93,138,158,.70)":obj.style?.fill||"rgba(103,149,163,.40)";
