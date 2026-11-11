@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-room-trial",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-central-lifts-radial-rooms",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1422,7 +1422,7 @@ function generateTerminalDomeV2(t,options={}){
   const center=xy(r,a),theta=a*Math.PI/180,radial=[Math.cos(theta),Math.sin(theta)],tangent=[-Math.sin(theta),Math.cos(theta)];
   const pt=(u,v)=>[center[0]+k*(tangent[0]*u+radial[0]*v),center[1]+k*(tangent[1]*u+radial[1]*v)];
   const tl=pt(-w/2,-h/2),tr=pt(w/2,-h/2),br=pt(w/2,h/2),bl=pt(-w/2,h/2);
-  const room=add(name,"region",{type:"polygon",points:[tl,tr,br,bl]},dome.id,
+  const room=add(name,"region",{type:"polyline",points:[tl,tr,br,bl,tl]},dome.id,
    {role,dimensionsM:[w,h],gridCells:[w*2,h*2],testLayout:true,orientation:"radial",angleDeg:a});
   const entrance=6,dl=pt(-entrance/2,-h/2),dr=pt(entrance/2,-h/2);
   wall(name+"・内壁左",tl,dl,room.id,cm);
@@ -1441,18 +1441,27 @@ function generateTerminalDomeV2(t,options={}){
  const perimeter=add("ターミナル外周壁","wall",{type:"circle",center:[cx,cy],radius:250*k},terminal.id,{role:"outer-wall",wallThicknessCm:wallThickness.outerCm});
  perimeter.layer="walls";perimeter.zIndex=47;perimeter.wall={thickness:wallThickness.outerCm/100*k};perimeter.style={stroke:"#bed4df",strokeWidth:2};
  const pillar=add("中央構造柱","region",circle(22),terminal.id,{role:"pillar"});
- const lifts=add("昇降機・物流帯","region",ring(25,94),terminal.id,{role:"lift-zone"});
- add("昇降機側・一般案内待機帯","region",ring(95,125),terminal.id,{role:"inward-arrivals"});
+ const lifts=add("昇降機・物流帯","region",ring(24,76),terminal.id,{role:"lift-zone"});
+ add("昇降機側・一般案内待機帯","region",ring(78,125),terminal.id,{role:"inward-arrivals"});
  const dome=add("レジストリンク・ドーム","region",ring(130,210),terminal.id,{role:"guild-ring"});
  add("ドーム外向き分散受付帯","region",ring(210,238),terminal.id,{role:"outward-arrivals"});
  for(let i=0;i<4;i++){
-  const a=45+90*i;
-  for(const [kind,r,w,h,routeWidth] of [["一般",54,12,14,6],["大型機・貨物",78,16,18,10]]){
-   const p=xy(r,a),shaft=add(kind+"昇降機"+(i+1),"region",rect(p,w,h),lifts.id,{role:"lift-shaft",cluster:i+1,kind});
-   const entry=xy(r+(kind==="一般"?9:12),a);
-   shaft.metadata.wallThicknessCm=wallThickness.shaftCm;
-   door(kind+"昇降機"+(i+1)+"・扉",entry,routeWidth,shaft.id,kind==="一般"?"public":"heavy-cargo");
-   add(kind+"昇降機"+(i+1)+"・乗降動線","route",{type:"polyline",points:[entry,xy(r+19,a)]},lifts.id,{role:"lift-exit-route",clearWidthM:routeWidth,kind});
+  const a=45+90*i,theta=a*Math.PI/180;
+  // Both shafts sit beside the central pillar, rather than one behind the other.
+  for(const [kind,offset,r,w,h,routeWidth] of [["一般",-9,37,12,14,6],["大型機・貨物",10,41,16,18,10]]){
+   const radial=[Math.cos(theta),Math.sin(theta)],tan=[-Math.sin(theta),Math.cos(theta)];
+   const pt=(u,v)=>[cx+k*(radial[0]*(r+v)+tan[0]*(offset+u)),cy+k*(radial[1]*(r+v)+tan[1]*(offset+u))];
+   const corners=[pt(-w/2,-h/2),pt(w/2,-h/2),pt(w/2,h/2),pt(-w/2,h/2)];
+   const shaft=add(kind+"昇降機"+(i+1),"region",{type:"polyline",points:[...corners,corners[0]]},lifts.id,{role:"lift-shaft",cluster:i+1,kind,wallThicknessCm:wallThickness.shaftCm,orientation:"radial"});
+   const dl=pt(-routeWidth/2,h/2),dr=pt(routeWidth/2,h/2);
+   wall(kind+"昇降機"+(i+1)+"・外壁左",corners[3],dl,shaft.id,wallThickness.shaftCm);
+   wall(kind+"昇降機"+(i+1)+"・外壁右",dr,corners[2],shaft.id,wallThickness.shaftCm);
+   wall(kind+"昇降機"+(i+1)+"・内壁",corners[0],corners[1],shaft.id,wallThickness.shaftCm);
+   wall(kind+"昇降機"+(i+1)+"・側壁左",corners[0],corners[3],shaft.id,wallThickness.shaftCm);
+   wall(kind+"昇降機"+(i+1)+"・側壁右",corners[1],corners[2],shaft.id,wallThickness.shaftCm);
+   const d=add(kind+"昇降機"+(i+1)+"・外向き扉","door",{type:"polyline",points:[dl,dr]},shaft.id,{role:"door",accessControl:kind==="一般"?"public":"heavy-cargo",connectedRoomId:shaft.id});
+   d.door={type:"sliding",slideDirection:"end",state:"closed"};d.opening={kind:"interior",width:routeWidth*k,clearHeightM:7};
+   add(kind+"昇降機"+(i+1)+"・外向き通路","route",{type:"polyline",points:[pt(0,h/2),pt(0,76-r)]},lifts.id,{role:"lift-exit-route",clearWidthM:routeWidth,kind});
   }
  }
  for(let i=0;i<8;i++){const a=22.5+i*45,p=xy(224,a),r=add("外向き受付"+(i+1),"region",rect(p,20,14),dome.id,{role:"distributed-reception",facing:"outward"});door("外周入口"+(i+1),xy(233,a),8,r.id,"public");}
