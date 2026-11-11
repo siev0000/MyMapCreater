@@ -21,12 +21,13 @@
    query:$("template-preview-filter").value,
    era:$("template-era-filter").value,
    use:$("template-use-filter").value,
+   area:$("template-area-filter").value,
    showGrid:$("template-preview-grid").checked
   }))}catch(_){}
  }
  function restoreSavedPreviewFields(saved){
   if(!saved)return;
-  for(const [id,v] of [["template-preview-filter",saved.query],["template-era-filter",saved.era],["template-use-filter",saved.use]]){
+  for(const [id,v] of [["template-preview-filter",saved.query],["template-era-filter",saved.era],["template-use-filter",saved.use],["template-area-filter",saved.area]]){
    const el=$(id);
    if(el&&typeof v==="string"&&(el.tagName!=="SELECT"||[...el.options].some(x=>x.value===v)))el.value=v;
   }
@@ -948,7 +949,7 @@
    setMode(false);
    editPast=[];editFuture=[];
    renderCache.clear();
-   $("template-era-filter").value="all";$("template-use-filter").value="all";
+   $("template-era-filter").value="all";$("template-use-filter").value="all";$("template-area-filter").value="all";
    refresh();selectTemplate(spec.id);
    setEditMessage("別名保存しました");return true;
   }catch(e){setEditMessage("保存失敗："+e.message);return false}
@@ -959,11 +960,12 @@
   const root=$("template-preview-list");
   root.replaceChildren();
   const filter=$("template-preview-filter").value.trim().toLowerCase();
-  const era=$("template-era-filter").value,use=$("template-use-filter").value;
+  const era=$("template-era-filter").value,use=$("template-use-filter").value,area=$("template-area-filter").value;
   for(const t of library.allPresets()){
    if(era!=="all"&&eraGroup(t)!==era)continue;
    if(use!=="all"&&useGroup(t)!==use)continue;
-   if(filter&&!((t.name||"")+" "+(t.category||"")+" "+(t.description||"")).toLowerCase().includes(filter))continue;
+   if(area!=="all"&&!(Array.isArray(t.tags)&&t.tags.includes(area)))continue;
+   if(filter&&!((t.name||"")+" "+(t.category||"")+" "+(t.description||"")+" "+(Array.isArray(t.tags)?t.tags.join(" "):"")).toLowerCase().includes(filter))continue;
    const row=T("button","template-preview-card");row.type="button";
    row.dataset.templateId=t.id;
    row.setAttribute("role","option");
@@ -974,6 +976,7 @@
    catch(error){thumbnail.textContent="プレビュー不可";row.title=error.message}
    const info=T("span","template-preview-card-text");
    info.append(T("strong","",t.name),T("small","",sizeText(t)+" · "+t.floors+"階"));
+   if(Array.isArray(t.tags))for(const tag of t.tags)info.append(T("span","template-tier-tag",tag));
    row.append(thumbnail,info);
    row.addEventListener("click",()=>selectTemplate(t.id));
    root.append(row);
@@ -1001,6 +1004,7 @@
    $("template-preview-filter").addEventListener("input",()=>{refresh();writeSavedPreview()});
    $("template-era-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
    $("template-use-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
+   $("template-area-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
    $("template-mode-toggle").addEventListener("click",()=>setMode(!editing));
    $("template-detail-settings-tab").addEventListener("click",()=>{if(!editing)setMode(true);setDetailTab("settings")});
    $("template-detail-description-tab").addEventListener("click",()=>setDetailTab("description"));
