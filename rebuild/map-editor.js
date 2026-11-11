@@ -405,6 +405,7 @@ function renderGeometry(obj){
  }
 }
 function updateVertexControls(obj){
+ const data=sceneNow();
  const g=obj?.geometry,points=g?.points||[],enabled=g?.type==="polyline"||g?.type==="polygon";
  $("vertex-actions").classList.toggle("hidden",!enabled);
  const picker=$("vertex-index"),old=Number(picker.value);picker.replaceChildren();
