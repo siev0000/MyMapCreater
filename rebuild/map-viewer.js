@@ -135,7 +135,7 @@ function create(opts){
  const doorOpenOverrides=new Map();
  const doorIsOpen=obj=>doorOpenOverrides.has(obj.id)?doorOpenOverrides.get(obj.id):obj.door?.state==="open";
  let width=1,height=1,dpr=1,zoom=1,panX=0,panY=0,initialScale=1;
- let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,objectDrag=null,handleDrag=null,suppressClick=false;
+ let dragStart=null,dragged=false,pinch=null,legendEnabled=false,groupModes={},editMode=false,selectionDisplayLevel=null,objectDrag=null,handleDrag=null,suppressClick=false;
  let editorGrid={visible:false,spacing:2,snap:false,fraction:.5,originX:0,originY:0};
  let previewGridVisible=null;
  try{legendEnabled=localStorage.getItem("map-scene-legend")==="true"}catch(_){}
@@ -296,6 +296,7 @@ function create(opts){
  }
  function visibleByDepth(obj){
   const level=Number.isSafeInteger(obj.displayLevel)?obj.displayLevel:1;
+  if(editMode&&selectionDisplayLevel!==null&&level===selectionDisplayLevel)return true;
   // A selected floor-bearing building (or any room/object inside it) reveals
   // its room-level furniture too. Physical floor filtering still applies in
   // visible() so selecting one room never hides the rest of that floor.
@@ -1026,7 +1027,7 @@ function create(opts){
   return[];
  }
  function hitEditHandle(x,y){
-  if(!editMode||!selected)return null;
+  if(!editMode||!selected||(selectionDisplayLevel!==null&&selected.displayLevel!==selectionDisplayLevel))return null;
   const items=editHandles(selected);
   for(let i=items.length-1;i>=0;i--){
    const [sx,sy]=screenAt(...items[i].point);
@@ -1087,7 +1088,7 @@ function create(opts){
   return true;
  }
  function drawEditHandles(){
-  if(!editMode||!selected||!visible(selected))return;
+  if(!editMode||!selected||!visible(selected)||(selectionDisplayLevel!==null&&selected.displayLevel!==selectionDisplayLevel))return;
   const handles=editHandles(selected);
   if(!handles.length)return;
   ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -1303,7 +1304,11 @@ function create(opts){
    parents,children};
  }
 
- function setEditMode(enabled){editMode=Boolean(enabled);objectDrag=null;handleDrag=null;draw();return editMode}
+ function setEditMode(enabled){editMode=Boolean(enabled);if(!editMode)selectionDisplayLevel=null;objectDrag=null;handleDrag=null;draw();return editMode}
+ function setSelectionDisplayLevel(level){
+  if(level!==null&&(!Number.isSafeInteger(level)||level<1))throw Error("選択Lvが不正です");
+  selectionDisplayLevel=level;objectDrag=null;handleDrag=null;draw();return selectionDisplayLevel;
+ }
  function replaceScene(next,{preserveView=true,selectedId=null}={}){
   const valid=sceneCheck(clone(next));
   ++request;scene=valid;doorOpenOverrides.clear();viewRootId=null;objectDrag=null;handleDrag=null;
@@ -1380,7 +1385,8 @@ function create(opts){
  function pick(px,py){
   if(!scene)return null;
   const [x,y]=worldAt(px,py),tol=8/scale();
-  const candidates=sortedVisible().filter(o=>o.selectable!==false&&contains(o,x,y,tol));
+  const candidates=sortedVisible().filter(o=>o.selectable!==false&&
+   (!editMode||selectionDisplayLevel===null||o.displayLevel===selectionDisplayLevel)&&contains(o,x,y,tol));
   if(!candidates.length)return null;
   // A door line is narrower than its room polygon; prefer it at the tap point.
   // Otherwise the encompassing room receives the click and doors cannot toggle.
@@ -1618,6 +1624,7 @@ function create(opts){
     x,y,moved:false};
    if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
   }else if(editMode&&selected&&
+   (selectionDisplayLevel===null||selected.displayLevel===selectionDisplayLevel)&&
    contains(selected,...worldAt(x,y),8/scale())){
    objectDrag={id:selected.id,x,y,moved:false};
    if(typeof opts.onBeforeObjectDrag==="function")opts.onBeforeObjectDrag(getScene(),selected.id);
@@ -1698,12 +1705,13 @@ function create(opts){
      "。扉をもう一度タップすると"+(nextOpen?"閉められます。":"開けられます。")+
      (hit.detail?" "+hit.detail:"");
     if(typeof opts.onDoorToggled==="function")opts.onDoorToggled(hit.id,nextOpen);
-   }else showDetails(hit||(viewRootId?scene.objects.find(o=>o.id===viewRootId):null));
+   }else if(editMode&&selectionDisplayLevel!==null&&!hit){/* preserve selection to keep its parent navigation context */}
+   else showDetails(hit||(viewRootId?scene.objects.find(o=>o.id===viewRootId):null));
   }
  }
  canvas.addEventListener("pointerup",end);
  canvas.addEventListener("pointercancel",end);
- return{zoomBy:(factor)=>zoomAt(factor,width/2,height/2),show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,setEditorGrid,snapPoint:([x,y])=>[snapWorld(x,0),snapWorld(y,1)],
+ return{zoomBy:(factor)=>zoomAt(factor,width/2,height/2),show,reset,getHierarchy,selectItemById,enterItem,exitItem,getViewRoot,getViewRootPath,navigateToItem,getScene,getSelected,getSelectionNavigation,getFloorContext,setFloor,initialDisplayLevel,replaceScene,setEditMode,setSelectionDisplayLevel,setEditorGrid,snapPoint:([x,y])=>[snapWorld(x,0),snapWorld(y,1)],
   getVisibilityGroups,setVisibilityMode,setPreviewGridVisible,getPreviewGridVisible,screenToWorld:worldAt,redraw:draw};
 }
 global.AAMapViewer={create,sceneCheck,inPolygon,contains};
