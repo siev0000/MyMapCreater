@@ -199,7 +199,7 @@ presets.push({
  cells:[1000,1000],floors:1,layout:"terminal-integrated-ring",category:"machine_midlayer",
  worldStyle:"machine",facilityMode:"registlink_dome",notionStatus:"map-draft-restored",
  designStatus:"draft-unverified",
- description:"GitHub中層マップの仮配置を反映。直径500mの中央リンクターミナル内に、内半径130m・外半径210mの環状ギルド施設を組み合わせる。中央リフト乗降区・8受付・小作戦室など。詳細配置は再制作用仮案。",
+ description:"テンプレート先行制作案。直径500mの中央リンクターミナルと円環ギルドを統合。斜め4群×一般・大型各1基の昇降機と乗降扉、外向き分散受付、施設間認証ゲート。動線接続・扉位置は検証前の試作。",
  notionPage:"https://app.notion.com/p/1defa1b30dc9808f857ccbc8f17ef5b9"
 });
 // Middle-layer weapon complex: independent from the small weapon workshop.
@@ -1059,340 +1059,89 @@ function generateWeaponsYard(t,options={}){
 }
 
 function generateRegistlinkDome(t,options={}){
- // Rebuild from rebuild/scenes/middle.scene.json. Rectangular root is
- // a transparent editing wrapper; the actual terminal and dome are circular.
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
- if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("ドームの配置指定が不正です");
- const unit=spacing*2,C=[x+250*unit,y+250*unit],pi=Math.PI,objects=[],floorId="1F";
- const m=n=>n*unit,pos=(r,a)=>[C[0]+m(r)*Math.cos(a),C[1]+m(r)*Math.sin(a)];
+ if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("ターミナルの配置指定が不正です");
+ const scale=spacing*2,C=[x+250*scale,y+250*scale],objects=[],floorId="1F";
+ const m=n=>n*scale,rad=d=>d*Math.PI/180;
+ const pt=(r,a)=>[C[0]+m(r*Math.cos(rad(a))),C[1]+m(r*Math.sin(rad(a)))];
  const rect=(cx,cy,w,h)=>({type:"rect",x:C[0]+m(cx-w/2),y:C[1]+m(cy-h/2),width:m(w),height:m(h)});
- const meta={templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",
-  sourceScene:"rebuild/scenes/middle.scene.json",coordinateStatus:"initial-draft"};
- const guide=wallThicknessGuide(t,{strength:"sturdy"});
- const root={id:prefix,name:baseName,objectType:"facility",parentId,displayLevel,
-  layer:"subregions",zIndex:18,geometry:{type:"rect",x,y,width:m(500),height:m(500)},
-  floors:[{id:floorId,label:"中層・1階仮平面",elevation:0,height:8}],visible:true,selectable:true,
-  style:{fill:null,stroke:null},label:{visible:false,text:baseName},detail:t.description,
+ const meta={templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",layoutRevision:"2026-11-12-template-first"};
+ const root={id:prefix,name:baseName,objectType:"facility",parentId,displayLevel,layer:"subregions",zIndex:18,
+  geometry:{type:"rect",x,y,width:m(500),height:m(500)},floors:[{id:floorId,label:"中層・1階仮平面",elevation:0,height:9}],
+  visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},detail:t.description,
   metadata:{...meta,rectIsEditBoundsOnly:true,layoutMode:"terminal-integrated-ring",showAllDetailsWhenSelected:true}};
  objects.push(root);let counter=0;
  const add=(name,kind,geometry,extra={})=>{
-  const parent=extra.parentId||prefix,level=extra.displayLevel||displayLevel+1;
-  const obj={id:prefix+"_guild_"+(++counter),name,objectType:kind,parentId:parent,
-   displayLevel:level,floorId,
+  const o={id:prefix+"_terminal_"+(++counter),name,objectType:kind,parentId:extra.parentId||prefix,
+   displayLevel:extra.displayLevel||displayLevel+1,floorId,
    layer:kind==="wall"||kind==="door"?"walls":kind==="route"?"routes":"structures",
-   zIndex:kind==="wall"?47:kind==="door"?50:kind==="route"?48:kind==="region"?31:42,
+   zIndex:kind==="wall"?47:kind==="door"?50:kind==="route"?46:kind==="region"?31:42,
    geometry,visible:true,selectable:true,
-   style:kind==="wall"?{stroke:"#bad5df",strokeWidth:1.5}:
-    kind==="door"?{stroke:"#ead09e",strokeWidth:2}:
-    kind==="route"?{stroke:"#97d1d8",strokeWidth:2}:
-    {fill:"rgba(70,115,141,.16)",stroke:"#84b0c1",strokeWidth:1},
+   style:kind==="wall"?{stroke:"#b9cdd9",strokeWidth:1.4}:kind==="door"?{stroke:"#e6c78b",strokeWidth:2}:
+    kind==="route"?{fill:"rgba(110,184,197,.19)",stroke:"#92cbd1",strokeWidth:1}:
+    {fill:"rgba(75,122,146,.16)",stroke:"#a3c5d0",strokeWidth:1},
    label:{visible:kind==="region",text:name,fontSize:9},
-   detail:name+"（現行GitHub中層マップ準拠・内部の細部は編集用試案）",
-   metadata:{...meta,...(extra.metadata||{})}};
-  for(const key of ["style","label","wall","door","opening","shapePresetId"])
-   if(Object.prototype.hasOwnProperty.call(extra,key))obj[key]=extra[key];
-  objects.push(obj);return obj;
+   detail:name+"（テンプレート編集用の仮配置）",metadata:{...meta,...extra.metadata}};
+  for(const k of ["style","label","wall","door","opening"])if(Object.prototype.hasOwnProperty.call(extra,k))o[k]=extra[k];
+  objects.push(o);return o;
  };
- const terminal=add("リンクターミナル・中央交通施設","region",
-  {type:"circle",center:C.slice(),radius:m(250)},{
-   style:{fill:"rgba(48,91,111,.08)",stroke:"#a2bfc9",strokeWidth:2},
-   metadata:{role:"central-terminal",sourceObjectId:"middle_terminal"},
-   label:{visible:true,text:"リンクターミナル",position:pos(234,-pi/2),fontSize:11}
-  });
- const dome=add("レジストリンク・ドーム・円環区","region",
-  {type:"ring",center:C.slice(),innerRadius:m(130),outerRadius:m(210)},{
-   parentId:terminal.id,displayLevel:displayLevel+2,
-   style:{fill:"rgba(68,128,153,.26)",stroke:"#c6e1e6",strokeWidth:2},
-   label:{visible:true,text:"レジストリンク・ドーム",position:pos(215,-pi/2),fontSize:11},
-   metadata:{role:"guild-ring",sourceObjectId:"resist_link_dome",innerRadiusM:130,outerRadiusM:210}
-  });
- const core=add("中央リフト乗降ホール","region",
-  {type:"circle",center:C.slice(),radius:m(123)},{
-   parentId:terminal.id,displayLevel:displayLevel+2,
-   style:{fill:"rgba(43,91,105,.23)",stroke:"#a4cbd1",strokeWidth:2},
-   label:{visible:true,text:"中央リフト乗降ホール",position:C.slice(),fontSize:10},
-   metadata:{role:"lift-hall",positionStatus:"draft"}
-  });
- const liftZones={};
- for(const [name,cx,cy,w,h,role] of [
-  ["一般リフト・乗降区",-55,0,60,44,"passenger-elevators"],
-  ["大型機用リフト・乗降区",0,-65,65,55,"heavy-machine-elevators"]
- ]){
-  const zone=add(name,"region",rect(cx,cy,w,h),{
-   parentId:core.id,displayLevel:displayLevel+3,
-   label:{visible:true,text:name,position:[C[0]+m(cx),C[1]+m(cy)],fontSize:9},
-   metadata:{role,positionStatus:"draft",dimensionsM:[w,h],gridCells:[w*2,h*2]}
-  });
-  liftZones[role]=zone.id;
- }
- // Distinguish a physical lift shaft from its much larger boarding hall.
- for(const [name,cx,cy,w,h,role,group,height] of [
-  ["一般リフト1",-72,-11,8,10,"passenger-lift-shaft","passenger-elevators",7],
-  ["一般リフト2",-44,-11,8,10,"passenger-lift-shaft","passenger-elevators",7],
-  ["一般リフト3",-72,11,8,10,"passenger-lift-shaft","passenger-elevators",7],
-  ["一般リフト4",-44,11,8,10,"passenger-lift-shaft","passenger-elevators",7],
-  ["大型機リフト1",-17,-65,12,16,"heavy-lift-shaft","heavy-machine-elevators",8],
-  ["大型機リフト2",17,-65,12,16,"heavy-lift-shaft","heavy-machine-elevators",8]
- ]){
-  add(name,"region",rect(cx,cy,w,h),{
-   parentId:liftZones[group],displayLevel:displayLevel+4,
-   style:{fill:"rgba(91,153,167,.3)",stroke:"#c6e4e6",strokeWidth:1.3},
-   label:{visible:true,text:name,position:[C[0]+m(cx),C[1]+m(cy)],fontSize:8},
-   metadata:{role,dimensionsM:[w,h],gridCells:[w*2,h*2],clearHeightM:height,shaftCount:1,positionStatus:"draft"}
-  });
- }
- // Public inner ring, controlled operating ring, outer maintenance service.
- for(const [name,r0,r1,role,color,access] of [
-  ["内側環状コンコース（幅16m）",130,146,"public-ring","rgba(120,182,192,.2)","public"],
-  ["業務連絡環状通路（幅8m）",174,182,"staff-ring","rgba(91,144,164,.19)","controlled"],
-  ["外周設備保守帯（幅6m）",204,210,"maintenance-ring","rgba(81,111,128,.18)","staff-only"]
- ]){
-  add(name,"region",{type:"ring",center:C.slice(),innerRadius:m(r0),outerRadius:m(r1)},{
-   parentId:dome.id,displayLevel:displayLevel+3,
-   style:{fill:color,stroke:"#98bcc7",strokeWidth:1},
-   label:{visible:false,text:name},
-   metadata:{role,clearWidthM:r1-r0,gridWidthCells:(r1-r0)*2,access}
-  });
- }
- // All room widths and depths below are exact metres, 2 cells per metre.
- const point=(r,t,a)=>[C[0]+m(r*Math.cos(a)-t*Math.sin(a)),C[1]+m(r*Math.sin(a)+t*Math.cos(a))];
- const roomCorners=(r,a,w,d)=>[
-  point(r-d/2,-w/2,a),point(r-d/2,w/2,a),
-  point(r+d/2,w/2,a),point(r+d/2,-w/2,a)];
- const roomRecords=[];
- const room=(name,r,a,w,d,role,opts={})=>{
-  const controlled=Boolean(opts.controlled),doorW=opts.doorW??6,
-   doorH=opts.doorH??6,cm=opts.wallCm??(controlled?35:25);
-  if([r,w,d,doorW,doorH].some(v=>!Number.isFinite(v)||v<=0)||
-   w*2%1||d*2%1||doorW>w-2)throw Error("部屋・扉の実寸が不正: "+name);
-  const pts=roomCorners(r,a,w,d),region=add(name,"region",{type:"polygon",points:pts},{
-   parentId:opts.parentId||dome.id,displayLevel:displayLevel+4,
-   style:{fill:controlled?"rgba(115,105,141,.23)":"rgba(72,139,158,.25)",
-    stroke:controlled?"#b5a5c7":"#95c0cb",strokeWidth:1},
-   label:{visible:true,text:name,position:pos(r,a),fontSize:8},
-   detail:name+"。"+w+"×"+d+"m（"+(w*2)+"×"+(d*2)+"マス）。編集用の仮間取り。",
-   metadata:{role,dimensionsM:[w,d],gridCells:[w*2,d*2],
-    clearHeightM:Math.max(6,doorH+.5),access:controlled?"restricted":"public",
-    ...(opts.metadata||{})}
-  });
-  // Actual room walls split around the entrance on its inward face.
-  const inner=r-d/2,L=point(inner,-w/2,a),DL=point(inner,-doorW/2,a),
-   DR=point(inner,doorW/2,a),R=point(inner,w/2,a);
-  const wall=(p,q)=>{
-   if(Math.hypot(p[0]-q[0],p[1]-q[1])<1e-7)return;
-   add("区画壁","wall",{type:"polyline",points:[p,q]},{
-    parentId:region.id,displayLevel:displayLevel+5,
-    wall:{thickness:m(cm/100)},label:{visible:false,text:""},
-    metadata:{role:"room-wall",wallThicknessCm:cm,wallRole:"partition",
-     wallThicknessRule:"guild-room-detail-v1",wallThicknessStatus:"editor-default"}
-   });
-  };
-  for(const [p,q] of [[L,DL],[DR,R],[pts[1],pts[2]],[pts[2],pts[3]],[pts[3],pts[0]]])wall(p,q);
-  add(name+"・出入口","door",{type:"polyline",points:[DL,DR]},{
-   parentId:region.id,displayLevel:displayLevel+5,
-   door:{type:"sliding",slideDirection:"end",state:"closed"},
-   opening:{kind:"interior",external:false,width:m(doorW),clearHeightM:doorH},
-   label:{visible:false,text:""},
-   metadata:{role:"room-door",clearWidthM:doorW,clearHeightM:doorH,
-    gridWidthCells:doorW*2,accessControl:controlled?"restricted":"public"}
-  });
-  // Every door has a registered link to the annular corridor.
-  const ringEdge=r<175?146:182,roomEdge=r-d/2;
-  if(roomEdge>ringEdge+.01){
-   add(name+"・環状通路接続路","route",{
-    type:"polygon",points:[point(ringEdge,-doorW/2,a),point(roomEdge,-doorW/2,a),
-     point(roomEdge,doorW/2,a),point(ringEdge,doorW/2,a)]},{
-    parentId:region.id,displayLevel:displayLevel+5,
-    style:{fill:"rgba(112,182,184,.18)",stroke:"#99c6c9",strokeWidth:1},
-    label:{visible:false,text:""},
-    metadata:{role:"room-corridor-link",connectedRoomId:region.id,
-     connectedRing:r<175?"public-ring":"staff-ring",
-     clearWidthM:doorW,clearHeightM:doorH,gridWidthCells:doorW*2}
-   });
-  }
-  roomRecords.push({name,role,r,a,w,d,pts});
-  return region;
- };
- const centers=Array.from({length:8},(_,i)=>-pi/2+(i+.5)*pi/4);
- // Two compact rows of four desks along the pedestrian east-west circulation.
- // Reception positions are different from the sectors that hold meeting/utility rooms.
- const receptionAngles=[-.34,-.16,.16,.34,pi-.34,pi-.16,pi+.16,pi+.34];
- const commonOrSpecial=["common","common","alchimeria","common","common","common","bionome","common"];
- for(let i=0;i<8;i++){
-  const kind=commonOrSpecial[i],name=kind==="common"?"共通任務受付"+(i+1):
-   kind==="alchimeria"?"アルキメリア専門相談受付":"バイオノーム専門相談受付";
-  const reception=room(name,159.5,receptionAngles[i],20,24,"reception",{
-   doorW:8,doorH:7,metadata:{receptionIndex:i+1,receptionType:kind,arrivalSide:i<4?"east-pedestrian":"west-pedestrian",deskAlong:"east-west-pedestrian-concourse",
-    officialSystem:"HOST",services:kind==="common"?
-    ["依頼検索","資格照合","受注・報告","報酬・実績処理"]:
-    kind==="alchimeria"?["鑑定・再設計相談","素材収集依頼"]:
-     ["栽培・採取相談","生物回収・捕獲依頼"]}
-  });
-  add(name+"・受付カウンター","object",
-   {type:"polygon",points:roomCorners(163,receptionAngles[i],8,2)},{
-   parentId:reception.id,displayLevel:displayLevel+5,
-   style:{fill:"rgba(131,175,186,.72)",stroke:"#c6dfe3",strokeWidth:1},
-   label:{visible:false,text:""},metadata:{role:"reception-counter",dimensionsM:[8,2],gridCells:[16,4]}
-  });
-  room("受付"+(i+1)+"・小作戦室",193,receptionAngles[i],12,16,"small-briefing",{
-   doorW:6,doorH:6,metadata:{linkedReception:i+1}
-  });
- }
- // Fill the inner ring without hiding doors behind one another or the main axes.
- const mainAngles=[0,pi/2,pi,3*pi/2];
- const angularDistance=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
- const innerRooms=()=>roomRecords.filter(o=>o.r<175);
- const nextOpenAngle=(desired,width,name)=>{
-  for(let n=0;n<220;n++){
-   const delta=n===0?0:(n%2?1:-1)*Math.ceil(n/2)*.025;
-   const ang=desired+delta;
-   if(mainAngles.some(a=>angularDistance(ang,a)*159<width/2+10))continue;
-   if(innerRooms().some(o=>angularDistance(ang,o.a)*159<(width+o.w)/2+3))continue;
-   return ang;
-  }
-  throw Error("内側円環のスペース不足: "+name);
- };
+ const ring=(name,r0,r1,parent,role)=>add(name,"region",{type:"ring",center:C.slice(),innerRadius:m(r0),outerRadius:m(r1)},{parentId:parent,metadata:{role,radiiM:[r0,r1]}});
+ const terminal=add("リンクターミナル","region",{type:"circle",center:C.slice(),radius:m(250)},{metadata:{role:"central-terminal"}});
+ const dome=ring("レジストリンク・ドーム",130,210,terminal.id,"guild-ring");
+ const core=add("中央構造柱","region",{type:"circle",center:C.slice(),radius:m(22)},{parentId:terminal.id,metadata:{role:"structural-pillar"}});
+ const liftBand=ring("昇降機・物流区画",25,92,terminal.id,"lift-logistics");
+ const hall=ring("昇降機側案内・待機・管理",95,125,terminal.id,"terminal-public-hall");
+ const guildInner=ring("ギルド業務・会議区画",146,204,dome.id,"guild-rooms");
+ const guildArrival=ring("外周来訪者・分散受付",210,238,terminal.id,"guild-exterior-arrival");
+ const path=(name,points,parent,role,width)=>add(name,"route",{type:"polyline",points},{parentId:parent,metadata:{role,clearWidthM:width}});
+ const door=(name,p1,p2,parent,role,access="public")=>add(name,"door",{type:"polyline",points:[p1,p2]},{
+  parentId:parent,door:{type:"sliding",slideDirection:"end",state:"closed"},
+  opening:{kind:"interior",external:false,width:Math.hypot(p1[0]-p2[0],p1[1]-p2[1]),clearHeightM:7},
+  metadata:{role,accessControl:access,connectedByDesign:true}});
+ const offset=(p,dx,dy)=>[p[0]+m(dx),p[1]+m(dy)];
+ // Four diagonal clusters, each one ordinary and one large lift. Door opens to its dedicated lobby.
  for(let i=0;i<4;i++){
-  const name="共用待機スペース"+(i+1);
-  room(name,159,nextOpenAngle(-pi/4+i*pi/2,26,name),26,16,"public-waiting",{doorW:8,doorH:7});
- }
- for(const [i,name,role] of [
-  [2,"アルキメリア鑑定・技術相談室","alchimeria-consult"],
-  [6,"バイオノーム採取・生物任務相談室","bionome-consult"]
- ]){
-  room(name,159,nextOpenAngle(centers[i]+.19,24,name),24,20,role,{doorW:8,doorH:7});
- }
- for(const [name,preferred,role] of [
-  ["詳細任務報告室1",-.18,"report-detail"],["詳細任務報告室2",2.76,"report-detail"],
-  ["回収品提出・査定室1",-.5,"appraisal"],["回収品提出・査定室2",2.45,"appraisal"],
-  ["報酬物資引渡室1",1.32,"reward-handoff"],["報酬物資引渡室2",4.44,"reward-handoff"]
- ]){
-  room(name,159,nextOpenAngle(preferred,20,name),20,20,role,{doorW:8,doorH:7});
- }
- // Outer operating band 182–204m. Each quadrant has independent office,
- // briefing, storage and security rooms with access from the 8m service ring.
- const sectors=[
-  [["中規模戦術室1",20,16,"medium-briefing"],["分隊本部1",20,20,"squad-headquarters"],["個別通信ブース1",8,10,"private-comms"],["一般素材・回収品倉庫1",30,20,"common-storage"],["警備兵待機室1",24,20,"guard-ready"]],
-  [["中規模戦術室2",20,16,"medium-briefing"],["分隊本部2",20,20,"squad-headquarters"],["個別通信ブース2",8,10,"private-comms"],["装備一時保管庫1",24,20,"equipment-storage"],["非常用待避室1",12,16,"emergency-shelter"]],
-  [["中規模戦術室3",20,16,"medium-briefing"],["分隊本部3",20,20,"squad-headquarters"],["個別通信ブース3",8,10,"private-comms"],["一般素材・回収品倉庫2",30,20,"common-storage"],["警備兵待機室2",24,20,"guard-ready"]],
-  [["中規模戦術室4",20,16,"medium-briefing"],["分隊本部4",20,20,"squad-headquarters"],["個別通信ブース4",8,10,"private-comms"],["装備一時保管庫2",24,20,"equipment-storage"],["データ・通信設備室1",16,20,"data-comms"],["非常用待避室2",12,16,"emergency-shelter"]],
-  [["大会議室1",32,20,"large-conference"],["個別通信ブース5",8,10,"private-comms"],["報酬物資保管庫1",24,20,"reward-storage"],["警備兵待機室3",24,20,"guard-ready"]],
-  [["大会議室2",32,20,"large-conference"],["個別通信ブース6",8,10,"private-comms"],["報酬物資保管庫2",24,20,"reward-storage"],["非常用待避室3",12,16,"emergency-shelter"]],
-  [["個別通信ブース7",8,10,"private-comms"],["危険物密閉一時保管室",20,20,"hazard-storage"],["データ・通信設備室2",16,20,"data-comms"],["警備兵待機室4",24,20,"guard-ready"]],
-  [["個別通信ブース8",8,10,"private-comms"],["生物密閉一時保管室",20,20,"bio-storage"],["非常用待避室4",12,16,"emergency-shelter"],["施設管理・監視室",20,20,"security-control"]]
- ];
- // Meeting/operations rooms use the full circumference: they must never
- // overlap the two concentrated reception banks or axial traffic lanes.
- const outerTaken=()=>roomRecords.filter(o=>o.r>180);
- const outerNear=(preferred,width,name)=>{
-  for(let n=0;n<220;n++){
-   const delta=n===0?0:(n%2?1:-1)*Math.ceil(n/2)*.019;
-   const candidate=preferred+delta;
-   if(mainAngles.some(axis=>angularDistance(candidate,axis)*193<(width/2+12)))continue;
-   if(outerTaken().some(o=>angularDistance(candidate,o.a)*193<(width+o.w)/2+3))continue;
-   return candidate;
+  const angle=45+90*i,ca=Math.cos(rad(angle)),sa=Math.sin(rad(angle));
+  for(const [kind,r,w,h,access] of [["一般",54,12,14,"passenger"],["大型",78,16,18,"heavy-cargo"]]){
+   const center=pt(r,angle),cx=(center[0]-C[0])/scale,cy=(center[1]-C[1])/scale;
+   const shaft=add(kind+"昇降機"+(i+1),"region",rect(cx,cy,w,h),{parentId:liftBand.id,metadata:{role:"lift-shaft",kind:access,cluster:i+1,dimensionsM:[w,h]}});
+   // Door on outward-facing shaft edge; corridor goes outward to the appropriate ring.
+   const front=pt(r+(Math.abs(ca)*w+Math.abs(sa)*h)/2,angle);
+   const tangent=[-sa,ca],half=kind==="一般"?3:5;
+   const p1=offset(front,-tangent[0]*half,-tangent[1]*half),p2=offset(front,tangent[0]*half,tangent[1]*half);
+   door(kind+"昇降機"+(i+1)+"・乗降扉",p1,p2,shaft.id,"lift-boarding-door",access);
+   const lobby=pt(r+17,angle);
+   path(kind+"昇降機"+(i+1)+"・乗降通路",[front,lobby],liftBand.id,access==="passenger"?"passenger-route":"heavy-cargo-route",kind==="一般"?6:10);
   }
-  throw Error("外周業務帯の部屋を配置できません: "+name);
- };
+ }
+ // The following are distinct design lanes; route intersections and actual wall openings require validation.
+ ring("一般個体用内側環状通路",103,113,hall.id,"passenger-ring");
+ ring("大型機・貨物専用環状通路",116,124,hall.id,"heavy-cargo-ring");
+ ring("ギルド内部連絡環状通路",130,142,dome.id,"guild-inner-corridor");
+ ring("ギルド外周案内通路",215,229,guildArrival.id,"guild-exterior-corridor");
+ const rooms=[
+ ["任務受付・案内",155,0],["任務受付・案内",155,90],["任務受付・案内",155,180],["任務受付・案内",155,270],
+ ["装備・補給庫",178,45],["回収品保管庫",178,135],["会議・作戦室",178,225],["警備待機室",178,315],
+ ["鑑定・検査室",178,90],["危険物隔離室",178,270],["報酬物資保管庫",178,180],["専門相談室",178,0]];
+ for(let i=0;i<rooms.length;i++){
+  const [name,r,a]=rooms[i],p=pt(r,a),cx=(p[0]-C[0])/scale,cy=(p[1]-C[1])/scale;
+  const room=add(name+(i+1),"region",rect(cx,cy,23,18),{parentId:guildInner.id,metadata:{role:"guild-room",dimensionsM:[23,18]}});
+  const near=pt(r-9,a),t=[-Math.sin(rad(a)),Math.cos(rad(a))];
+  door(name+(i+1)+"・出入口",offset(near,-t[0]*3,-t[1]*3),offset(near,t[0]*3,t[1]*3),room.id,"guild-room-door");
+  path(name+(i+1)+"・接続通路",[pt(142,a),near],room.id,"guild-room-access",6);
+ }
  for(let i=0;i<8;i++){
-  const sorted=sectors[i].sort((a,b)=>b[1]-a[1]);
-  for(const [name,w,d,role] of sorted){
-   const preferred=centers[i],ang=outerNear(preferred,w,name);
-   const controlled=["guard-ready","common-storage","equipment-storage","reward-storage",
-    "hazard-storage","bio-storage","data-comms","security-control"].includes(role);
-   const sealed=role==="hazard-storage"||role==="bio-storage";
-   const doorW=sealed?10:role==="guard-ready"?8:
-    role.endsWith("storage")?10:6;
-   const doorH=sealed?8:role==="guard-ready"?7:6;
-   const loc=room(name,193,ang,w,d,role,{controlled,doorW,doorH,
-    wallCm:sealed?100:controlled?35:25,
-    metadata:role==="guard-ready"?{securityDuty:"armed-guard-standby",
-     maxGuardHeightM:4,equipmentAndCharging:"draft",
-     rapidResponseSector:i+1}:{}});
-   if(role==="guard-ready"){
-    add(name+"・警備装備／充電ステーション","object",
-     {type:"polygon",points:roomCorners(198,ang,8,4)},{
-      parentId:loc.id,displayLevel:displayLevel+5,
-      label:{visible:false,text:""},
-      style:{fill:"rgba(132,155,166,.58)",stroke:"#bdd2db",strokeWidth:1},
-      metadata:{role:"guard-ready-equipment",dimensionsM:[8,4],gridCells:[16,8]}});
-   }
-  }
+  const a=22.5+i*45,p=pt(223,a),cx=(p[0]-C[0])/scale,cy=(p[1]-C[1])/scale;
+  const reception=add("外周向き分散受付"+(i+1),"region",rect(cx,cy,22,16),{parentId:guildArrival.id,metadata:{role:"outward-facing-reception",arrivalSide:"outer",dimensionsM:[22,16]}});
+  const edge=pt(231,a),t=[-Math.sin(rad(a)),Math.cos(rad(a))];
+  door("外周受付"+(i+1)+"・外向き入口",offset(edge,-t[0]*4,-t[1]*4),offset(edge,t[0]*4,t[1]*4),reception.id,"public-guild-entry");
  }
-
- // Four axial circulation links, measured in real 0.5m grid cells.
- const gateways=[0,pi/2,pi,3*pi/2].map((angle,i)=>({
-  angle,heavy:i%2===1,widthM:i%2===1?16:8,heightM:i%2===1?8:7}));
  for(let i=0;i<4;i++){
-  const g=gateways[i],half=g.widthM/2;
-  add((g.heavy?"大型車・大型機":"歩行・一般機")+"リフト接続通路"+(i+1),"route",{
-   type:"polygon",points:[point(95,-half,g.angle),point(250,-half,g.angle),
-    point(250,half,g.angle),point(95,half,g.angle)]},{
-   parentId:terminal.id,displayLevel:displayLevel+3,
-   style:{fill:g.heavy?"rgba(157,126,192,.24)":"rgba(110,185,180,.22)",
-    stroke:g.heavy?"#ba9edd":"#97d5d1",strokeWidth:1},
-   label:{visible:false,text:""},
-   metadata:{role:g.heavy?"heavy-machine-passage":"general-passage",trafficClass:g.heavy?"large-vehicles":"pedestrian-automata",axis:g.heavy?"north-south":"east-west",crossingDesign:"controlled-or-grade-separated-draft",
-    clearWidthM:g.widthM,clearHeightM:g.heightM,gridWidthCells:g.widthM*2,
-    connectedRadiusRangeM:[95,250],routeStatus:"draft"}});
-  add("警備認証ゲート"+(i+1),"region",{type:"polygon",points:roomCorners(139,g.angle,g.widthM+4,8)},{
-   parentId:dome.id,displayLevel:displayLevel+4,
-   label:{visible:true,text:"警備"+(i+1),position:pos(139,g.angle),fontSize:8},
-   style:{fill:"rgba(176,144,95,.14)",stroke:"#cfb38b",strokeWidth:1},
-   metadata:{role:"security-checkpoint",clearWidthM:g.widthM,clearHeightM:g.heightM,
-    accessControl:"HOST-managed",positionStatus:"draft"}});
+  const a=i*90,p=pt(128,a),t=[-Math.sin(rad(a)),Math.cos(rad(a))];
+  const gate=door("施設間連絡・認証ゲート"+(i+1),offset(p,-t[0]*4,-t[1]*4),offset(p,t[0]*4,t[1]*4),terminal.id,"interfacility-controlled-gate","permit-or-security");
+  path("施設間連絡通路"+(i+1),[pt(124,a),pt(142,a)],gate.id,"controlled-interfacility-route",8);
  }
- add("中央交通交差部・動線分離予定区","region",rect(0,0,22,22),{
-  parentId:core.id,displayLevel:displayLevel+3,
-  style:{fill:"rgba(125,156,173,.09)",stroke:"#8daab6",strokeWidth:1},
-  label:{visible:false,text:""},
-  metadata:{role:"crossing-safety-zone",layoutStatus:"requires-grade-separation-or-controlled-crossing",
-   vehicleAxis:"north-south",pedestrianAxis:"east-west",dimensionsM:[22,22],gridCells:[44,44]}
- });
- const arcWall=(radius,from,to,outer)=>{
-  const points=[],N=18,cm=60;
-  for(let i=0;i<=N;i++)points.push(pos(radius,from+(to-from)*i/N));
-  add(outer?"円環外周構造壁":"円環内周構造壁","wall",{type:"polyline",points},{
-   parentId:dome.id,displayLevel:displayLevel+3,
-   wall:{thickness:m(cm/100)},label:{visible:false,text:""},
-   metadata:{role:"ring-structural-wall",wallRole:outer?"exterior":"partition",
-    wallThicknessCm:cm,wallThicknessRule:"guild-ring-structural-v2",
-    wallThicknessStatus:"editor-default",gridThicknessCells:cm/50}
-  });
- };
- // Different radii must get the SAME physical clear opening, not equal angular spans.
- // The 250m terminal perimeter is a separate 1m thick structural shell.
- // Re-use the same protected openings on all three concentric boundaries.
- for(const radius of [130,210,250]){
-  const gateArcs=gateways.map(g=>({...g,half:Math.asin(g.widthM/(2*radius))}));
-  for(let i=0;i<4;i++){
-   const g=gateArcs[i],next=gateArcs[(i+1)%4];
-   if(radius===250){
-    const from=g.angle+g.half,to=next.angle+(i===3?2*pi:0)-next.half,points=[],N=28;
-    for(let p=0;p<=N;p++)points.push(pos(radius,from+(to-from)*p/N));
-    add("ターミナル外殻壁","wall",{type:"polyline",points},{
-     parentId:terminal.id,displayLevel:displayLevel+3,
-     wall:{thickness:m(1)},label:{visible:false,text:""},
-     metadata:{role:"terminal-perimeter-wall",wallThicknessCm:100,wallRole:"exterior",
-      wallThicknessRule:"guild-outer-shell-draft-v1",wallThicknessStatus:"editor-default"}
-    });
-   }else arcWall(radius,g.angle+g.half,next.angle+(i===3?2*pi:0)-next.half,radius===210);
-   const a=pos(radius,g.angle-g.half),b=pos(radius,g.angle+g.half);
-   const actual=Math.hypot(a[0]-b[0],a[1]-b[1])/unit;
-   if(Math.abs(actual-g.widthM)>1e-7)throw Error("円環ゲート有効幅の計算誤差");
-   add((g.heavy?"大型車・大型機":"歩行・一般機")+(radius===130?"内側":radius===210?"外側":"塔外殻")+"出入口"+(i+1),
-    "door",{type:"polyline",points:[a,b]},{
-    parentId:radius===250?terminal.id:dome.id,displayLevel:displayLevel+3,
-    door:{type:"sliding",slideDirection:"end",state:"closed"},
-    opening:{kind:"entrance",external:radius>=210,width:m(g.widthM),clearHeightM:g.heightM},
-    label:{visible:false,text:""},
-    metadata:{role:g.heavy?"heavy-machine-access":"passenger-access",
-     clearWidthM:g.widthM,clearHeightM:g.heightM,
-     gridWidthCells:g.widthM*2,sourceLayout:"middle.scene.json",dimensionStatus:"draft"}
-   });
-  }
- }
- return{template:copy(t),objects};
+ return{template:{...t},objects};
 }
 
 function generateMachine(t,options={}){
