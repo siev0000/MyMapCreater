@@ -1071,7 +1071,7 @@ function generateRegistlinkDome(t,options={}){
  const guide=wallThicknessGuide(t,{strength:"sturdy"});
  const root={id:prefix,name:baseName,objectType:"facility",parentId,displayLevel,
   layer:"subregions",zIndex:18,geometry:{type:"rect",x,y,width:m(500),height:m(500)},
-  floors:[{id:floorId,label:"中層・仮平面"}],visible:true,selectable:true,
+  floors:[{id:floorId,label:"中層・1階仮平面",elevation:0,height:8}],visible:true,selectable:true,
   style:{fill:null,stroke:null},label:{visible:false,text:baseName},detail:t.description,
   metadata:{...meta,rectIsEditBoundsOnly:true,layoutMode:"terminal-integrated-ring"}};
  objects.push(root);let counter=0;
@@ -1113,14 +1113,45 @@ function generateRegistlinkDome(t,options={}){
    label:{visible:true,text:"中央リフト乗降ホール",position:C.slice(),fontSize:10},
    metadata:{role:"lift-hall",positionStatus:"draft"}
   });
+ const liftZones={};
  for(const [name,cx,cy,w,h,role] of [
   ["一般リフト・乗降区",-55,0,60,44,"passenger-elevators"],
   ["大型機用リフト・乗降区",55,0,65,55,"heavy-machine-elevators"]
  ]){
-  add(name,"region",rect(cx,cy,w,h),{
+  const zone=add(name,"region",rect(cx,cy,w,h),{
    parentId:core.id,displayLevel:displayLevel+3,
    label:{visible:true,text:name,position:[C[0]+m(cx),C[1]+m(cy)],fontSize:9},
-   metadata:{role,positionStatus:"draft"}
+   metadata:{role,positionStatus:"draft",dimensionsM:[w,h],gridCells:[w*2,h*2]}
+  });
+  liftZones[role]=zone.id;
+ }
+ // Distinguish a physical lift shaft from its much larger boarding hall.
+ for(const [name,cx,cy,w,h,role,group,height] of [
+  ["一般リフト1",-72,-11,8,10,"passenger-lift-shaft","passenger-elevators",7],
+  ["一般リフト2",-44,-11,8,10,"passenger-lift-shaft","passenger-elevators",7],
+  ["一般リフト3",-72,11,8,10,"passenger-lift-shaft","passenger-elevators",7],
+  ["一般リフト4",-44,11,8,10,"passenger-lift-shaft","passenger-elevators",7],
+  ["大型機リフト1",38,0,12,16,"heavy-lift-shaft","heavy-machine-elevators",8],
+  ["大型機リフト2",72,0,12,16,"heavy-lift-shaft","heavy-machine-elevators",8]
+ ]){
+  add(name,"region",rect(cx,cy,w,h),{
+   parentId:liftZones[group],displayLevel:displayLevel+4,
+   style:{fill:"rgba(91,153,167,.3)",stroke:"#c6e4e6",strokeWidth:1.3},
+   label:{visible:true,text:name,position:[C[0]+m(cx),C[1]+m(cy)],fontSize:8},
+   metadata:{role,dimensionsM:[w,h],gridCells:[w*2,h*2],clearHeightM:height,shaftCount:1,positionStatus:"draft"}
+  });
+ }
+ // Public inner ring, controlled operating ring, outer maintenance service.
+ for(const [name,r0,r1,role,color,access] of [
+  ["内側環状コンコース（幅16m）",130,146,"public-ring","rgba(120,182,192,.2)","public"],
+  ["業務連絡環状通路（幅8m）",174,182,"staff-ring","rgba(91,144,164,.19)","controlled"],
+  ["外周設備保守帯（幅6m）",204,210,"maintenance-ring","rgba(81,111,128,.18)","staff-only"]
+ ]){
+  add(name,"region",{type:"ring",center:C.slice(),innerRadius:m(r0),outerRadius:m(r1)},{
+   parentId:dome.id,displayLevel:displayLevel+3,
+   style:{fill:color,stroke:"#98bcc7",strokeWidth:1},
+   label:{visible:false,text:name},
+   metadata:{role,clearWidthM:r1-r0,gridWidthCells:(r1-r0)*2,access}
   });
  }
  const wedge=(r0,r1,ang0,ang1)=>{
