@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-independent"};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-room-trial",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1415,7 +1415,25 @@ function generateTerminalDomeV2(t,options={}){
  const ring=(a,b)=>({type:"ring",center:[cx,cy],innerRadius:a*k,outerRadius:b*k});
  const rect=(p,w,h)=>({type:"rect",x:p[0]-w*k/2,y:p[1]-h*k/2,width:w*k,height:h*k});
  const door=(name,p,w,owner,access)=>{const o=add(name,"door",{type:"polyline",points:[[p[0]-w*k/2,p[1]],[p[0]+w*k/2,p[1]]]},owner,{role:"door",accessControl:access});o.door={type:"sliding",slideDirection:"end",state:"closed"};o.opening={kind:"interior",external:false,width:w*k,clearHeightM:7};return o;};
+ const wallThickness={outerCm:80,shaftCm:50,warehouseCm:35,roomCm:25,hazardCm:50};
+ const wall=(name,p,q,owner,cm)=>{const o=add(name,"wall",{type:"polyline",points:[p,q]},owner,{role:"partition-wall",wallThicknessCm:cm});o.layer="walls";o.zIndex=47;o.wall={thickness:cm/100*k};o.style={stroke:"#bed4df",strokeWidth:1.5};o.label.visible=false;return o;};
+ const testRoom=(name,r,a,w,h,role,cm=wallThickness.roomCm)=>{
+  const center=xy(r,a),room=add(name,"region",rect(center,w,h),dome.id,{role,dimensionsM:[w,h],gridCells:[w*2,h*2],testLayout:true});
+  const left=center[0]-w*k/2,right=center[0]+w*k/2,top=center[1]-h*k/2,bottom=center[1]+h*k/2;
+  const entrance=6,dl=center[0]-entrance*k/2,dr=center[0]+entrance*k/2;
+  wall(name+"・上壁左",[left,top],[dl,top],room.id,cm);
+  wall(name+"・上壁右",[dr,top],[right,top],room.id,cm);
+  wall(name+"・右壁",[right,top],[right,bottom],room.id,cm);
+  wall(name+"・下壁",[right,bottom],[left,bottom],room.id,cm);
+  wall(name+"・左壁",[left,bottom],[left,top],room.id,cm);
+  const entry=door(name+"・扉",[center[0],top],entrance,room.id,"public");
+  entry.metadata.connectedRoomId=room.id;
+  return room;
+ };
  const terminal=add("リンクターミナル外形","region",circle(250),prefix,{role:"terminal"});
+ // Outer wall uses an editable 80cm draft; circular segment wall supports geometry editing.
+ const perimeter=add("ターミナル外周壁","wall",{type:"circle",center:[cx,cy],radius:250*k},terminal.id,{role:"outer-wall",wallThicknessCm:wallThickness.outerCm});
+ perimeter.layer="walls";perimeter.zIndex=47;perimeter.wall={thickness:wallThickness.outerCm/100*k};perimeter.style={stroke:"#bed4df",strokeWidth:2};
  const pillar=add("中央構造柱","region",circle(22),terminal.id,{role:"pillar"});
  const lifts=add("昇降機・物流帯","region",ring(25,94),terminal.id,{role:"lift-zone"});
  add("昇降機側・一般案内待機帯","region",ring(95,125),terminal.id,{role:"inward-arrivals"});
@@ -1426,13 +1444,20 @@ function generateTerminalDomeV2(t,options={}){
   for(const [kind,r,w,h,routeWidth] of [["一般",54,12,14,6],["大型機・貨物",78,16,18,10]]){
    const p=xy(r,a),shaft=add(kind+"昇降機"+(i+1),"region",rect(p,w,h),lifts.id,{role:"lift-shaft",cluster:i+1,kind});
    const entry=xy(r+(kind==="一般"?9:12),a);
+   shaft.metadata.wallThicknessCm=wallThickness.shaftCm;
    door(kind+"昇降機"+(i+1)+"・扉",entry,routeWidth,shaft.id,kind==="一般"?"public":"heavy-cargo");
    add(kind+"昇降機"+(i+1)+"・乗降動線","route",{type:"polyline",points:[entry,xy(r+19,a)]},lifts.id,{role:"lift-exit-route",clearWidthM:routeWidth,kind});
   }
  }
  for(let i=0;i<8;i++){const a=22.5+i*45,p=xy(224,a),r=add("外向き受付"+(i+1),"region",rect(p,20,14),dome.id,{role:"distributed-reception",facing:"outward"});door("外周入口"+(i+1),xy(233,a),8,r.id,"public");}
  for(let i=0;i<4;i++){const a=i*90;const gate=door("施設間許可ゲート"+(i+1),xy(128,a),8,terminal.id,"permit-or-security");add("施設間連絡"+(i+1),"route",{type:"polyline",points:[xy(124,a),xy(142,a)]},gate.id,{role:"controlled-interfacility-route"});}
- return{template:{...t},objects};
+ // Trial rooms are placed in the guild ring; all dimensions are metres (2 cells per metre).
+ testRoom("一般資材倉庫・試験",170,0,24,20,"warehouse",wallThickness.warehouseCm);
+ testRoom("装備保管庫・試験",170,90,24,20,"equipment-storage",wallThickness.warehouseCm);
+ testRoom("作戦会議室・試験",170,180,20,16,"meeting-room");
+ testRoom("管理事務室・試験",170,270,20,16,"administration");
+ testRoom("危険物隔離庫・試験",194,45,18,14,"hazard-storage",wallThickness.hazardCm);
+ return{template:{...t,gridUnitM:0.5,wallThicknessCm},objects};
 }
 
 function generate(templateId,options={}){
