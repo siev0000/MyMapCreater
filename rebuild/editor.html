@@ -356,6 +356,12 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
  #template-preview-modal .template-selection-tools{flex:1 1 100%;min-width:0}
  #template-preview-modal #template-selection-object{flex:1 1 130px;width:0}
 }
+
+#template-preview-modal .template-field-inputs #template-wall-guide-note{margin:0;font-size:12px;line-height:1.5;padding:7px 10px;background:rgba(60,95,109,.28);border-radius:6px;color:#cfe6ea}
+#template-preview-modal .template-field-inputs #template-wall-guide-note[hidden],
+#template-preview-modal #template-wall-role-label[hidden],
+#template-preview-modal #template-wall-guide-apply[hidden]{display:none!important}
+#template-preview-modal .template-field-inputs #template-wall-guide-apply{min-height:40px;font-size:12px;padding:6px 8px;border:1px solid #55899d;background:#214959;color:#ebf6fa}
 </style>
 </head>
 <body>
@@ -846,6 +852,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
       <label>名前 <input id="template-edit-name" autocomplete="off" placeholder="設置物名"></label>
       <label>説明 <textarea id="template-edit-detail" rows="4" placeholder="設置物の説明"></textarea></label>
       <label id="template-wall-thickness-label" hidden>壁厚(cm) <input id="template-wall-thickness" type="number" min="1" max="300" step="1" placeholder="30"></label>
+      <label id="template-wall-role-label" hidden>壁の種類 <select id="template-wall-role"><option value="partition">内部区画壁</option><option value="exterior">外周壁</option></select></label>
+      <p id="template-wall-guide-note" class="template-wall-guide-note" hidden></p>
+      <button type="button" id="template-wall-guide-apply" hidden>この施設の壁厚目安を入力</button>
       <label id="template-dim-width-label" hidden>幅(cm) <input id="template-dim-width" type="number" min="1" max="5000" step="1"></label>
       <label id="template-dim-height-label" hidden>奥行(cm) <input id="template-dim-height" type="number" min="1" max="5000" step="1"></label>
       <label id="template-dim-rotation-label" hidden>回転(°) <input id="template-dim-rotation" type="number" min="-360" max="360" step="1"></label>
@@ -919,8 +928,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./map-viewer.js?v=select-level-v3"></script>
 <script src="./geo-data-import.js?v=generic-import-v1"></script>
 <script src="./object-catalog.js?v=tree-presets-v1"></script>
-<script src="./building-templates.js?v=machine-wall-thickness-v10"></script>
-<script src="./template-preview.js?v=wall-thickness-v30"></script>
+<script src="./building-templates.js?v=size-wall-rule-v11"></script>
+<script src="./template-preview.js?v=wall-size-guide-v31"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
  <script src="./map-editor.js?v=service-palette-v25"></script>
