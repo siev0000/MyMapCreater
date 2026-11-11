@@ -961,6 +961,7 @@
   root.replaceChildren();
   const filter=$("template-preview-filter").value.trim().toLowerCase();
   const era=$("template-era-filter").value,use=$("template-use-filter").value,area=$("template-area-filter").value;
+  $("template-middle-quick-filter").setAttribute("aria-pressed",String(area==="中層"));
   for(const t of library.allPresets()){
    if(era!=="all"&&eraGroup(t)!==era)continue;
    if(use!=="all"&&useGroup(t)!==use)continue;
@@ -1005,6 +1006,11 @@
    $("template-era-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
    $("template-use-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
    $("template-area-filter").addEventListener("change",()=>{refresh();writeSavedPreview()});
+   $("template-middle-quick-filter").addEventListener("click",()=>{
+    const selector=$("template-area-filter");
+    selector.value=selector.value==="中層"?"all":"中層";
+    refresh();writeSavedPreview();
+   });
    $("template-mode-toggle").addEventListener("click",()=>setMode(!editing));
    $("template-detail-settings-tab").addEventListener("click",()=>{if(!editing)setMode(true);setDetailTab("settings")});
    $("template-detail-description-tab").addEventListener("click",()=>setDetailTab("description"));
