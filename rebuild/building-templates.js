@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-compact-lift-zone",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-road-stroke-fix",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1489,7 +1489,7 @@ function generateTerminalDomeV2(t,options={}){
   const end=xy(250,a);
   const road=add("大型機搬送道路"+(i+1),"route",{type:"polyline",points:[cargoMouth,xy(76,a),xy(130,a),xy(190,a),end]},terminal.id,
    {role:"heavy-vehicle-road",clearWidthM:12,connects:"cargo-lift-to-exterior",access:"heavy-cargo"});
-  road.style={stroke:"#e6a866",strokeWidth:12*k};
+  road.style={stroke:"#e6a866",strokeWidth:2}; // Width is metadata in metres; strokeWidth is screen pixels.
   const gate=add("大型搬出入口"+(i+1),"door",{type:"polyline",points:[
    [end[0]-tan[0]*6*k,end[1]-tan[1]*6*k],[end[0]+tan[0]*6*k,end[1]+tan[1]*6*k]]},terminal.id,
    {role:"external-vehicle-entrance",accessControl:"heavy-cargo",clearWidthM:12});
