@@ -1221,6 +1221,78 @@ function generateRegistlinkDome(t,options={}){
    doorW:6,doorH:6,metadata:{linkedReception:i+1}
   });
  }
+ // Fill the inner ring without hiding doors behind one another or the main axes.
+ const mainAngles=[0,pi/2,pi,3*pi/2];
+ const angularDistance=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
+ const innerRooms=()=>roomRecords.filter(o=>o.r<175);
+ const nextOpenAngle=(desired,width,name)=>{
+  for(let n=0;n<220;n++){
+   const delta=n===0?0:(n%2?1:-1)*Math.ceil(n/2)*.025;
+   const ang=desired+delta;
+   if(mainAngles.some(a=>angularDistance(ang,a)*159<width/2+10))continue;
+   if(innerRooms().some(o=>angularDistance(ang,o.a)*159<(width+o.w)/2+3))continue;
+   return ang;
+  }
+  throw Error("内側円環のスペース不足: "+name);
+ };
+ for(let i=0;i<4;i++){
+  const name="共用待機スペース"+(i+1);
+  room(name,159,nextOpenAngle(-pi/4+i*pi/2,26,name),26,16,"public-waiting",{doorW:8,doorH:7});
+ }
+ for(const [i,name,role] of [
+  [2,"アルキメリア鑑定・技術相談室","alchimeria-consult"],
+  [6,"バイオノーム採取・生物任務相談室","bionome-consult"]
+ ]){
+  room(name,159,nextOpenAngle(centers[i]+.19,24,name),24,20,role,{doorW:8,doorH:7});
+ }
+ for(const [name,preferred,role] of [
+  ["詳細任務報告室1",-.18,"report-detail"],["詳細任務報告室2",2.76,"report-detail"],
+  ["回収品提出・査定室1",-.5,"appraisal"],["回収品提出・査定室2",2.45,"appraisal"],
+  ["報酬物資引渡室1",1.32,"reward-handoff"],["報酬物資引渡室2",4.44,"reward-handoff"]
+ ]){
+  room(name,159,nextOpenAngle(preferred,20,name),20,20,role,{doorW:8,doorH:7});
+ }
+ // Outer operating band 182–204m. Each quadrant has independent office,
+ // briefing, storage and security rooms with access from the 8m service ring.
+ const sectors=[
+  [["中規模戦術室1",20,16,"medium-briefing"],["分隊本部1",20,20,"squad-headquarters"],["個別通信ブース1",8,10,"private-comms"],["一般素材・回収品倉庫1",30,20,"common-storage"],["警備兵待機室1",24,20,"guard-ready"]],
+  [["中規模戦術室2",20,16,"medium-briefing"],["分隊本部2",20,20,"squad-headquarters"],["個別通信ブース2",8,10,"private-comms"],["装備一時保管庫1",24,20,"equipment-storage"],["非常用待避室1",12,16,"emergency-shelter"]],
+  [["中規模戦術室3",20,16,"medium-briefing"],["分隊本部3",20,20,"squad-headquarters"],["個別通信ブース3",8,10,"private-comms"],["一般素材・回収品倉庫2",30,20,"common-storage"],["警備兵待機室2",24,20,"guard-ready"]],
+  [["中規模戦術室4",20,16,"medium-briefing"],["分隊本部4",20,20,"squad-headquarters"],["個別通信ブース4",8,10,"private-comms"],["装備一時保管庫2",24,20,"equipment-storage"],["データ・通信設備室1",16,20,"data-comms"],["非常用待避室2",12,16,"emergency-shelter"]],
+  [["大会議室1",32,20,"large-conference"],["個別通信ブース5",8,10,"private-comms"],["報酬物資保管庫1",24,20,"reward-storage"],["警備兵待機室3",24,20,"guard-ready"]],
+  [["大会議室2",32,20,"large-conference"],["個別通信ブース6",8,10,"private-comms"],["報酬物資保管庫2",24,20,"reward-storage"],["非常用待避室3",12,16,"emergency-shelter"]],
+  [["個別通信ブース7",8,10,"private-comms"],["危険物密閉一時保管室",20,20,"hazard-storage"],["データ・通信設備室2",16,20,"data-comms"],["警備兵待機室4",24,20,"guard-ready"]],
+  [["個別通信ブース8",8,10,"private-comms"],["生物密閉一時保管室",20,20,"bio-storage"],["非常用待避室4",12,16,"emergency-shelter"],["施設管理・監視室",20,20,"security-control"]]
+ ];
+ for(let i=0;i<8;i++){
+  const sorted=sectors[i].sort((a,b)=>b[1]-a[1]);
+  let left=9,right=9;
+  for(const [name,w,d,role] of sorted){
+   const L=left<=right,offset=(L?left:right)+w/2;
+   if(offset+w/2>71)throw Error("外周円環の部屋間隔が不足: "+name);
+   const ang=centers[i]+(L?-1:1)*offset/193;
+   const controlled=["guard-ready","common-storage","equipment-storage","reward-storage",
+    "hazard-storage","bio-storage","data-comms","security-control"].includes(role);
+   const sealed=role==="hazard-storage"||role==="bio-storage";
+   const doorW=sealed?10:role==="guard-ready"?8:role==="private-comms"?4:
+    role.endsWith("storage")?10:6;
+   const doorH=sealed?8:role==="guard-ready"?7:6;
+   const loc=room(name,193,ang,w,d,role,{controlled,doorW,doorH,
+    wallCm:sealed?100:controlled?35:25,
+    metadata:role==="guard-ready"?{securityDuty:"armed-guard-standby",
+     maxGuardHeightM:4,equipmentAndCharging:"draft",
+     rapidResponseSector:i+1}:{}});
+   if(role==="guard-ready"){
+    add(name+"・警備装備／充電ステーション","object",
+     {type:"polygon",points:roomCorners(198,ang,8,4)},{
+      parentId:loc.id,displayLevel:displayLevel+5,
+      label:{visible:false,text:""},
+      style:{fill:"rgba(132,155,166,.58)",stroke:"#bdd2db",strokeWidth:1},
+      metadata:{role:"guard-ready-equipment",dimensionsM:[8,4],gridCells:[16,8]}});
+   }
+   if(L)left+=w+3;else right+=w+3;
+  }
+ }
  const arcWall=(radius,from,to,outer)=>{
   const points=[],N=16,thicknessCm=outer?guide.outerCm:guide.innerCm;
   for(let i=0;i<=N;i++)points.push(pos(radius,from+(to-from)*i/N));
