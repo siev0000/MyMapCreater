@@ -442,8 +442,8 @@ function updateVertexControls(obj){
  const guideContext=getSelectedWallGuide(data,obj);
  $("wall-guide-panel").hidden=!guideContext;
  if(obj?.objectType==="wall"){
-  const cell=templateCellSpacing(data);
-  $("wall-thickness").value=Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/cell*50).toFixed(2))):"";
+  const units=wallUnitsPerMeterInMap(obj,data);
+  $("wall-thickness").value=Number.isFinite(obj.wall?.thickness)?String(Number((obj.wall.thickness/units*100).toFixed(2))):"";
   if(guideContext){
    const g=guideContext.guide;
    $("wall-guide-role").value=guideContext.role;
@@ -560,7 +560,7 @@ bind("wall-thickness",()=>{
  if(!Number.isFinite(thickness)||thickness<1||thickness>300){notice("壁厚は1〜300cmで指定してください","error");renderSelected();return}
  changeObject(o=>{
   if(o.objectType!=="wall")return;
-  o.wall={...o.wall,thickness:thickness/50*templateCellSpacing(sceneNow())};
+  o.wall={...o.wall,thickness:thickness/100*wallUnitsPerMeterInMap(o,sceneNow())};
   o.metadata={...o.metadata,wallThicknessCm:thickness,wallThicknessStatus:"user-edited"};
  });
 });
@@ -573,7 +573,7 @@ bind("wall-guide-apply",()=>{
  const thickness=role==="exterior"?context.guide.outerCm:context.guide.innerCm;
  if(changeObject(o=>{
   if(o.objectType!=="wall")return;
-  o.wall={...o.wall,thickness:thickness/50*templateCellSpacing(scene)};
+  o.wall={...o.wall,thickness:thickness/100*wallUnitsPerMeterInMap(o,scene)};
   o.metadata={...o.metadata,wallThicknessCm:thickness,wallRole:role,
    wallThicknessRule:context.guide.version,wallThicknessStatus:"user-edited"};
  }))notice("施設規模に合わせて壁厚 "+thickness+"cmを適用しました（未保存）","success");
@@ -875,6 +875,11 @@ function renderSelectionIdentity(){
 }
 // Retrieve the size-based wall guide only for recognised building templates.
 // Object and wall dimensions are converted using the template's 0.5m/cell scale.
+function wallUnitsPerMeterInMap(wall,scene){
+ const declared=Number(wall?.metadata?.wallUnitsPerMeter);
+ if(Number.isFinite(declared)&&declared>0)return declared;
+ return templateCellSpacing(scene)*2;
+}
 function getSelectedWallGuide(data,wall){
  if(!data||wall?.objectType!=="wall")return null;
  const lib=window.AAMapBuildingTemplates;
