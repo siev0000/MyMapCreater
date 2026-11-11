@@ -1154,25 +1154,71 @@ function generateRegistlinkDome(t,options={}){
    metadata:{role,clearWidthM:r1-r0,gridWidthCells:(r1-r0)*2,access}
   });
  }
- const wedge=(r0,r1,ang0,ang1)=>{
-  const N=7,points=[];
-  for(let i=0;i<=N;i++)points.push(pos(r1,ang0+(ang1-ang0)*i/N));
-  for(let i=N;i>=0;i--)points.push(pos(r0,ang0+(ang1-ang0)*i/N));
-  return{type:"polygon",points};
- };
- // Eight reception positions are described in the original Github map;
- // the individual service assignments and small-room geometry are drafts.
- for(let i=0;i<8;i++){
-  const ang=-pi/2+(i+.5)*pi/4,spread=.28;
-  const reception=add("任務受付"+(i+1),"region",wedge(148,176,ang-spread,ang+spread),{
-   parentId:dome.id,displayLevel:displayLevel+3,
-   label:{visible:true,text:"受付"+(i+1),position:pos(161,ang),fontSize:9},
-   metadata:{role:"reception",number:i+1}
+ // All room widths and depths below are exact metres, 2 cells per metre.
+ const point=(r,t,a)=>[C[0]+m(r*Math.cos(a)-t*Math.sin(a)),C[1]+m(r*Math.sin(a)+t*Math.cos(a))];
+ const roomCorners=(r,a,w,d)=>[
+  point(r-d/2,-w/2,a),point(r-d/2,w/2,a),
+  point(r+d/2,w/2,a),point(r+d/2,-w/2,a)];
+ const roomRecords=[];
+ const room=(name,r,a,w,d,role,opts={})=>{
+  const controlled=Boolean(opts.controlled),doorW=opts.doorW??(w<=8?4:6),
+   doorH=opts.doorH??6,cm=opts.wallCm??(controlled?35:25);
+  if([r,w,d,doorW,doorH].some(v=>!Number.isFinite(v)||v<=0)||
+   w*2%1||d*2%1||doorW>w-2)throw Error("部屋・扉の実寸が不正: "+name);
+  const pts=roomCorners(r,a,w,d),region=add(name,"region",{type:"polygon",points:pts},{
+   parentId:opts.parentId||dome.id,displayLevel:displayLevel+4,
+   style:{fill:controlled?"rgba(115,105,141,.23)":"rgba(72,139,158,.25)",
+    stroke:controlled?"#b5a5c7":"#95c0cb",strokeWidth:1},
+   label:{visible:true,text:name,position:pos(r,a),fontSize:8},
+   detail:name+"。"+w+"×"+d+"m（"+(w*2)+"×"+(d*2)+"マス）。編集用の仮間取り。",
+   metadata:{role,dimensionsM:[w,d],gridCells:[w*2,d*2],
+    clearHeightM:Math.max(6,doorH+.5),access:controlled?"restricted":"public",
+    ...(opts.metadata||{})}
   });
-  add("受付"+(i+1)+"・小作戦室","region",wedge(181,203,ang-spread,ang+spread),{
-   parentId:dome.id,displayLevel:displayLevel+3,
-   label:{visible:true,text:"作戦室"+(i+1),position:pos(191,ang),fontSize:8},
-   metadata:{role:"small-briefing",number:i+1,linkedReception:reception.id}
+  // Actual room walls split around the entrance on its inward face.
+  const inner=r-d/2,L=point(inner,-w/2,a),DL=point(inner,-doorW/2,a),
+   DR=point(inner,doorW/2,a),R=point(inner,w/2,a);
+  const wall=(p,q)=>{
+   if(Math.hypot(p[0]-q[0],p[1]-q[1])<1e-7)return;
+   add("区画壁","wall",{type:"polyline",points:[p,q]},{
+    parentId:region.id,displayLevel:displayLevel+5,
+    wall:{thickness:m(cm/100)},label:{visible:false,text:""},
+    metadata:{role:"room-wall",wallThicknessCm:cm,wallRole:"partition",
+     wallThicknessRule:"guild-room-detail-v1",wallThicknessStatus:"editor-default"}
+   });
+  };
+  for(const [p,q] of [[L,DL],[DR,R],[pts[1],pts[2]],[pts[2],pts[3]],[pts[3],pts[0]]])wall(p,q);
+  add(name+"・出入口","door",{type:"polyline",points:[DL,DR]},{
+   parentId:region.id,displayLevel:displayLevel+5,
+   door:{type:"sliding",slideDirection:"end",state:"closed"},
+   opening:{kind:"interior",external:false,width:m(doorW),clearHeightM:doorH},
+   label:{visible:false,text:""},
+   metadata:{role:"room-door",clearWidthM:doorW,clearHeightM:doorH,
+    gridWidthCells:doorW*2,accessControl:controlled?"restricted":"public"}
+  });
+  roomRecords.push({name,role,r,a,w,d,pts});
+  return region;
+ };
+ const centers=Array.from({length:8},(_,i)=>-pi/2+(i+.5)*pi/4);
+ const commonOrSpecial=["common","common","alchimeria","common","common","common","bionome","common"];
+ for(let i=0;i<8;i++){
+  const kind=commonOrSpecial[i],name=kind==="common"?"共通任務受付"+(i+1):
+   kind==="alchimeria"?"アルキメリア専門相談受付":"バイオノーム専門相談受付";
+  const reception=room(name,159.5,centers[i],20,24,"reception",{
+   doorW:8,doorH:7,metadata:{receptionIndex:i+1,receptionType:kind,
+    officialSystem:"HOST",services:kind==="common"?
+    ["依頼検索","資格照合","受注・報告","報酬・実績処理"]:
+    kind==="alchimeria"?["鑑定・再設計相談","素材収集依頼"]:
+     ["栽培・採取相談","生物回収・捕獲依頼"]}
+  });
+  add(name+"・受付カウンター","object",
+   {type:"polygon",points:roomCorners(163,centers[i],8,2)},{
+   parentId:reception.id,displayLevel:displayLevel+5,
+   style:{fill:"rgba(131,175,186,.72)",stroke:"#c6dfe3",strokeWidth:1},
+   label:{visible:false,text:""},metadata:{role:"reception-counter",dimensionsM:[8,2],gridCells:[16,4]}
+  });
+  room("受付"+(i+1)+"・小作戦室",193,centers[i],12,16,"small-briefing",{
+   doorW:6,doorH:6,metadata:{linkedReception:i+1}
   });
  }
  const arcWall=(radius,from,to,outer)=>{
