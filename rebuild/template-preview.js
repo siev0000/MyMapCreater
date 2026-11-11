@@ -795,7 +795,7 @@
   updateCollisionStatus(scene);updateAreaStatus(scene);
  }
  function normalizedTemplateName(value){
-  return String(value||"").normalize("NFKC").trim().replace(/\\s+/g," ").toLocaleLowerCase();
+  return String(value||"").normalize("NFKC").trim().replace(/\s+/g," ").toLocaleLowerCase();
  }
  function templateNameExists(name){
   const normalized=normalizedTemplateName(name);
