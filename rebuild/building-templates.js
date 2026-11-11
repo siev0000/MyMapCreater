@@ -1418,16 +1418,22 @@ function generateTerminalDomeV2(t,options={}){
  const wallThickness={outerCm:80,shaftCm:50,warehouseCm:35,roomCm:25,hazardCm:50};
  const wall=(name,p,q,owner,cm)=>{const o=add(name,"wall",{type:"polyline",points:[p,q]},owner,{role:"partition-wall",wallThicknessCm:cm});o.layer="walls";o.zIndex=47;o.wall={thickness:cm/100*k};o.style={stroke:"#bed4df",strokeWidth:1.5};o.label.visible=false;return o;};
  const testRoom=(name,r,a,w,h,role,cm=wallThickness.roomCm)=>{
-  const center=xy(r,a),room=add(name,"region",rect(center,w,h),dome.id,{role,dimensionsM:[w,h],gridCells:[w*2,h*2],testLayout:true});
-  const left=center[0]-w*k/2,right=center[0]+w*k/2,top=center[1]-h*k/2,bottom=center[1]+h*k/2;
-  const entrance=6,dl=center[0]-entrance*k/2,dr=center[0]+entrance*k/2;
-  wall(name+"・上壁左",[left,top],[dl,top],room.id,cm);
-  wall(name+"・上壁右",[dr,top],[right,top],room.id,cm);
-  wall(name+"・右壁",[right,top],[right,bottom],room.id,cm);
-  wall(name+"・下壁",[right,bottom],[left,bottom],room.id,cm);
-  wall(name+"・左壁",[left,bottom],[left,top],room.id,cm);
-  const entry=door(name+"・扉",[center[0],top],entrance,room.id,"public");
-  entry.metadata.connectedRoomId=room.id;
+  // Tangential width, radial depth; inner-facing doorway opens toward the guild's inner concourse.
+  const center=xy(r,a),theta=a*Math.PI/180,radial=[Math.cos(theta),Math.sin(theta)],tangent=[-Math.sin(theta),Math.cos(theta)];
+  const pt=(u,v)=>[center[0]+k*(tangent[0]*u+radial[0]*v),center[1]+k*(tangent[1]*u+radial[1]*v)];
+  const tl=pt(-w/2,-h/2),tr=pt(w/2,-h/2),br=pt(w/2,h/2),bl=pt(-w/2,h/2);
+  const room=add(name,"region",{type:"polygon",points:[tl,tr,br,bl]},dome.id,
+   {role,dimensionsM:[w,h],gridCells:[w*2,h*2],testLayout:true,orientation:"radial",angleDeg:a});
+  const entrance=6,dl=pt(-entrance/2,-h/2),dr=pt(entrance/2,-h/2);
+  wall(name+"・内壁左",tl,dl,room.id,cm);
+  wall(name+"・内壁右",dr,tr,room.id,cm);
+  wall(name+"・側壁右",tr,br,room.id,cm);
+  wall(name+"・外壁",br,bl,room.id,cm);
+  wall(name+"・側壁左",bl,tl,room.id,cm);
+  const entry=add(name+"・扉","door",{type:"polyline",points:[dl,dr]},room.id,
+   {role:"door",accessControl:"public",connectedRoomId:room.id,orientation:"tangential",angleDeg:a});
+  entry.door={type:"sliding",slideDirection:"end",state:"closed"};
+  entry.opening={kind:"interior",external:false,width:entrance*k,clearHeightM:7};
   return room;
  };
  const terminal=add("リンクターミナル外形","region",circle(250),prefix,{role:"terminal"});
