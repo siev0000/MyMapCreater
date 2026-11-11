@@ -91,6 +91,29 @@ const presets=[
     "description": "階ごとに部屋と階段"
   }
 ];
+// Editable map-design guidance: never treat wall thickness as structural safety/canon.
+// Building-template cells represent 0.5 metres independently of map scene spacing.
+const WALL_GUIDE_VERSION="facility-wall-size-v1";
+function wallThicknessGuide(template,opts={}){
+ const dims=opts.dimensionsM||(Array.isArray(template?.cells)?template.cells.map(n=>Number(n)*.5):null);
+ if(!dims||dims.length<2||!dims.every(n=>Number.isFinite(n)&&n>0))throw Error("壁厚の目安には幅・奥行が必要です");
+ const longestSideM=Math.max(dims[0],dims[1]);
+ const floors=Math.max(1,Number.isSafeInteger(opts.floors)?opts.floors:Number.isSafeInteger(template?.floors)?template.floors:1);
+ const strength=opts.strength||(template?.worldStyle==="machine"?"sturdy":"standard");
+ const rows=[
+  {limit:10,standard:[20,12],sturdy:[30,20]},
+  {limit:20,standard:[25,15],sturdy:[35,22]},
+  {limit:40,standard:[30,18],sturdy:[40,25]},
+  {limit:80,standard:[40,22],sturdy:[50,30]},
+  {limit:Infinity,standard:[50,25],sturdy:[60,35]}
+ ];
+ if(!["standard","sturdy"].includes(strength))throw Error("壁厚基準はstandard/sturdyのみ");
+ const row=rows.find(v=>longestSideM<=v.limit);
+ const [outerBaseCm,innerCm]=row[strength];
+ const floorAddCm=floors<=2?0:floors<=4?5:floors<=8?10:15;
+ return{version:WALL_GUIDE_VERSION,strength,dimensionsM:dims.slice(0,2),longestSideM,
+  floors,outerCm:outerBaseCm+floorAddCm,innerCm,floorAddCm,largeBlockCaution:longestSideM>80};
+}
 // Two alternative floorplans for each original category; original IDs remain valid.
 const variants={
  small_house:[["small_house_side","小型住宅・側面玄関",[12,16],1,"side","片側に玄関と通路を寄せた住宅","left"],["small_house_open","小型住宅・広間型",[16,14],1,"open","仕切りの少ないワンルーム住宅","right"]],
@@ -283,6 +306,7 @@ function generateModern(template,options){
  const rect=(a,b,c,d)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:c*spacing,height:d*spacing});
  const line=(a,b,c,d)=>({type:"polyline",points:[at(a,b),at(c,d)]});
  const floors=template.modernPlan.map((_,i)=>({id:(i+1)+"F",label:(i+1)+"階",elevation:i*3,height:3}));
+ const wallGuide=wallThicknessGuide(template,{strength:"standard",floors:template.modernPlan.length});
  const objFloorIndex=(pair,floor,direction)=>{
   const levels=pair.split("-");
   return (direction==="up"&&levels[0]===floor)||(direction==="down"&&levels[1]===floor)?0:-1;
@@ -441,10 +465,13 @@ function generateModern(template,options){
      const emit=(from,to)=>{
       if(to-from<=1e-8)return;
       const exterior=direction==="H"?(fixed===0||fixed===h):(fixed===0||fixed===w);
+      const wallThicknessCm=exterior?wallGuide.outerCm:wallGuide.innerCm;
       push("壁","wall",direction==="H"?line(from,fixed,to,fixed):line(fixed,from,fixed,to),floor,
        {fill:null,stroke:"#d3e6e8",strokeWidth:2},
-       {wall:{thickness:(exterior?15:10)/50*spacing},
-        metadata:{templateId:template.id,generated:true,wallThicknessCm:exterior?15:10}});
+       {wall:{thickness:wallThicknessCm/50*spacing},
+        metadata:{templateId:template.id,generated:true,wallThicknessCm,
+         wallRole:exterior?"exterior":"partition",wallThicknessRule:wallGuide.version,
+         wallThicknessStatus:"editor-default"}});
      };
      for(const gap of relevant){emit(cursor,gap.start);cursor=gap.start+gap.length}
      emit(cursor,end);
@@ -886,6 +913,7 @@ function generateMachine(t,options={}){
  const {prefix,parentId=null,displayLevel=4,x=0,y=0,spacing=2,baseName=t.name}=options;
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("機械施設の配置指定が不正です");
  const [W,H]=t.cells,objs=[],floors=Array.from({length:t.floors},(_,i)=>({id:(i+1)+"F",label:(i+1)+"階",elevation:i*3,height:3}));
+ const wallGuide=wallThicknessGuide(t,{strength:"sturdy"});
  const at=(a,b)=>[x+a*spacing,y+b*spacing],rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
  let serial=0;
  const add=(name,kind,f,geo,extra={})=>{
@@ -944,11 +972,12 @@ function generateMachine(t,options={}){
  const addWall=(f,a,b,c,d)=>{
   if(Math.hypot(c-a,d-b)<=1e-6)return;
   const exterior=(a===c&&(a===0||a===W))||(b===d&&(b===0||b===H));
-  const wallThicknessCm=exterior?30:20; // editable draft defaults, not canonical material specifications
+  const wallThicknessCm=exterior?wallGuide.outerCm:wallGuide.innerCm; // editable scale-based defaults
   add(exterior?"外周壁":"区画壁","wall",f,line(a,b,c,d),{
    wall:{thickness:wallThicknessCm/50*spacing},
    metadata:{templateId:t.id,generated:true,worldStyle:"machine",designStatus:"draft-unverified",
-    wallThicknessCm,wallThicknessStatus:"editor-default"}
+    wallThicknessCm,wallRole:exterior?"exterior":"partition",wallThicknessRule:wallGuide.version,
+    wallThicknessStatus:"editor-default"}
   });
  };
  const addDoor=(f,a,b,c,d,external=false)=>{
@@ -1130,6 +1159,7 @@ function generate(templateId,options={}){
  if(typeof prefix!=="string"||!prefix)throw Error("建物IDが必要です");
  if(!Number.isFinite(spacing)||spacing<=0)throw Error("グリッド間隔が不正です");
  const W=template.cells[0]*spacing,H=template.cells[1]*spacing,objects=[];
+ const wallGuide=wallThicknessGuide(template,{strength:"standard"});
  const at=(a,b)=>[x+a*spacing,y+b*spacing];
  const rect=(a,b,w,h)=>({type:"rect",x:x+a*spacing,y:y+b*spacing,width:w*spacing,height:h*spacing});
  const poly=points=>({type:"polyline",points:points.map(([a,b])=>at(a,b))});
@@ -1151,7 +1181,18 @@ function generate(templateId,options={}){
    detail:template.description+"（テンプレート配置。間取り・寸法は編集可能）",
    metadata:{templateId:template.id,generated:true}};
  objects.push(building);
- const wall=(name,f,points)=>base(name,"壁", "wall",poly(points),f,{stroke:"#d3e6e8",strokeWidth:2});
+ const wall=(name,f,points)=>{
+  const [a,b]=points;
+  const exterior=(a[0]===b[0]&&(a[0]===0||a[0]===template.cells[0]))||
+                 (a[1]===b[1]&&(a[1]===0||a[1]===template.cells[1]));
+  const wallThicknessCm=exterior?wallGuide.outerCm:wallGuide.innerCm;
+  return base(name,"壁","wall",poly(points),f,{stroke:"#d3e6e8",strokeWidth:2},{
+   wall:{thickness:wallThicknessCm/50*spacing},
+   metadata:{templateId:template.id,generated:true,wallThicknessCm,
+    wallRole:exterior?"exterior":"partition",wallThicknessRule:wallGuide.version,
+    wallThicknessStatus:"editor-default"}
+  });
+ };
  const door=(name,f,points,external=false)=>base(name,external?"建物入口":"室内扉","door",poly(points),f,{stroke:"#e8b97a",strokeWidth:2},{
   door:{hinge:"start",swing:"inward",state:"closed",swingSide:"left"},
   opening:{kind:external?"entrance":"interior",width:2*spacing,external}
@@ -1366,6 +1407,6 @@ function generateCustom(templateId,options={}){
 }
 function allPresets(){return[...presets,...custom.map(t=>({id:t.id,name:t.name,category:"custom",description:t.description||"保存した建物",cells:[...t.originalSize],floors:t.objects.find(o=>o.id===t.rootId)?.floors?.length||1,custom:true,era:t.era||"common",use:t.use||"special",originalSize:t.originalSize}))]}
 function generateAny(templateId,options){return custom.some(t=>t.id===templateId)?generateCustom(templateId,options):generate(templateId,options)}
-global.AAMapBuildingTemplates={presets,custom,allPresets,generate:generateAny,register,capture};
+global.AAMapBuildingTemplates={presets,custom,allPresets,generate:generateAny,register,capture,wallThicknessGuide};
 
 })(window);
