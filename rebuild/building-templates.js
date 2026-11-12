@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-rectangular-lift-entrance-bays",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-terminal-arrivals-rooms-and-counters",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1524,7 +1524,63 @@ function generateTerminalDomeV2(t,options={}){
  }
  const innerBoundary=add("昇降機物流帯・内周境界","wall",circle(24),lifts.id,{role:"lift-zone-inner-wall",wallThicknessCm:wallThickness.shaftCm});
  innerBoundary.layer="walls";innerBoundary.zIndex=47;innerBoundary.style={stroke:"#bed4df",strokeWidth:1.5};innerBoundary.label.visible=false;
- // Open reception counters are fixtures in the main hall, not enclosed rooms.
+ // Link Terminal's facilities belong to the arrivals ring, NOT to the lift/stair core.
+ // All room sizes and exact locations below are provisional map layouts.
+ const terminalRoom=(name,r,angle,w,h,role,entryWidth=6)=>{
+  const t=angle*Math.PI/180,radial=[Math.cos(t),Math.sin(t)],tangent=[-Math.sin(t),Math.cos(t)];
+  const pt=(u,v)=>[cx+k*(radial[0]*(r+v)+tangent[0]*u),cy+k*(radial[1]*(r+v)+tangent[1]*u)];
+  const innerL=pt(-w/2,-h/2),innerR=pt(w/2,-h/2),outerR=pt(w/2,h/2),outerL=pt(-w/2,h/2);
+  const room=add(name,"region",{type:"polyline",points:[innerL,innerR,outerR,outerL,innerL]},arrivals.id,
+   {role:"terminal-room",facilityRole:role,dimensionsM:[w,h],angleDeg:angle,orientation:"radial",
+    faces:"lift-core",designStatus:"trial-layout",ringRole:"inward-arrivals"});
+  room.style={fill:"rgba(83,151,174,.22)",stroke:null};
+  const dl=pt(-entryWidth/2,-h/2),dr=pt(entryWidth/2,-h/2);
+  wall(name+"・入口壁左",innerL,dl,room.id,wallThickness.roomCm);
+  wall(name+"・入口壁右",dr,innerR,room.id,wallThickness.roomCm);
+  wall(name+"・外壁",outerL,outerR,room.id,wallThickness.roomCm);
+  wall(name+"・左壁",innerL,outerL,room.id,wallThickness.roomCm);
+  wall(name+"・右壁",innerR,outerR,room.id,wallThickness.roomCm);
+  const d=add(name+"・昇降機側出入口","door",{type:"polyline",points:[dl,dr]},room.id,
+   {role:"terminal-room-door",connectedRoomId:room.id,faces:"lift-core",accessControl:"unconfirmed",
+    clearWidthM:entryWidth,layoutStatus:"draft"});
+  d.door={type:"sliding",slideDirection:"end",state:"closed"};
+  d.opening={kind:"interior",external:false,width:entryWidth*k,clearHeightM:7};
+  return room;
+ };
+ // Twelve facility functions from the Link Terminal's Notion page.
+ // Radius 108m keeps an open central circulation area between the lifts and counters.
+ const terminalRoomDrafts=[
+  ["総合案内・地図・通信室",0,18,14,"guidance-and-information"],
+  ["通行認証室",30,18,14,"authorization"],
+  ["簡易汚染・危険物検査室",60,18,14,"screening"],
+  ["荷物一時預かり室",90,18,14,"temporary-baggage"],
+  ["応急修理室",120,18,14,"emergency-repair"],
+  ["緊急充電室",150,18,14,"emergency-charging"],
+  ["避難区画",180,20,16,"evacuation"],
+  ["施設管理室",210,18,14,"operations-management"],
+  ["警備待機室",240,18,14,"security"],
+  ["会議室",270,18,14,"meeting"],
+  ["一般倉庫",300,20,16,"general-warehouse"],
+  ["車両・物資格納室",330,20,16,"vehicle-and-cargo-storage"]
+ ];
+ for(const [name,angle,w,h,role] of terminalRoomDrafts)
+  terminalRoom(name+"・仮配置",108,angle,w,h,role,role==="vehicle-and-cargo-storage"?10:6);
+ // Eight open counters, facing inward toward the elevator arrivals, in a separate
+ // inner band with unobstructed room access. Guild counters are unaffected.
+ const terminalCounterAngles=[0,30,90,120,180,210,270,300];
+ for(let i=0;i<terminalCounterAngles.length;i++){
+  const angle=terminalCounterAngles[i],t=angle*Math.PI/180,
+   radial=[Math.cos(t),Math.sin(t)],tangent=[-Math.sin(t),Math.cos(t)];
+  const at=(u,v)=>[cx+k*(radial[0]*(86+v)+tangent[0]*u),cy+k*(radial[1]*(86+v)+tangent[1]*u)];
+  const points=[at(-6,-1.5),at(6,-1.5),at(6,1.5),at(-6,1.5)];
+  const counter=add("昇降機側・開放受付カウンター"+(i+1),"fixture",
+   {type:"polyline",points:[...points,points[0]]},arrivals.id,
+   {role:"terminal-open-reception-counter",noEnclosure:true,faces:"lift-core",angleDeg:angle,
+    dimensionsM:[12,3],designStatus:"trial-layout"});
+  counter.style={fill:"rgba(104,205,188,.32)",stroke:"#86d7cb",strokeWidth:1.5};
+  counter.label.visible=false;
+ }
+ // Existing guild counters must stay at the outward-facing arrivals zone.
  for(let i=0;i<8;i++){
   const a=i*45,p=xy(219,a);
   const counter=add("開放受付カウンター"+(i+1),"fixture",rect(p,12,3),dome.id,{role:"open-reception-counter",noEnclosure:true});
