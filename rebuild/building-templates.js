@@ -1512,8 +1512,6 @@ function generateTerminalDomeV2(t,options={}){
  }
  const innerBoundary=add("昇降機物流帯・内周境界","wall",circle(24),lifts.id,{role:"lift-zone-inner-wall",wallThicknessCm:wallThickness.shaftCm});
  innerBoundary.layer="walls";innerBoundary.zIndex=47;innerBoundary.style={stroke:"#bed4df",strokeWidth:1.5};innerBoundary.label.visible=false;
- const outerArrivalBoundary=add("一般案内待機帯・外周境界","wall",circle(125),arrivals.id,{role:"arrivals-outer-wall",wallThicknessCm:wallThickness.roomCm});
- outerArrivalBoundary.layer="walls";outerArrivalBoundary.zIndex=47;outerArrivalBoundary.style={stroke:"#bed4df",strokeWidth:1.5};outerArrivalBoundary.label.visible=false;
  // Open reception counters are fixtures in the main hall, not enclosed rooms.
  for(let i=0;i<8;i++){
   const a=i*45,p=xy(219,a);
