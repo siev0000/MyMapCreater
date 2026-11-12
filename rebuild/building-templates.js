@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-aligned-cargo-roads-clean-labels",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-lift-doors-flush-with-arrival-band",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1441,16 +1441,26 @@ function generateTerminalDomeV2(t,options={}){
  const perimeter=add("ターミナル外周壁","wall",{type:"circle",center:[cx,cy],radius:250*k},terminal.id,{role:"outer-wall",wallThicknessCm:wallThickness.outerCm});
  perimeter.layer="walls";perimeter.zIndex=47;perimeter.wall={thickness:wallThickness.outerCm/100*k};perimeter.style={stroke:"#bed4df",strokeWidth:2};
  const pillar=add("中央構造柱","region",circle(22),terminal.id,{role:"pillar"});
- const lifts=add("昇降機・物流帯","region",ring(24,57),terminal.id,{role:"lift-zone"});
- add("昇降機側・一般案内待機帯","region",ring(59,125),terminal.id,{role:"inward-arrivals"});
+ const zoneWallRadiusM=57;
+ const lifts=add("昇降機・物流帯","region",ring(24,zoneWallRadiusM),terminal.id,{role:"lift-zone"});
+ const arrivals=add("昇降機側・一般案内待機帯","region",ring(zoneWallRadiusM,125),terminal.id,{role:"inward-arrivals"});
+ // The lift zone and arrivals hall share the same wall; its arcs are drawn below with door gaps.
+ lifts.style={fill:"rgba(72,130,157,.12)",stroke:null};
+ arrivals.style={fill:"rgba(92,152,168,.10)",stroke:null};
+ const liftWallGaps=[],cargoHallMouths=[];
  const dome=add("レジストリンク・ドーム","region",ring(130,244),terminal.id,{role:"guild-ring"});
  add("ドーム外向き分散受付帯","region",ring(205,242),terminal.id,{role:"outward-arrivals"});
  for(let i=0;i<4;i++){
   const a=45+90*i,theta=a*Math.PI/180;
   // Both shafts sit beside the central pillar, rather than one behind the other.
-  for(const [kind,offset,r,w,h,routeWidth] of [["一般",-9,37,12,14,6],["大型機・貨物",10,41,16,18,10]]){
+  for(const [kind,offset,w,h,routeWidth] of [["一般",-9,12,14,6],["大型機・貨物",10,16,18,10]]){
    const radial=[Math.cos(theta),Math.sin(theta)],tan=[-Math.sin(theta),Math.cos(theta)];
-   const pt=(u,v)=>[cx+k*(radial[0]*(r+v)+tan[0]*(offset+u)),cy+k*(radial[1]*(r+v)+tan[1]*(offset+u))];
+   // Place the shaft outward so its hall door touches the circular arrivals-band boundary.
+   // The entrance follows the curved wall; the short vestibule adapts at its two edges.
+   const doorMinRadial=Math.sqrt(zoneWallRadiusM**2-Math.max(Math.abs(offset-routeWidth/2),Math.abs(offset+routeWidth/2))**2);
+   const frontRadial=doorMinRadial-0.5; // Minimum vestibule depth of one 0.5m cell
+   const shaftCenterRadius=frontRadial-h/2;
+   const pt=(u,v)=>[cx+k*(radial[0]*(shaftCenterRadius+v)+tan[0]*(offset+u)),cy+k*(radial[1]*(shaftCenterRadius+v)+tan[1]*(offset+u))];
    const corners=[pt(-w/2,-h/2),pt(w/2,-h/2),pt(w/2,h/2),pt(-w/2,h/2)];
    const shaft=add(kind+"昇降機"+(i+1),"region",{type:"polyline",points:[...corners,corners[0]]},lifts.id,{role:"lift-shaft",cluster:i+1,kind,wallThicknessCm:wallThickness.shaftCm,orientation:"radial"});
    const dl=pt(-routeWidth/2,h/2),dr=pt(routeWidth/2,h/2);
@@ -1462,11 +1472,20 @@ function generateTerminalDomeV2(t,options={}){
    const d=add(kind+"昇降機"+(i+1)+"・外向き扉","door",{type:"polyline",points:[dl,dr]},shaft.id,{role:"door",accessControl:kind==="一般"?"public":"heavy-cargo",connectedRoomId:shaft.id});
    d.door={type:"sliding",slideDirection:"end",state:"closed"};d.opening={kind:"interior",width:routeWidth*k,clearHeightM:7};
    // Short rectangular vestibule immediately outside the shaft door.
-   const passageLength=1; // Two 0.5m grid cells
+   const passageLength=1; // Nominal 2 cells; edges follow the curved outer wall
    const nearL=pt(-routeWidth/2,h/2),nearR=pt(routeWidth/2,h/2);
-   const farL=pt(-routeWidth/2,h/2+passageLength),farR=pt(routeWidth/2,h/2+passageLength);
+   const boundaryPoint=(u)=>{
+    const transverse=offset+u,forward=Math.sqrt(zoneWallRadiusM**2-transverse**2);
+    return [cx+k*(radial[0]*forward+tan[0]*transverse),cy+k*(radial[1]*forward+tan[1]*transverse)];
+   };
+   const farL=boundaryPoint(-routeWidth/2),farR=boundaryPoint(routeWidth/2);
+   const farMiddle=[(farL[0]+farR[0])/2,(farL[1]+farR[1])/2];
+   const nearMiddle=[(nearL[0]+nearR[0])/2,(nearL[1]+nearR[1])/2];
+   const gapAngles=[farL,farR].map(p=>(Math.atan2(p[1]-cy,p[0]-cx)+Math.PI*2)%(Math.PI*2)).sort((a,b)=>a-b);
+   liftWallGaps.push({start:gapAngles[0],end:gapAngles[1]});
+   if(kind==="大型機・貨物")cargoHallMouths[i]=farMiddle;
    const passage=add(kind+"昇降機"+(i+1)+"・乗降通路","region",{type:"polyline",points:[nearL,nearR,farR,farL,nearL]},lifts.id,
-    {role:"lift-vestibule",kind,clearWidthM:routeWidth,lengthM:passageLength,orientation:"radial"});
+    {role:"lift-vestibule",kind,clearWidthM:routeWidth,nominalLengthM:passageLength,lengthM:Math.hypot(farMiddle[0]-nearMiddle[0],farMiddle[1]-nearMiddle[1])/k,orientation:"radial"});
    passage.style={fill:"rgba(110,170,175,.28)",stroke:"#91c6d3",strokeWidth:2};
    wall(kind+"昇降機"+(i+1)+"・通路左壁",nearL,farL,passage.id,wallThickness.roomCm);
    wall(kind+"昇降機"+(i+1)+"・通路右壁",nearR,farR,passage.id,wallThickness.roomCm);
@@ -1476,6 +1495,25 @@ function generateTerminalDomeV2(t,options={}){
    hallDoor.opening={kind:"interior",width:routeWidth*k,clearHeightM:7};
   }
  }
+ // Draw a true separating wall with an opening at every lift hall door (no unbroken ring line over doors).
+ liftWallGaps.sort((a,b)=>a.start-b.start);
+ const arcPoints=(start,end)=>{
+  const steps=Math.max(2,Math.ceil((end-start)/(Math.PI/120))); // <=1.5 degrees
+  return Array.from({length:steps+1},(_,i)=>[cx+k*zoneWallRadiusM*Math.cos(start+(end-start)*i/steps),cy+k*zoneWallRadiusM*Math.sin(start+(end-start)*i/steps)]);
+ };
+ for(let i=0;i<liftWallGaps.length;i++){
+  const from=liftWallGaps[i].end,to=liftWallGaps[(i+1)%liftWallGaps.length].start+(i===liftWallGaps.length-1?Math.PI*2:0);
+  if(to-from<0.0001)continue;
+  const partition=add("昇降機物流帯・待機帯境界壁"+(i+1),"wall",{type:"polyline",points:arcPoints(from,to)},lifts.id,
+   {role:"lift-arrivals-boundary-wall",wallThicknessCm:wallThickness.shaftCm,doorGaps:true});
+  partition.layer="walls";partition.zIndex=47;
+  partition.wall={thickness:wallThickness.shaftCm/100*k};
+  partition.style={stroke:"#bed4df",strokeWidth:1.5};partition.label.visible=false;
+ }
+ const innerBoundary=add("昇降機物流帯・内周境界","wall",circle(24),lifts.id,{role:"lift-zone-inner-wall",wallThicknessCm:wallThickness.shaftCm});
+ innerBoundary.layer="walls";innerBoundary.zIndex=47;innerBoundary.style={stroke:"#bed4df",strokeWidth:1.5};innerBoundary.label.visible=false;
+ const outerArrivalBoundary=add("一般案内待機帯・外周境界","wall",circle(125),arrivals.id,{role:"arrivals-outer-wall",wallThicknessCm:wallThickness.roomCm});
+ outerArrivalBoundary.layer="walls";outerArrivalBoundary.zIndex=47;outerArrivalBoundary.style={stroke:"#bed4df",strokeWidth:1.5};outerArrivalBoundary.label.visible=false;
  // Open reception counters are fixtures in the main hall, not enclosed rooms.
  for(let i=0;i<8;i++){
   const a=i*45,p=xy(219,a);
@@ -1489,7 +1527,7 @@ function generateTerminalDomeV2(t,options={}){
   // and 1m vestibule end at radius 51m. Keep the road aligned to that door,
   // then gently merge into the radial exit axis well outside the lift cluster.
   const at=(r,u)=>[cx+k*(radial[0]*r+tan[0]*u),cy+k*(radial[1]*r+tan[1]*u)];
-  const roadCenters=[at(51,10),at(65,10),at(92,0),at(250,0)],halfWidth=6;
+  const roadCenters=[cargoHallMouths[i],at(65,10),at(92,0),at(250,0)],halfWidth=6;
   // Polygon is world-space geometry (not an oversized pixel stroke).
   const left=roadCenters.map(p=>[p[0]-tan[0]*halfWidth*k,p[1]-tan[1]*halfWidth*k]);
   const right=roadCenters.map(p=>[p[0]+tan[0]*halfWidth*k,p[1]+tan[1]*halfWidth*k]);
