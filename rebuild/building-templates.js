@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-world-space-road-surfaces",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-aligned-cargo-roads-clean-labels",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1408,7 +1408,7 @@ function generateTerminalDomeV2(t,options={}){
    geometry,selectable:true,visible:true,
    style:type==="door"?{stroke:"#e7cb9d",strokeWidth:2}:type==="route"?{stroke:"#91c6d3",strokeWidth:2}:
     {fill:"rgba(72,130,157,.12)",stroke:"#9dc7d3",strokeWidth:1},
-   label:{visible:type==="region",text:name,fontSize:9},metadata:{...base,...meta}};
+   label:{visible:false,text:name,fontSize:9},metadata:{...base,...meta}};
   objects.push(o);return o;
  };
  const circle=(r)=>({type:"circle",center:[cx,cy],radius:r*k});
@@ -1485,14 +1485,19 @@ function generateTerminalDomeV2(t,options={}){
  // Four heavy-vehicle roads run from the cargo lift mouths to the outer vehicle entrances.
  for(let i=0;i<4;i++){
   const a=45+i*90,theta=a*Math.PI/180,radial=[Math.cos(theta),Math.sin(theta)],tan=[-Math.sin(theta),Math.cos(theta)];
-  const cargoMouth=[cx+k*(radial[0]*50+tan[0]*10),cy+k*(radial[1]*50+tan[1]*10)];
+  // Cargo shaft at radius 41m with +10m tangential offset; its 18m-deep shaft
+  // and 1m vestibule end at radius 51m. Keep the road aligned to that door,
+  // then gently merge into the radial exit axis well outside the lift cluster.
+  const at=(r,u)=>[cx+k*(radial[0]*r+tan[0]*u),cy+k*(radial[1]*r+tan[1]*u)];
+  const roadCenters=[at(51,10),at(65,10),at(92,0),at(250,0)],halfWidth=6;
+  // Polygon is world-space geometry (not an oversized pixel stroke).
+  const left=roadCenters.map(p=>[p[0]-tan[0]*halfWidth*k,p[1]-tan[1]*halfWidth*k]);
+  const right=roadCenters.map(p=>[p[0]+tan[0]*halfWidth*k,p[1]+tan[1]*halfWidth*k]);
+  const roadCorners=[...left,...right.reverse()];
   const end=xy(250,a);
-  // Real 12m-wide road surface: geometry is in world coordinates, not screen-pixel stroke width.
-  const roadStart=xy(54,a),roadEnd=xy(250,a),halfWidth=6;
-  const edge=(point,side)=>[point[0]+tan[0]*halfWidth*k*side,point[1]+tan[1]*halfWidth*k*side];
-  const roadCorners=[edge(roadStart,-1),edge(roadEnd,-1),edge(roadEnd,1),edge(roadStart,1)];
   const road=add("大型機搬送道路"+(i+1),"region",{type:"polyline",points:[...roadCorners,roadCorners[0]]},terminal.id,
-   {role:"heavy-vehicle-road",clearWidthM:12,connects:"cargo-lift-to-exterior",access:"heavy-cargo",surface:true});
+   {role:"heavy-vehicle-road",clearWidthM:12,connects:"cargo-lift-to-exterior",access:"heavy-cargo",surface:true,
+    routeCenterline:roadCenters,doorAlignment:"cargo-vestibule-hall-door"});
   road.layer="routes";road.zIndex=39;road.style={fill:"rgba(230,168,102,.22)",stroke:"#e6a866",strokeWidth:1.5};
   const gate=add("大型搬出入口"+(i+1),"door",{type:"polyline",points:[
    [end[0]-tan[0]*6*k,end[1]-tan[1]*6*k],[end[0]+tan[0]*6*k,end[1]+tan[1]*6*k]]},terminal.id,
