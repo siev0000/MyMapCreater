@@ -415,7 +415,8 @@ function updatePolygonRoomControls(obj){
  const options=[];
  for(let i=0;i<count;i++){
   const a=vertices[i],b=vertices[(i+1)%count],len=Math.hypot(b[0]-a[0],b[1]-a[1]);
-  options.push([String(i),"辺"+(i+1)+"：頂点"+(i+1)+" → 頂点"+((i+1)%count+1)+"（"+Number(len.toFixed(2))+"座標単位）"]);
+  const meters=len/wallUnitsPerMeterInMap(obj,sceneNow());
+  options.push([String(i),"辺"+(i+1)+"：頂点"+(i+1)+" → 頂点"+((i+1)%count+1)+"（約"+Number(meters.toFixed(2))+"m）"]);
  }
  fillSelect(picker,options,Number.isSafeInteger(selected)&&selected>=0&&selected<count?String(selected):"0");
  $("polygon-room-wall-thickness").value=String(obj.metadata?.polygonRoom?.wallThicknessCm??25);
@@ -429,7 +430,10 @@ function updatePolygonRoomSelectedDoor(obj){
  if(obj?.geometry?.type!=="polygon")return;
  const edgeIndex=Number(input("polygon-room-door-edge"));
  const existing=obj.metadata?.polygonRoom?.doors?.find(d=>d.edgeIndex===edgeIndex);
- $("polygon-room-door-width").value=String(existing?.widthM??3);
+ const vertices=obj.geometry.points||[],next=vertices[(edgeIndex+1)%vertices.length],cur=vertices[edgeIndex];
+ const lengthM=cur&&next?Math.hypot(next[0]-cur[0],next[1]-cur[1])/wallUnitsPerMeterInMap(obj,sceneNow()):3;
+ const suggested=Number(Math.min(3,Math.max(.01,lengthM*.6)).toFixed(2));
+ $("polygon-room-door-width").value=String(existing?.widthM??suggested);
  $("polygon-room-door-position").value=String(Math.round((existing?.position??.5)*100));
 }
 function updateVertexControls(obj){
