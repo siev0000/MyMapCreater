@@ -1067,6 +1067,18 @@ function applyPolygonRoom({action="rebuild"}={}){
    wallThicknessCm,doors:specs});
   const generated=next.objects.filter(o=>o.metadata?.generatedFromPolygonRoom===room.id),
    oldIds=new Set(generated.map(o=>o.id));
+  // Preserve facility-specific access permissions and door characteristics when
+  // regenerating a template room after editing its polygon vertices.
+  const oldDoors=new Map(generated.filter(o=>o.objectType==="door")
+   .map(o=>[o.metadata?.edgeIndex,o]));
+  for(const door of built.doors){
+   const previous=oldDoors.get(door.metadata.edgeIndex);
+   if(!previous)continue;
+   door.metadata={...previous.metadata,...door.metadata,
+    role:previous.metadata?.role||door.metadata.role};
+   door.opening={...previous.opening,...door.opening};
+   door.door={...previous.door,...door.door};
+  }
   const references=next.objects.filter(o=>!oldIds.has(o.id)&&oldIds.has(o.opening?.wallId));
   if(references.length)throw Error("自動生成壁に手動で接続した扉があります。先に扉の接続を外してください");
   const ids=new Set(next.objects.filter(o=>!oldIds.has(o.id)).map(o=>o.id));
