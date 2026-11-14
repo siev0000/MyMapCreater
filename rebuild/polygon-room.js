@@ -49,25 +49,27 @@
     throw Error("辺"+(edgeIndex+1)+"の扉が角からはみ出しています");
    specs.set(edgeIndex,{edgeIndex,widthM,position,type:d.type==="hinged"?"hinged":"sliding"});
   }
-  const walls=[],openings=[];
-  for(let i=0;i<points.length;i++){
-   const edgeId=room.id+"__polygon_wall_"+(i+1),a=points[i],b=points[(i+1)%points.length];
-   const common={parentId:room.id,displayLevel:(room.displayLevel||1)+1,
-    ...(room.floorId?{floorId:room.floorId}:{}),visible:true,selectable:true};
-   walls.push({id:edgeId,name:(room.name||"部屋")+"・壁"+(i+1),objectType:"wall",layer:"walls",zIndex:47,
-    ...common,geometry:{type:"polyline",points:[a,b]},style:{stroke:"#bed4df",strokeWidth:1.5},
-    label:{visible:false,text:""},wall:{thickness:wallThicknessCm/100*worldUnitsPerMeter},
-    metadata:{generatedFromPolygonRoom:room.id,role:"polygon-room-wall",edgeIndex:i,wallThicknessCm,
-      wallUnitsPerMeter:worldUnitsPerMeter}});
-   const spec=specs.get(i);
-   if(!spec)continue;
-   const delta=sub(b,a),len=Math.hypot(...delta),half=spec.widthM*worldUnitsPerMeter/(2*len);
+  const common={parentId:room.id,displayLevel:(room.displayLevel||1)+1,
+   ...(room.floorId?{floorId:room.floorId}:{}),visible:true,selectable:true};
+  // Keep a single perimeter wall; its consecutive segments are the room edges.
+  // The existing viewer cuts linked door spans from any polyline segment.
+  const wallId=room.id+"__polygon_wall";
+  const walls=[{id:wallId,name:(room.name||"部屋")+"・外周壁",objectType:"wall",layer:"walls",zIndex:47,
+   ...common,geometry:{type:"polyline",points:[...points,points[0]]},
+   style:{stroke:"#bed4df",strokeWidth:1.5},label:{visible:false,text:""},
+   wall:{thickness:wallThicknessCm/100*worldUnitsPerMeter},
+   metadata:{generatedFromPolygonRoom:room.id,role:"polygon-room-perimeter-wall",wallThicknessCm,
+    wallUnitsPerMeter:worldUnitsPerMeter}}];
+  const openings=[];
+  for(const [i,spec] of specs){
+   const a=points[i],b=points[(i+1)%points.length],delta=sub(b,a),len=Math.hypot(...delta);
+   const half=spec.widthM*worldUnitsPerMeter/(2*len);
    const point=(t)=>[a[0]+delta[0]*t,a[1]+delta[1]*t];
-   const openingId=room.id+"__polygon_door_"+(i+1);
-   openings.push({id:openingId,name:(room.name||"部屋")+"・扉（辺"+(i+1)+"）",objectType:"door",layer:"walls",zIndex:50,
+   openings.push({id:room.id+"__polygon_door_"+(i+1),
+    name:(room.name||"部屋")+"・扉（辺"+(i+1)+"）",objectType:"door",layer:"walls",zIndex:50,
     ...common,geometry:{type:"polyline",points:[point(spec.position-half),point(spec.position+half)]},
     style:{stroke:"#e7cb9d",strokeWidth:2},label:{visible:false,text:""},
-    opening:{kind:"interior",external:false,width:spec.widthM*worldUnitsPerMeter,wallId:edgeId},
+    opening:{kind:"interior",external:false,width:spec.widthM*worldUnitsPerMeter,wallId},
     door:{type:spec.type,slideDirection:"end",state:"closed"},
     metadata:{generatedFromPolygonRoom:room.id,role:"polygon-room-door",edgeIndex:i,widthM:spec.widthM,position:spec.position}});
   }
