@@ -185,16 +185,16 @@ async function main(){
  el["polygon-room-set-door"].click();
  const createdRoom=JSON.parse(el["json-object"].value);
  assert.equal(createdRoom.metadata.polygonRoom.doors.length,1);
- assert.equal(el.objects.children.length,countWithRoom+5,"4 generated walls + 1 linked door");
+ assert.equal(el.objects.children.length,countWithRoom+2,"1 perimeter wall + 1 linked door");
  el.undo.click();
  assert.equal(el.objects.children.length,countWithRoom,"Undo restores polygon without generated walls");
  el.redo.click();
- assert.equal(el.objects.children.length,countWithRoom+5);
+ assert.equal(el.objects.children.length,countWithRoom+2);
  el["polygon-room-door-edge"].value="2";el["polygon-room-door-width"].value="0.5";
  el["polygon-room-door-position"].value="50";el["polygon-room-set-door"].click();
- assert.equal(el.objects.children.length,countWithRoom+6,"two edge doors");
+ assert.equal(el.objects.children.length,countWithRoom+3,"two edge doors share perimeter wall");
  el["polygon-room-door-edge"].value="0";el["polygon-room-remove-door"].click();
- assert.equal(el.objects.children.length,countWithRoom+5,"removing one of two doors");
+ assert.equal(el.objects.children.length,countWithRoom+2,"removing one of two doors");
  console.log("PASS generic editor: labels, walls, rename, undo/redo, arbitrary shapes/roles, export, drag, full-scene JSON + undo");
 }
 main().catch(error=>{console.error(error);process.exitCode=1});
