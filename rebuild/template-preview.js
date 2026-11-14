@@ -113,7 +113,10 @@
    if(!shape)continue;
    const fill=type==="slab"?"rgba(36,69,80,.66)":type==="wall"?"none":type==="door"||type==="window"?"none":
      type==="stair"?"rgba(93,138,158,.70)":obj.style?.fill||"rgba(103,149,163,.40)";
-   const stroke=type==="wall"?"#dbeded":type==="door"?"#f4bc72":type==="window"?"#80ddf0":
+   // Polygon rooms have a separate linked perimeter wall with door gaps.
+   // Their floor fill must not redraw a solid outline across the doorway.
+   const stroke=obj.metadata?.polygonRoom&&obj.style?.stroke===null?"none":
+     type==="wall"?"#dbeded":type==="door"?"#f4bc72":type==="window"?"#80ddf0":
      type==="stair"?"#a9d5e2":type==="slab"?"none":"#93b7c6";
    shape.setAttribute("fill",fill);
    shape.setAttribute("stroke",stroke);
