@@ -30,7 +30,7 @@ const ids=[
 "undo","redo","clone-object","delete-object","selected-fields","select-empty",
 "objects","object-search","clear-search","batch-mode","batch-select-visible","batch-clear","batch-controls","batch-count","batch-align","batch-align-apply","batch-distribute","batch-distribute-apply","batch-dx","batch-dy","batch-move","batch-delete","obj-id","obj-name","obj-display-level","obj-type",
 "obj-parent","layer-list","obj-layer","obj-z","obj-visible","obj-selectable",
-"stair-direction-fields","stair-low-side","door-type","door-leaf-count","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
+"stair-direction-fields","stair-low-side","door-type","door-leaf-count","door-slide-fields","door-slide-direction","door-wall-id","door-wall-fields","wall-thickness-fields","wall-thickness","rect-rotation-fields","obj-rotation","vertex-actions","vertex-index","vertex-delete","polygon-room-fields","polygon-room-door-edge","polygon-room-door-width","polygon-room-door-position","polygon-room-wall-thickness","polygon-room-registered-doors","polygon-room-set-door","polygon-room-remove-door","polygon-room-build","obj-geometry","obj-fill-enabled","obj-fill","obj-stroke-enabled","obj-stroke",
 "obj-stroke-width","obj-opacity","obj-label-visible","obj-label-text","obj-label-x",
 "obj-label-y","obj-label-size","obj-detail","json-object","geometry-fields",
 "apply-json","new-shape","new-role","new-layer","new-parent-selected","new-when-parent-selected","add-object","move-mode","open-json","file-input","download","show-scene-json","reload-scene-json","apply-scene-json","scene-json-text","scene-json-fields"
@@ -59,6 +59,7 @@ const fetch=async target=>({ok:true,json:async()=>target==="./map-tree.json"?tre
 const context=vm.createContext({window,document,ResizeObserver,localStorage:store,
  history,location,fetch,confirm:()=>true,Blob,URL,console});
 vm.runInContext(read("rebuild/map-viewer.js"),context,{filename:"map-viewer.js"});
+vm.runInContext(read("rebuild/polygon-room.js"),context,{filename:"polygon-room.js"});
 vm.runInContext(read("rebuild/map-editor.js"),context,{filename:"map-editor.js"});
 const tick=async()=>{for(let i=0;i<30;i++)await Promise.resolve()};
 async function main(){
@@ -171,6 +172,29 @@ async function main(){
  assert.equal(el["scene-name"].textContent,"JSONで編集した町");
  el.undo.click();
  assert.equal(el["scene-name"].textContent,"汎用サンプル：町");
+ // Polygon room builder: a selected side automatically becomes a linked door opening.
+ el["new-shape"].value="polygon";el["new-role"].value="region";
+ el["new-parent-selected"].checked=false;el["new-when-parent-selected"].checked=false;
+ el["add-object"].click();
+ assert.equal(el["obj-geometry"].value,"polygon");
+ const countWithRoom=el.objects.children.length;
+ el["polygon-room-door-edge"].value="0";
+ el["polygon-room-door-width"].value="0.5";
+ el["polygon-room-door-position"].value="50";
+ el["polygon-room-wall-thickness"].value="25";
+ el["polygon-room-set-door"].click();
+ const createdRoom=JSON.parse(el["json-object"].value);
+ assert.equal(createdRoom.metadata.polygonRoom.doors.length,1);
+ assert.equal(el.objects.children.length,countWithRoom+5,"4 generated walls + 1 linked door");
+ el.undo.click();
+ assert.equal(el.objects.children.length,countWithRoom,"Undo restores polygon without generated walls");
+ el.redo.click();
+ assert.equal(el.objects.children.length,countWithRoom+5);
+ el["polygon-room-door-edge"].value="2";el["polygon-room-door-width"].value="0.5";
+ el["polygon-room-door-position"].value="50";el["polygon-room-set-door"].click();
+ assert.equal(el.objects.children.length,countWithRoom+6,"two edge doors");
+ el["polygon-room-door-edge"].value="0";el["polygon-room-remove-door"].click();
+ assert.equal(el.objects.children.length,countWithRoom+5,"removing one of two doors");
  console.log("PASS generic editor: labels, walls, rename, undo/redo, arbitrary shapes/roles, export, drag, full-scene JSON + undo");
 }
 main().catch(error=>{console.error(error);process.exitCode=1});
