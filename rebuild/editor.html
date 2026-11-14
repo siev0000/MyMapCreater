@@ -646,7 +646,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
      </div>
      <div id="polygon-room-fields" class="hidden">
       <h3>多角形から部屋を作成</h3>
-      <p class="note">頂点を指定すると、その輪郭の各辺を壁にできます。扉にする辺を選ぶと、その辺に開口を設けます。複数の辺へ扉を追加できます。</p>
+      <p class="note">頂点から1つの多角形の部屋を作り、外周全体を1つの壁として生成します。扉にする辺を指定すると、その位置だけ開口します。複数の辺へ扉を追加できます。</p>
       <div class="col2">
        <label>扉にする辺<select id="polygon-room-door-edge"></select></label>
        <label>扉の幅（m）<input id="polygon-room-door-width" type="number" min="0.1" step="0.5" value="3"></label>
