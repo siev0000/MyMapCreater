@@ -118,3 +118,23 @@ node rebuild/tests/editor-smoke.js
 
 The first test checks schema consistency and unchanged legacy coordinates. The second exercises editing and undo/redo using a fictional town instead of site-specific fixtures.
 
+
+
+## Optional polygon room editor objects
+
+The generic editor supports **one polygon room area** (`objectType:"region"` or other selected polygon) and auto-generated perimeter wall objects. Each polygon side is indexed `0..n-1`, including last→first, while the UI displays `1..n`.
+
+Example of the room's saved metadata:
+
+```json
+{
+  "polygonRoom": {
+    "wallThicknessCm": 25,
+    "doors": [{"edgeIndex": 1, "widthM": 3, "position": 0.5, "type": "sliding"}]
+  }
+}
+```
+
+The editor creates child objects `objectType:"wall"` (one per edge), and linked `objectType:"door"` with `opening.wallId` and `opening.width` in **scene coordinate units**. `metadata.generatedFromPolygonRoom` identifies generated objects for regeneration without deleting unrelated children. Viewers that support linked openings hide the door span from the wall stroke. A room's own polygon outline stroke is suppressed while generated walls are active so it does not paint across the door.
+
+Vertices are editable independently; **regenerate** after vertex changes to update linked wall and door positions. This is a geometry/editing feature, not a navigability guarantee; pathfinding and wall solid-fill subtraction remain separate work.
