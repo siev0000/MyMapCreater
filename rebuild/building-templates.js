@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-terminal-arrivals-rooms-and-counters",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-single-polygon-room-perimeters",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1417,23 +1417,44 @@ function generateTerminalDomeV2(t,options={}){
  const door=(name,p,w,owner,access)=>{const o=add(name,"door",{type:"polyline",points:[[p[0]-w*k/2,p[1]],[p[0]+w*k/2,p[1]]]},owner,{role:"door",accessControl:access});o.door={type:"sliding",slideDirection:"end",state:"closed"};o.opening={kind:"interior",external:false,width:w*k,clearHeightM:7};return o;};
  const wallThickness={outerCm:80,shaftCm:50,warehouseCm:35,roomCm:25,hazardCm:50};
  const wall=(name,p,q,owner,cm)=>{const o=add(name,"wall",{type:"polyline",points:[p,q]},owner,{role:"partition-wall",wallThicknessCm:cm});o.layer="walls";o.zIndex=47;o.wall={thickness:cm/100*k};o.style={stroke:"#bed4df",strokeWidth:1.5};o.label.visible=false;return o;};
+ // A room is ONE polygon. Its outer wall is ONE closed polyline,
+ // and door objects reference that wall and their chosen polygon side.
+ // Unlike earlier drafts, no separate object is created for each wall edge.
+ const enclosePolygonRoom=(room,corners,entranceM,thicknessCm,meta={})=>{
+  const p=corners.map(pt=>[...pt]),first=p[0],second=p[1],
+   delta=[second[0]-first[0],second[1]-first[1]],len=Math.hypot(...delta);
+  const width=entranceM*k;
+  if(!(width>0&&width<=len))throw Error("部屋の入口幅が辺長を超えます: "+room.name);
+  const interp=t=>[first[0]+delta[0]*t,first[1]+delta[1]*t];
+  const doorPoints=[interp(.5-width/(2*len)),interp(.5+width/(2*len))];
+  const border=add(room.name+"・外周壁","wall",{type:"polyline",points:[...p,p[0]]},room.id,
+   {role:"polygon-room-perimeter-wall",generatedFromPolygonRoom:room.id,
+    wallThicknessCm:thicknessCm,wallUnitsPerMeter:k});
+  border.id=room.id+"__polygon_wall";
+  border.layer="walls";border.zIndex=47;
+  border.wall={thickness:thicknessCm/100*k};
+  border.style={stroke:"#bed4df",strokeWidth:1.5};border.label.visible=false;
+  const door=add(room.name+"・入口","door",{type:"polyline",points:doorPoints},room.id,
+   {role:meta.role||"door",generatedFromPolygonRoom:room.id,edgeIndex:0,
+    accessControl:meta.accessControl||"public",connectedRoomId:room.id,
+    clearWidthM:entranceM,...meta});
+  door.id=room.id+"__polygon_door_1";
+  door.door={type:"sliding",slideDirection:"end",state:"closed"};
+  door.opening={kind:"interior",external:false,width,wallId:border.id,clearHeightM:7};
+  room.geometry={type:"polygon",points:p};
+  room.metadata={...room.metadata,
+   polygonRoom:{wallThicknessCm:thicknessCm,doors:[{edgeIndex:0,widthM:entranceM,position:.5,type:"sliding"}]}};
+  room.style={...room.style,stroke:null};
+  return door;
+ };
  const testRoom=(name,r,a,w,h,role,cm=wallThickness.roomCm)=>{
   // Tangential width, radial depth; inner-facing doorway opens toward the guild's inner concourse.
   const center=xy(r,a),theta=a*Math.PI/180,radial=[Math.cos(theta),Math.sin(theta)],tangent=[-Math.sin(theta),Math.cos(theta)];
   const pt=(u,v)=>[center[0]+k*(tangent[0]*u+radial[0]*v),center[1]+k*(tangent[1]*u+radial[1]*v)];
   const tl=pt(-w/2,-h/2),tr=pt(w/2,-h/2),br=pt(w/2,h/2),bl=pt(-w/2,h/2);
-  const room=add(name,"region",{type:"polyline",points:[tl,tr,br,bl,tl]},dome.id,
+  const room=add(name,"region",{type:"polygon",points:[tl,tr,br,bl]},dome.id,
    {role,dimensionsM:[w,h],gridCells:[w*2,h*2],testLayout:true,orientation:"radial",angleDeg:a});
-  const entrance=6,dl=pt(-entrance/2,-h/2),dr=pt(entrance/2,-h/2);
-  wall(name+"・内壁左",tl,dl,room.id,cm);
-  wall(name+"・内壁右",dr,tr,room.id,cm);
-  wall(name+"・側壁右",tr,br,room.id,cm);
-  wall(name+"・外壁",br,bl,room.id,cm);
-  wall(name+"・側壁左",bl,tl,room.id,cm);
-  const entry=add(name+"・扉","door",{type:"polyline",points:[dl,dr]},room.id,
-   {role:"door",accessControl:"public",connectedRoomId:room.id,orientation:"tangential",angleDeg:a});
-  entry.door={type:"sliding",slideDirection:"end",state:"closed"};
-  entry.opening={kind:"interior",external:false,width:entrance*k,clearHeightM:7};
+  enclosePolygonRoom(room,[tl,tr,br,bl],6,cm,{role:"door",accessControl:"public",angleDeg:a});
   return room;
  };
  const terminal=add("リンクターミナル外形","region",circle(250),prefix,{role:"terminal"});
@@ -1530,21 +1551,12 @@ function generateTerminalDomeV2(t,options={}){
   const t=angle*Math.PI/180,radial=[Math.cos(t),Math.sin(t)],tangent=[-Math.sin(t),Math.cos(t)];
   const pt=(u,v)=>[cx+k*(radial[0]*(r+v)+tangent[0]*u),cy+k*(radial[1]*(r+v)+tangent[1]*u)];
   const innerL=pt(-w/2,-h/2),innerR=pt(w/2,-h/2),outerR=pt(w/2,h/2),outerL=pt(-w/2,h/2);
-  const room=add(name,"region",{type:"polyline",points:[innerL,innerR,outerR,outerL,innerL]},arrivals.id,
+  const room=add(name,"region",{type:"polygon",points:[innerL,innerR,outerR,outerL]},arrivals.id,
    {role:"terminal-room",facilityRole:role,dimensionsM:[w,h],angleDeg:angle,orientation:"radial",
     faces:"lift-core",designStatus:"trial-layout",ringRole:"inward-arrivals"});
   room.style={fill:"rgba(83,151,174,.22)",stroke:null};
-  const dl=pt(-entryWidth/2,-h/2),dr=pt(entryWidth/2,-h/2);
-  wall(name+"・入口壁左",innerL,dl,room.id,wallThickness.roomCm);
-  wall(name+"・入口壁右",dr,innerR,room.id,wallThickness.roomCm);
-  wall(name+"・外壁",outerL,outerR,room.id,wallThickness.roomCm);
-  wall(name+"・左壁",innerL,outerL,room.id,wallThickness.roomCm);
-  wall(name+"・右壁",innerR,outerR,room.id,wallThickness.roomCm);
-  const d=add(name+"・昇降機側出入口","door",{type:"polyline",points:[dl,dr]},room.id,
-   {role:"terminal-room-door",connectedRoomId:room.id,faces:"lift-core",accessControl:"unconfirmed",
-    clearWidthM:entryWidth,layoutStatus:"draft"});
-  d.door={type:"sliding",slideDirection:"end",state:"closed"};
-  d.opening={kind:"interior",external:false,width:entryWidth*k,clearHeightM:7};
+  enclosePolygonRoom(room,[innerL,innerR,outerR,outerL],entryWidth,wallThickness.roomCm,
+   {role:"terminal-room-door",faces:"lift-core",accessControl:"unconfirmed",layoutStatus:"draft"});
   return room;
  };
  // Twelve facility functions from the Link Terminal's Notion page.
