@@ -644,6 +644,23 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
        <button type="button" id="vertex-delete">頂点を削除</button>
       </div>
      </div>
+     <div id="polygon-room-fields" class="hidden">
+      <h3>多角形から部屋を作成</h3>
+      <p class="note">頂点を指定すると、その輪郭の各辺を壁にできます。扉にする辺を選ぶと、その辺に開口を設けます。複数の辺へ扉を追加できます。</p>
+      <div class="col2">
+       <label>扉にする辺<select id="polygon-room-door-edge"></select></label>
+       <label>扉の幅（m）<input id="polygon-room-door-width" type="number" min="0.1" step="0.5" value="3"></label>
+       <label>辺上の扉位置（%）<input id="polygon-room-door-position" type="number" min="0" max="100" step="1" value="50"></label>
+       <label>壁厚（cm）<input id="polygon-room-wall-thickness" type="number" min="1" max="300" step="1" value="25"></label>
+      </div>
+      <p class="note" id="polygon-room-registered-doors">扉の登録なし</p>
+      <div class="actions">
+       <button type="button" id="polygon-room-set-door">選択した辺に扉を追加・更新</button>
+       <button type="button" id="polygon-room-remove-door">選択した辺の扉を解除</button>
+       <button type="button" id="polygon-room-build">壁と扉を生成・再生成</button>
+      </div>
+      <p class="note">生成後も多角形の頂点を編集できます。頂点を変更したら「壁と扉を生成・再生成」で壁と扉を同期してください。生成された壁や扉を個別に手動編集する場合、再生成時に上書きされます。</p>
+     </div>
      <div id="door-wall-fields" class="hidden">
       <div class="col2">
         <label>扉の種類<select id="door-type"><option value="hinged">開き戸</option><option value="sliding">スライドドア</option></select></label>
@@ -957,5 +974,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./template-preview.js?v=registlink-readable-plan-v38"></script>
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
- <script src="./map-editor.js?v=middle-tier-category-v29"></script>
+ <script src="./polygon-room.js?v=polygon-edge-door-v1"></script>
+ <script src="./map-editor.js?v=polygon-room-edges-v1"></script>
 </body></html>
