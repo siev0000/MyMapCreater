@@ -404,7 +404,36 @@ function renderGeometry(obj){
   target.append(p);
  }
 }
+function updatePolygonRoomControls(obj){
+ const enabled=obj?.geometry?.type==="polygon";
+ $("polygon-room-fields").classList.toggle("hidden",!enabled);
+ if(!enabled)return;
+ const vertices=obj.geometry.points||[];
+ const count=vertices.length>3&&vertices[0][0]===vertices[vertices.length-1][0]&&
+  vertices[0][1]===vertices[vertices.length-1][1]?vertices.length-1:vertices.length;
+ const picker=$("polygon-room-door-edge"),selected=Number(picker.value);
+ const options=[];
+ for(let i=0;i<count;i++){
+  const a=vertices[i],b=vertices[(i+1)%count],len=Math.hypot(b[0]-a[0],b[1]-a[1]);
+  options.push([String(i),"辺"+(i+1)+"：頂点"+(i+1)+" → 頂点"+((i+1)%count+1)+"（"+Number(len.toFixed(2))+"座標単位）"]);
+ }
+ fillSelect(picker,options,Number.isSafeInteger(selected)&&selected>=0&&selected<count?String(selected):"0");
+ $("polygon-room-wall-thickness").value=String(obj.metadata?.polygonRoom?.wallThicknessCm??25);
+ const doorSpecs=obj.metadata?.polygonRoom?.doors||[];
+ $("polygon-room-registered-doors").textContent=doorSpecs.length
+  ?"登録済みの扉："+doorSpecs.map(d=>"辺"+(d.edgeIndex+1)+"／幅"+d.widthM+"m／位置"+Math.round(d.position*100)+"%").join("、")
+  :"扉の登録なし。壁だけを生成することもできます。";
+ updatePolygonRoomSelectedDoor(obj);
+}
+function updatePolygonRoomSelectedDoor(obj){
+ if(obj?.geometry?.type!=="polygon")return;
+ const edgeIndex=Number(input("polygon-room-door-edge"));
+ const existing=obj.metadata?.polygonRoom?.doors?.find(d=>d.edgeIndex===edgeIndex);
+ $("polygon-room-door-width").value=String(existing?.widthM??3);
+ $("polygon-room-door-position").value=String(Math.round((existing?.position??.5)*100));
+}
 function updateVertexControls(obj){
+ updatePolygonRoomControls(obj);
  const data=sceneNow();
  const g=obj?.geometry,points=g?.points||[],enabled=g?.type==="polyline"||g?.type==="polygon";
  $("vertex-actions").classList.toggle("hidden",!enabled);
@@ -1003,7 +1032,57 @@ function changeObject(callback){
  try{callback(obj);return same(old,data)?true:applyScene(data,obj.id)}
  catch(error){notice("変更できません："+error.message,"error");return false}
 }
+
+function applyPolygonRoom({action="rebuild"}={}){
+ const original=sceneNow(),selected=original?.objects.find(o=>o.id===state.selectedId);
+ const helper=window.AAMapPolygonRoom;
+ if(!selected||selected.geometry?.type!=="polygon"){notice("部屋として使う多角形を選択してください","error");return}
+ if(!helper?.build){notice("多角形の部屋生成機能を読み込めません","error");return}
+ const next=copy(original),room=next.objects.find(o=>o.id===selected.id);
+ const oldSpecs=Array.isArray(room.metadata?.polygonRoom?.doors)?room.metadata.polygonRoom.doors:[];
+ const specs=oldSpecs.map(x=>({...x}));
+ const wallThicknessCm=Number(input("polygon-room-wall-thickness"));
+ const edgeIndex=Number(input("polygon-room-door-edge"));
+ if(action==="set-door"){
+  const widthM=Number(input("polygon-room-door-width"));
+  const position=Number(input("polygon-room-door-position"))/100;
+  if(!Number.isSafeInteger(edgeIndex)||!Number.isFinite(widthM)||widthM<=0||
+   !Number.isFinite(position)||position<0||position>1){
+   notice("辺番号・扉幅・位置を確認してください","error");return;
+  }
+  const idx=specs.findIndex(x=>x.edgeIndex===edgeIndex);
+  const item={edgeIndex,widthM,position,type:"sliding"};
+  if(idx>=0)specs[idx]=item;else specs.push(item);
+ }
+ if(action==="remove-door"){
+  const idx=specs.findIndex(x=>x.edgeIndex===edgeIndex);
+  if(idx>=0)specs.splice(idx,1);
+ }
+ try{
+  const built=helper.build(room,{worldUnitsPerMeter:wallUnitsPerMeterInMap(room,next),
+   wallThicknessCm,doors:specs});
+  const generated=next.objects.filter(o=>o.metadata?.generatedFromPolygonRoom===room.id),
+   oldIds=new Set(generated.map(o=>o.id));
+  const references=next.objects.filter(o=>!oldIds.has(o.id)&&oldIds.has(o.opening?.wallId));
+  if(references.length)throw Error("自動生成壁に手動で接続した扉があります。先に扉の接続を外してください");
+  const ids=new Set(next.objects.filter(o=>!oldIds.has(o.id)).map(o=>o.id));
+  for(const item of [...built.walls,...built.doors]){
+   if(ids.has(item.id))throw Error("生成先のIDが既存オブジェクトと重複しています: "+item.id);
+   ids.add(item.id);
+  }
+  next.objects=next.objects.filter(o=>!oldIds.has(o.id));
+  room.geometry.points=built.points;
+  room.metadata={...room.metadata,polygonRoom:{wallThicknessCm,doors:specs}};
+  room.style={...room.style,stroke:null,fill:room.style?.fill||"rgba(79,145,168,.22)"};
+  next.objects.push(...built.walls,...built.doors);
+  if(applyScene(next,room.id))notice("多角形の部屋：壁"+built.walls.length+"辺、扉"+built.doors.length+"か所を生成しました。","success");
+ }catch(error){notice("部屋を生成できません："+error.message,"error")}
+}
 function bind(id,callback,event="change"){$(id).addEventListener(event,callback)}
+bind("polygon-room-door-edge",()=>updatePolygonRoomSelectedDoor(sceneNow()?.objects.find(o=>o.id===state.selectedId)));
+bind("polygon-room-set-door",()=>applyPolygonRoom({action:"set-door"}),"click");
+bind("polygon-room-remove-door",()=>applyPolygonRoom({action:"remove-door"}),"click");
+bind("polygon-room-build",()=>applyPolygonRoom(),"click");
 function changeString(id,key){bind(id,()=>changeObject(o=>{o[key]=input(id)}))}
 changeString("obj-name","name");
 bind("obj-display-level",()=>{
