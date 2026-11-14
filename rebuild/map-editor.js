@@ -1079,7 +1079,7 @@ function applyPolygonRoom({action="rebuild"}={}){
   room.metadata={...room.metadata,polygonRoom:{wallThicknessCm,doors:specs}};
   room.style={...room.style,stroke:null,fill:room.style?.fill||"rgba(79,145,168,.22)"};
   next.objects.push(...built.walls,...built.doors);
-  if(applyScene(next,room.id))notice("多角形の部屋：壁"+built.walls.length+"辺、扉"+built.doors.length+"か所を生成しました。","success");
+  if(applyScene(next,room.id))notice("多角形の部屋：外周壁1個（"+built.points.length+"辺）、扉"+built.doors.length+"か所を生成しました。","success");
  }catch(error){notice("部屋を生成できません："+error.message,"error")}
 }
 function bind(id,callback,event="change"){$(id).addEventListener(event,callback)}
