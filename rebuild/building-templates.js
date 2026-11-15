@@ -1396,7 +1396,7 @@ function generateTerminalDomeV2(t,options={}){
  if(!prefix||!Number.isFinite(spacing)||spacing<=0)throw Error("新規ターミナルの配置指定が不正です");
  const k=spacing*2,cx=x+250*k,cy=y+250*k,objects=[],fid="1F";
  const xy=(r,deg)=>[cx+k*r*Math.cos(deg*Math.PI/180),cy+k*r*Math.sin(deg*Math.PI/180)];
- const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-single-polygon-room-perimeters",gridUnitM:0.5,gridCellsPerMetre:2};
+ const base={templateId:t.id,generated:true,designStatus:"draft-unverified",revision:"v2-unified-elevator-room-perimeters",gridUnitM:0.5,gridCellsPerMetre:2};
  const root={id:prefix,name:baseName,parentId,objectType:"facility",layer:"subregions",displayLevel,
   geometry:{type:"rect",x,y,width:500*k,height:500*k},floors:[{id:fid,label:"1階・設計用",elevation:0,height:9}],
   visible:true,selectable:true,style:{fill:null,stroke:null},label:{visible:false,text:baseName},
@@ -1495,35 +1495,37 @@ function generateTerminalDomeV2(t,options={}){
    const backRadius=Math.sqrt(zoneWallRadiusM**2-offset**2)-h;
    const backL=pt(offset-w/2,backRadius),backR=pt(offset+w/2,backRadius);
    const frontLeft=leftArc[0],frontRight=rightArc[rightArc.length-1];
-   // Front boundary, from right to left: curved wall -> square doorway -> curved wall.
-   const outline=[backL,backR,...rightArc.slice().reverse(),doorRight,doorLeft,...leftArc.slice().reverse(),backL];
-   const shaft=add(name,"region",{type:"polyline",points:outline},lifts.id,
+   // The elevator shaft is ONE editable polygon, not a collection of loose wall sides.
+   // The square exit remains a short projection from the curved arrival-hall boundary.
+   const outline=[backL,backR,...rightArc.slice().reverse(),doorRight,doorLeft,...leftArc.slice().reverse()];
+   const shaft=add(name,"region",{type:"polygon",points:outline},lifts.id,
     {role:"lift-shaft",cluster:i+1,kind,dimensionsM:[w,h],wallThicknessCm:wallThickness.shaftCm,
      orientation:"radial",frontBoundaryRadiusM:zoneWallRadiusM,doorFlushWithArrivals:true,
      entranceShape:"rectangular",rectangularDoorBayDepthM:0.5});
    shaft.style={fill:"rgba(72,130,157,.20)",stroke:null};
-   wall(name+"・内壁",backL,backR,shaft.id,wallThickness.shaftCm);
-   wall(name+"・側壁左",backL,frontLeft,shaft.id,wallThickness.shaftCm);
-   wall(name+"・側壁右",backR,frontRight,shaft.id,wallThickness.shaftCm);
-   const curvedFrontWall=(suffix,points)=>{
-    const o=add(name+"・前壁"+suffix,"wall",{type:"polyline",points},shaft.id,
-     {role:"lift-shaft-front-wall",wallThicknessCm:wallThickness.shaftCm});
-    o.layer="walls";o.zIndex=47;o.wall={thickness:wallThickness.shaftCm/100*k};
-    o.style={stroke:"#bed4df",strokeWidth:1.5};o.label.visible=false;
-   };
-   curvedFrontWall("左",leftArc);
-   curvedFrontWall("右",rightArc);
-   // The two short sides make only the entrance square, not the entire ring.
-   wall(name+"・出口左側壁",arcLeftMouth,doorLeft,shaft.id,wallThickness.shaftCm);
-   wall(name+"・出口右側壁",arcRightMouth,doorRight,shaft.id,wallThickness.shaftCm);
-   const door=add(name+"・待機帯直結扉","door",{type:"polyline",points:[doorLeft,doorRight]},shaft.id,
-    {role:"lift-arrivals-door",cluster:i+1,kind,accessControl:kind==="一般"?"public":"heavy-cargo",
+   const exitEdgeIndex=2+rightArc.length; // doorRight -> doorLeft, the flat entrance edge
+   shaft.metadata.polygonRoom={wallThicknessCm:wallThickness.shaftCm,
+    doors:[{edgeIndex:exitEdgeIndex,widthM:openingWidth,position:0.5,type:"sliding"}]};
+   const perimeterWall=add(name+"・外周壁","wall",{type:"polyline",points:[...outline,outline[0]]},shaft.id,
+    {role:"lift-shaft-perimeter-wall",generatedFromPolygonRoom:shaft.id,
+     wallThicknessCm:wallThickness.shaftCm,wallUnitsPerMeter:k});
+   perimeterWall.id=shaft.id+"__polygon_wall";
+   perimeterWall.layer="walls";perimeterWall.zIndex=47;
+   perimeterWall.wall={thickness:wallThickness.shaftCm/100*k};
+   perimeterWall.style={stroke:"#bed4df",strokeWidth:1.5};perimeterWall.label.visible=false;
+   const door=add(name+"・待機帯直結扉","door",{type:"polyline",points:[doorRight,doorLeft]},shaft.id,
+    {role:"lift-arrivals-door",cluster:i+1,kind,generatedFromPolygonRoom:shaft.id,
+     edgeIndex:exitEdgeIndex,accessControl:kind==="一般"?"public":"heavy-cargo",
      connectedRoomId:shaft.id,connectsToRole:"inward-arrivals",doorOnRadiusM:flatDoorRadiusM,
      clearWidthM:openingWidth,entranceShape:"rectangular"});
+   door.id=shaft.id+"__polygon_door_"+(exitEdgeIndex+1);
    door.door={type:"sliding",slideDirection:"end",state:"closed"};
-   door.opening={kind:"interior",width:openingWidth*k,clearHeightM:7};
+   door.opening={kind:"interior",external:false,wallId:perimeterWall.id,
+    width:openingWidth*k,clearHeightM:7};
    // The original circular partition stops at the square entrance side walls.
-   const gapAngles=[arcLeftMouth,arcRightMouth].map(p=>(Math.atan2(p[1]-cy,p[0]-cx)+Math.PI*2)%(Math.PI*2)).sort((x,y)=>x-y);
+   // The shared circular wall must stop at the whole shaft's curved frontage;
+   // otherwise the partition duplicates the new continuous perimeter wall.
+   const gapAngles=[frontLeft,frontRight].map(p=>(Math.atan2(p[1]-cy,p[0]-cx)+Math.PI*2)%(Math.PI*2)).sort((x,y)=>x-y);
    liftWallGaps.push({start:gapAngles[0],end:gapAngles[1]});
    if(kind==="大型機・貨物")cargoHallMouths[i]=face(offset);
   }
