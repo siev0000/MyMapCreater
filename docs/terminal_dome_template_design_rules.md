@@ -170,3 +170,15 @@
 - **残る検証**：実ブラウザ表示と多角形編集→再生成→保存/再読込、複数部屋間の共有壁整理、通行判定は未確認。生成が成功しただけでは完成とは扱わない。
 
 [部屋生成コード](https://github.com/siev0000/MyMapCreater/blob/main/rebuild/polygon-room.js) ／ [新規テンプレート](https://github.com/siev0000/MyMapCreater/blob/main/rebuild/building-templates.js) ／ [マップエディタ](https://github.com/siev0000/MyMapCreater/blob/main/rebuild/editor.html)
+
+
+## 昇降機の壁が一辺ずつに分かれていた問題の修正（2026-11-15）
+- **画像で確認した具体的な問題**：ユーザーが「大型機・貨物昇降機1・側壁左」を選択できる状態で、昇降機が多数の個別壁から構成されていた。先の修正が「リンクターミナルの部屋12室＋ギルド試験室5室」だけを対象にしており、**昇降機8基には未適用**だった。
+- **今回の変更**：新規 `machine_mid_link_terminal_dome_v2` の一般4・大型4基すべてで、昇降機を `polygon` 1個・連続した `polyline` 外周壁1個・`opening.wallId` で連結したスライド扉1個の構造に変更。旧「内壁」「側壁左/右」「前壁左/右」「出口左/右側壁」の分割オブジェクトは生成しない。
+- **出口形状**：待機帯側への0.5mの四角い出入口の形と、一般6m・大型10mの扉幅を維持。扉の該当辺だけ外周壁が開口する。円周境界壁はシャフトと重なる区間を除き、シャフトの連続した外周壁と二重描画しない。
+- **コード検証**：8シャフト、8外周壁、8扉、8区間の外側円弧壁。新規テンプレート全132オブジェクトを生成。Scene v2形式チェック、シャフト多角形の妥当性、扉座標と選択辺の一致を確認。一般待機帯の12室、大型道路4本、旧試作の生成結果は保全。
+- **回帰テストを追加**：`rebuild/tests/terminal-lift-unified-walls.test.js`。形状・扉・壁参照・旧テンプレートの保全を確認する。
+- **残課題**：実ブラウザ上の選択・拡大縮小・扉の表示と通行判定は未確認。既に別のシーンやユーザーのカスタムテンプレートに配置済みの旧オブジェクトには、自動更新がかからない。最新の新規テンプレートを読み直して確認する。
+- **変更禁止の範囲**：旧 `machine_mid_registlink_dome` と中層シーン `rebuild/scenes/middle.scene.json`、道路の形状・昇降機座標は変更していない。
+
+[新規テンプレート生成コード](https://github.com/siev0000/MyMapCreater/blob/main/rebuild/building-templates.js) ／ [回帰テスト](https://github.com/siev0000/MyMapCreater/blob/main/rebuild/tests/terminal-lift-unified-walls.test.js)
