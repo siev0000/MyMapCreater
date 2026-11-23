@@ -129,6 +129,32 @@
       "columns": 1000,
       "rows": 1000,
       "geographyStatus": "draft"
+    },
+    {
+      "id": "rasetsu_kokuten_bay_town_true_scale",
+      "name": "黒天守国・湾岸町（1マス50m／制作中）",
+      "shortName": "湾岸町（50m/マス）",
+      "kind": "place",
+      "parentId": "rasetsu_old_world_continent_draft",
+      "worldType": "fictional-world",
+      "source": "../rebuild/scenes/rasetsu-kokuten-bay-town-true-scale.scene.json",
+      "description": "縮尺は実寸換算可能。町の総面積、区画ごとの境界、海岸線は未確定で未作図。島の面積目安だけを表示。",
+      "mapTier": "town",
+      "metersPerCell": 50,
+      "geographyStatus": "unconfirmed"
+    },
+    {
+      "id": "rasetsu_enmaraja_island_true_scale",
+      "name": "閻魔羅闍の小島（1マス10m／面積近似）",
+      "shortName": "閻魔羅闍（10m/マス）",
+      "kind": "place",
+      "parentId": "rasetsu_kokuten_bay_town_true_scale",
+      "worldType": "fictional-world",
+      "source": "../rebuild/scenes/rasetsu-enmaraja-island-true-scale.scene.json",
+      "description": "小島面積を東京ドーム程度として円形に近似表示。島の実際の輪郭・塔の寸法は未設定。",
+      "mapTier": "district",
+      "metersPerCell": 10,
+      "geographyStatus": "area-only-estimate"
     }
   ],
   "defaultMapId": "middle"
