@@ -194,7 +194,13 @@
       "各国の位置・相対面積",
       "ディンディール火山帯、ヴァルストーク山脈、フェルガルドの山・草原の広がり",
       "別マップ（国家・地方）で黒天守湾・小島の実寸表現"
-    ]
+    ],
+    "landmarkHandling": "町や塔などのランドマークは大陸縮尺で地点マーカーとして表示。円の半径は実寸ではない。強調ハロー円を非表示。",
+    "detailMapIds": [
+      "rasetsu_kokuten_bay_town_true_scale",
+      "rasetsu_enmaraja_island_true_scale"
+    ],
+    "scaleReview": "地理の推定国境・大陸輪郭・地域面積は依然として未確定"
   },
   "objects": [
     {
@@ -4503,7 +4509,9 @@
         "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
         "placementStatus": "局所的な地形関係は指定反映、全体方位・距離は仮",
         "factStatus": "国家の性質のみ確定",
-        "topology": "U字の湾・三方を囲む陸地・湾内の海寄りに閻魔羅闍"
+        "topology": "U字の湾・三方を囲む陸地・湾内の海寄りに閻魔羅闍",
+        "cityMapId": "rasetsu_kokuten_bay_town_true_scale",
+        "cartographicNote": "海沿い約5区画は町図に記録。ただし区画面積・海岸線は未確定"
       }
     },
     {
@@ -4814,7 +4822,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -4831,6 +4839,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -4869,11 +4880,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "黒曜石のように輝く天守。山岳地帯の深奥に築かれた鬼の国の象徴。／※配置位置は仮置きです。",
+      "detail": "黒曜石のように輝く天守。山岳地帯の深奥に築かれた鬼の国の象徴。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
@@ -4884,7 +4898,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -4903,7 +4917,8 @@
         "visible": false
       },
       "metadata": {
-        "mapMarker": "symbolic landmark only; physical island not to scale"
+        "mapMarker": "symbolic landmark only; physical island not to scale",
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -4942,12 +4957,17 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "U字に入り込んだ静穏湾の中心からやや海寄りにある小島の塔。地下に世界樹の根を守る。海側に開け、黒天守国の陸上地区が三方から囲む。配置は概略。",
+      "detail": "U字に入り込んだ静穏湾の中心からやや海寄りにある小島の塔。地下に世界樹の根を守る。海側に開け、黒天守国の陸上地区が三方から囲む。配置は概略。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
         "positionStatus": "仮",
         "eventStatus": "設定にある地点",
-        "mapMarker": "symbolic landmark only; physical island not to scale"
+        "mapMarker": "symbolic landmark only; physical island not to scale",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。",
+        "detailMapId": "rasetsu_enmaraja_island_true_scale",
+        "note": "小島は約東京ドーム面積。別敷地マップで面積のみを実寸目安で図示"
       }
     },
     {
@@ -4958,7 +4978,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -4975,6 +4995,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5013,11 +5036,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "水の根源精霊による災害で町一つが水底へ沈んだ。島そのものは招かれた者にしか見つからない。位置・街区は仮。",
+      "detail": "水の根源精霊による災害で町一つが水底へ沈んだ。島そのものは招かれた者にしか見つからない。位置・街区は仮。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/3e2fa1b30dc981eea87fc3c93af89db0",
         "positionStatus": "仮",
-        "eventStatus": "本編の出来事"
+        "eventStatus": "本編の出来事",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       },
       "visibility": {
         "modeGroup": "events",
@@ -5034,7 +5060,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5051,6 +5077,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5089,11 +5118,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "山脈の洞窟を要塞化した国家拠点。要塞の正確な位置は未確定。／※配置位置は仮置きです。",
+      "detail": "山脈の洞窟を要塞化した国家拠点。要塞の正確な位置は未確定。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/29afa1b30dc9804184e1d8bf19618dfe",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
@@ -5104,7 +5136,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5121,6 +5153,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5159,11 +5194,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "高精度の銃器と狙撃兵で防衛する。施設名と配置は地図表現上の仮。／※配置位置は仮置きです。",
+      "detail": "高精度の銃器と狙撃兵で防衛する。施設名と配置は地図表現上の仮。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/29afa1b30dc9804184e1d8bf19618dfe",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
@@ -5174,7 +5212,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5191,6 +5229,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5229,11 +5270,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "巨人国ディンディールは火山の麓に位置する。／※配置位置は仮置きです。",
+      "detail": "巨人国ディンディールは火山の麓に位置する。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/3e2fa1b30dc981c48d5dcd57949df4b3",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
@@ -5244,7 +5288,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5261,6 +5305,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5299,11 +5346,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "フィルドルとジェルディが属する巨人の国家。／※配置位置は仮置きです。",
+      "detail": "フィルドルとジェルディが属する巨人の国家。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/3e2fa1b30dc981c48d5dcd57949df4b3",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
@@ -5314,7 +5364,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5331,6 +5381,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5369,11 +5422,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "フェルガルド草原で動物の一族が守る、普通ではない山。／※配置位置は仮置きです。",
+      "detail": "フェルガルド草原で動物の一族が守る、普通ではない山。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/3e2fa1b30dc981ceb35aeab40abec329",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
@@ -5384,7 +5440,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5401,6 +5457,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5439,11 +5498,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "原初神の山周辺で巨大樹が覚醒し、動物たちを追い出した。／※配置位置は仮置きです。",
+      "detail": "原初神の山周辺で巨大樹が覚醒し、動物たちを追い出した。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/3e2fa1b30dc981ceb35aeab40abec329",
         "positionStatus": "仮",
-        "eventStatus": "本編の出来事"
+        "eventStatus": "本編の出来事",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       },
       "visibility": {
         "modeGroup": "events",
@@ -5460,7 +5522,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5477,6 +5539,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5515,11 +5580,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "極彩竜は各色の土地の中央に存在し、各色の首を伸ばして竜王領を訪れる。中心性のみ確定。／※配置位置は仮置きです。",
+      "detail": "極彩竜は各色の土地の中央に存在し、各色の首を伸ばして竜王領を訪れる。中心性のみ確定。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/3f3fa1b30dc9814ebb01feee20df968d",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
@@ -5530,7 +5598,7 @@
       "displayLevel": 2,
       "layer": "sites",
       "zIndex": 36,
-      "visible": true,
+      "visible": false,
       "selectable": false,
       "geometry": {
         "type": "circle",
@@ -5547,6 +5615,9 @@
       },
       "label": {
         "visible": false
+      },
+      "metadata": {
+        "visibilityNote": "大陸縮尺では周辺の強調円は大きすぎるため隠す。町や施設の実面積を示さない。"
       }
     },
     {
@@ -5585,11 +5656,14 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "各色の竜が王として土地を治める。色数・地形・配置は未定。／※配置位置は仮置きです。",
+      "detail": "各色の竜が王として土地を治める。色数・地形・配置は未定。／※配置位置は仮置きです。\n【縮尺注記】この円は地図上の地点マーカーであり、町・施設・島の実際の半径・面積を表さない。",
       "metadata": {
         "source": "https://app.notion.com/p/3f3fa1b30dc9814ebb01feee20df968d",
         "positionStatus": "仮",
-        "eventStatus": "設定にある地点"
+        "eventStatus": "設定にある地点",
+        "cartographicRole": "symbolic-point-marker",
+        "footprintStatus": "unknown; radius is a clickable visual marker, not a physical site size",
+        "mapScaleNote": "1マス5kmの大陸図では町・要塞・塔の物理的な輪郭は描かない。詳細図参照。"
       }
     },
     {
