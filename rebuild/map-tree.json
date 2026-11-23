@@ -112,6 +112,23 @@
       "worldType": "fictional-world",
       "scope": "grid-performance-test",
       "temporary": true
+    },
+    {
+      "id": "rasetsu_old_world_continent_draft",
+      "name": "大陸地図（仮）",
+      "shortName": "大陸（仮）",
+      "kind": "region",
+      "parentId": "rasetsu_old_world",
+      "source": "../rebuild/scenes/rasetsu-old-world-continent-draft.scene.json",
+      "description": "旧世界の大陸図・制作第1稿。1000×1000マス、1マス5km、5000×5000km。6地域の地理的位置・大陸輪郭は仮。都市と拠点は別図で作る。",
+      "worldType": "fictional-world",
+      "scope": "continent-overview",
+      "realWorld": false,
+      "mapTier": "continent",
+      "metersPerCell": 5000,
+      "columns": 1000,
+      "rows": 1000,
+      "geographyStatus": "draft"
     }
   ],
   "defaultMapId": "middle"
