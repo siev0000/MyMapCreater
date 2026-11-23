@@ -61,9 +61,11 @@ function updateMapScaleSummary(){
  const saved=map?.settings?.mapScale;
  const isSaved=saved?.standardId===mapScaleStandard.id&&saved.tierId===tier.id
    &&saved.metersPerCell===tier.metersPerCell&&saved.coordinateUnitsPerCell===cell;
- const status=isSaved?"登録済み":"未反映（ボタンを押すと保存対象になります）";
+ const isProvisional=isSaved&&saved?.status==="provisional";
+ const status=isProvisional?"暫定：世界の実距離は未確定"
+  :isSaved?"登録済み":"未反映（ボタンを押すと保存対象になります）";
  target.textContent="1マス＝"+formatMapDistance(tier.metersPerCell)
-  +"／地図全体："+formatMapDistance(cols*tier.metersPerCell)
+  +"／理論上の範囲："+formatMapDistance(cols*tier.metersPerCell)
   +" × "+formatMapDistance(rows*tier.metersPerCell)+"（"
   +cols.toLocaleString("ja-JP")+"×"+rows.toLocaleString("ja-JP")+"マス）／"+status;
 }
