@@ -1,0 +1,5816 @@
+{
+  "schemaVersion": 2,
+  "id": "rasetsu-old-world",
+  "name": "旧世界｜鬼武神ラセツ時代",
+  "description": "鬼武神ラセツ時代（旧暦約5000年頃）の世界地図・第1稿。Notionで確定した地域特性に基づくが、大陸形状・各国の方位と距離は仮配置。",
+  "coordinateSystem": {
+    "horizontal": [
+      1,
+      0
+    ],
+    "vertical": [
+      0,
+      1
+    ],
+    "bounds": {
+      "minX": 0,
+      "maxX": 1600,
+      "minY": 0,
+      "maxY": 1000
+    },
+    "background": "#0b2231"
+  },
+  "grid": {
+    "visible": false,
+    "spacing": 50,
+    "stroke": "rgba(185,207,193,.09)",
+    "strokeWidth": 0.45
+  },
+  "layers": [
+    {
+      "id": "ocean",
+      "zIndex": 0
+    },
+    {
+      "id": "land",
+      "zIndex": 5
+    },
+    {
+      "id": "relief",
+      "zIndex": 12
+    },
+    {
+      "id": "water",
+      "zIndex": 16
+    },
+    {
+      "id": "regions",
+      "zIndex": 24
+    },
+    {
+      "id": "roads",
+      "zIndex": 30
+    },
+    {
+      "id": "sites",
+      "zIndex": 38
+    },
+    {
+      "id": "labels",
+      "zIndex": 52
+    }
+  ],
+  "settings": {
+    "initialDisplayLevel": 2,
+    "labelDefaults": {
+      "fontSize": 13,
+      "color": "#eff4e4",
+      "stroke": "#122632",
+      "strokeWidth": 3
+    },
+    "selectionZoom": {
+      "1": 1.4,
+      "2": 2.5
+    },
+    "legendGroups": [
+      {
+        "title": "国・地域（境界は仮）",
+        "filter": {
+          "objectTypes": [
+            "region"
+          ],
+          "displayLevels": [
+            1
+          ]
+        },
+        "swatch": "box"
+      },
+      {
+        "title": "重要地点",
+        "filter": {
+          "objectTypes": [
+            "landmark"
+          ],
+          "displayLevels": [
+            2
+          ]
+        },
+        "swatch": "box"
+      }
+    ],
+    "visibilityGroups": {
+      "events": {
+        "label": "事件・災厄",
+        "default": "show",
+        "options": [
+          {
+            "id": "show",
+            "label": "表示"
+          },
+          {
+            "id": "off",
+            "label": "非表示"
+          }
+        ]
+      },
+      "routes": {
+        "label": "旅路（仮）",
+        "default": "off",
+        "options": [
+          {
+            "id": "off",
+            "label": "非表示"
+          },
+          {
+            "id": "on",
+            "label": "参考経路"
+          }
+        ]
+      }
+    }
+  },
+  "metadata": {
+    "project": "鬼武神ラセツ",
+    "era": "旧暦 約5000年頃",
+    "revision": "draft-1",
+    "factStatus": "地形・国家属性はNotion準拠。海岸線・大陸形状・国間配置・距離はすべて仮構成。",
+    "coordinatesAreFictional": true
+  },
+  "objects": [
+    {
+      "id": "main-land",
+      "name": "旧世界の主大陸（輪郭は仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 5,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            167,
+            207
+          ],
+          [
+            236,
+            174
+          ],
+          [
+            321,
+            129
+          ],
+          [
+            403,
+            112
+          ],
+          [
+            489,
+            141
+          ],
+          [
+            563,
+            111
+          ],
+          [
+            659,
+            129
+          ],
+          [
+            746,
+            92
+          ],
+          [
+            849,
+            121
+          ],
+          [
+            921,
+            100
+          ],
+          [
+            1007,
+            143
+          ],
+          [
+            1108,
+            125
+          ],
+          [
+            1189,
+            164
+          ],
+          [
+            1240,
+            214
+          ],
+          [
+            1284,
+            246
+          ],
+          [
+            1363,
+            267
+          ],
+          [
+            1454,
+            323
+          ],
+          [
+            1486,
+            382
+          ],
+          [
+            1456,
+            449
+          ],
+          [
+            1494,
+            506
+          ],
+          [
+            1476,
+            562
+          ],
+          [
+            1505,
+            626
+          ],
+          [
+            1482,
+            702
+          ],
+          [
+            1430,
+            753
+          ],
+          [
+            1386,
+            771
+          ],
+          [
+            1341,
+            755
+          ],
+          [
+            1295,
+            794
+          ],
+          [
+            1212,
+            777
+          ],
+          [
+            1156,
+            825
+          ],
+          [
+            1086,
+            801
+          ],
+          [
+            1025,
+            840
+          ],
+          [
+            972,
+            806
+          ],
+          [
+            919,
+            837
+          ],
+          [
+            857,
+            827
+          ],
+          [
+            804,
+            862
+          ],
+          [
+            747,
+            847
+          ],
+          [
+            693,
+            868
+          ],
+          [
+            642,
+            830
+          ],
+          [
+            568,
+            852
+          ],
+          [
+            511,
+            821
+          ],
+          [
+            465,
+            786
+          ],
+          [
+            432,
+            736
+          ],
+          [
+            378,
+            741
+          ],
+          [
+            345,
+            695
+          ],
+          [
+            306,
+            687
+          ],
+          [
+            282,
+            626
+          ],
+          [
+            248,
+            621
+          ],
+          [
+            213,
+            575
+          ],
+          [
+            242,
+            532
+          ],
+          [
+            198,
+            494
+          ],
+          [
+            205,
+            434
+          ],
+          [
+            187,
+            378
+          ],
+          [
+            192,
+            316
+          ],
+          [
+            156,
+            274
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#415c4c",
+        "stroke": "#91b09b",
+        "strokeWidth": 4
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "大陸の位置・海岸線はデザインのための仮置き。"
+    },
+    {
+      "id": "coast-inset-north",
+      "name": "北東の浅瀬",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 6,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1364,
+            270
+          ],
+          [
+            1410,
+            252
+          ],
+          [
+            1463,
+            263
+          ],
+          [
+            1530,
+            305
+          ],
+          [
+            1554,
+            359
+          ],
+          [
+            1510,
+            398
+          ],
+          [
+            1486,
+            383
+          ],
+          [
+            1454,
+            322
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(89,124,113,.42)",
+        "stroke": "#6c9a8d",
+        "strokeWidth": 1.5
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "western-island-jenda",
+      "name": "ジェンダードーン本島（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 7,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            67,
+            557
+          ],
+          [
+            92,
+            526
+          ],
+          [
+            123,
+            540
+          ],
+          [
+            144,
+            517
+          ],
+          [
+            182,
+            552
+          ],
+          [
+            205,
+            585
+          ],
+          [
+            216,
+            644
+          ],
+          [
+            200,
+            697
+          ],
+          [
+            168,
+            721
+          ],
+          [
+            129,
+            708
+          ],
+          [
+            101,
+            734
+          ],
+          [
+            72,
+            704
+          ],
+          [
+            59,
+            652
+          ],
+          [
+            42,
+            610
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#527562",
+        "stroke": "#a2c0a0",
+        "strokeWidth": 3
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ji1",
+      "name": "周辺の小島",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 7,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          236,
+          565
+        ],
+        "radius": 22
+      },
+      "style": {
+        "fill": "#547660",
+        "stroke": "#93baa1",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ji2",
+      "name": "周辺の小島",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 7,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          222,
+          734
+        ],
+        "radius": 26
+      },
+      "style": {
+        "fill": "#547660",
+        "stroke": "#93baa1",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ji3",
+      "name": "周辺の小島",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 7,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          49,
+          776
+        ],
+        "radius": 13
+      },
+      "style": {
+        "fill": "#547660",
+        "stroke": "#93baa1",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ji4",
+      "name": "周辺の小島",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 7,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          279,
+          756
+        ],
+        "radius": 19
+      },
+      "style": {
+        "fill": "#547660",
+        "stroke": "#93baa1",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "black-water",
+      "name": "黒天守国の波静かな内湾",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 17,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            145,
+            643
+          ],
+          [
+            222,
+            626
+          ],
+          [
+            270,
+            638
+          ],
+          [
+            323,
+            657
+          ],
+          [
+            376,
+            649
+          ],
+          [
+            422,
+            665
+          ],
+          [
+            466,
+            658
+          ],
+          [
+            518,
+            682
+          ],
+          [
+            491,
+            729
+          ],
+          [
+            445,
+            748
+          ],
+          [
+            405,
+            733
+          ],
+          [
+            356,
+            751
+          ],
+          [
+            292,
+            739
+          ],
+          [
+            227,
+            752
+          ],
+          [
+            174,
+            743
+          ],
+          [
+            110,
+            752
+          ],
+          [
+            75,
+            707
+          ],
+          [
+            110,
+            670
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#155466",
+        "stroke": "#4b9a98",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "黒天守国は巨大湖のように見える波の立たない水域を持つ。形状は仮。"
+    },
+    {
+      "id": "black-citadel-island",
+      "name": "閻魔羅闍の小島",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 18,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            403,
+            676
+          ],
+          [
+            437,
+            667
+          ],
+          [
+            462,
+            684
+          ],
+          [
+            450,
+            706
+          ],
+          [
+            420,
+            716
+          ],
+          [
+            392,
+            700
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#617e60",
+        "stroke": "#a6c5a7",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dragon-main-island",
+      "name": "竜人圏の島嶼（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 8,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1062,
+            873
+          ],
+          [
+            1098,
+            840
+          ],
+          [
+            1144,
+            819
+          ],
+          [
+            1193,
+            842
+          ],
+          [
+            1207,
+            891
+          ],
+          [
+            1166,
+            931
+          ],
+          [
+            1129,
+            944
+          ],
+          [
+            1090,
+            921
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#607458",
+        "stroke": "#b3b895",
+        "strokeWidth": 3
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dragon-island-center",
+      "name": "極彩竜の中枢島（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 8,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1250,
+            814
+          ],
+          [
+            1284,
+            800
+          ],
+          [
+            1330,
+            829
+          ],
+          [
+            1355,
+            870
+          ],
+          [
+            1333,
+            923
+          ],
+          [
+            1293,
+            942
+          ],
+          [
+            1250,
+            901
+          ],
+          [
+            1231,
+            851
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#687e60",
+        "stroke": "#abbda0",
+        "strokeWidth": 3
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dragon-island-east",
+      "name": "竜王領の島（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 8,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1391,
+            843
+          ],
+          [
+            1440,
+            834
+          ],
+          [
+            1482,
+            856
+          ],
+          [
+            1499,
+            901
+          ],
+          [
+            1466,
+            932
+          ],
+          [
+            1420,
+            930
+          ],
+          [
+            1386,
+            900
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#596e59",
+        "stroke": "#a5b89d",
+        "strokeWidth": 3
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dragon-island-south",
+      "name": "南方の小島（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "land",
+      "zIndex": 8,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1175,
+            963
+          ],
+          [
+            1192,
+            951
+          ],
+          [
+            1218,
+            964
+          ],
+          [
+            1206,
+            985
+          ],
+          [
+            1184,
+            985
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#60765f",
+        "stroke": "#a5bbab",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "highlands-north",
+      "name": "北の高地帯",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 11,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            687,
+            164
+          ],
+          [
+            801,
+            123
+          ],
+          [
+            980,
+            147
+          ],
+          [
+            1134,
+            151
+          ],
+          [
+            1220,
+            215
+          ],
+          [
+            1165,
+            323
+          ],
+          [
+            1040,
+            347
+          ],
+          [
+            906,
+            291
+          ],
+          [
+            803,
+            327
+          ],
+          [
+            694,
+            265
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(130,141,117,.36)",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "uplands-east",
+      "name": "東部火山高地",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 11,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1128,
+            402
+          ],
+          [
+            1264,
+            360
+          ],
+          [
+            1430,
+            442
+          ],
+          [
+            1464,
+            589
+          ],
+          [
+            1384,
+            738
+          ],
+          [
+            1233,
+            720
+          ],
+          [
+            1158,
+            601
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(177,112,78,.19)",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "southern-steppe",
+      "name": "南の草原",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 11,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            663,
+            538
+          ],
+          [
+            780,
+            493
+          ],
+          [
+            955,
+            531
+          ],
+          [
+            1092,
+            569
+          ],
+          [
+            1134,
+            759
+          ],
+          [
+            1022,
+            815
+          ],
+          [
+            781,
+            832
+          ],
+          [
+            648,
+            739
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(167,166,78,.20)",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "western-greenery",
+      "name": "西の豊かな土地",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 11,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            223,
+            422
+          ],
+          [
+            377,
+            344
+          ],
+          [
+            566,
+            398
+          ],
+          [
+            634,
+            568
+          ],
+          [
+            609,
+            718
+          ],
+          [
+            462,
+            744
+          ],
+          [
+            311,
+            685
+          ],
+          [
+            220,
+            581
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(98,159,102,.24)",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-1",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            712,
+            238
+          ],
+          [
+            735,
+            199
+          ],
+          [
+            758,
+            238
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-1",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            727.64,
+            215.64
+          ],
+          [
+            735,
+            199
+          ],
+          [
+            742.36,
+            215.64
+          ],
+          [
+            735,
+            210.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-2",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            760,
+            203
+          ],
+          [
+            786,
+            152
+          ],
+          [
+            812,
+            203
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-2",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            777.68,
+            173.76
+          ],
+          [
+            786,
+            152
+          ],
+          [
+            794.32,
+            173.76
+          ],
+          [
+            786,
+            167.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-3",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            794,
+            258
+          ],
+          [
+            823,
+            195
+          ],
+          [
+            852,
+            258
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-3",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            813.72,
+            221.88
+          ],
+          [
+            823,
+            195
+          ],
+          [
+            832.28,
+            221.88
+          ],
+          [
+            823,
+            213.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-4",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            829,
+            187
+          ],
+          [
+            861,
+            148
+          ],
+          [
+            893,
+            187
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-4",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            850.76,
+            164.64
+          ],
+          [
+            861,
+            148
+          ],
+          [
+            871.24,
+            164.64
+          ],
+          [
+            861,
+            159.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-5",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            887,
+            242
+          ],
+          [
+            910,
+            191
+          ],
+          [
+            933,
+            242
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-5",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            902.64,
+            212.76
+          ],
+          [
+            910,
+            191
+          ],
+          [
+            917.36,
+            212.76
+          ],
+          [
+            910,
+            206.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-6",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            930,
+            193
+          ],
+          [
+            956,
+            130
+          ],
+          [
+            982,
+            193
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-6",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            947.68,
+            156.88
+          ],
+          [
+            956,
+            130
+          ],
+          [
+            964.32,
+            156.88
+          ],
+          [
+            956,
+            148.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-7",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            977,
+            238
+          ],
+          [
+            1006,
+            199
+          ],
+          [
+            1035,
+            238
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-7",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            996.72,
+            215.64
+          ],
+          [
+            1006,
+            199
+          ],
+          [
+            1015.28,
+            215.64
+          ],
+          [
+            1006,
+            210.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-8",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1016,
+            195
+          ],
+          [
+            1048,
+            144
+          ],
+          [
+            1080,
+            195
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-8",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1037.76,
+            165.76
+          ],
+          [
+            1048,
+            144
+          ],
+          [
+            1058.24,
+            165.76
+          ],
+          [
+            1048,
+            159.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-9",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1080,
+            247
+          ],
+          [
+            1103,
+            184
+          ],
+          [
+            1126,
+            247
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-9",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1095.64,
+            210.88
+          ],
+          [
+            1103,
+            184
+          ],
+          [
+            1110.36,
+            210.88
+          ],
+          [
+            1103,
+            202.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-10",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1124,
+            281
+          ],
+          [
+            1150,
+            242
+          ],
+          [
+            1176,
+            281
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-10",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1141.68,
+            258.64
+          ],
+          [
+            1150,
+            242
+          ],
+          [
+            1158.32,
+            258.64
+          ],
+          [
+            1150,
+            253.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-11",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            755,
+            309
+          ],
+          [
+            784,
+            258
+          ],
+          [
+            813,
+            309
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-11",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            774.72,
+            279.76
+          ],
+          [
+            784,
+            258
+          ],
+          [
+            793.28,
+            279.76
+          ],
+          [
+            784,
+            273.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-12",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            872,
+            307
+          ],
+          [
+            904,
+            244
+          ],
+          [
+            936,
+            307
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-12",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            893.76,
+            270.88
+          ],
+          [
+            904,
+            244
+          ],
+          [
+            914.24,
+            270.88
+          ],
+          [
+            904,
+            262.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-13",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            996,
+            304
+          ],
+          [
+            1019,
+            265
+          ],
+          [
+            1042,
+            304
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-13",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1011.64,
+            281.64
+          ],
+          [
+            1019,
+            265
+          ],
+          [
+            1026.36,
+            281.64
+          ],
+          [
+            1019,
+            276.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-14",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1092,
+            341
+          ],
+          [
+            1118,
+            290
+          ],
+          [
+            1144,
+            341
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#7e908f",
+        "stroke": "#b9c0b4",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-14",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1109.68,
+            311.76
+          ],
+          [
+            1118,
+            290
+          ],
+          [
+            1126.32,
+            311.76
+          ],
+          [
+            1118,
+            305.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#d3dcdb",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-15",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            364,
+            470
+          ],
+          [
+            393,
+            407
+          ],
+          [
+            422,
+            470
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-15",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            383.72,
+            433.88
+          ],
+          [
+            393,
+            407
+          ],
+          [
+            402.28,
+            433.88
+          ],
+          [
+            393,
+            425.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-16",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            398,
+            439
+          ],
+          [
+            430,
+            400
+          ],
+          [
+            462,
+            439
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-16",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            419.76,
+            416.64
+          ],
+          [
+            430,
+            400
+          ],
+          [
+            440.24,
+            416.64
+          ],
+          [
+            430,
+            411.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-17",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            445,
+            478
+          ],
+          [
+            468,
+            427
+          ],
+          [
+            491,
+            478
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-17",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            460.64,
+            448.76
+          ],
+          [
+            468,
+            427
+          ],
+          [
+            475.36,
+            448.76
+          ],
+          [
+            468,
+            442.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-18",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            475,
+            447
+          ],
+          [
+            501,
+            384
+          ],
+          [
+            527,
+            447
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-18",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            492.68,
+            410.88
+          ],
+          [
+            501,
+            384
+          ],
+          [
+            509.32,
+            410.88
+          ],
+          [
+            501,
+            402.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-19",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            503,
+            491
+          ],
+          [
+            532,
+            452
+          ],
+          [
+            561,
+            491
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-19",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            522.72,
+            468.64
+          ],
+          [
+            532,
+            452
+          ],
+          [
+            541.28,
+            468.64
+          ],
+          [
+            532,
+            463.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-20",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            535,
+            459
+          ],
+          [
+            567,
+            408
+          ],
+          [
+            599,
+            459
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-20",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            556.76,
+            429.76
+          ],
+          [
+            567,
+            408
+          ],
+          [
+            577.24,
+            429.76
+          ],
+          [
+            567,
+            423.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-21",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1154,
+            495
+          ],
+          [
+            1177,
+            432
+          ],
+          [
+            1200,
+            495
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-21",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1169.64,
+            458.88
+          ],
+          [
+            1177,
+            432
+          ],
+          [
+            1184.36,
+            458.88
+          ],
+          [
+            1177,
+            450.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-22",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1184,
+            440
+          ],
+          [
+            1210,
+            401
+          ],
+          [
+            1236,
+            440
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-22",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1201.68,
+            417.64
+          ],
+          [
+            1210,
+            401
+          ],
+          [
+            1218.32,
+            417.64
+          ],
+          [
+            1210,
+            412.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-23",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1261,
+            459
+          ],
+          [
+            1290,
+            408
+          ],
+          [
+            1319,
+            459
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-23",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1280.72,
+            429.76
+          ],
+          [
+            1290,
+            408
+          ],
+          [
+            1299.28,
+            429.76
+          ],
+          [
+            1290,
+            423.3
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-24",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1356,
+            528
+          ],
+          [
+            1388,
+            465
+          ],
+          [
+            1420,
+            528
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-24",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1377.76,
+            491.88
+          ],
+          [
+            1388,
+            465
+          ],
+          [
+            1398.24,
+            491.88
+          ],
+          [
+            1388,
+            483.9
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "peak-25",
+      "name": "山岳地形",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 14,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1394,
+            582
+          ],
+          [
+            1417,
+            543
+          ],
+          [
+            1440,
+            582
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#746f64",
+        "stroke": "#a4a18c",
+        "strokeWidth": 1.4
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "snow-25",
+      "name": "峰の雪",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 15,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1409.64,
+            559.64
+          ],
+          [
+            1417,
+            543
+          ],
+          [
+            1424.36,
+            559.64
+          ],
+          [
+            1417,
+            554.7
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#bfc7b8",
+        "stroke": null
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "北方水系",
+      "name": "北方水系",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 18,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            916,
+            303
+          ],
+          [
+            868,
+            369
+          ],
+          [
+            847,
+            433
+          ],
+          [
+            800,
+            506
+          ],
+          [
+            756,
+            564
+          ],
+          [
+            710,
+            631
+          ],
+          [
+            672,
+            701
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#75c2cc",
+        "strokeWidth": 4,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "内陸河川",
+      "name": "内陸河川",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 18,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            1043,
+            628
+          ],
+          [
+            985,
+            683
+          ],
+          [
+            924,
+            715
+          ],
+          [
+            867,
+            761
+          ],
+          [
+            811,
+            787
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#86bfd2",
+        "strokeWidth": 4,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "西方の河川",
+      "name": "西方の河川",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 18,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            553,
+            406
+          ],
+          [
+            599,
+            466
+          ],
+          [
+            622,
+            521
+          ],
+          [
+            590,
+            594
+          ],
+          [
+            538,
+            648
+          ],
+          [
+            489,
+            695
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#7fbec4",
+        "strokeWidth": 3,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-0",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            75,
+            128
+          ],
+          [
+            91,
+            123
+          ],
+          [
+            114,
+            128
+          ],
+          [
+            133,
+            123
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-1",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            170,
+            128
+          ],
+          [
+            186,
+            123
+          ],
+          [
+            209,
+            128
+          ],
+          [
+            228,
+            123
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-2",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            265,
+            128
+          ],
+          [
+            281,
+            123
+          ],
+          [
+            304,
+            128
+          ],
+          [
+            323,
+            123
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-3",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            360,
+            128
+          ],
+          [
+            376,
+            123
+          ],
+          [
+            399,
+            128
+          ],
+          [
+            418,
+            123
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-4",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            455,
+            128
+          ],
+          [
+            471,
+            123
+          ],
+          [
+            494,
+            128
+          ],
+          [
+            513,
+            123
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-5",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            75,
+            868
+          ],
+          [
+            91,
+            863
+          ],
+          [
+            114,
+            868
+          ],
+          [
+            133,
+            863
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-6",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            170,
+            868
+          ],
+          [
+            186,
+            863
+          ],
+          [
+            209,
+            868
+          ],
+          [
+            228,
+            863
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-7",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            265,
+            868
+          ],
+          [
+            281,
+            863
+          ],
+          [
+            304,
+            868
+          ],
+          [
+            323,
+            863
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-8",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            360,
+            868
+          ],
+          [
+            376,
+            863
+          ],
+          [
+            399,
+            868
+          ],
+          [
+            418,
+            863
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "ocean-wisp-9",
+      "name": "洋上の波紋",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "ocean",
+      "zIndex": 4,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            455,
+            868
+          ],
+          [
+            471,
+            863
+          ],
+          [
+            494,
+            868
+          ],
+          [
+            513,
+            863
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(119,171,178,.28)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-0",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          336,
+          374
+        ],
+        "radius": 14
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-1",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          370,
+          385
+        ],
+        "radius": 17
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-2",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          410,
+          364
+        ],
+        "radius": 20
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-3",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          449,
+          374
+        ],
+        "radius": 23
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-4",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          491,
+          365
+        ],
+        "radius": 14
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-5",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          576,
+          587
+        ],
+        "radius": 17
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-6",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          599,
+          629
+        ],
+        "radius": 20
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-7",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          637,
+          616
+        ],
+        "radius": 23
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-8",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          700,
+          460
+        ],
+        "radius": 14
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-9",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          741,
+          477
+        ],
+        "radius": 17
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-10",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          822,
+          438
+        ],
+        "radius": 20
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-11",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          855,
+          460
+        ],
+        "radius": 23
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-12",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          893,
+          477
+        ],
+        "radius": 14
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-13",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          903,
+          625
+        ],
+        "radius": 17
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-14",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          942,
+          637
+        ],
+        "radius": 20
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-15",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          978,
+          659
+        ],
+        "radius": 23
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-16",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1000,
+          697
+        ],
+        "radius": 14
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-17",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          766,
+          725
+        ],
+        "radius": 17
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-18",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          791,
+          736
+        ],
+        "radius": 20
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-19",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          818,
+          750
+        ],
+        "radius": 23
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "woods-20",
+      "name": "森林",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 13,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          847,
+          730
+        ],
+        "radius": 14
+      },
+      "style": {
+        "fill": "rgba(20,66,48,.8)",
+        "stroke": "rgba(95,139,97,.35)",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "region-jenda",
+      "name": "ジェンダードーン",
+      "objectType": "region",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "regions",
+      "zIndex": 24,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            21,
+            498
+          ],
+          [
+            151,
+            484
+          ],
+          [
+            264,
+            522
+          ],
+          [
+            294,
+            648
+          ],
+          [
+            258,
+            793
+          ],
+          [
+            100,
+            813
+          ],
+          [
+            19,
+            726
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(74,150,182,.16)",
+        "stroke": "rgba(241,220,161,.62)",
+        "strokeWidth": 2,
+        "dash": [
+          7,
+          7
+        ]
+      },
+      "label": {
+        "visible": true,
+        "text": "ジェンダードーン",
+        "position": [
+          157,
+          500
+        ],
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "color": "#fff0ca",
+        "outline": "#12202a",
+        "outlineWidth": 4
+      },
+      "detail": "孤島にある島国。多様な出自の人々が集まり、水の根源精霊によって町が水没した。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981eea87fc3c93af89db0",
+        "placementStatus": "仮配置",
+        "factStatus": "国家の性質のみ確定"
+      }
+    },
+    {
+      "id": "region-kokuten",
+      "name": "黒天守国",
+      "objectType": "region",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "regions",
+      "zIndex": 24,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            216,
+            397
+          ],
+          [
+            395,
+            327
+          ],
+          [
+            606,
+            376
+          ],
+          [
+            690,
+            543
+          ],
+          [
+            651,
+            715
+          ],
+          [
+            539,
+            784
+          ],
+          [
+            371,
+            785
+          ],
+          [
+            241,
+            682
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(92,144,92,.17)",
+        "stroke": "rgba(241,220,161,.62)",
+        "strokeWidth": 2,
+        "dash": [
+          7,
+          7
+        ]
+      },
+      "label": {
+        "visible": true,
+        "text": "黒天守国",
+        "position": [
+          407,
+          510
+        ],
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "color": "#fff0ca",
+        "outline": "#12202a",
+        "outlineWidth": 4
+      },
+      "detail": "多種族を受け入れる鬼の国。山岳深奥の黒天守閣と、波の立たない水域、塔《閻魔羅闍》を持つ。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "placementStatus": "仮配置",
+        "factStatus": "国家の性質のみ確定"
+      }
+    },
+    {
+      "id": "region-valstroke",
+      "name": "ヴァルストーク",
+      "objectType": "region",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "regions",
+      "zIndex": 24,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            672,
+            112
+          ],
+          [
+            836,
+            86
+          ],
+          [
+            1066,
+            108
+          ],
+          [
+            1243,
+            174
+          ],
+          [
+            1286,
+            301
+          ],
+          [
+            1173,
+            394
+          ],
+          [
+            954,
+            376
+          ],
+          [
+            726,
+            340
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(123,166,201,.17)",
+        "stroke": "rgba(241,220,161,.62)",
+        "strokeWidth": 2,
+        "dash": [
+          7,
+          7
+        ]
+      },
+      "label": {
+        "visible": true,
+        "text": "ヴァルストーク",
+        "position": [
+          959,
+          153
+        ],
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "color": "#fff0ca",
+        "outline": "#12202a",
+        "outlineWidth": 4
+      },
+      "detail": "寒冷な山脈洞窟を要塞化した小規模軍事国家。狙撃・防衛・魔法による銃器生産を得意とする。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "metadata": {
+        "source": "https://app.notion.com/p/29afa1b30dc9804184e1d8bf19618dfe",
+        "placementStatus": "仮配置",
+        "factStatus": "国家の性質のみ確定"
+      }
+    },
+    {
+      "id": "region-dindil",
+      "name": "ディンディール",
+      "objectType": "region",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "regions",
+      "zIndex": 24,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1160,
+            373
+          ],
+          [
+            1340,
+            361
+          ],
+          [
+            1505,
+            433
+          ],
+          [
+            1534,
+            651
+          ],
+          [
+            1471,
+            762
+          ],
+          [
+            1260,
+            778
+          ],
+          [
+            1129,
+            653
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(202,108,79,.18)",
+        "stroke": "rgba(241,220,161,.62)",
+        "strokeWidth": 2,
+        "dash": [
+          7,
+          7
+        ]
+      },
+      "label": {
+        "visible": true,
+        "text": "ディンディール",
+        "position": [
+          1328,
+          422
+        ],
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "color": "#fff0ca",
+        "outline": "#12202a",
+        "outlineWidth": 4
+      },
+      "detail": "火山の麓の巨人国。炎・岩・溶岩の精霊との戦いが起こる。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981c48d5dcd57949df4b3",
+        "placementStatus": "仮配置",
+        "factStatus": "国家の性質のみ確定"
+      }
+    },
+    {
+      "id": "region-fergald",
+      "name": "フェルガルド草原",
+      "objectType": "region",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "regions",
+      "zIndex": 24,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            668,
+            512
+          ],
+          [
+            874,
+            490
+          ],
+          [
+            1072,
+            519
+          ],
+          [
+            1197,
+            635
+          ],
+          [
+            1163,
+            781
+          ],
+          [
+            956,
+            855
+          ],
+          [
+            751,
+            848
+          ],
+          [
+            644,
+            710
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(168,176,70,.14)",
+        "stroke": "rgba(241,220,161,.62)",
+        "strokeWidth": 2,
+        "dash": [
+          7,
+          7
+        ]
+      },
+      "label": {
+        "visible": true,
+        "text": "フェルガルド草原",
+        "position": [
+          900,
+          574
+        ],
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "color": "#fff0ca",
+        "outline": "#12202a",
+        "outlineWidth": 4
+      },
+      "detail": "原初神の山を守る動物の一族が住む草原。山の異変と巨大樹の覚醒が起きる。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981ceb35aeab40abec329",
+        "placementStatus": "仮配置",
+        "factStatus": "国家の性質のみ確定"
+      }
+    },
+    {
+      "id": "region-dragon",
+      "name": "竜人圏",
+      "objectType": "region",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "regions",
+      "zIndex": 24,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1005,
+            789
+          ],
+          [
+            1165,
+            780
+          ],
+          [
+            1274,
+            772
+          ],
+          [
+            1453,
+            793
+          ],
+          [
+            1531,
+            880
+          ],
+          [
+            1514,
+            985
+          ],
+          [
+            1070,
+            996
+          ],
+          [
+            1004,
+            899
+          ]
+        ]
+      },
+      "style": {
+        "fill": "rgba(157,125,187,.13)",
+        "stroke": "rgba(241,220,161,.62)",
+        "strokeWidth": 2,
+        "dash": [
+          7,
+          7
+        ]
+      },
+      "label": {
+        "visible": true,
+        "text": "竜人圏",
+        "position": [
+          1314,
+          782
+        ],
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "color": "#fff0ca",
+        "outline": "#12202a",
+        "outlineWidth": 4
+      },
+      "detail": "極彩竜を神とし、各色の竜王が土地を治め、竜人が民として暮らす。各色の領域の数・境界は未確定。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3f3fa1b30dc9814ebb01feee20df968d",
+        "placementStatus": "仮配置",
+        "factStatus": "国家の性質のみ確定"
+      }
+    },
+    {
+      "id": "kokuten-castle-halo",
+      "name": "黒天守閣の目印",
+      "objectType": "terrain",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          467,
+          462
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#f5ce79",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "kokuten-castle",
+      "name": "黒天守閣",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          467,
+          462
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#f5ce79",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "黒天守閣",
+        "position": [
+          467,
+          441
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "黒曜石のように輝く天守。山岳地帯の深奥に築かれた鬼の国の象徴。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "enmaraja-halo",
+      "name": "閻魔羅闍の目印",
+      "objectType": "terrain",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          428,
+          690
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#b8f1b2",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "enmaraja",
+      "name": "閻魔羅闍",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          428,
+          690
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#b8f1b2",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "閻魔羅闍",
+        "position": [
+          428,
+          669
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "五鬼の塔がある小島。地下にはアシュラが運んだ世界樹の根が植えられている。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "jenda-city-halo",
+      "name": "水没した町の目印",
+      "objectType": "terrain",
+      "parentId": "region-jenda",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          157,
+          631
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#70d6ed",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "jenda-city",
+      "name": "水没した町",
+      "objectType": "landmark",
+      "parentId": "region-jenda",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          157,
+          631
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#70d6ed",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "水没した町",
+        "position": [
+          157,
+          610
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "水の根源精霊による災害で町一つが水底へ沈んだ。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981eea87fc3c93af89db0",
+        "positionStatus": "仮",
+        "eventStatus": "本編の出来事"
+      },
+      "visibility": {
+        "modeGroup": "events",
+        "modes": [
+          "show"
+        ]
+      }
+    },
+    {
+      "id": "val-fort-halo",
+      "name": "山脈の要塞の目印",
+      "objectType": "terrain",
+      "parentId": "region-valstroke",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          958,
+          252
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#f5ce79",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "val-fort",
+      "name": "山脈の要塞",
+      "objectType": "landmark",
+      "parentId": "region-valstroke",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          958,
+          252
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#f5ce79",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "山脈の要塞",
+        "position": [
+          958,
+          231
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "山脈の洞窟を要塞化した国家拠点。要塞の正確な位置は未確定。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/29afa1b30dc9804184e1d8bf19618dfe",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "val-shooters-halo",
+      "name": "狙撃兵の領域の目印",
+      "objectType": "terrain",
+      "parentId": "region-valstroke",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1087,
+          318
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#b7d8e3",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "val-shooters",
+      "name": "狙撃兵の領域",
+      "objectType": "landmark",
+      "parentId": "region-valstroke",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1087,
+          318
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#b7d8e3",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "狙撃兵の領域",
+        "position": [
+          1087,
+          297
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "高精度の銃器と狙撃兵で防衛する。施設名と配置は地図表現上の仮。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/29afa1b30dc9804184e1d8bf19618dfe",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "dindil-volcano-halo",
+      "name": "火山の目印",
+      "objectType": "terrain",
+      "parentId": "region-dindil",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1302,
+          545
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#ffbd7c",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dindil-volcano",
+      "name": "火山",
+      "objectType": "landmark",
+      "parentId": "region-dindil",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1302,
+          545
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#ffbd7c",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "火山",
+        "position": [
+          1302,
+          524
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "巨人国ディンディールは火山の麓に位置する。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981c48d5dcd57949df4b3",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "dindil-giants-halo",
+      "name": "巨人の国の目印",
+      "objectType": "terrain",
+      "parentId": "region-dindil",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1299,
+          665
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#f5ce79",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dindil-giants",
+      "name": "巨人の国",
+      "objectType": "landmark",
+      "parentId": "region-dindil",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1299,
+          665
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#f5ce79",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "巨人の国",
+        "position": [
+          1299,
+          644
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "フィルドルとジェルディが属する巨人の国家。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981c48d5dcd57949df4b3",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "fergald-mountain-halo",
+      "name": "原初神の山の目印",
+      "objectType": "terrain",
+      "parentId": "region-fergald",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1050,
+          680
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#f5ce79",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "fergald-mountain",
+      "name": "原初神の山",
+      "objectType": "landmark",
+      "parentId": "region-fergald",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1050,
+          680
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#f5ce79",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "原初神の山",
+        "position": [
+          1050,
+          659
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "フェルガルド草原で動物の一族が守る、普通ではない山。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981ceb35aeab40abec329",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "fergald-greattree-halo",
+      "name": "覚醒した巨大樹の目印",
+      "objectType": "terrain",
+      "parentId": "region-fergald",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          904,
+          713
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#9ddda0",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "fergald-greattree",
+      "name": "覚醒した巨大樹",
+      "objectType": "landmark",
+      "parentId": "region-fergald",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          904,
+          713
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#9ddda0",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "覚醒した巨大樹",
+        "position": [
+          904,
+          692
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "原初神の山周辺で巨大樹が覚醒し、動物たちを追い出した。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3e2fa1b30dc981ceb35aeab40abec329",
+        "positionStatus": "仮",
+        "eventStatus": "本編の出来事"
+      },
+      "visibility": {
+        "modeGroup": "events",
+        "modes": [
+          "show"
+        ]
+      }
+    },
+    {
+      "id": "dragon-god-halo",
+      "name": "極彩竜の中心の目印",
+      "objectType": "terrain",
+      "parentId": "region-dragon",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1305,
+          869
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#efc6e2",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dragon-god",
+      "name": "極彩竜の中心",
+      "objectType": "landmark",
+      "parentId": "region-dragon",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1305,
+          869
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#efc6e2",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "極彩竜の中心",
+        "position": [
+          1305,
+          848
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "極彩竜は各色の土地の中央に存在し、各色の首を伸ばして竜王領を訪れる。中心性のみ確定。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3f3fa1b30dc9814ebb01feee20df968d",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "dragon-colors-west-halo",
+      "name": "各色の竜王領の目印",
+      "objectType": "terrain",
+      "parentId": "region-dragon",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 36,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1136,
+          889
+        ],
+        "radius": 10
+      },
+      "style": {
+        "fill": "rgba(12,34,45,.72)",
+        "stroke": "#e4bdd4",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "dragon-colors-west",
+      "name": "各色の竜王領",
+      "objectType": "landmark",
+      "parentId": "region-dragon",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 39,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          1136,
+          889
+        ],
+        "radius": 4.4
+      },
+      "style": {
+        "fill": "#e4bdd4",
+        "stroke": "#0f2532",
+        "strokeWidth": 1.2
+      },
+      "label": {
+        "visible": true,
+        "text": "各色の竜王領",
+        "position": [
+          1136,
+          868
+        ],
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "color": "#fff5d9",
+        "outline": "#071b26",
+        "outlineWidth": 3
+      },
+      "detail": "各色の竜が王として土地を治める。色数・地形・配置は未定。／※配置位置は仮置きです。",
+      "metadata": {
+        "source": "https://app.notion.com/p/3f3fa1b30dc9814ebb01feee20df968d",
+        "positionStatus": "仮",
+        "eventStatus": "設定にある地点"
+      }
+    },
+    {
+      "id": "chapter-route-1",
+      "name": "黒天守国からジェンダードーンへの参考経路",
+      "objectType": "route",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "roads",
+      "zIndex": 31,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            468,
+            484
+          ],
+          [
+            404,
+            587
+          ],
+          [
+            297,
+            622
+          ],
+          [
+            207,
+            623
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(255,220,145,.78)",
+        "strokeWidth": 2.8,
+        "dash": [
+          12,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      },
+      "visibility": {
+        "modeGroup": "routes",
+        "modes": [
+          "on"
+        ]
+      },
+      "detail": "本編の順序を参考にした仮移動線。実際の経路や距離は未確定。"
+    },
+    {
+      "id": "chapter-route-2",
+      "name": "島国からディンディール方面への参考経路",
+      "objectType": "route",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "roads",
+      "zIndex": 31,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            206,
+            623
+          ],
+          [
+            300,
+            675
+          ],
+          [
+            553,
+            766
+          ],
+          [
+            829,
+            827
+          ],
+          [
+            1219,
+            691
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(255,220,145,.78)",
+        "strokeWidth": 2.8,
+        "dash": [
+          12,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      },
+      "visibility": {
+        "modeGroup": "routes",
+        "modes": [
+          "on"
+        ]
+      },
+      "detail": "本編の順序を参考にした仮移動線。実際の経路や距離は未確定。"
+    },
+    {
+      "id": "chapter-route-3",
+      "name": "ディンディールから原初神の山方面への参考経路",
+      "objectType": "route",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "roads",
+      "zIndex": 31,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            1232,
+            689
+          ],
+          [
+            1127,
+            737
+          ],
+          [
+            1006,
+            717
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(255,220,145,.78)",
+        "strokeWidth": 2.8,
+        "dash": [
+          12,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      },
+      "visibility": {
+        "modeGroup": "routes",
+        "modes": [
+          "on"
+        ]
+      },
+      "detail": "本編の順序を参考にした仮移動線。実際の経路や距離は未確定。"
+    },
+    {
+      "id": "chapter-route-4",
+      "name": "原初神の山からヴァルストーク方面への参考経路",
+      "objectType": "route",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "roads",
+      "zIndex": 31,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            1032,
+            650
+          ],
+          [
+            957,
+            528
+          ],
+          [
+            946,
+            356
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(255,220,145,.78)",
+        "strokeWidth": 2.8,
+        "dash": [
+          12,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      },
+      "visibility": {
+        "modeGroup": "routes",
+        "modes": [
+          "on"
+        ]
+      },
+      "detail": "本編の順序を参考にした仮移動線。実際の経路や距離は未確定。"
+    },
+    {
+      "id": "title-oldworld",
+      "name": "旧世界 — 鬼武神ラセツ時代",
+      "objectType": "label",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "labels",
+      "zIndex": 55,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {},
+      "label": {
+        "visible": true,
+        "text": "旧世界 — 鬼武神ラセツ時代",
+        "position": [
+          767,
+          45
+        ],
+        "fontSize": 31,
+        "color": "#f8e9bf",
+        "outline": "#122632",
+        "outlineWidth": 3
+      },
+      "detail": ""
+    },
+    {
+      "id": "subtitle",
+      "name": "旧暦 約5000年頃  ·  地理配置は第1稿（仮）",
+      "objectType": "label",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "labels",
+      "zIndex": 55,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {},
+      "label": {
+        "visible": true,
+        "text": "旧暦 約5000年頃  ·  地理配置は第1稿（仮）",
+        "position": [
+          800,
+          80
+        ],
+        "fontSize": 15,
+        "color": "#c2cdd1",
+        "outline": "#122632",
+        "outlineWidth": 3
+      },
+      "detail": ""
+    },
+    {
+      "id": "sea-west",
+      "name": "西方の海",
+      "objectType": "label",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "labels",
+      "zIndex": 55,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {},
+      "label": {
+        "visible": true,
+        "text": "西方の海",
+        "position": [
+          85,
+          355
+        ],
+        "fontSize": 18,
+        "color": "#99c6d2",
+        "outline": "#122632",
+        "outlineWidth": 3
+      },
+      "detail": ""
+    },
+    {
+      "id": "sea-south",
+      "name": "南方の海域",
+      "objectType": "label",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "labels",
+      "zIndex": 55,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {},
+      "label": {
+        "visible": true,
+        "text": "南方の海域",
+        "position": [
+          493,
+          928
+        ],
+        "fontSize": 18,
+        "color": "#98c2cd",
+        "outline": "#122632",
+        "outlineWidth": 3
+      },
+      "detail": ""
+    },
+    {
+      "id": "note-unconfirmed",
+      "name": "※大陸形状・国家の位置・国境・距離は未確定",
+      "objectType": "label",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "labels",
+      "zIndex": 55,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {},
+      "label": {
+        "visible": true,
+        "text": "※大陸形状・国家の位置・国境・距離は未確定",
+        "position": [
+          440,
+          971
+        ],
+        "fontSize": 16,
+        "color": "#ecd8b4",
+        "outline": "#122632",
+        "outlineWidth": 3
+      },
+      "detail": ""
+    },
+    {
+      "id": "compass-n",
+      "name": "N",
+      "objectType": "label",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "labels",
+      "zIndex": 55,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {},
+      "label": {
+        "visible": true,
+        "text": "N",
+        "position": [
+          1528,
+          89
+        ],
+        "fontSize": 25,
+        "color": "#e8ead8",
+        "outline": "#122632",
+        "outlineWidth": 3
+      },
+      "detail": ""
+    },
+    {
+      "id": "compass-needle",
+      "name": "方位の印",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "labels",
+      "zIndex": 54,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polygon",
+        "points": [
+          [
+            1528,
+            100
+          ],
+          [
+            1519,
+            127
+          ],
+          [
+            1528,
+            120
+          ],
+          [
+            1537,
+            127
+          ]
+        ]
+      },
+      "style": {
+        "fill": "#e1c88b",
+        "stroke": "#d7d2ba",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    }
+  ]
+}
