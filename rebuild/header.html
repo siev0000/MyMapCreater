@@ -262,6 +262,50 @@ main{max-width:none;padding:0}
 .building-floor-overlay button:disabled{opacity:.32;cursor:default}
 .building-floor-overlay .building-floor-current{font-size:11px;font-weight:750;min-width:34px}
 @media(max-width:500px){.building-floor-overlay{padding:3px 5px}.building-floor-overlay .building-floor-title{font-size:8px}}
+
+/* Staged map navigation (map-tree parent/children; independent of zoom). */
+.map-stage-nav[hidden]{display:none!important}
+.map-stage-nav{
+ position:absolute;z-index:8;left:90px;bottom:111px;
+ width:min(630px,calc(100% - 110px));
+ display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+ padding:6px 8px;border:1px solid rgba(131,191,203,.8);
+ border-radius:9px;background:rgba(7,27,38,.94);
+ box-shadow:0 3px 16px #0007;
+}
+.map-stage-nav button,.map-stage-nav select{
+ background:#214858;border:1px solid #577e8c;border-radius:6px;
+ color:#eefaff;font-size:11px;min-height:27px;padding:3px 8px;
+}
+.map-stage-nav button:hover:not(:disabled){background:#2b6173}
+.map-stage-nav button:focus-visible,.map-stage-nav select:focus-visible{
+ outline:2px solid #b6eeee;outline-offset:1px;
+}
+.map-stage-nav button:disabled{opacity:.5;cursor:default}
+.map-stage-crumbs{flex:1 1 250px;min-width:80px;display:flex;align-items:center;
+ gap:3px;white-space:nowrap;overflow:auto;scrollbar-width:thin;
+ color:#91b2c1;font-size:11px;max-height:34px}
+.map-stage-crumbs button{flex:none;border:0;background:transparent;min-height:24px;padding:2px 3px;white-space:nowrap}
+.map-stage-crumbs .stage-current{color:#fff;font-weight:750;opacity:1}
+.map-stage-back{flex:none}
+.map-stage-next{display:flex;align-items:center;gap:4px;flex:0 1 auto;min-width:0}
+.map-stage-next select{flex:1 1 auto;min-width:60px;max-width:195px;white-space:nowrap;text-overflow:ellipsis}
+.map-stage-next [hidden]{display:none!important}
+.map-stage-status{font-size:10px;color:#acbec6;white-space:nowrap}
+.stage-detail-enter[hidden]{display:none!important}
+.map-info-footer .stage-detail-enter{
+ flex:none;white-space:nowrap;min-height:25px;max-width:125px;
+ border:1px solid #8bc8bd;border-radius:5px;background:#286153;
+ color:#f1fffd;font-size:11px;font-weight:750;padding:3px 6px;cursor:pointer
+}
+@media(max-width:500px){
+ .map-stage-nav{left:73px;bottom:117px;width:calc(100% - 80px);gap:3px;padding:4px 5px}
+ .map-stage-crumbs{flex:1 1 calc(100% - 76px);font-size:10px}
+ .map-stage-nav button,.map-stage-nav select{font-size:10px;min-height:25px;padding:2px 5px}
+ .map-stage-next{flex:1 1 100%;justify-content:flex-end}
+ .map-stage-next select{max-width:calc(100% - 110px)}
+ .map-info-footer .stage-detail-enter{max-width:96px;overflow:hidden;text-overflow:ellipsis;font-size:10px;padding:3px 4px}
+}
 </style>
 </head>
 <body>
@@ -313,6 +357,15 @@ main{max-width:none;padding:0}
    </div>
   </nav>
   <div class="map-title-chip" id="current-map-title" aria-live="polite">マップを読み込み中…</div>
+  <nav id="map-stage-nav" class="map-stage-nav" aria-label="地図の階層移動" hidden>
+   <button type="button" id="map-stage-back" class="map-stage-back" aria-label="一つ上の地図に戻る">‹ 戻る</button>
+   <div id="map-stage-breadcrumb" class="map-stage-crumbs" aria-label="現在の地図の階層"></div>
+   <div class="map-stage-next">
+    <select id="map-stage-child" aria-label="進む先の下位マップ"></select>
+    <button type="button" id="map-stage-enter">中へ進む ›</button>
+    <span id="map-stage-status" class="map-stage-status" hidden>下位マップなし</span>
+   </div>
+  </nav>
   <div class="map-hint" id="map-hint" role="status" hidden></div>
   <div id="map-load-status" class="map-load-status" role="alert" hidden></div>
   <div id="geo-viewer-tools" style="position:absolute;top:55px;right:10px;z-index:8;display:flex;gap:5px;align-items:center">
@@ -336,6 +389,7 @@ main{max-width:none;padding:0}
      <output id="selected-display-level" class="map-level-chip" aria-label="選択した区画の表示レベル" hidden></output>
      <h2 id="detail-title" class="detail-path-title"></h2>
      <select id="floor-switch" class="floor-switch" aria-label="表示する階を選択" hidden></select>
+     <button type="button" id="map-stage-detail-enter" class="stage-detail-enter" hidden>詳細マップへ ›</button>
      <button type="button" id="detail-back" class="detail-close-inline" title="親の区画へ戻る" aria-label="親の区画へ戻る" hidden>🔙</button>
     </div>
     <p class="detail-meta" id="detail-meta"></p>
@@ -362,6 +416,7 @@ main{max-width:none;padding:0}
 <script src="./packed-scene-loader.js?v=sakihana-snapshot-v2"></script>
 <script src="./map-viewer.js?v=room-highlight-visibility-v21"></script>
 <script src="./object-catalog.js?v=residential-46-v2"></script>
+<script src="./map-stage-navigation.js?v=hierarchy-v1"></script>
 <script>
 (()=>{
 'use strict';
@@ -400,6 +455,7 @@ function updateBuildingFloorOverlay(state){
  box.style.left=Math.max(halfWidth+6,Math.min(state.width-halfWidth-6,state.x))+'px';
  box.style.top=Math.max(40,Math.min(state.height-8,state.y-5))+'px';
 }
+let stageNavigation=null;
 const viewer=window.AAMapViewer.create({
  host:$('viewport'),canvas:$('map-canvas'),
  info:$('detail-panel'),infoTitle:$('detail-title'),infoText:$('detail-text'),infoMeta:$('detail-meta'),
@@ -453,6 +509,7 @@ const viewer=window.AAMapViewer.create({
  },
  onSelectionChanged:(mapId,item)=>{
   selectedObjectId=item?.id||null;
+  stageNavigation?.updateSelection(item,mapId);
   if(!(previewRestore?.mapId===mapId&&!item))storePreviewState();
   const levelChip=$('selected-display-level');
   levelChip.hidden=!(item&&Number.isSafeInteger(item.displayLevel));
@@ -548,6 +605,13 @@ gridToggle.addEventListener("click",()=>{
 applyGridPreference();
 let nodes=new Map(),roots=[],selected=null,viewId='top',selectedObjectId=null,pendingFocus=null;
 const treeExpanded=new Set(),initializedTreeMaps=new Set(),floorStructures=new Map(),floorLoadErrors=new Map();
+stageNavigation=window.AAMapStageNavigation.create({
+ bar:$('map-stage-nav'),breadcrumb:$('map-stage-breadcrumb'),
+ back:$('map-stage-back'),childSelect:$('map-stage-child'),
+ enter:$('map-stage-enter'),status:$('map-stage-status'),
+ detailEnter:$('map-stage-detail-enter'),
+ getNodes:()=>nodes,getSelected:()=>selected,selectMap:(id)=>select(id,null)
+});
 $('detail-back').addEventListener('click',()=>{
  const navigation=viewer.getSelectionNavigation();
  const parent=navigation?.parents?.at(-1);
@@ -724,6 +788,7 @@ function render(){
  const sceneSource=active.id===root.id?
   (root.views||[]).find(v=>v.id===viewId)?.source||active.source||null:active.source||null;
  viewer.show(active.id,active.id===root.id?viewId:null,sceneSource);
+ stageNavigation?.render();
 }
 function select(id,mode){
  if(!nodes.has(id))return;
