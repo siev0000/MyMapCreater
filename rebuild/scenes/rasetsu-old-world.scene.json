@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "rasetsu-old-world",
   "name": "旧世界｜鬼武神ラセツ時代",
-  "description": "旧世界の制作マップ（1000×1000マス標準）。大陸・国家・海岸線は仮配置。黒天守国のU字湾と閻魔羅闍、秘匿されたジェンダードーンの島の位置関係を表現。距離縮尺の最終確定は今後行う。",
+  "description": "旧世界の世界地図（配置未確定・制作途中）。本格的な地理制作は下位の『大陸地図（仮）』で先行する。ジェンダードーンの秘匿島、黒天守国の湾など旧稿の概要要素は参考として残すが、世界全体の大陸数・形・位置は未決定。",
   "coordinateSystem": {
     "horizontal": [
       1,
@@ -133,13 +133,13 @@
       }
     },
     "mapScale": {
-      "standardId": "rasetsu-seven-level-v1",
+      "standardId": "rasetsu-seven-level-v2",
       "tierId": "world",
-      "metersPerCell": 1000000,
+      "metersPerCell": 40000,
       "coordinateUnitsPerCell": 50,
-      "metersPerCoordinateUnit": 20000,
+      "metersPerCoordinateUnit": 800,
       "status": "provisional",
-      "application": "reference-only-until-world-geography-finalized"
+      "application": "world-extent-and-landmass-position-unconfirmed"
     },
     "editorGrid": {
       "spacing": 50,
@@ -165,7 +165,7 @@
       "ジェンダードーンが不可視となる仕組み・島の正確な位置",
       "五区画の位置・橋の形状"
     ],
-    "scaleStatus": "基準縮尺を世界地図（1マス1000km）に設定。現在の大陸形状・国・湾・島の座標は旧稿の仮配置であり、実測距離・大陸寸法は未調整。",
+    "scaleStatus": "新7段階基準（世界地図：1マス40km）を暫定登録。世界全体の大陸数・配置は未確定。下位『大陸地図（仮）』を優先制作する。",
     "gridStandard": {
       "id": "rasetsu-map-canvas-v1",
       "columns": 1000,
@@ -173,7 +173,8 @@
       "coordinateUnitsPerCell": 50
     },
     "geometryRevision": "旧世界の1000×1000グリッドを採用。元稿から地形の縦横比を維持して拡大・上下に余白を確保。",
-    "distanceScaleStatus": "未確定（世界の実際の広さが決まるまで、1マス1000kmという旧仮基準は確定距離として使わない）"
+    "distanceScaleStatus": "世界地図の縮尺数値は基準値、世界の実際の地理構成は未決定。旧世界シーンは大陸を構成する正式世界地図とはまだみなさない。",
+    "activeDraftContinentMapId": "rasetsu_old_world_continent_draft"
   },
   "objects": [
     {
