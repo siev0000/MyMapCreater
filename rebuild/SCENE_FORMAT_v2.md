@@ -38,17 +38,19 @@ Painter: higher zIndex draws later. An object's explicit zIndex overrides its na
 
 The authoritative preset values are stored in `rebuild/map-scale-presets.js` (global `AAMapScalePresets`). They are available from **Editor → 設定 → 地図の縮尺**. This is an opt-in standard for any scene and does not impose map-specific logic on the renderer.
 
-**Standard cell**: 50 scene-coordinate units. A 1600×1000 scene therefore spans 32×20 standard cells. The `settings.editorGrid` editing/snap grid is **independent** and must not be conflated with this geographic distance scale. Applying a preset updates `scene.grid.spacing` and `scene.settings.mapScale`, but never rescales or moves existing shapes. Other scenes are unchanged until explicitly configured.
+**Adopted standard canvas (2026-11-23)**: **1000×1000 cells**, each **50 scene-coordinate units**, therefore `coordinateSystem.bounds={minX:0,maxX:50000,minY:0,maxY:50000}`, `grid.spacing=50`. Total grid cells: 1,000,000. The 1000×1000-cell view was tested manually by the user and approved as the reference size. The reusable empty template is `rebuild/examples/fantasy-map-1000-template.scene.json`. Existing other project/real-world/ship maps do not get automatically resized.
 
-| Tier ID | Map hierarchy | Meters per cell | Extent at 32×20 cells |
+**Important separation**: Map cell **count** (1000×1000) and physical **distance per cell** (the seven-tier preset) are independent settings. The `settings.editorGrid` editing/snap grid is also independent of both. Applying a distance preset updates `scene.grid.spacing` and `scene.settings.mapScale`, but never rescales or moves existing shapes. For each new map, choose the actual geographic extent and reconcile the distance scale **before treating positions as measured kilometers**.
+
+| Tier ID | Map hierarchy | Suggested meters per cell (provisional) | Theoretical extent at 1000×1000 cells |
 |---|---|---:|---|
-| `world` | 世界地図 | 1,000,000m = 1,000km | 32,000×20,000km |
-| `continent` | 大陸地図 | 100,000m = 100km | 3,200×2,000km |
-| `nation` | 国家地図 | 20,000m = 20km | 640×400km |
-| `region` | 地方地図 | 2,000m = 2km | 64×40km |
-| `town` | 都市・町 | 50m | 1,600×1,000m |
-| `district` | 街区・敷地 | 10m | 320×200m |
-| `interior` | 建物内部 | 1m | 32×20m |
+| `world` | 世界地図 | 1,000,000m = 1,000km | 1,000,000×1,000,000km |
+| `continent` | 大陸地図 | 100,000m = 100km | 100,000×100,000km |
+| `nation` | 国家地図 | 20,000m = 20km | 20,000×20,000km |
+| `region` | 地方地図 | 2,000m = 2km | 2,000×2,000km |
+| `town` | 都市・町 | 50m | 50×50km |
+| `district` | 街区・敷地 | 10m | 10×10km |
+| `interior` | 建物内部 | 1m | 1×1km |
 
 Example scene properties (optional; not a schema-version change):
 
@@ -67,7 +69,7 @@ Example scene properties (optional; not a schema-version change):
 
 The physical distance represented by an object is its coordinate-unit span × `metersPerCoordinateUnit`. Objects too small to depict at a given tier should be shown as **symbolic landmarks**, with geometry and buildings stored in separate child maps. Larger sites, cities or building interiors may be split across adjacent maps while keeping the tier's scale consistent.
 
-**Existing Rasetsu map caveat**: `rasetsu-old-world.scene.json` is tagged `world` as the current world overview, but its continent shape, countries, hidden Jendadawn island, U-shaped Kokuten bay and bridge positions were sketched before this standard was fixed. They are **provisional cartography**, not measured real-world distances or final landmass dimensions. Reconcile the geography during subsequent revisions; do not automatically scale all coordinates or reinterpret the Tokyo Dome-sized Enmaraja island outline as literal at world zoom.
+**Existing Rasetsu map caveat**: `rasetsu-old-world.scene.json` now uses the approved **1000×1000 grid**, by promoting the accepted trial's original 161 shapes with aspect-preserving coordinates. However, its `settings.mapScale` world-tier physical distance is marked **`status:"provisional"`**. At the previously proposed 1,000 km/cell, the theoretical map would be 1,000,000 km wide: **this is not a confirmed world size and should not be treated as a physical measurement**. The world diameter, continent extents, distances between nations, hidden Jendadawn island, U-shaped Kokuten bay, bridge positions and Tokyo Dome-sized Enmaraja island must be reconciled as separate map scales later. `rasetsu-old-world-1000grid-test.scene.json` remains as a benchmark only.
 
 ## Coordinate examples
 
