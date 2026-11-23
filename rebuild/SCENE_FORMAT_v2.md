@@ -34,6 +34,41 @@ Visibility: whenParentSelected (boolean), modeGroup and modes (array of allowed 
 Hierarchy: `parentId` controls nesting in the menu, independent of `objectType`. Do not guess parentage from positions.
 Painter: higher zIndex draws later. An object's explicit zIndex overrides its named layer zIndex. Grid also obeys the zIndex configured for the grid layer.
 
+## Shared seven-level map scale standard (Rasetsu)
+
+The authoritative preset values are stored in `rebuild/map-scale-presets.js` (global `AAMapScalePresets`). They are available from **Editor → 設定 → 地図の縮尺**. This is an opt-in standard for any scene and does not impose map-specific logic on the renderer.
+
+**Standard cell**: 50 scene-coordinate units. A 1600×1000 scene therefore spans 32×20 standard cells. The `settings.editorGrid` editing/snap grid is **independent** and must not be conflated with this geographic distance scale. Applying a preset updates `scene.grid.spacing` and `scene.settings.mapScale`, but never rescales or moves existing shapes. Other scenes are unchanged until explicitly configured.
+
+| Tier ID | Map hierarchy | Meters per cell | Extent at 32×20 cells |
+|---|---|---:|---|
+| `world` | 世界地図 | 1,000,000m = 1,000km | 32,000×20,000km |
+| `continent` | 大陸地図 | 100,000m = 100km | 3,200×2,000km |
+| `nation` | 国家地図 | 20,000m = 20km | 640×400km |
+| `region` | 地方地図 | 2,000m = 2km | 64×40km |
+| `town` | 都市・町 | 50m | 1,600×1,000m |
+| `district` | 街区・敷地 | 10m | 320×200m |
+| `interior` | 建物内部 | 1m | 32×20m |
+
+Example scene properties (optional; not a schema-version change):
+
+```json
+"grid": { "visible": false, "spacing": 50 },
+"settings": {
+  "mapScale": {
+    "standardId": "rasetsu-seven-level-v1",
+    "tierId": "world",
+    "metersPerCell": 1000000,
+    "coordinateUnitsPerCell": 50,
+    "metersPerCoordinateUnit": 20000
+  }
+}
+```
+
+The physical distance represented by an object is its coordinate-unit span × `metersPerCoordinateUnit`. Objects too small to depict at a given tier should be shown as **symbolic landmarks**, with geometry and buildings stored in separate child maps. Larger sites, cities or building interiors may be split across adjacent maps while keeping the tier's scale consistent.
+
+**Existing Rasetsu map caveat**: `rasetsu-old-world.scene.json` is tagged `world` as the current world overview, but its continent shape, countries, hidden Jendadawn island, U-shaped Kokuten bay and bridge positions were sketched before this standard was fixed. They are **provisional cartography**, not measured real-world distances or final landmass dimensions. Reconcile the geography during subsequent revisions; do not automatically scale all coordinates or reinterpret the Tokyo Dome-sized Enmaraja island outline as literal at world zoom.
+
 ## Coordinate examples
 
 A conventional town/map can specify horizontal [1,0], vertical [0,1]. A vertically oriented layout can specify horizontal [0,1], vertical [-1,0]. These projection vectors are DATA and are not fixed to any map class.
