@@ -127,6 +127,13 @@
           }
         ]
       }
+    },
+    "mapScale": {
+      "standardId": "rasetsu-seven-level-v1",
+      "tierId": "world",
+      "metersPerCell": 1000000,
+      "coordinateUnitsPerCell": 50,
+      "metersPerCoordinateUnit": 20000
     }
   },
   "metadata": {
@@ -145,7 +152,8 @@
       "世界規模での方位・隣国関係・地形の厳密な形",
       "ジェンダードーンが不可視となる仕組み・島の正確な位置",
       "五区画の位置・橋の形状"
-    ]
+    ],
+    "scaleStatus": "基準縮尺を世界地図（1マス1000km）に設定。現在の大陸形状・国・湾・島の座標は旧稿の仮配置であり、実測距離・大陸寸法は未調整。"
   },
   "objects": [
     {
