@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "rasetsu-old-world",
   "name": "旧世界｜鬼武神ラセツ時代",
-  "description": "鬼武神ラセツ時代（旧暦約5000年頃）の世界地図・第1稿。Notionで確定した地域特性に基づくが、大陸形状・各国の方位と距離は仮配置。",
+  "description": "鬼武神ラセツ時代（旧暦約5000年頃）の旧世界地図・第2稿。ジェンダードーンは招かれた者だけが発見できる沖合の島。黒天守国はU字型の入江を陸側で囲み、海寄りの湾内小島に閻魔羅闍。世界規模の地理配置は仮。",
   "coordinateSystem": {
     "horizontal": [
       1,
@@ -132,9 +132,20 @@
   "metadata": {
     "project": "鬼武神ラセツ",
     "era": "旧暦 約5000年頃",
-    "revision": "draft-1",
+    "revision": "draft-2",
     "factStatus": "地形・国家属性はNotion準拠。海岸線・大陸形状・国間配置・距離はすべて仮構成。",
-    "coordinatesAreFictional": true
+    "coordinatesAreFictional": true,
+    "establishedLocalGeography": [
+      "ジェンダードーンは大陸から離れた海の島で、招かれた者以外は発見できない",
+      "黒天守国は海辺でU字に入り込む湾を陸から囲う",
+      "閻魔羅闍はU字湾の中央寄り・海側にある小島",
+      "湾の陸上部に海沿い約五区画があり、島へ橋が伸びる"
+    ],
+    "undecided": [
+      "世界規模での方位・隣国関係・地形の厳密な形",
+      "ジェンダードーンが不可視となる仕組み・島の正確な位置",
+      "五区画の位置・橋の形状"
+    ]
   },
   "objects": [
     {
@@ -299,32 +310,64 @@
             868
           ],
           [
-            642,
-            830
+            668,
+            841
           ],
           [
-            568,
-            852
+            656,
+            797
+          ],
+          [
+            642,
+            742
+          ],
+          [
+            616,
+            688
+          ],
+          [
+            581,
+            636
+          ],
+          [
+            545,
+            613
           ],
           [
             511,
-            821
+            603
           ],
           [
-            465,
-            786
+            477,
+            614
           ],
           [
-            432,
-            736
+            446,
+            649
           ],
           [
-            378,
-            741
+            421,
+            708
           ],
           [
-            345,
-            695
+            406,
+            761
+          ],
+          [
+            396,
+            818
+          ],
+          [
+            371,
+            795
+          ],
+          [
+            348,
+            751
+          ],
+          [
+            334,
+            704
           ],
           [
             306,
@@ -376,7 +419,7 @@
       "label": {
         "visible": false
       },
-      "detail": "大陸の位置・海岸線はデザインのための仮置き。"
+      "detail": "大陸全体の海岸線は制作中。南西側には、陸地がU字に湾を囲む黒天守国の内湾を反映。位置や尺度は仮。"
     },
     {
       "id": "coast-inset-north",
@@ -436,7 +479,7 @@
     },
     {
       "id": "western-island-jenda",
-      "name": "ジェンダードーン本島（仮）",
+      "name": "ジェンダードーンの秘匿島",
       "objectType": "terrain",
       "parentId": null,
       "displayLevel": 1,
@@ -448,60 +491,64 @@
         "type": "polygon",
         "points": [
           [
-            67,
-            557
+            57,
+            818
           ],
           [
-            92,
-            526
+            76,
+            783
           ],
           [
-            123,
-            540
+            105,
+            768
           ],
           [
-            144,
-            517
+            131,
+            772
           ],
           [
-            182,
-            552
+            153,
+            746
           ],
           [
-            205,
-            585
+            185,
+            783
           ],
           [
-            216,
-            644
+            210,
+            820
           ],
           [
-            200,
-            697
+            220,
+            861
           ],
           [
-            168,
-            721
+            198,
+            898
           ],
           [
-            129,
-            708
+            175,
+            922
           ],
           [
-            101,
-            734
+            141,
+            912
           ],
           [
-            72,
-            704
+            111,
+            936
           ],
           [
-            59,
-            652
+            82,
+            920
           ],
           [
-            42,
-            610
+            53,
+            894
+          ],
+          [
+            47,
+            856
           ]
         ]
       },
@@ -512,7 +559,8 @@
       },
       "label": {
         "visible": false
-      }
+      },
+      "detail": "大陸から海路を隔てた島。招かれた者だけが島を発見できるという設定。島の座標・発見不能の仕組みは未確定。"
     },
     {
       "id": "ji1",
@@ -527,10 +575,10 @@
       "geometry": {
         "type": "circle",
         "center": [
-          236,
-          565
+          230,
+          798
         ],
-        "radius": 22
+        "radius": 12
       },
       "style": {
         "fill": "#547660",
@@ -554,10 +602,10 @@
       "geometry": {
         "type": "circle",
         "center": [
-          222,
-          734
+          231,
+          938
         ],
-        "radius": 26
+        "radius": 20
       },
       "style": {
         "fill": "#547660",
@@ -581,10 +629,10 @@
       "geometry": {
         "type": "circle",
         "center": [
-          49,
-          776
+          37,
+          955
         ],
-        "radius": 13
+        "radius": 10
       },
       "style": {
         "fill": "#547660",
@@ -608,10 +656,10 @@
       "geometry": {
         "type": "circle",
         "center": [
-          279,
-          756
+          266,
+          871
         ],
-        "radius": 19
+        "radius": 13
       },
       "style": {
         "fill": "#547660",
@@ -624,100 +672,92 @@
     },
     {
       "id": "black-water",
-      "name": "黒天守国の波静かな内湾",
+      "name": "黒天守国・U字の静穏湾",
       "objectType": "terrain",
       "parentId": null,
       "displayLevel": 1,
       "layer": "water",
-      "zIndex": 17,
+      "zIndex": 27,
       "visible": true,
       "selectable": false,
       "geometry": {
         "type": "polygon",
         "points": [
           [
-            145,
-            643
+            385,
+            891
           ],
           [
-            222,
-            626
+            394,
+            825
           ],
           [
-            270,
-            638
-          ],
-          [
-            323,
-            657
-          ],
-          [
-            376,
-            649
+            406,
+            761
           ],
           [
             422,
-            665
-          ],
-          [
-            466,
-            658
-          ],
-          [
-            518,
-            682
-          ],
-          [
-            491,
-            729
-          ],
-          [
-            445,
-            748
-          ],
-          [
-            405,
-            733
-          ],
-          [
-            356,
-            751
-          ],
-          [
-            292,
-            739
-          ],
-          [
-            227,
-            752
-          ],
-          [
-            174,
-            743
-          ],
-          [
-            110,
-            752
-          ],
-          [
-            75,
             707
           ],
           [
-            110,
-            670
+            446,
+            650
+          ],
+          [
+            479,
+            615
+          ],
+          [
+            512,
+            605
+          ],
+          [
+            543,
+            618
+          ],
+          [
+            577,
+            640
+          ],
+          [
+            609,
+            688
+          ],
+          [
+            638,
+            745
+          ],
+          [
+            656,
+            798
+          ],
+          [
+            673,
+            856
+          ],
+          [
+            699,
+            925
+          ],
+          [
+            353,
+            925
           ]
         ]
       },
       "style": {
-        "fill": "#155466",
-        "stroke": "#4b9a98",
+        "fill": "#17495b",
+        "stroke": "#4394a6",
         "strokeWidth": 2
       },
       "label": {
         "visible": false
       },
-      "detail": "黒天守国は巨大湖のように見える波の立たない水域を持つ。形状は仮。"
+      "detail": "陸側が湾をU字型に囲み、南方の海に口を開く。湾内は波が穏やかで、海寄りの小島に《閻魔羅闍》が建つ。岸の正確な形・尺度は仮。",
+      "metadata": {
+        "notionSupport": "海岸・波静かな水域・島の塔",
+        "userCorrection": "内陸にU字の湾／海寄りの中心に閻魔羅闍／陸側が黒天守国を囲う"
+      }
     },
     {
       "id": "black-citadel-island",
@@ -726,46 +766,59 @@
       "parentId": null,
       "displayLevel": 1,
       "layer": "land",
-      "zIndex": 18,
+      "zIndex": 28,
       "visible": true,
       "selectable": false,
       "geometry": {
         "type": "polygon",
         "points": [
           [
-            403,
-            676
+            477,
+            750
           ],
           [
-            437,
-            667
+            498,
+            739
           ],
           [
-            462,
-            684
+            528,
+            741
           ],
           [
-            450,
-            706
+            554,
+            756
           ],
           [
-            420,
-            716
+            559,
+            773
           ],
           [
-            392,
-            700
+            539,
+            787
+          ],
+          [
+            511,
+            792
+          ],
+          [
+            487,
+            782
+          ],
+          [
+            470,
+            768
           ]
         ]
       },
       "style": {
-        "fill": "#617e60",
-        "stroke": "#a6c5a7",
-        "strokeWidth": 2
+        "fill": "#77957a",
+        "stroke": "#a9cfae",
+        "strokeWidth": 3
       },
       "label": {
         "visible": false
-      }
+      },
+      "detail": "湾の海寄りに浮かぶ五鬼の塔の小島。各沿岸区画から島へ橋が伸びる。"
     },
     {
       "id": "dragon-main-island",
@@ -3190,24 +3243,24 @@
             406
           ],
           [
-            599,
-            466
+            600,
+            476
           ],
           [
-            622,
-            521
+            627,
+            523
           ],
           [
-            590,
-            594
+            592,
+            562
           ],
           [
-            538,
-            648
+            555,
+            583
           ],
           [
-            489,
-            695
+            511,
+            603
           ]
         ]
       },
@@ -4192,32 +4245,40 @@
         "type": "polygon",
         "points": [
           [
-            21,
-            498
+            11,
+            758
           ],
           [
-            151,
-            484
+            61,
+            717
           ],
           [
-            264,
-            522
+            164,
+            699
           ],
           [
-            294,
-            648
+            238,
+            735
           ],
           [
-            258,
-            793
+            279,
+            808
           ],
           [
-            100,
-            813
+            292,
+            912
           ],
           [
-            19,
-            726
+            246,
+            973
+          ],
+          [
+            108,
+            981
+          ],
+          [
+            22,
+            928
           ]
         ]
       },
@@ -4234,8 +4295,8 @@
         "visible": true,
         "text": "ジェンダードーン",
         "position": [
-          157,
-          500
+          149,
+          738
         ],
         "fontSize": 20,
         "fontWeight": "bold",
@@ -4243,11 +4304,13 @@
         "outline": "#12202a",
         "outlineWidth": 4
       },
-      "detail": "孤島にある島国。多様な出自の人々が集まり、水の根源精霊によって町が水没した。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "detail": "海上の孤島国家。招待・導きを受けた者にしか島の存在や場所を見出せず、普通の航海者には発見できない。独自の位置・幻惑や結界の仕組みなどは未確定。町の一つが水の根源精霊の災害で水没した。\n※大陸との方位・距離・島の輪郭は仮配置。",
       "metadata": {
         "source": "https://app.notion.com/p/3e2fa1b30dc981eea87fc3c93af89db0",
-        "placementStatus": "仮配置",
-        "factStatus": "国家の性質のみ確定"
+        "placementStatus": "大陸から離れた海上・詳細方位は未確定",
+        "factStatus": "国家の性質のみ確定",
+        "discovery": "招かれた者だけが島を見つけられる（ユーザー指定）",
+        "navigation": "普通の探索航路からは発見不可"
       }
     },
     {
@@ -4264,36 +4327,96 @@
         "type": "polygon",
         "points": [
           [
-            216,
-            397
+            212,
+            406
           ],
           [
-            395,
-            327
+            369,
+            329
           ],
           [
-            606,
-            376
+            547,
+            337
           ],
           [
-            690,
-            543
+            650,
+            430
           ],
           [
-            651,
+            688,
+            533
+          ],
+          [
+            717,
+            654
+          ],
+          [
+            719,
+            792
+          ],
+          [
+            683,
+            855
+          ],
+          [
+            646,
+            841
+          ],
+          [
+            633,
+            763
+          ],
+          [
+            608,
+            698
+          ],
+          [
+            572,
+            647
+          ],
+          [
+            534,
+            615
+          ],
+          [
+            509,
+            616
+          ],
+          [
+            479,
+            629
+          ],
+          [
+            453,
+            661
+          ],
+          [
+            436,
             715
           ],
           [
-            539,
-            784
+            413,
+            800
           ],
           [
-            371,
-            785
+            369,
+            808
           ],
           [
-            241,
-            682
+            342,
+            747
+          ],
+          [
+            320,
+            695
+          ],
+          [
+            268,
+            679
+          ],
+          [
+            225,
+            610
           ]
         ]
       },
@@ -4310,8 +4433,8 @@
         "visible": true,
         "text": "黒天守国",
         "position": [
-          407,
-          510
+          388,
+          486
         ],
         "fontSize": 20,
         "fontWeight": "bold",
@@ -4319,11 +4442,12 @@
         "outline": "#12202a",
         "outlineWidth": 4
       },
-      "detail": "多種族を受け入れる鬼の国。山岳深奥の黒天守閣と、波の立たない水域、塔《閻魔羅闍》を持つ。\n※国家の場所・国境・周辺国との距離は地図制作上の仮配置です。",
+      "detail": "海辺の鬼の国。海から陸へU字に入り込む波静かな湾があり、その中央より海側に《閻魔羅闍》が建つ小島がある。陸上側の町・五区画が湾岸を三方から囲み、各区画から島へ橋が伸びる。山岳深奥には黒天守閣。\n※U字湾と立地関係は今回の指定を反映。海岸の細かい形や区画位置は制作上の案。",
       "metadata": {
         "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
-        "placementStatus": "仮配置",
-        "factStatus": "国家の性質のみ確定"
+        "placementStatus": "局所的な地形関係は指定反映、全体方位・距離は仮",
+        "factStatus": "国家の性質のみ確定",
+        "topology": "U字の湾・三方を囲む陸地・湾内の海寄りに閻魔羅闍"
       }
     },
     {
@@ -4709,8 +4833,8 @@
       "geometry": {
         "type": "circle",
         "center": [
-          428,
-          690
+          517,
+          765
         ],
         "radius": 10
       },
@@ -4736,8 +4860,8 @@
       "geometry": {
         "type": "circle",
         "center": [
-          428,
-          690
+          517,
+          765
         ],
         "radius": 4.4
       },
@@ -4750,8 +4874,8 @@
         "visible": true,
         "text": "閻魔羅闍",
         "position": [
-          428,
-          669
+          519,
+          730
         ],
         "fontSize": 13,
         "fontWeight": "bold",
@@ -4759,7 +4883,7 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "五鬼の塔がある小島。地下にはアシュラが運んだ世界樹の根が植えられている。／※配置位置は仮置きです。",
+      "detail": "U字に入り込んだ静穏湾の中心からやや海寄りにある小島の塔。地下に世界樹の根を守る。海側に開け、黒天守国の陸上地区が三方から囲む。配置は概略。",
       "metadata": {
         "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
         "positionStatus": "仮",
@@ -4779,8 +4903,8 @@
       "geometry": {
         "type": "circle",
         "center": [
-          157,
-          631
+          137,
+          847
         ],
         "radius": 10
       },
@@ -4806,8 +4930,8 @@
       "geometry": {
         "type": "circle",
         "center": [
-          157,
-          631
+          137,
+          847
         ],
         "radius": 4.4
       },
@@ -4820,8 +4944,8 @@
         "visible": true,
         "text": "水没した町",
         "position": [
-          157,
-          610
+          137,
+          827
         ],
         "fontSize": 13,
         "fontWeight": "bold",
@@ -4829,7 +4953,7 @@
         "outline": "#071b26",
         "outlineWidth": 3
       },
-      "detail": "水の根源精霊による災害で町一つが水底へ沈んだ。／※配置位置は仮置きです。",
+      "detail": "水の根源精霊による災害で町一つが水底へ沈んだ。島そのものは招かれた者にしか見つからない。位置・街区は仮。",
       "metadata": {
         "source": "https://app.notion.com/p/3e2fa1b30dc981eea87fc3c93af89db0",
         "positionStatus": "仮",
@@ -5410,7 +5534,7 @@
     },
     {
       "id": "chapter-route-1",
-      "name": "黒天守国からジェンダードーンへの参考経路",
+      "name": "案内された場合のジェンダードーン行き（概念上の航路）",
       "objectType": "route",
       "parentId": null,
       "displayLevel": 1,
@@ -5422,20 +5546,28 @@
         "type": "polyline",
         "points": [
           [
-            468,
-            484
+            530,
+            815
           ],
           [
-            404,
-            587
+            444,
+            877
           ],
           [
-            297,
-            622
+            355,
+            898
           ],
           [
-            207,
-            623
+            281,
+            900
+          ],
+          [
+            230,
+            872
+          ],
+          [
+            192,
+            854
           ]
         ]
       },
@@ -5456,7 +5588,11 @@
           "on"
         ]
       },
-      "detail": "本編の順序を参考にした仮移動線。実際の経路や距離は未確定。"
+      "detail": "案内された者のみジェンダードーンへ到達できるという設定を説明するための参考線。実際に使用できる通常航路を意味せず、正確な海路は未確定。初期状態は非表示。",
+      "metadata": {
+        "navigation": "招待を受けた場合に限る",
+        "accuracy": "未確定"
+      }
     },
     {
       "id": "chapter-route-2",
@@ -5472,16 +5608,20 @@
         "type": "polyline",
         "points": [
           [
-            206,
-            623
+            190,
+            857
           ],
           [
-            300,
-            675
+            307,
+            871
           ],
           [
-            553,
-            766
+            387,
+            871
+          ],
+          [
+            625,
+            852
           ],
           [
             829,
@@ -5678,8 +5818,8 @@
         "visible": true,
         "text": "西方の海",
         "position": [
-          85,
-          355
+          96,
+          369
         ],
         "fontSize": 18,
         "color": "#99c6d2",
@@ -5706,8 +5846,8 @@
         "visible": true,
         "text": "南方の海域",
         "position": [
-          493,
-          928
+          568,
+          931
         ],
         "fontSize": 18,
         "color": "#98c2cd",
@@ -5732,12 +5872,12 @@
       "style": {},
       "label": {
         "visible": true,
-        "text": "※大陸形状・国家の位置・国境・距離は未確定",
+        "text": "※大陸・海路・国境・距離は仮。黒天守湾・秘匿島の地理条件は指定反映",
         "position": [
-          440,
-          971
+          461,
+          972
         ],
-        "fontSize": 16,
+        "fontSize": 12,
         "color": "#ecd8b4",
         "outline": "#122632",
         "outlineWidth": 3
@@ -5807,6 +5947,884 @@
         "fill": "#e1c88b",
         "stroke": "#d7d2ba",
         "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "kokuten-district-west",
+      "name": "黒天守国・沿岸区画1",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 40,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          372,
+          652
+        ],
+        "radius": 7
+      },
+      "style": {
+        "fill": "#d2b986",
+        "stroke": "#2a463f",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": true,
+        "text": "沿岸区画1",
+        "position": [
+          372,
+          628
+        ],
+        "fontSize": 11,
+        "color": "#f3eed9",
+        "outline": "#0e2b31",
+        "outlineWidth": 3
+      },
+      "detail": "黒天守国には海沿いの町が約五区画あり、種族に合わせた住居が並ぶ。ここは湾の西側を表現した仮区画。区画の番号・形・正確な位置は未確定。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "status": "五区画は正本。番号・座標は仮"
+      }
+    },
+    {
+      "id": "kokuten-district-northwest",
+      "name": "黒天守国・沿岸区画2",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 40,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          419,
+          588
+        ],
+        "radius": 7
+      },
+      "style": {
+        "fill": "#d2b986",
+        "stroke": "#2a463f",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": true,
+        "text": "沿岸区画2",
+        "position": [
+          419,
+          564
+        ],
+        "fontSize": 11,
+        "color": "#f3eed9",
+        "outline": "#0e2b31",
+        "outlineWidth": 3
+      },
+      "detail": "黒天守国には海沿いの町が約五区画あり、種族に合わせた住居が並ぶ。ここは湾の北西岸を表現した仮区画。区画の番号・形・正確な位置は未確定。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "status": "五区画は正本。番号・座標は仮"
+      }
+    },
+    {
+      "id": "kokuten-district-north",
+      "name": "黒天守国・沿岸区画3",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 40,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          506,
+          568
+        ],
+        "radius": 7
+      },
+      "style": {
+        "fill": "#d2b986",
+        "stroke": "#2a463f",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": true,
+        "text": "沿岸区画3",
+        "position": [
+          506,
+          544
+        ],
+        "fontSize": 11,
+        "color": "#f3eed9",
+        "outline": "#0e2b31",
+        "outlineWidth": 3
+      },
+      "detail": "黒天守国には海沿いの町が約五区画あり、種族に合わせた住居が並ぶ。ここは湾の奥・北岸を表現した仮区画。区画の番号・形・正確な位置は未確定。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "status": "五区画は正本。番号・座標は仮"
+      }
+    },
+    {
+      "id": "kokuten-district-northeast",
+      "name": "黒天守国・沿岸区画4",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 40,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          605,
+          602
+        ],
+        "radius": 7
+      },
+      "style": {
+        "fill": "#d2b986",
+        "stroke": "#2a463f",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": true,
+        "text": "沿岸区画4",
+        "position": [
+          605,
+          578
+        ],
+        "fontSize": 11,
+        "color": "#f3eed9",
+        "outline": "#0e2b31",
+        "outlineWidth": 3
+      },
+      "detail": "黒天守国には海沿いの町が約五区画あり、種族に合わせた住居が並ぶ。ここは湾の北東岸を表現した仮区画。区画の番号・形・正確な位置は未確定。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "status": "五区画は正本。番号・座標は仮"
+      }
+    },
+    {
+      "id": "kokuten-district-east",
+      "name": "黒天守国・沿岸区画5",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 40,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          690,
+          721
+        ],
+        "radius": 7
+      },
+      "style": {
+        "fill": "#d2b986",
+        "stroke": "#2a463f",
+        "strokeWidth": 2
+      },
+      "label": {
+        "visible": true,
+        "text": "沿岸区画5",
+        "position": [
+          690,
+          697
+        ],
+        "fontSize": 11,
+        "color": "#f3eed9",
+        "outline": "#0e2b31",
+        "outlineWidth": 3
+      },
+      "detail": "黒天守国には海沿いの町が約五区画あり、種族に合わせた住居が並ぶ。ここは湾の東側を表現した仮区画。区画の番号・形・正確な位置は未確定。",
+      "metadata": {
+        "source": "https://app.notion.com/p/28cfa1b30dc98007acb3cdc51cb8827a",
+        "status": "五区画は正本。番号・座標は仮"
+      }
+    },
+    {
+      "id": "bridge-enmaraja-west",
+      "name": "沿岸区画と閻魔羅闍を結ぶ橋（仮）",
+      "objectType": "route",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "roads",
+      "zIndex": 34,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            407,
+            712
+          ],
+          [
+            458,
+            735
+          ],
+          [
+            475,
+            758
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#b4b2a0",
+        "strokeWidth": 3.8,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "各沿岸区画から閻魔羅闍の島へ渡る橋。実際に五区画から橋が伸びることは確定しているが、接続順・橋梁形状と位置は地図制作上の仮表現。",
+      "metadata": {
+        "fact": "橋の存在はNotion設定",
+        "layoutStatus": "未確定"
+      }
+    },
+    {
+      "id": "bridge-enmaraja-northwest",
+      "name": "沿岸区画と閻魔羅闍を結ぶ橋（仮）",
+      "objectType": "route",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "roads",
+      "zIndex": 34,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            456,
+            650
+          ],
+          [
+            476,
+            696
+          ],
+          [
+            494,
+            745
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#b4b2a0",
+        "strokeWidth": 3.8,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "各沿岸区画から閻魔羅闍の島へ渡る橋。実際に五区画から橋が伸びることは確定しているが、接続順・橋梁形状と位置は地図制作上の仮表現。",
+      "metadata": {
+        "fact": "橋の存在はNotion設定",
+        "layoutStatus": "未確定"
+      }
+    },
+    {
+      "id": "bridge-enmaraja-north",
+      "name": "沿岸区画と閻魔羅闍を結ぶ橋（仮）",
+      "objectType": "route",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "roads",
+      "zIndex": 34,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            512,
+            616
+          ],
+          [
+            515,
+            685
+          ],
+          [
+            516,
+            740
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#b4b2a0",
+        "strokeWidth": 3.8,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "各沿岸区画から閻魔羅闍の島へ渡る橋。実際に五区画から橋が伸びることは確定しているが、接続順・橋梁形状と位置は地図制作上の仮表現。",
+      "metadata": {
+        "fact": "橋の存在はNotion設定",
+        "layoutStatus": "未確定"
+      }
+    },
+    {
+      "id": "bridge-enmaraja-northeast",
+      "name": "沿岸区画と閻魔羅闍を結ぶ橋（仮）",
+      "objectType": "route",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "roads",
+      "zIndex": 34,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            605,
+            681
+          ],
+          [
+            562,
+            722
+          ],
+          [
+            539,
+            748
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#b4b2a0",
+        "strokeWidth": 3.8,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "各沿岸区画から閻魔羅闍の島へ渡る橋。実際に五区画から橋が伸びることは確定しているが、接続順・橋梁形状と位置は地図制作上の仮表現。",
+      "metadata": {
+        "fact": "橋の存在はNotion設定",
+        "layoutStatus": "未確定"
+      }
+    },
+    {
+      "id": "bridge-enmaraja-east",
+      "name": "沿岸区画と閻魔羅闍を結ぶ橋（仮）",
+      "objectType": "route",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "roads",
+      "zIndex": 34,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            647,
+            792
+          ],
+          [
+            593,
+            782
+          ],
+          [
+            555,
+            773
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#b4b2a0",
+        "strokeWidth": 3.8,
+        "lineCap": "round"
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "各沿岸区画から閻魔羅闍の島へ渡る橋。実際に五区画から橋が伸びることは確定しているが、接続順・橋梁形状と位置は地図制作上の仮表現。",
+      "metadata": {
+        "fact": "橋の存在はNotion設定",
+        "layoutStatus": "未確定"
+      }
+    },
+    {
+      "id": "bay-mouth-shoal-west",
+      "name": "内湾西岸の浅瀬",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 29,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            394,
+            801
+          ],
+          [
+            385,
+            851
+          ],
+          [
+            357,
+            912
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(112,181,182,.55)",
+        "strokeWidth": 2,
+        "dash": [
+          4,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "浅瀬の範囲は地図制作上の演出。"
+    },
+    {
+      "id": "bay-mouth-shoal-east",
+      "name": "内湾東岸の浅瀬",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 29,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            655,
+            802
+          ],
+          [
+            675,
+            858
+          ],
+          [
+            707,
+            909
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(112,181,182,.55)",
+        "strokeWidth": 2,
+        "dash": [
+          4,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "bay-head-shoal",
+      "name": "湾奥の浅瀬",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 29,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            455,
+            646
+          ],
+          [
+            474,
+            630
+          ],
+          [
+            506,
+            619
+          ],
+          [
+            538,
+            630
+          ],
+          [
+            573,
+            650
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(159,206,205,.55)",
+        "strokeWidth": 2,
+        "dash": [
+          3,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "hidden-island-fog",
+      "name": "招かれた者だけが発見できる島・秘匿海域（範囲仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 20,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "ring",
+        "center": [
+          144,
+          845
+        ],
+        "innerRadius": 113,
+        "outerRadius": 134
+      },
+      "style": {
+        "fill": "rgba(174,204,208,.13)",
+        "stroke": "rgba(182,210,211,.5)",
+        "strokeWidth": 1.5,
+        "dash": [
+          5,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "ジェンダードーンは招かれた者にしか見つけられない位置にある。ここでは地図上の視覚表現として海霧で秘匿海域を示す。霧や幻惑が実際の隠蔽原理であることは確定していない。",
+      "metadata": {
+        "status": "霧の表現は演出。発見条件は確定"
+      }
+    },
+    {
+      "id": "island-shore-shelf",
+      "name": "ジェンダードーン沿岸の暗礁（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "water",
+      "zIndex": 21,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            35,
+            838
+          ],
+          [
+            43,
+            803
+          ],
+          [
+            73,
+            763
+          ],
+          [
+            110,
+            745
+          ],
+          [
+            156,
+            721
+          ],
+          [
+            202,
+            755
+          ],
+          [
+            237,
+            807
+          ],
+          [
+            247,
+            856
+          ],
+          [
+            228,
+            912
+          ],
+          [
+            199,
+            946
+          ],
+          [
+            157,
+            957
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(123,190,184,.43)",
+        "strokeWidth": 1.6,
+        "dash": [
+          3,
+          8
+        ]
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "black-bay-harbor",
+      "name": "黒天守国・湾口（仮置き）",
+      "objectType": "landmark",
+      "parentId": "region-kokuten",
+      "displayLevel": 2,
+      "layer": "sites",
+      "zIndex": 42,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          682,
+          829
+        ],
+        "radius": 5
+      },
+      "style": {
+        "fill": "#e4d2a1",
+        "stroke": "#263d44",
+        "strokeWidth": 1
+      },
+      "label": {
+        "visible": false
+      },
+      "detail": "U字湾の入口。閻魔羅闍への橋と水路がある水域をイメージした地点。港や航行設備の正式な有無は未確定。",
+      "metadata": {
+        "status": "地形上の目印・施設設定は未確定"
+      }
+    },
+    {
+      "id": "north-spur-west",
+      "name": "大陸の地形線（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 16,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            690,
+            331
+          ],
+          [
+            716,
+            351
+          ],
+          [
+            746,
+            338
+          ],
+          [
+            771,
+            361
+          ],
+          [
+            808,
+            350
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(198,195,160,.30)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "north-spur-east",
+      "name": "大陸の地形線（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 16,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            1038,
+            357
+          ],
+          [
+            1083,
+            372
+          ],
+          [
+            1111,
+            391
+          ],
+          [
+            1153,
+            397
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(198,195,160,.30)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "east-coast-inset",
+      "name": "大陸の地形線（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 16,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            1422,
+            748
+          ],
+          [
+            1374,
+            766
+          ],
+          [
+            1328,
+            747
+          ],
+          [
+            1282,
+            772
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(198,195,160,.30)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "south-coast-inset",
+      "name": "大陸の地形線（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 16,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            956,
+            845
+          ],
+          [
+            932,
+            861
+          ],
+          [
+            908,
+            853
+          ],
+          [
+            881,
+            870
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(198,195,160,.30)",
+        "strokeWidth": 1.6
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "north-river-branch",
+      "name": "大陸の地形線（仮）",
+      "objectType": "terrain",
+      "parentId": null,
+      "displayLevel": 1,
+      "layer": "relief",
+      "zIndex": 16,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            942,
+            311
+          ],
+          [
+            897,
+            358
+          ],
+          [
+            867,
+            392
+          ],
+          [
+            847,
+            433
+          ]
+        ]
+      },
+      "style": {
+        "stroke": "rgba(132,187,200,.67)",
+        "strokeWidth": 2.8
       },
       "label": {
         "visible": false
