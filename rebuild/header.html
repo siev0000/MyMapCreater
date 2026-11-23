@@ -306,6 +306,15 @@ main{max-width:none;padding:0}
  .map-stage-next select{max-width:calc(100% - 110px)}
  .map-info-footer .stage-detail-enter{max-width:96px;overflow:hidden;text-overflow:ellipsis;font-size:10px;padding:3px 4px}
 }
+
+.namegen-overlay[hidden]{display:none}.namegen-overlay{position:fixed;inset:0;z-index:90;background:#061218dd;padding:clamp(0px,2vw,16px);display:flex;align-items:center;justify-content:center}
+.namegen-dialog{display:flex;flex-direction:column;width:min(1180px,100%);height:min(96dvh,920px);border:1px solid #5c8592;background:#0e2936;border-radius:10px;overflow:hidden}
+.namegen-bar{display:flex;align-items:center;gap:12px;padding:7px 13px;border-bottom:1px solid #4f7581}
+.namegen-bar strong{flex:1;font-size:14px}.namegen-bar a{color:#9ce5e5;font-size:12px}
+.namegen-bar button{font-size:22px;width:36px;height:32px;line-height:1;background:#204150;color:#fff;border:1px solid #73949a;border-radius:6px}
+.namegen-frame{width:100%;flex:1;min-height:0;border:0;background:#081820}
+body.namegen-open{overflow:hidden}
+@media(max-width:550px){.namegen-dialog{height:100dvh;border-radius:0}}
 </style>
 </head>
 <body>
@@ -331,6 +340,7 @@ main{max-width:none;padding:0}
       <button type="button" id="legend-switch" class="menu-settings-button" aria-pressed="false">色の凡例：OFF</button>
       <div id="visibility-controls" aria-label="JSONで定義された表示グループ"></div>
       <button type="button" id="open-specs" class="menu-settings-button">📖 仕様書を見る</button>
+      <button type="button" id="open-namegen" class="menu-settings-button">✦ 名前作成（種族別）</button>
       <div style="padding:9px 10px;font-size:11px;line-height:1.8;color:#c9e0e5;border-top:1px solid #486975">
        <strong>地理データの出典・利用条件</strong>
        <div><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors（ODbL）</a></div>
@@ -409,6 +419,12 @@ main{max-width:none;padding:0}
   </div>
   <div id="spec-status" class="spec-status" role="status">仕様書を読み込んでいます…</div>
   <article id="spec-content" class="spec-body" tabindex="0"></article>
+ </section>
+</div>
+<div id="namegen-modal" class="namegen-overlay" hidden>
+ <section class="namegen-dialog" role="dialog" aria-modal="true" aria-labelledby="namegen-title">
+  <div class="namegen-bar"><strong id="namegen-title">名前作成</strong><a href="./name-generator.html" target="_blank" rel="noopener noreferrer">別画面で開く</a><button id="namegen-close" type="button" aria-label="名前作成を閉じる">×</button></div>
+  <iframe id="namegen-frame" class="namegen-frame" title="種族別 名前作成" data-src="./name-generator.html"></iframe>
  </section>
 </div>
 <script src="./spec-viewer.js?v=5"></script>
@@ -826,6 +842,20 @@ function selectMenuTab(tab){
 }
 $('menu-tab-map').addEventListener('click',()=>selectMenuTab('map'));
 $('menu-tab-settings').addEventListener('click',()=>selectMenuTab('settings'));
+const namegenModal=$('namegen-modal'),namegenFrame=$('namegen-frame');
+function closeNamegen(){
+ if(namegenModal.hidden)return;
+ namegenModal.hidden=true;document.body.classList.remove('namegen-open');$('open-namegen').focus();
+}
+$('open-namegen').addEventListener('click',()=>{
+ closeMenu();namegenModal.hidden=false;document.body.classList.add('namegen-open');
+ if(!namegenFrame.getAttribute('src'))namegenFrame.src=namegenFrame.dataset.src;
+ $('namegen-close').focus();
+});
+$('namegen-close').addEventListener('click',closeNamegen);
+namegenModal.addEventListener('click',e=>{if(e.target===namegenModal)closeNamegen()});
+namegenFrame.addEventListener('load',()=>{try{namegenFrame.contentWindow.addEventListener('keydown',e=>{if(e.key==='Escape')closeNamegen()})}catch(_){}});
+
 for(const [id,tab] of [['menu-tab-map','map'],['menu-tab-settings','settings']]){
  $(id).addEventListener('keydown',e=>{
   if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
@@ -849,7 +879,7 @@ document.addEventListener('pointerdown',e=>{
  if(!$('map-menu').contains(e.target))closeMenu();
 });
 document.addEventListener('keydown',e=>{
- if(e.key==='Escape')closeMenu();
+ if(e.key==='Escape'){closeNamegen();closeMenu();}
 });
 $('big-map-select').addEventListener('change',e=>{
  if(nodes.has(e.target.value))select(e.target.value,null);
