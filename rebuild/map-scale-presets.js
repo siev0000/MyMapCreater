@@ -1,4 +1,5 @@
-/* Seven-level fantasy map scales. One standard cell = 50 scene-coordinate units.
+/* Seven-level fantasy map scales. Standard canvas = 1000 x 1000 cells.
+   One standard cell = 50 scene-coordinate units.
    Editing/snapping grid (settings.editorGrid) is independent of this distance scale. */
 (function(global){
  "use strict";
@@ -14,8 +15,8 @@
  const standard=Object.freeze({
   id:"rasetsu-seven-level-v1",
   coordinateUnitsPerCell:50,
-  referenceColumns:32,
-  referenceRows:20,
+  referenceColumns:1000,
+  referenceRows:1000,
   tiers:Object.freeze(tiers.map(x=>Object.freeze(x)))
  });
  global.AAMapScalePresets=standard;
