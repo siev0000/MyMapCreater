@@ -68,6 +68,9 @@
 - マップエディター：`https://siev0000.github.io/MyMapCreater/rebuild/editor.html#rasetsu_old_world_continent_draft`
 - マップ閲覧：`https://siev0000.github.io/MyMapCreater/rebuild/header.html#rasetsu_old_world_continent_draft`
 - 大陸図：`rebuild/scenes/rasetsu-old-world-continent-draft.scene.json`
+- 湾岸町・都市縮尺の制作台紙：`rebuild/scenes/rasetsu-kokuten-bay-town-true-scale.scene.json`（50m/マス。50km四方はキャンバス寸法、町の実寸ではない。海岸線と5区画の面積は未確定）。
+- 閻魔羅闍・小島の面積近似図：`rebuild/scenes/rasetsu-enmaraja-island-true-scale.scene.json`（10m/マス。東京ドーム程度の面積を約直径244mの円で示す。島の海岸線が円形と決まったわけではない）。
+- **面積が不明な町・都市・国境は実寸として描画しない。** 大陸上の施設・町の円は面積ではなく「位置を示す記号」として管理。既知の面積条件だけ物理寸法に換算する。
 - 世界参考図：`rebuild/scenes/rasetsu-old-world.scene.json`
 - マップ階層：`rebuild/map-tree.json`
 - 縮尺プリセット：`rebuild/map-scale-presets.js`
