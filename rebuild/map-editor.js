@@ -43,6 +43,66 @@ function restorePreviousEditorFields(saved){
 }
 const gridDefaults={visible:true,snap:true,spacing:2,fraction:.5,originX:0,originY:0};
 let gridState={...gridDefaults};
+const mapScaleStandard=window.AAMapScalePresets;
+const formatMapDistance=meters=>meters>=1000
+ ?(meters/1000).toLocaleString("ja-JP")+"km"
+ :meters.toLocaleString("ja-JP")+"m";
+function selectedMapScaleTier(){
+ return mapScaleStandard?.tiers.find(t=>t.id===$("map-scale-preset")?.value)||null;
+}
+function updateMapScaleSummary(){
+ const target=$("map-scale-summary");if(!target)return;
+ const map=sceneNow(),tier=selectedMapScaleTier();
+ if(!mapScaleStandard?.tiers?.length){target.textContent="地図縮尺の基準データを読み込めません。";return}
+ if(!tier){target.textContent=map?.settings?.mapScale?"現在の保存縮尺を選択してください。":"このマップは縮尺未設定です。階層を選択してください。";return}
+ const cell=mapScaleStandard.coordinateUnitsPerCell,b=map?.coordinateSystem?.bounds;
+ const cols=b&&Number.isFinite(b.maxX-b.minX)?(b.maxX-b.minX)/cell:mapScaleStandard.referenceColumns;
+ const rows=b&&Number.isFinite(b.maxY-b.minY)?(b.maxY-b.minY)/cell:mapScaleStandard.referenceRows;
+ const saved=map?.settings?.mapScale;
+ const isSaved=saved?.standardId===mapScaleStandard.id&&saved.tierId===tier.id
+   &&saved.metersPerCell===tier.metersPerCell&&saved.coordinateUnitsPerCell===cell;
+ const status=isSaved?"登録済み":"未反映（ボタンを押すと保存対象になります）";
+ target.textContent="1マス＝"+formatMapDistance(tier.metersPerCell)
+  +"／地図全体："+formatMapDistance(cols*tier.metersPerCell)
+  +" × "+formatMapDistance(rows*tier.metersPerCell)+"（"
+  +cols.toLocaleString("ja-JP")+"×"+rows.toLocaleString("ja-JP")+"マス）／"+status;
+}
+function syncMapScaleSelection(scene){
+ const selector=$("map-scale-preset");
+ if(!selector||!mapScaleStandard)return;
+ const tierId=scene?.settings?.mapScale?.tierId;
+ selector.value=mapScaleStandard.tiers.some(t=>t.id===tierId)?tierId:"";
+ updateMapScaleSummary();
+}
+function initMapScaleOptions(){
+ const selector=$("map-scale-preset");
+ if(!selector||!mapScaleStandard)return;
+ selector.replaceChildren(new Option("未設定",""));
+ for(const tier of mapScaleStandard.tiers){
+  selector.add(new Option(tier.name+"（1マス "+formatMapDistance(tier.metersPerCell)+"）",tier.id));
+ }
+ selector.addEventListener("change",updateMapScaleSummary);
+ $("map-scale-save").addEventListener("click",()=>{
+  const tier=selectedMapScaleTier(),original=sceneNow();
+  if(!tier||!original)return notice("先に地図の階層を選択してください。","error");
+  const next=copy(original),cell=mapScaleStandard.coordinateUnitsPerCell;
+  next.settings=next.settings||{};
+  next.settings.mapScale={
+   standardId:mapScaleStandard.id,tierId:tier.id,
+   metersPerCell:tier.metersPerCell,coordinateUnitsPerCell:cell,
+   metersPerCoordinateUnit:tier.metersPerCell/cell
+  };
+  next.grid=next.grid||{};
+  next.grid.spacing=cell;
+  if(applyScene(next,state.selectedId)){
+   updateMapScaleSummary();
+   notice(tier.name+"の縮尺（1マス＝"+formatMapDistance(tier.metersPerCell)
+    +"）をマップに反映しました。図形の位置は変更していません。JSON保存で書き出せます。","success");
+  }
+ });
+ updateMapScaleSummary();
+}
+initMapScaleOptions();
 function readGridFields(){
  const spacing=Number(input("editor-grid-spacing"));
  const fraction=Number(input("editor-grid-fraction"));
@@ -187,7 +247,7 @@ $("editor-grid-save").addEventListener("click",()=>{
  if(!grid||!scene)return;
  const next=copy(scene);next.settings=next.settings||{};
  next.settings.editorGrid={spacing:grid.spacing,fraction:grid.fraction,originX:grid.originX,originY:grid.originY};
- if(applyScene(next,state.selectedId))notice("グリッドの座標換算・補助スナップ設定をJSONに反映しました。実寸0.5m/マスです。","success");
+ if(applyScene(next,state.selectedId))notice("編集スナップ設定をJSONに反映しました。地図の距離縮尺とは別設定です。","success");
 });
 function translateSelectedBy(dx,dy){
  const current=sceneNow(),root=current?.objects.find(o=>o.id===state.selectedId);
@@ -1012,6 +1072,7 @@ function applyScene(scene,selectedId,{record=true,resetView=false}={}){
   finally{state.internal=false}
   state.scene=viewer.getScene();
   if(scene.settings?.editorGrid)setGridInputs({...gridState,...scene.settings.editorGrid});
+  syncMapScaleSelection(scene);
   state.selectedId=selectedId||null;
   $("scene-name").textContent=scene.name||"マップ";
   renderSelected();showObjects();showNewLayerChoices();
@@ -1343,6 +1404,7 @@ function restore(from,to){
  finally{state.internal=false}
  state.scene=viewer.getScene();showObjects();renderSelected();setDirty(true);
  setGridInputs({...gridDefaults,...state.scene?.settings?.editorGrid});
+ syncMapScaleSelection(state.scene);
  notice("履歴を復元しました","success");
 }
 bind("undo",()=>restore(state.undo,state.redo),"click");
@@ -1611,12 +1673,14 @@ viewer=window.AAMapViewer.create({
    state.savingName=data?(data.id+".scene.json"):"";setDirty(false);
   }
   if(data)setGridInputs({...gridDefaults,...data.settings?.editorGrid});
+  syncMapScaleSelection(data);
   if(data)$("scene-name").textContent=data.name||data.id;
   else $("scene-name").textContent="マップ";
   showObjects();renderSelected();showNewLayerChoices();geoButtons();
  },
  onInteriorLoaded:(id,data)=>{
   state.scene=copy(data);
+  syncMapScaleSelection(data);
   showObjects();renderSelected();
   notice("建物内部を読み込みました："+(data.objects.find(o=>o.id===id)?.name||id),"success");
  },
