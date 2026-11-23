@@ -496,7 +496,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
   </div>
   <div class="tool-section" data-panel-tab="grid"><section class="panel" id="editor-grid-panel">
    <h2>共通グリッド・スナップ</h2>
-   <p class="note">建物も道路も同じマップ座標で配置します。1マス＝50cm、補助スナップ＝25cm。座標値と実寸の換算はマップごとに設定してください。</p>
+   <p class="note">こちらは図形の編集用スナップです。既存の細密マップ用初期値は50cm/25cmですが、広域の地図縮尺とは別設定です。広域マップでは下の「地図の縮尺」を利用してください。</p>
    <div class="col2">
     <label>1マスの座標単位<input type="number" id="editor-grid-spacing" min="0.01" step="any" value="2"></label>
     <label>座標原点 X<input type="number" id="editor-grid-origin-x" step="any" value="0"></label>
@@ -509,6 +509,14 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
    </div>
    <button id="editor-grid-save" type="button">グリッド設定をマップJSONに反映</button>
    <p id="editor-grid-note" class="note">マップの広域表示では、線が密集するのを防ぐためグリッドを自動的に隠します。</p>
+   <div class="fieldset" id="map-scale-panel">
+    <h3>地図の縮尺（7階層・共通基準）</h3>
+    <p class="note">世界・大陸・国家・地方・都市・街区・建物内部の1マス当たりの距離を定義します。標準1マス＝50座標単位。上の編集用スナップ設定とは独立しています。</p>
+    <label>マップの階層<select id="map-scale-preset" aria-label="地図の縮尺を選択"><option value="">未設定</option></select></label>
+    <p id="map-scale-summary" class="note" role="status">基準縮尺を選択してください。</p>
+    <button type="button" id="map-scale-save">この縮尺をマップJSONに登録</button>
+    <p class="note">登録すると距離換算と地図グリッドの間隔を保存します。描画済みの図形・位置・サイズは自動変更しません。詳細な地形は下位マップに分けて制作します。</p>
+   </div>
   </section>
   </div>
   <div class="tool-section" data-panel-tab="objects"><section class="panel" id="object-list-panel">
@@ -975,5 +983,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 <script src="./map-zip.js?v=map-bundle-v1"></script>
 <script src="./town-edit-tools.js?v=city-edit-v1"></script>
  <script src="./polygon-room.js?v=single-room-perimeter-v2"></script>
+<script src="./map-scale-presets.js?v=seven-level-v1"></script>
  <script src="./map-editor.js?v=single-room-perimeter-v2"></script>
 </body></html>
