@@ -126,7 +126,9 @@
         "shapeAssumption": "circle-for-area-only; NOT confirmed island coastline",
         "sizeConfidence": "approximate",
         "coordinatePurpose": "local-centered-schematic; NOT geographic location",
-        "physicalRadiusM": 121.9942
+        "physicalRadiusM": 121.9942,
+        "detailMapId": "rasetsu_enmaraja_island_true_scale",
+        "detailNavigation": "町マップで小島を選択後、詳細マップへ進む"
       }
     },
     {
@@ -230,6 +232,13 @@
       "5区画の敷地面積と相対位置",
       "海岸線・湾の幅・橋の長さ",
       "小島の正確な位置と輪郭"
+    ],
+    "childMaps": [
+      {
+        "id": "rasetsu_enmaraja_island_true_scale",
+        "objectId": "rasetsu-kokuten-bay-town-true-scale-island-model",
+        "purpose": "島の面積モデルを10m/マスで確認"
+      }
     ]
   }
 }
