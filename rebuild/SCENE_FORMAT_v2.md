@@ -34,6 +34,13 @@ Visibility: whenParentSelected (boolean), modeGroup and modes (array of allowed 
 Hierarchy: `parentId` controls nesting in the menu, independent of `objectType`. Do not guess parentage from positions.
 Painter: higher zIndex draws later. An object's explicit zIndex overrides its named layer zIndex. Grid also obeys the zIndex configured for the grid layer.
 
+## 鬼武神ラセツの地図作業：必読資料
+
+- **最新の制作基準と変更時の確認順**：[RASETSU_MAP_DESIGN_RULES.md](./RASETSU_MAP_DESIGN_RULES.md)（次回以降、鬼武神ラセツの地図を作成・修正する前に必ず読む）。
+- **このチャットでの作業経緯と過去の変更**：[RASETSU_MAP_CHANGELOG.md](./RASETSU_MAP_CHANGELOG.md)（変更後は必ず追記）。
+- この `SCENE_FORMAT_v2.md` はマップアプリ全体の形式・編集処理・汎用設計を記録する。設定の地理的な確定/未確定はNotionと上記の専用ルールへ分離する。
+- GitHubシーンを修正する際は現行の `rebuild/map-tree.json` と該当 `rebuild/scenes/*.scene.json` を必ず読み込み、作業後に構造検証と履歴追記を行う。
+
 ## Shared seven-level map scale standard (Rasetsu)
 
 The authoritative preset values are stored in `rebuild/map-scale-presets.js` (global `AAMapScalePresets`). They are available from **Editor → 設定 → 地図の縮尺**. This is an opt-in standard for any scene and does not impose map-specific logic on the renderer.
