@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 2,
+  "id": "rasetsu-kokuten-bay-town-true-scale",
+  "name": "黒天守国・湾岸町（都市縮尺・制作中）",
+  "description": "1000×1000マス／1マス50m＝50km四方の都市用キャンバス。海沿いの町が約5区画に分かれることは確定。町の幅・各区画の面積・道路・海岸線の位置は未確定につき描画しない。中心の小島は東京ドーム程度という大きさの目安だけを表示。島・町の絶対座標や距離は未確定。",
+  "coordinateSystem": {
+    "horizontal": [
+      1,
+      0
+    ],
+    "vertical": [
+      0,
+      1
+    ],
+    "bounds": {
+      "minX": 0,
+      "maxX": 50000,
+      "minY": 0,
+      "maxY": 50000
+    },
+    "background": "#0b2231"
+  },
+  "grid": {
+    "visible": true,
+    "spacing": 50,
+    "stroke": "rgba(185,207,193,.22)",
+    "strokeWidth": 0.65
+  },
+  "layers": [
+    {
+      "id": "water",
+      "zIndex": 0
+    },
+    {
+      "id": "land",
+      "zIndex": 10
+    },
+    {
+      "id": "terrain",
+      "zIndex": 20
+    },
+    {
+      "id": "regions",
+      "zIndex": 30
+    },
+    {
+      "id": "roads",
+      "zIndex": 40
+    },
+    {
+      "id": "sites",
+      "zIndex": 50
+    },
+    {
+      "id": "grid",
+      "zIndex": 60
+    },
+    {
+      "id": "labels",
+      "zIndex": 70
+    }
+  ],
+  "settings": {
+    "initialDisplayLevel": 1,
+    "labelDefaults": {
+      "fontSize": 13,
+      "color": "#eff4e4",
+      "stroke": "#122632",
+      "strokeWidth": 3
+    },
+    "editorGrid": {
+      "spacing": 50,
+      "fraction": 1,
+      "originX": 0,
+      "originY": 0
+    },
+    "mapScale": {
+      "standardId": "rasetsu-seven-level-v2",
+      "tierId": "town",
+      "metersPerCell": 50,
+      "coordinateUnitsPerCell": 50,
+      "metersPerCoordinateUnit": 1,
+      "status": "layout-undetermined",
+      "application": "physical measurements apply to scene geometry; town layout unknown"
+    }
+  },
+  "objects": [
+    {
+      "id": "rasetsu-kokuten-bay-town-true-scale-island-model",
+      "name": "閻魔羅闍の小島（面積のみ近似）",
+      "objectType": "terrain",
+      "layer": "land",
+      "displayLevel": 1,
+      "visible": true,
+      "selectable": true,
+      "geometry": {
+        "type": "circle",
+        "center": [
+          25000,
+          25000
+        ],
+        "radius": 121.994175
+      },
+      "style": {
+        "fill": "rgba(157,173,116,0.80)",
+        "stroke": "#e9d19a",
+        "strokeWidth": 2,
+        "opacity": 1
+      },
+      "label": {
+        "visible": true,
+        "text": "閻魔羅闍の小島（直径約244m）",
+        "position": [
+          25000,
+          25321.994174977837
+        ],
+        "fontSize": 15,
+        "color": "#fff2c7",
+        "outline": "#102632",
+        "outlineWidth": 2
+      },
+      "detail": "ユーザー指定『東京ドーム程度』を目安46,755m²の円で表現。直径約244m。面積だけ近似し、円形の海岸線・位置・塔の大きさは未決定。",
+      "metadata": {
+        "measurementSource": "ユーザー指定：東京ドーム程度",
+        "referenceAreaM2": 46755,
+        "shapeAssumption": "circle-for-area-only; NOT confirmed island coastline",
+        "sizeConfidence": "approximate",
+        "coordinatePurpose": "local-centered-schematic; NOT geographic location",
+        "physicalRadiusM": 121.9942
+      }
+    },
+    {
+      "id": "rasetsu-kokuten-bay-town-true-scale-scale-bar",
+      "name": "距離目盛：1km",
+      "objectType": "terrain",
+      "layer": "labels",
+      "displayLevel": 1,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "polyline",
+        "points": [
+          [
+            23000,
+            45000
+          ],
+          [
+            24000,
+            45000
+          ]
+        ]
+      },
+      "style": {
+        "fill": null,
+        "stroke": "#d8dde2",
+        "strokeWidth": 3,
+        "lineCap": "square"
+      },
+      "label": {
+        "visible": true,
+        "text": "1km＝20マス",
+        "position": [
+          23500,
+          44400
+        ],
+        "fontSize": 17,
+        "color": "#eef5fa",
+        "outline": "#0b2231",
+        "outlineWidth": 3
+      },
+      "detail": "縮尺に沿う距離目盛（描画座標はすべてマップ設定どおり）。"
+    },
+    {
+      "id": "rasetsu-kokuten-bay-town-true-scale-draft-note",
+      "name": "地理配置に関する未確定注記",
+      "objectType": "label",
+      "layer": "labels",
+      "displayLevel": 1,
+      "visible": true,
+      "selectable": false,
+      "geometry": {
+        "type": "none"
+      },
+      "style": {
+        "fill": null,
+        "stroke": null,
+        "strokeWidth": 0
+      },
+      "label": {
+        "visible": true,
+        "text": "町と5区画の境界・寸法は未確定／地図は実寸目盛のみ",
+        "position": [
+          25000,
+          47500
+        ],
+        "fontSize": 16,
+        "color": "#e0d4aa",
+        "outline": "#162833",
+        "outlineWidth": 2
+      },
+      "detail": "確定した寸法・場所のみ地理的な実体として描くための注意書き。"
+    }
+  ],
+  "metadata": {
+    "template": false,
+    "gridStandard": {
+      "id": "rasetsu-map-canvas-v1",
+      "columns": 1000,
+      "rows": 1000,
+      "coordinateUnitsPerCell": 50
+    },
+    "distanceScaleStatus": "unset; select from editor's seven-tier presets",
+    "scope": "鬼武神ラセツ｜黒天守国",
+    "origin": "based-on-Notion-and-user",
+    "relatedParentContinent": "rasetsu_old_world_continent_draft",
+    "mapType": "urban-site-planning",
+    "geographyEstablished": false,
+    "coordinatesAreLocal": true,
+    "locationOnParentMap": "not yet georeferenced",
+    "islandApproximateAreaM2": 46755,
+    "islandApproximateCircleRadiusM": 121.9942,
+    "islandCircleIsConfirmedShape": false,
+    "confirmedFacts": [
+      "海沿いの町は約5区画に分かれ、区画から小島へ橋が伸びる",
+      "閻魔羅闍は海側の湾にある小島に立つ塔",
+      "小島の面積は東京ドーム程度（ユーザー指定）"
+    ],
+    "unknowns": [
+      "都市境界の実測寸法",
+      "5区画の敷地面積と相対位置",
+      "海岸線・湾の幅・橋の長さ",
+      "小島の正確な位置と輪郭"
+    ]
+  }
+}
