@@ -42,12 +42,12 @@ The authoritative preset values are stored in `rebuild/map-scale-presets.js` (gl
 
 **Important separation**: Map cell **count** (1000×1000) and physical **distance per cell** (the seven-tier preset) are independent settings. The `settings.editorGrid` editing/snap grid is also independent of both. Applying a distance preset updates `scene.grid.spacing` and `scene.settings.mapScale`, but never rescales or moves existing shapes. For each new map, choose the actual geographic extent and reconcile the distance scale **before treating positions as measured kilometers**.
 
-| Tier ID | Map hierarchy | Suggested meters per cell (provisional) | Theoretical extent at 1000×1000 cells |
+| Tier ID | Map hierarchy | Adopted meters per cell | Extent at 1000×1000 cells |
 |---|---|---:|---|
-| `world` | 世界地図 | 1,000,000m = 1,000km | 1,000,000×1,000,000km |
-| `continent` | 大陸地図 | 100,000m = 100km | 100,000×100,000km |
-| `nation` | 国家地図 | 20,000m = 20km | 20,000×20,000km |
-| `region` | 地方地図 | 2,000m = 2km | 2,000×2,000km |
+| `world` | 世界地図 | 40,000m = 40km | 40,000×40,000km |
+| `continent` | 大陸地図 | 5,000m = 5km | 5,000×5,000km |
+| `nation` | 国家地図 | 500m | 500×500km |
+| `region` | 地方地図 | 100m | 100×100km |
 | `town` | 都市・町 | 50m | 50×50km |
 | `district` | 街区・敷地 | 10m | 10×10km |
 | `interior` | 建物内部 | 1m | 1×1km |
@@ -58,19 +58,20 @@ Example scene properties (optional; not a schema-version change):
 "grid": { "visible": false, "spacing": 50 },
 "settings": {
   "mapScale": {
-    "standardId": "rasetsu-seven-level-v1",
+    "standardId": "rasetsu-seven-level-v2",
     "tierId": "world",
-    "metersPerCell": 1000000,
+    "metersPerCell": 40000,
     "coordinateUnitsPerCell": 50,
-    "metersPerCoordinateUnit": 20000
+    "metersPerCoordinateUnit": 800
   }
 }
 ```
 
 The physical distance represented by an object is its coordinate-unit span × `metersPerCoordinateUnit`. Objects too small to depict at a given tier should be shown as **symbolic landmarks**, with geometry and buildings stored in separate child maps. Larger sites, cities or building interiors may be split across adjacent maps while keeping the tier's scale consistent.
 
-**Existing Rasetsu map caveat**: `rasetsu-old-world.scene.json` now uses the approved **1000×1000 grid**, by promoting the accepted trial's original 161 shapes with aspect-preserving coordinates. However, its `settings.mapScale` world-tier physical distance is marked **`status:"provisional"`**. At the previously proposed 1,000 km/cell, the theoretical map would be 1,000,000 km wide: **this is not a confirmed world size and should not be treated as a physical measurement**. The world diameter, continent extents, distances between nations, hidden Jendadawn island, U-shaped Kokuten bay, bridge positions and Tokyo Dome-sized Enmaraja island must be reconciled as separate map scales later. `rasetsu-old-world-1000grid-test.scene.json` remains as a benchmark only.
+**Current Rasetsu map workflow**: World-level landmass count and geography are not yet decided. The overview `rasetsu-old-world.scene.json` is a **provisional draft**, tagged `world` at 40km per cell. It is **not** authoritative for world geography or exact country distances. First develop `rasetsu-old-world-continent-draft.scene.json`, a separate editable child map at **5km per cell**, on the adopted **1000×1000-cell** canvas (5000km×5000km). The first continent map carries the original six Notion-derived regions as **provisional placements**. On a continent map, the U-shaped Kokuten bay, island housing Enmaraja, bridges and coastal districts are schematic; the Tokyo-Dome-sized island must be mapped at a finer tier. The secluded Jendadawn island can only be discovered by invited people; its actual position, direction, and mechanism are unconfirmed. Do not treat any old-world sketch as a measured geopolitical map.
 
+**Scale version**: `rasetsu-seven-level-v2` replaces `v1` for **new map settings** (world 40km, continent 5km, nation 500m, region 100m, town 50m, district 10m, interiors 1m per cell). The cell count and the scale are independent, and smaller project/real-world scenes retain their own measurements.
 ## Coordinate examples
 
 A conventional town/map can specify horizontal [1,0], vertical [0,1]. A vertically oriented layout can specify horizontal [0,1], vertical [-1,0]. These projection vectors are DATA and are not fixed to any map class.
