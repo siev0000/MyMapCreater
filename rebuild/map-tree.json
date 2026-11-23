@@ -100,6 +100,18 @@
       "description": "旧暦約5000年ごろの地域図。国家・地形の特色はNotionに基づく。大陸形状・配置・国境は仮。",
       "worldType": "fictional-world",
       "scope": "world-overview"
+    },
+    {
+      "id": "rasetsu_old_world_1000grid_test",
+      "name": "旧世界（1000×1000マステスト）",
+      "shortName": "1000×1000テスト",
+      "kind": "region",
+      "parentId": "rasetsu_old_world",
+      "source": "../rebuild/scenes/rasetsu-old-world-1000grid-test.scene.json",
+      "description": "100万マスの格子描画・編集を試す独立テストマップ。旧世界の本番データには影響しません。表示性能は端末とブラウザーで確認してください。",
+      "worldType": "fictional-world",
+      "scope": "grid-performance-test",
+      "temporary": true
     }
   ],
   "defaultMapId": "middle"
