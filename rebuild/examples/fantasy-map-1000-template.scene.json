@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 2,
+  "id": "fantasy-map-1000-template",
+  "name": "新規マップ｜1000×1000マス標準",
+  "description": "マップ制作開始用の雛形。1000×1000セル・50座標単位/セル。距離（m/マス）と階層は未確定。コピーしてIDと名前を変更し、エディターで地図の縮尺を登録する。",
+  "coordinateSystem": {
+    "horizontal": [
+      1,
+      0
+    ],
+    "vertical": [
+      0,
+      1
+    ],
+    "bounds": {
+      "minX": 0,
+      "maxX": 50000,
+      "minY": 0,
+      "maxY": 50000
+    },
+    "background": "#0b2231"
+  },
+  "grid": {
+    "visible": true,
+    "spacing": 50,
+    "stroke": "rgba(185,207,193,.22)",
+    "strokeWidth": 0.65
+  },
+  "layers": [
+    {
+      "id": "water",
+      "zIndex": 0
+    },
+    {
+      "id": "land",
+      "zIndex": 10
+    },
+    {
+      "id": "terrain",
+      "zIndex": 20
+    },
+    {
+      "id": "regions",
+      "zIndex": 30
+    },
+    {
+      "id": "roads",
+      "zIndex": 40
+    },
+    {
+      "id": "sites",
+      "zIndex": 50
+    },
+    {
+      "id": "grid",
+      "zIndex": 60
+    },
+    {
+      "id": "labels",
+      "zIndex": 70
+    }
+  ],
+  "settings": {
+    "initialDisplayLevel": 1,
+    "labelDefaults": {
+      "fontSize": 13,
+      "color": "#eff4e4",
+      "stroke": "#122632",
+      "strokeWidth": 3
+    },
+    "editorGrid": {
+      "spacing": 50,
+      "fraction": 1,
+      "originX": 0,
+      "originY": 0
+    }
+  },
+  "objects": [],
+  "metadata": {
+    "template": true,
+    "gridStandard": {
+      "id": "rasetsu-map-canvas-v1",
+      "columns": 1000,
+      "rows": 1000,
+      "coordinateUnitsPerCell": 50
+    },
+    "distanceScaleStatus": "unset; select from editor's seven-tier presets"
+  }
+}
