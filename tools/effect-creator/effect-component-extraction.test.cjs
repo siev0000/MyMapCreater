@@ -1,0 +1,11 @@
+const C=require("./effect-components.js");
+const assert=(v,m)=>{if(!v)throw Error(m)};
+const ids=C.extractedBuiltins.map(d=>d.id+"@"+d.version);
+assert(ids.length===14&&new Set(ids).size===14,"initial extraction definitions");
+for(const d of C.extractedBuiltins){const c=C.create(d.duration,d.view==="BOTH"?"TOP":d.view);c.parts=[C.instance(d.id,"a",0,d.duration,d.version)];assert(C.origin(d.id,d.version)==="builtin","builtin origin");assert(C.referencedDefinitions(c).length===0,"builtin no local defs");const s=C.compile(c).source;assert(s.length<=C.MAX_SOURCE,"source limit");assert(C.normalizeDefinition(d).id===d.id,"valid definition")}
+const split=C.create(2.56,"SIDE");split.parts=[["ground-smoke",2],["fire-roll-cloud",1],["fire-roll-soot",1],["fire-residual",1]].map(([id,v],i)=>C.instance(id,"p"+i,0,2.56,v));
+const s=C.compile(split).source;assert(!s.includes("vec4 napalmRoll("),"independent layers do not call old napalm helper");
+split.parts[0].enabled=false;assert(!C.compile(split).source.includes("vec4 part_ground_smoke_v2("),"smoke disable independent");split.parts[3].params.intensity=0;assert(C.compile(split).source!==s,"individual residual control");
+const lightning=C.create(2,"SIDE");lightning.parts=[C.instance("electric-fall","a",0,.65),C.instance("electric-sparks","b",.2,.75),C.instance("electric-wave","c",.3,1)];lightning.parts[2].params.squash=.34;
+const ls=C.compile(lightning).source;assert((ls.match(/float ecBolt\(/g)||[]).length===1,"electric dependency dedup");assert(!C.compile(C.sample("inferno")).source.includes("float ecBolt("),"old fire no electric dependency");const g=C.makeComposite(lightning,{id:"test-thunder-group",version:1,name:"雷複合",category:"複合",description:""});C.installDefinitions([g]);const x=C.create(2,"SIDE");x.parts=[C.instance(g.id,"root",0,2)];assert(C.compile(x).source.includes("float ecBolt("),"nested dependency");assert(C.compile(JSON.parse(JSON.stringify(x))).source===C.compile(x).source,"deterministic");
+console.log("extracted component tests passed");
