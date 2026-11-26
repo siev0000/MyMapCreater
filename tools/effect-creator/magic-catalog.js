@@ -9848,7 +9848,162 @@ const fireDetails={
 };
 const fireHelpers="\nfloat attackEnv(float q,float start,float end){return smoothstep(start,start+.04,q)*(1.-smoothstep(end,1.,q));}\nfloat quick(float f){return 1.-pow(1.-sat(f),3.);}\nvec4 heatColor(float a,float hot){\n vec3 red=mix(vec3(.56,.035,.008),uColor,.45);\n vec3 amber=mix(vec3(1.,.28,.018),uColor,.30);\n vec3 c=mix(red,amber,smoothstep(.08,.50,hot));\n c=mix(c,vec3(1.,.82,.25),smoothstep(.45,.78,hot));\n c=mix(c,uCore,smoothstep(.78,1.05,hot));\n return vec4(c,sat(a));\n}\nvec4 fireTongue(vec2 p,vec2 a,vec2 b,float width,float t,float seed){\n vec2 d=b-a;float len=length(d);if(len<.01)return vec4(0.);\n vec2 ax=d/len,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/len,x=dot(v,side);\n float n=fb(vec2(x*13.+seed,u*5.-t*7.));\n float bend=(noise(vec2(u*5.+seed,t*4.))-.5)*width*.95*uNoise;\n float taper=width*(.20+.80*pow(1.-sat(u),.65))*(.80+.20*sin(u*24.-t*23.+seed));\n float k=abs(x-bend)/max(.008,taper);\n float m=smoothstep(-.08,.045,u)*(1.-smoothstep(.80,1.06,u));\n float a0=(1.-smoothstep(.60,1.18,k+(.48-n)*.70))*m;\n float hot=sat((1.-k*.67)*(1.-.46*sat(u))+.35*n);\n return heatColor(a0,hot);\n}\nvec4 fireMass(vec2 p,vec2 c,float r,float t,float seed){\n if(r<.008)return vec4(0.);\n vec2 v=(p-c)/r;float ang=atan(v.y,v.x);\n float n=fb(v*3.3+vec2(seed,t*3.4));\n float rr=length(v)+(.48-n)*.39*uNoise+.08*sin(ang*9.-t*17.+seed);\n float a=1.-smoothstep(.72,1.10,rr);\n float hot=sat(1.12-rr*.84+(n-.5)*.6);\n return heatColor(a,hot);\n}\nvec4 embers(vec2 p,vec2 c,float f,float radius,float seed,float n){\n if(f<=0.||f>=1.)return vec4(0.);\n float z=0.;for(int j=0;j<32;j++){float k=float(j);if(k>=n*uDensity)break;\n float ang=TAU*hash(vec2(k,seed)),rr=radius*(.35+.65*hash(vec2(k,seed+7.)))*quick(f);\n vec2 d=dir2(ang),v=c+d*rr+vec2(0.,-.14*f*f);\n z+=glw(seg(p,v-d*.065*(1.-f),v),.004+.003*hash(vec2(k,seed+3.)))*(1.-smoothstep(.35,1.,f));\n }return heatColor(z,.95);\n}\nvec4 ash(vec2 p,vec2 c,vec2 r,float t,float seed){\n float a=shell(p,c,r,t+seed*.03),n=fb((p-c)*9.+vec2(seed,-t*2.));\n return vec4(mix(vec3(.065,.055,.052),vec3(.46,.38,.32),n),a*.82);\n}\nvec4 lava(vec2 p,vec2 c,float r,float t,float seed){\n if(r<.01)return vec4(0.);vec2 v=(p-c)/r;\n float d=length(v)+.13*sin(atan(v.y,v.x)*6.+seed)+.12*(fb(v*4.+seed)-.5);\n float a=1.-smoothstep(.84,1.07,d);\n float fiss=abs(noise(v*5.+seed)-.48);\n float hot=(1.-smoothstep(.035,.09,fiss))*.80;\n return vec4(mix(vec3(.16,.056,.023),heatColor(1.,.55+.42*hot).rgb,hot),a);\n}\nvec4 fireBurst(vec2 p,vec2 c,float f,float radius,float seed,float count){\n if(f<=0.||f>=1.)return vec4(0.);\n float g=quick(f),e=smoothstep(0.,.045,f)*(1.-smoothstep(.54,1.,f));vec4 outC=vec4(0.);\n for(int i=0;i<12;i++){float k=float(i);if(k>=count)break;float a=k*TAU/count+.2*hash(vec2(k,seed));\n vec2 d=dir2(a);float r=radius*(.22+.78*g)*(.74+.26*hash(vec2(k,seed+3.)));\n vec4 v=fireMass(p,c+d*r*.56,r*.43,f*1.8+k*.04,seed+k);v.a*=e;outC=over(outC,v);\n }\n vec4 core=fireMass(p,c,radius*(.18+.4*g),f*1.8,seed+9.);core.a*=e*(1.-smoothstep(.15,.65,f));outC=over(outC,core);\n return over(outC,embers(p,c,f,radius*1.17,seed+23.,18.+LEVEL*2.));\n}\nfloat pressure(vec2 p,vec2 c,float f,float radius,float squash){\n if(f<=0.||f>=1.)return 0.;float r=.035+radius*quick(f);vec2 v=(p-c)/vec2(1.,squash);\n return glw(abs(length(v)-r),.009+.007*(1.-f))*smoothstep(0.,.035,f)*(1.-smoothstep(.30,1.,f));\n}\nvec4 ignite(vec2 p,vec2 c,float q,float radius){\n float h=phase(q,0.,.36);float z=charge(p,c,h,radius)*1.3+ball(p,c,.045+.075*h)*gate(q,0.,.43)*(.5+.65*h);\n return heatColor(z,.90);\n}\nvec4 flameStream(vec2 p,vec2 a,vec2 b,float width,float t,float spread){\n vec4 col=vec4(0.);\n for(int i=0;i<7;i++){float k=float(i),s=(k-3.)/3.;vec2 end=b+vec2(0.,s*spread);\n vec4 v=fireTongue(p,a+vec2(0.,s*.035),end,width*(.64+.36*hash(vec2(k,43.))),t+k*.075,k+11.);\n col=over(col,v);}\n return col;\n}\nvec4 flameWall(vec2 p,float t,float grow,float w,float height,float tilt){\n vec4 col=vec4(0.);\n for(int i=0;i<11;i++){float k=float(i),x=(k-5.)*.15*w;\n float h=height*(.65+.35*hash(vec2(k,17.)))*grow*(.87+.13*sin(t*TAU*3.+k));\n vec2 a=vec2(x,-.58),b=a+vec2(tilt+.10*sin(t*TAU*2.+k),h);\n col=over(col,fireTongue(p,a,b,.12*w,t+k*.091,k+1.));\n }\n return col;\n}\nvec4 fireJetBall(vec2 p,vec2 c,float r,float t,float seed){\n vec4 trail=fireTongue(p,c,c-vec2(.34,.0),r*.74,t,seed);\n return over(trail,fireMass(p,c,r,t,seed+6.));\n}\nvec4 plasma(vec2 p,vec2 c,float r,float t){\n float d=length(p-c)/max(.01,r),ang=atan(p.y-c.y,p.x-c.x);\n float edge=glw(abs(d-1.)*r,.009)*( .65+.35*sin(ang*15.-t*TAU*6.));\n float n=fb((p-c)*19.+vec2(t*5.,t*3.));\n float core=(1.-smoothstep(.25,1.,d))*(.65+.45*n);\n vec3 color=mix(uColor,vec3(.76,.34,1.),.55);\n return over(vec4(mix(color,uCore,core),sat(core*.94)),tone(edge*.78,color));\n}\nvec4 heatRay(vec2 p,vec2 a,vec2 b,float width,float t,float e,float hue){\n float d=seg(p,a,b);float l=length(b-a);float u=sat(dot(p-a,b-a)/max(.001,l*l));\n float z=glw(d,width)*e*(.84+.16*sin(u*35.-t*TAU*8.));\n return tone(z,mix(uColor,vec3(.92,.43,1.),hue));\n}\nvec4 ejecta(vec2 p,vec2 root,float f,float width,float height,float seed,float count){\n if(f<=0.||f>=1.)return vec4(0.);vec4 col=vec4(0.);\n for(int i=0;i<18;i++){float k=float(i);if(k>=count)break;\n float u=phase(f,hash(vec2(k,seed))*.20,.95),a=(hash(vec2(k,seed+2.))-.5)*2.;\n vec2 c=root+vec2(a*width*u,4.*u*(1.-u)*height*(.55+.45*hash(vec2(k,seed+4.))));\n vec4 v=lava(p,c,.035+.04*hash(vec2(k,seed+5.)),f,k+seed);v.a*=sin(3.14159*u);col=over(col,v);\n }return col;\n}\n";
 for(const r of records){const d=fireDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true});}
-function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+fireHelpers+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
+// Individually authored ice effects, distinct crystal growth and cold phenomena.
+const iceDetails={
+  "265": {
+    "duration": 1.15,
+    "loop": false,
+    "note": "対象の周囲の熱が奪われ、薄い冷気が集まって霜の粒が現れる。爆発や飛翔なし。",
+    "body": "float e=gate(q,0.,1.),g=phase(q,.04,.48);vec4 v=coldMist(p,vec2(0.,-.07),vec2(.36,.60)*(.60+.40*g),t,5.);v.a*=e;return over(v,snowField(p,t,e,.12,10.,.021));"
+  },
+  "266": {
+    "duration": 1,
+    "loop": false,
+    "note": "細い冷気光線が前方へ走り、着点に小さな霜の結晶が付着する。",
+    "body": "vec2 a=vec2(-.74,0.),b=vec2(.66,0.);float f=swift(phase(q,.08,.32));vec4 v=freezeBeam(p,a,mix(a,b,f),.013,t,activeEnv(q,.06,.63));vec4 x=frost(p,b,vec2(.15,.27),phase(q,.30,.62),9.);x.a*=1.-smoothstep(.70,1.,q);return over(v,x);"
+  },
+  "267": {
+    "duration": 1.05,
+    "loop": false,
+    "note": "接触箇所から薄い霜が対象表面に広がり、小さな氷片が付着する。飛翔なし。",
+    "body": "float g=phase(q,.02,.53),e=1.-smoothstep(.65,1.,q);vec4 v=frost(p,vec2(0.,0.),vec2(.33,.60),g,17.);v.a*=e;for(int i=0;i<5;i++){float k=float(i),a=k*TAU/5.;vec2 c=dir2(a)*vec2(.25,.43)*g;vec4 w=iceFacet(p,c,c+dir2(a)*.12*g,.033*g);w.a*=e;v=over(v,w);}return v;"
+  },
+  "268": {
+    "duration": 1.55,
+    "loop": false,
+    "note": "中心から六方向へ氷晶の花弁が伸び、枝分かれした花状の氷華が形作られる。",
+    "body": "float g=phase(q,.05,.60),e=1.-smoothstep(.75,1.,q);vec4 v=vec4(0.);for(int i=0;i<6;i++){float k=float(i),a=k*TAU/6.;vec2 d=dir2(a),b=d*.43*g;vec4 w=iceFacet(p,vec2(0.),b,.105*g);w.a*=e;v=over(v,w);for(int j=0;j<2;j++){float h=float(j),s=h*2.-1.;vec2 c=d*.24*g;vec4 x=iceFacet(p,c,c+dir2(a+s*.68)*.19*g,.048*g);x.a*=e;v=over(v,x);}}return over(v,iceFlake(p,vec2(0.),.14*g,0.));"
+  },
+  "269": {
+    "duration": 1.65,
+    "loop": false,
+    "note": "細かな水滴が対象表面に凍着して白い霧氷が厚くなる。輪郭に小さな結晶が成長する。",
+    "body": "float g=phase(q,.06,.70),e=1.-smoothstep(.81,1.,q);vec4 v=frost(p,vec2(0.),vec2(.36,.65),g,31.);v.a*=e;for(int i=0;i<12;i++){float k=float(i),a=k*TAU/12.;vec2 c=dir2(a)*vec2(.28,.51);vec4 w=iceFacet(p,c,c+dir2(a)*(.09+.08*hash(vec2(k,6.)))*g,.035*g);w.a*=g*e;v=over(v,w);}return v;"
+  },
+  "270": {
+    "duration": 1.4,
+    "loop": false,
+    "note": "白い冷気の帯が扇状に吹き抜け、細い霜粒が風に乗って進む。",
+    "body": "vec2 a=vec2(-.73,0.),b=mix(a,vec2(.77,0.),swift(phase(q,.07,.34)));vec4 v=frostJet(p,a,b,.25,t);v.a*=activeEnv(q,.07,.68);return v;"
+  },
+  "271": {
+    "duration": 1.3,
+    "loop": false,
+    "note": "尖った単一の氷柱弾が生成され、横向きに飛翔して着弾時に結晶片へ砕ける。",
+    "body": "vec2 a=vec2(-.65,0.),b=vec2(.60,0.);float g=phase(q,.10,.69);vec2 c=mix(a,b,g);vec4 v=iceFacet(p,c-vec2(.18,0.),c+vec2(.16,0.),.10*smoothstep(0.,.12,q));v.a*=1.-smoothstep(.65,.72,q);return over(v,iceBurst(p,b,phase(q,.69,1.),.25,5.,8.));"
+  },
+  "272": {
+    "duration": 2.4,
+    "loop": true,
+    "note": "雪の結晶と薄い白い霞が穏やかに舞う雪景色。幻覚の表現は暫定、画面全体の置換はしない。",
+    "body": "vec4 v=coldMist(p,vec2(0.,-.12),vec2(.76,.44),sin(t*TAU)*.3,7.);v.a*=.40;return over(v,snowField(p,t,1.,.14,18.,.033));"
+  },
+  "273": {
+    "duration": 1.6,
+    "loop": false,
+    "note": "前方へ向けた細い氷晶が短い溜めで成長し、複数の鋭い氷針として伸びる。",
+    "body": "vec2 a=vec2(-.60,0.);float g=swift(phase(q,.28,.62)),e=activeEnv(q,.28,.77);vec4 v=iceCharge(p,a,q,.24);for(int i=0;i<7;i++){float k=float(i),y=(k-3.)*.12;vec2 root=a+vec2(.04*abs(k-3.),y*.4);vec2 b=mix(root,vec2(.75-.07*abs(k-3.),y),g);vec4 w=iceFacet(p,root,b,.035);w.a*=e;v=over(v,w);}return v;"
+  },
+  "274": {
+    "duration": 1.9,
+    "loop": false,
+    "note": "対象を縦長の氷晶層が包み、下から大きな結晶が急成長。表面の霜と割れ目を強調。",
+    "body": "float g=swift(phase(q,.26,.55)),e=1.-smoothstep(.78,1.,q);vec4 v=iceCharge(p,vec2(0.,-.35),q,.31);vec4 x=frost(p,vec2(0.),vec2(.38,.69),g,43.);x.a*=e;v=over(v,x);for(int i=0;i<7;i++){float k=float(i),x0=(k-3.)*.105;vec2 a=vec2(x0,-.61),b=vec2(x0*.7+.025*sin(k),-.61+(1.18-.14*abs(k-3.))*g);vec4 w=iceFacet(p,a,b,.085*g);w.a*=e*.78;v=over(v,w);}return v;"
+  },
+  "275": {
+    "duration": 1.85,
+    "loop": false,
+    "note": "短く集まった氷塊から複数の氷柱が放射状に飛び出し、細かな破片を残す。",
+    "body": "float g=phase(q,0.,.31),f=phase(q,.34,1.);vec4 v=iceCharge(p,vec2(0.),q,.39);for(int i=0;i<6;i++){float k=float(i),a=k*TAU/6.;vec2 d=dir2(a);vec4 w=iceFacet(p,d*.02,d*.23*g,.075*g);w.a*=gate(q,0.,.40);v=over(v,w);}return over(v,iceBurst(p,vec2(0.),f,.69,17.,16.));"
+  },
+  "276": {
+    "duration": 2.5,
+    "loop": true,
+    "note": "空中に浮く微細な氷晶がゆっくり流れ、角度ごとに青白くきらめく。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<24;i++){float k=float(i),a=k*2.39996+t*TAU;vec2 c=vec2((hash(vec2(k,12.))-.5)*1.5,(hash(vec2(k,17.))-.5)*1.2)+dir2(a)*.09;float e=.24+.76*pow(.5+.5*sin(t*TAU*3.+k*2.1),6.);vec4 w=iceFacet(p,c,c+dir2(a)*.045,.013);w.a*=e;v=over(v,w);}return v;"
+  },
+  "277": {
+    "duration": 2.8,
+    "loop": true,
+    "note": "微細な氷晶を含む濃い冷霧。複数の冷たい霧塊が重なり、霧の中で細氷が反射する。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<6;i++){float k=float(i);vec2 c=dir2(k*TAU/6.+t*TAU)*vec2(.33,.20);vec4 w=coldMist(p,c,vec2(.40,.32),sin(t*TAU)*.5,k);w.a*=.85;v=over(v,w);}return over(v,snowField(p,t,.55,.08,14.,.018));"
+  },
+  "278": {
+    "duration": 3,
+    "loop": true,
+    "note": "雪を含む雲がゆっくり動き、穏やかな降雪を伴う持続素材。",
+    "body": "vec4 v=coldMist(p,vec2(0.,.45),vec2(.79,.32),sin(t*TAU)*.3,9.);v.a*=.94;return over(v,snowField(p,t,.88,.10,20.,.025));"
+  },
+  "279": {
+    "duration": 2.45,
+    "loop": false,
+    "note": "上空に冷気を溜め、過冷却の雨が急落。着点から凍結面と小さな氷晶が一気に広がる。",
+    "body": "vec4 v=iceCharge(p,vec2(0.,.64),q,.35);float e=activeEnv(q,.25,.78);for(int i=0;i<22;i++){float k=float(i),f=fract(t*1.8+hash(vec2(k,3.))),x=(hash(vec2(k,5.))-.5)*1.50;vec2 c=vec2(x,.86-f*1.43);float z=glw(seg(p,c,c+vec2(.012,.105)),.005)*e*sin(3.14159*f);v=over(v,tone(z,uColor));}vec4 w=freezeFloor(p,swift(phase(q,.43,.82)),t,.73);w.a*=1.-smoothstep(.85,1.,q);return over(v,w);"
+  },
+  "280": {
+    "duration": 2.2,
+    "loop": false,
+    "note": "濃い冷気を術者側に蓄積し、一気に幅のある冷気放射へ展開。氷片が高速で吹き抜ける。",
+    "body": "vec2 a=vec2(-.74,0.),b=mix(a,vec2(.78,0.),swift(phase(q,.32,.52)));vec4 v=iceCharge(p,a,q,.28);vec4 w=frostJet(p,a,b,.36,t);w.a*=activeEnv(q,.32,.80);v=over(v,w);return over(v,iceBurst(p,b,phase(q,.50,.98),.32,11.,12.));"
+  },
+  "281": {
+    "duration": 2.5,
+    "loop": false,
+    "note": "足元の冷気を集め、凍結前線が横方向へ急速に拡大。凍った地面から結晶が連続して成長する。",
+    "body": "float f=swift(phase(q,.31,.72));vec4 v=iceCharge(p,vec2(0.,-.53),q,.37);vec4 w=freezeFloor(p,f,t,.81);w.a*=1.-smoothstep(.80,1.,q);v=over(v,w);float z=icyShock(p,vec2(0.,-.52),phase(q,.31,.96),.80,.34);return over(v,tone(z,uColor));"
+  },
+  "282": {
+    "duration": 3.1,
+    "loop": true,
+    "note": "白い雪の帯が斜めに激しく吹き荒れ、風の強弱を繰り返す。地面を吹き抜ける冷霧と雪晶を重ねる。",
+    "body": "float wind=.62+.38*sin(t*TAU);vec4 v=coldMist(p,vec2(0.,-.08),vec2(.81,.50),sin(t*TAU)*.7,7.);v.a*=.60+.28*wind;return over(v,snowField(p,t*2.,.75+.25*wind,.65,27.,.029));"
+  },
+  "283": {
+    "duration": 3.25,
+    "loop": false,
+    "note": "水中に向かって伸びる大きな氷柱。根元の冷気から下方へ段階的に成長し、周囲の水が凍るように小氷柱が付着する。",
+    "body": "vec2 a=vec2(0.,.79);float g=phase(q,.33,.76),e=1.-smoothstep(.84,1.,q);vec4 v=iceCharge(p,a,q,.38);vec2 b=mix(a,vec2(.04,-.84),g);vec4 w=iceFacet(p,a,b,.24*g);w.a*=e;v=over(v,w);for(int i=0;i<6;i++){float k=float(i),u=.16+k*.11;if(g>u){vec2 c=mix(a,b,u);vec4 x=iceFacet(p,c,c+vec2((mod(k,2.)*2.-1.)*.12,-.25)*sat((g-u)*3.),.055);x.a*=e;v=over(v,x);}}return v;"
+  },
+  "284": {
+    "duration": 2.65,
+    "loop": false,
+    "note": "高密度の氷光を蓄積し、太い凍結光線を瞬時に放射。光路に氷の破片、着点に急成長する氷層。",
+    "body": "vec2 a=vec2(-.74,0.),b=vec2(.70,0.);float g=swift(phase(q,.40,.51)),e=activeEnv(q,.40,.77);vec4 v=iceCharge(p,a,q,.36);v=over(v,freezeBeam(p,a,mix(a,b,g),.055,t,e*1.9));vec4 w=frost(p,b,vec2(.22,.40),swift(phase(q,.50,.76)),27.);w.a*=1.-smoothstep(.83,1.,q);v=over(v,w);return over(v,iceBurst(p,b,phase(q,.50,1.),.27,19.,11.));"
+  },
+  "285": {
+    "duration": 2.8,
+    "loop": false,
+    "note": "上空で巨大な結晶を形成してから下へ急落させる。着弾時に氷片と地表の波が拡散。",
+    "body": "vec2 a=vec2(0.,.76),b=vec2(0.,-.60);float ch=phase(q,0.,.40),g=phase(q,.40,.60);vec4 v=iceCharge(p,a,q,.37);vec2 c=mix(a,b,g*g);vec4 w=iceFacet(p,c+vec2(0.,.35*ch),c-vec2(.02,.45*ch),.21*ch);w.a*=1.-smoothstep(.59,.66,q);v=over(v,w);v=over(v,iceBurst(p,b,phase(q,.60,1.),.55,13.,18.));return over(v,tone(icyShock(p,b,phase(q,.60,1.),.66,.32)*1.45,uColor));"
+  },
+  "286": {
+    "duration": 3.3,
+    "loop": true,
+    "note": "地表の積雪を横風で巻き上げる地吹雪。低い高さに強い雪の流れが集中し、上空の雲を主役にしない。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<5;i++){float k=float(i),f=fract(t+hash(vec2(k,3.)));vec2 c=vec2(-.80+1.60*f,-.42+.07*sin(t*TAU+k));vec4 w=coldMist(p,c,vec2(.40,.18+.07*sin(k)),sin(t*TAU)*.6,k);w.a*=sin(3.14159*f);v=over(v,w);}for(int i=0;i<24;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,8.)));vec2 c=vec2(-.86+1.72*f,-.57+.36*hash(vec2(k,19.))+.09*sin(f*TAU));v=over(v,tone(glw(seg(p,c,c+vec2(-.085,.018)),.004)*sin(3.14159*f),uColor));}return v;"
+  },
+  "287": {
+    "duration": 3.3,
+    "loop": false,
+    "note": "地面の水分が短時間に集まって凍結膨張し、枝状の亀裂が一気に広がる。地表が震えるような氷片と二重の波。",
+    "body": "vec2 c=vec2(0.,-.25);float f=phase(q,.40,1.),g=swift(phase(q,.40,.70));vec4 v=iceCharge(p,c,q,.48);vec4 a=frost(p,c,vec2(.79,.48),g,51.);a.a*=1.-smoothstep(.83,1.,q);v=over(v,a);float z=0.;for(int i=0;i<9;i++){float k=float(i),ang=k*TAU/9.;vec2 d=dir2(ang)*vec2(.80,.45),mid=c+d*.46*g;z+=glw(seg(p,c,mid),.008)+glw(seg(p,mid,c+d*g),.006)+glw(seg(p,mid,mid+dir2(ang+.7)*.18*g),.004);}v=over(v,tone(z*gate(q,.40,1.),uColor));v=over(v,iceBurst(p,c,f,.69,21.,20.));return over(v,tone(icyShock(p,c,f,.78,.53)+icyShock(p,c,phase(f,.17,1.),.67,.45),uColor));"
+  },
+  "288": {
+    "duration": 3,
+    "loop": true,
+    "note": "極夜は太陽光が失われる暗い青の霞と星のような微光で表す。具体効果未設定のため画面暗転ではなく透過素材の仮表現。",
+    "body": "float d=length(p/vec2(.81,.69)),n=fb(p*5.+dir2(t*TAU)*.2);vec4 v=vec4(mix(vec3(.025,.04,.12),vec3(.10,.19,.35),n),.60*(1.-smoothstep(.60,1.15,d)));for(int i=0;i<14;i++){float k=float(i);vec2 c=vec2(hash(vec2(k,7.)),hash(vec2(k,11.)))*1.4-.7;v=over(v,tone(ball(p,c,.012)*(.12+.24*sin(t*TAU*2.+k)*sin(t*TAU*2.+k)),vec3(.63,.80,1.)));}return v;"
+  },
+  "289": {
+    "duration": 4,
+    "loop": true,
+    "note": "巨大な寒冷渦が回転し、中心の冷気の脈動と広い吹雪の帯が強弱を繰り返す。",
+    "body": "float time=t*TAU;vec4 v=vec4(0.);for(int i=0;i<12;i++){float k=float(i),a=time*2.+k*.62,r=.18+.052*k;vec2 c=dir2(a)*vec2(r,r*.67);vec4 w=coldMist(p,c,vec2(.28,.17),sin(time)*.45,k);w.a*=.68;v=over(v,w);}float z=0.;for(int i=0;i<24;i++){float k=float(i),a=time*3.+k*2.4,r=.22+.52*hash(vec2(k,7.));vec2 c=dir2(a)*vec2(r,r*.68),tip=dir2(a-.12)*vec2(r,r*.68);z+=glw(seg(p,c,tip),.0055)*(.58+.42*cos(time*3.+k));}v=over(v,tone(z,uColor));return over(v,snowField(p,t*2.,.90,.43,26.,.032));"
+  }
+};
+const iceHelpers="\nfloat swift(float f){return 1.-pow(1.-sat(f),3.);}\nfloat activeEnv(float q,float a,float b){return smoothstep(a,a+.05,q)*(1.-smoothstep(b,1.,q));}\nfloat icyShock(vec2 p,vec2 c,float f,float r,float squash){if(f<=0.||f>=1.)return 0.;return ring(p,c,vec2(.03+r*swift(f),(.03+r*swift(f))*squash),.009)*sin(3.14159*f);}\nvec4 iceFacet(vec2 p,vec2 a,vec2 b,float w){\n vec2 d=b-a;float l=length(d);if(l<.008)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float y=dot(v,ax)/l,x=dot(v,side);\n float width=w*min(sat(y*5.),sat((1.-y)*2.4));float aa=1.-smoothstep(width-.009,width+.004,abs(x));aa*=smoothstep(-.008,.01,y)*(1.-smoothstep(.975,1.005,y));\n float sideShade=smoothstep(-.011,.012,x);float facet=abs(x)/max(.004,width);\n vec3 c=mix(vec3(.13,.39,.65),mix(uColor,vec3(.72,.96,1.),.5),sideShade*.60+.26);\n c=mix(c,uCore,(1.-smoothstep(.64,1.,facet))*.18+(1.-smoothstep(0.,.012,abs(x)))*.43);\n float rim=(1.-smoothstep(.003,.014,abs(abs(x)-width)))*aa;c=mix(c,vec3(.88,.98,1.),rim*.72);\n return vec4(c,aa*.90);\n}\nvec4 iceFlake(vec2 p,vec2 c,float r,float a){\n if(r<.004)return vec4(0.);float z=0.;\n for(int j=0;j<6;j++){float k=float(j),ang=a+k*TAU/6.;vec2 d=dir2(ang),v=c+d*r;z+=glw(seg(p,c,v),.0035);vec2 b=c+d*r*.63;z+=glw(seg(p,b,b+dir2(ang+.8)*r*.28),.0025)+glw(seg(p,b,b+dir2(ang-.8)*r*.28),.0025);}\n return tone(z*.82,mix(uColor,vec3(.80,.96,1.),.65));\n}\nvec4 frost(vec2 p,vec2 c,vec2 r,float g,float seed){\n vec2 v=(p-c)/max(r,vec2(.01));float d=length(v);float n=fb(v*8.+seed);\n float a=(1.-smoothstep(g-.13,g+.03,d+(.5-n)*.16))*smoothstep(0.,.1,g);\n float veins=(1.-smoothstep(.019,.065,abs(noise(v*12.+seed)-.48)));\n vec3 col=mix(vec3(.20,.52,.75),vec3(.88,.98,1.),n*.6+veins*.30);\n return vec4(col,a*(.48+.37*veins));\n}\nvec4 iceBurst(vec2 p,vec2 c,float f,float r,float seed,float count){\n if(f<=0.||f>=1.)return vec4(0.);vec4 v=vec4(0.);\n for(int i=0;i<20;i++){float k=float(i);if(k>=count)break;float a=k*TAU/count+.20*hash(vec2(k,seed));vec2 d=dir2(a),a0=c+d*r*swift(f)*(.45+.55*hash(vec2(k,seed+1.)));vec4 w=iceFacet(p,a0,a0+d*(.045+.09*hash(vec2(k,seed+3.)))*(1.-.45*f),.025);w.a*=sin(3.14159*f);v=over(v,w);}\n return v;\n}\nvec4 coldMist(vec2 p,vec2 c,vec2 r,float t,float seed){float n=fb((p-c)*9.+vec2(t*2.,seed));float a=shell(p,c,r,t+seed*.03);return vec4(mix(vec3(.37,.63,.76),vec3(.88,.97,1.),n),a*.56);}\nvec4 snowField(vec2 p,float t,float e,float slant,float amount,float size){\n vec4 v=vec4(0.);for(int i=0;i<28;i++){float k=float(i);if(k>=amount*uDensity)break;float f=fract(t+hash(vec2(k,8.))),x=(hash(vec2(k,17.))-.5)*1.7;vec2 c=vec2(x+slant*(.5-f)+.045*sin(t*TAU+k),.87-1.74*f);vec4 w=iceFlake(p,c,size*(.60+.4*hash(vec2(k,2.))),k+t*TAU);w.a*=sin(3.14159*f)*e;v=over(v,w);}return v;\n}\nvec4 frostJet(vec2 p,vec2 a,vec2 b,float w,float t){\n vec2 d=b-a;float l=length(d);if(l<.01)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/l,x=dot(v,side);float n=fb(vec2(u*9.-t*5.,x*18.));\n float a0=(1.-smoothstep(.46,1.2,abs(x)/max(.01,w*(.4+.6*sat(u)))+(.5-n)*.75))*smoothstep(-.05,.045,u)*(1.-smoothstep(.82,1.06,u));\n vec4 col=vec4(mix(vec3(.31,.68,.87),vec3(.93,.99,1.),n),a0*.83);\n float z=0.;for(int j=0;j<13;j++){float k=float(j),f=fract(t*2.+hash(vec2(k,8.)));vec2 c=mix(a,b,f)+side*(hash(vec2(k,11.))-.5)*w*1.5;z+=glw(seg(p,c,c-ax*.07),.0035)*sin(3.14159*f);}\n return over(col,tone(z*.65,uColor));\n}\nvec4 iceCharge(vec2 p,vec2 c,float q,float radius){\n float f=phase(q,0.,.36);float z=charge(p,c,f,radius)+ball(p,c,.045+.065*f)*gate(q,0.,.43)*(.6+.65*f);\n return tone(z,mix(uColor,vec3(.80,.96,1.),.4));\n}\nvec4 freezeFloor(vec2 p,float g,float t,float wide){\n vec4 v=frost(p,vec2(0.,-.52),vec2(wide,.30),g,21.);\n for(int i=0;i<11;i++){float k=float(i),x=(k-5.)*wide*.17,h=sat(g*1.45-abs(k-5.)*.105);vec2 a=vec2(x,-.52+.035*sin(k));vec2 b=a+vec2(.045*sin(k),(.18+.19*hash(vec2(k,12.)))*h);vec4 w=iceFacet(p,a,b,.065*h);v=over(v,w);}return v;\n}\nvec4 freezeBeam(vec2 p,vec2 a,vec2 b,float w,float t,float e){\n vec2 d=b-a;float l=length(d);if(l<.01)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/l,x=dot(v,side);float n=fb(vec2(u*14.-t*4.,x*29.));\n float mask=smoothstep(-.04,.02,u)*(1.-smoothstep(.96,1.04,u));\n float z=glw(abs(x),w)*mask*e*(.78+.22*n);\n vec4 col=tone(z,mix(uColor,vec3(.65,.92,1.),.45));\n for(int i=0;i<7;i++){float k=float(i),s=fract(t*1.7+hash(vec2(k,7.)));vec2 c=mix(a,b,s)+side*(hash(vec2(k,13.))-.5)*w*4.;vec4 wv=iceFacet(p,c,c+ax*.085,w*.27);wv.a*=e*sin(3.14159*s);col=over(col,wv);}return col;\n}\n";
+for(const r of records){const d=iceDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true});}
+function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row]||iceDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+(fireDetails[r.row]?fireHelpers:iceHelpers)+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
 const sources=Object.fromEntries(records.map(r=>[r.id,code(r)]));return {records,rows,sources,code};
 })();
 if(typeof module!=='undefined')module.exports=MagicCatalog;
