@@ -48,5 +48,46 @@ function compile(input){
  return {composition:c,source};
 }
 function sample(kind){let c=create(2.8,"TOP");c.name=kind==="inferno"?"煉獄（比較試作）":"炎収束（比較試作）";c.parts.push({...instance("fire-convergence","convergence",0,2.268),timeMode:"scene"});if(kind==="inferno")for(let i=0;i<3;i++){let start=(.28+i*.235)*2.8;c.parts.push({...instance("fire-ring","ring-"+i,start,Math.min(2.8,start+.728)),timeMode:"scene"})}c.parts.push({...instance("fire-burst","burst",2.1,2.8),timeMode:"scene"});return c}
-return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA};
+
+const MAX_CUSTOM=128,MAX_BODY=12000;
+const keyOf=d=>d.id+"@"+d.version;
+const builtins=new Set(library.map(keyOf));
+function definitions(){return [...lookup.values()]}
+function customDefinitions(){return definitions().filter(d=>!builtins.has(keyOf(d)))}
+function nextVersion(id){return Math.max(0,...definitions().filter(d=>d.id===id).map(d=>d.version))+1}
+function normalizeDefinition(raw){
+ if(!raw||typeof raw!=="object")throw Error("部品定義が不正");
+ const id=raw.id;if(typeof id!=="string"||!/^[a-z][a-z0-9-]{0,59}$/.test(id))throw Error("部品IDは英小文字・数字・ハイフン（先頭英字、60文字以内）");
+ const version=number(raw.version,1,9999,"版");if(!Number.isInteger(version))throw Error("版は整数");
+ const name=str(raw.name,"部品名"),category=str(raw.category,"分類",40),view=raw.view;if(!["TOP","SIDE","BOTH"].includes(view))throw Error("部品視点が不正");
+ const duration=number(raw.duration,.05,30,"部品時間"),description=typeof raw.description==="string"?raw.description.slice(0,1000):"";
+ const body=str(raw.body,"GLSL関数本体",MAX_BODY);
+ const clean=body.replace(/\/\*[\s\S]*?\*\//g,"").replace(/\/\/[^\n]*/g,"");
+ if(/#|\b(?:uniform|varying|attribute|precision|discard|gl_FragColor|gl_FragData|main|part_\w+)\b/.test(clean)||/\/\*|\*\//.test(clean))throw Error("関数本体の外部宣言・プリプロセッサ・他部品直接参照は禁止");
+ let depth=0;for(const ch of clean){if(ch==="{")depth++;else if(ch==="}"&&--depth<0)throw Error("GLSLの波括弧が不正")}if(depth!==0)throw Error("GLSLの波括弧が不正");if(!/\breturn\b/.test(clean))throw Error("vec4を返すreturnが必要");
+ if(!Array.isArray(raw.dependencies)||!raw.dependencies.includes("fire-common@1")||raw.dependencies.some(d=>!["fire-common@1","napalm-roll@1"].includes(d)))throw Error("共通依存が不正");
+ const dependencies=["fire-common@1",...(raw.dependencies.includes("napalm-roll@1")?["napalm-roll@1"]:[])];
+ if(!Array.isArray(raw.params)||raw.params.length>16)throw Error("パラメータ数が不正");
+ const names=new Set(["p","t","q"]);const params=raw.params.map(p=>{
+  if(!p||typeof p.id!=="string"||!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(p.id)||names.has(p.id)||/^(gl_|u[A-Z]|part_)/.test(p.id))throw Error("パラメータIDが不正");names.add(p.id);
+  const min=number(p.min,-10000,10000,"最小値"),max=number(p.max,-10000,10000,"最大値");if(min>=max)throw Error("最小値と最大値が不正");
+  return {id:p.id,name:str(p.name,"パラメータ名"),min,max,default:number(p.default,min,max,"初期値"),step:number(p.step,.000001,max-min,"刻み")};
+ });
+ return deepFreeze({id,version,name,category,view,duration,description,body,dependencies,params});
+}
+function prepareDefinitions(raw){
+ if(!Array.isArray(raw)||raw.length>MAX_CUSTOM)throw Error("部品定義の件数が不正");
+ const staged=new Map(),added=[];
+ for(const input of raw){const d=normalizeDefinition(input),k=keyOf(d),old=lookup.get(k)||staged.get(k);if(old){if(JSON.stringify(old)!==JSON.stringify(d))throw Error("同じID・版の内容が異なります: "+k);continue}staged.set(k,d);added.push(d)}
+ if(customDefinitions().length+added.length>MAX_CUSTOM)throw Error("追加部品は最大 "+MAX_CUSTOM+" 版");
+ return added;
+}
+function withDefinitions(raw,fn){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);try{return fn(added)}finally{for(const d of added)lookup.delete(keyOf(d))}}
+function installDefinitions(raw){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);return added}
+function previewDefinition(raw,view="TOP"){
+ const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];if(d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
+}
+function referencedDefinitions(c){return [...new Map(validate(c).parts.map(p=>get(p.partId,p.version)).filter(d=>!builtins.has(keyOf(d))).map(d=>[keyOf(d),d])).values()]}
+
+return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
 });
