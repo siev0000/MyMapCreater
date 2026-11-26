@@ -10647,7 +10647,7 @@ const lightDetails={
     "duration": 2.9,
     "loop": false,
     "note": "低い熱揺らぎの層から抽象的な光像が上下にずれて重複し、揺れて消える。風景や人物は固定しない。",
-    "body": "float g=phase(q,0.,.42),e=lEnv(q,.32,.82);float z=lGather(p,vec2(0.,-.30),q,.34,.40)*.6;for(int i=0;i<6;i++){float k=float(i),x=(k-2.5)*.24,h=.10+.15*hash(vec2(k,9.));float shift=.035*sin(t*TAU*3.+p.y*19.+k);vec2 u=p-vec2(x+shift,-.23+h);float d=abs(u.x)+abs(u.y)*.48;z+=glw(d,.012)*e*g*.55;vec2 v=p-vec2(x-shift,-.30-h*.85);z+=glw(abs(v.x)+abs(v.y)*.48,.014)*e*g*.38;}float layer=exp(-pow((p.y+.27+.025*sin(p.x*21.-t*TAU*3.))*22.,2.));return tone(z+layer*e*.30,vec3(.84,.94,1.));",
+    "body": "float g=phase(q,0.,.42),e=lEnv(q,.32,.82);float z=lGather(p,vec2(0.,-.30),q,.34,.40)*.6;for(int i=0;i<6;i++){float k=float(i),x=(k-2.5)*.24,h=.10+.15*hash(vec2(k,9.));float shift=.035*sin(t*TAU*3.+p.y*19.+k);vec2 u=p-vec2(x+shift,-.23+h);float d=abs(u.x)+abs(u.y)*.48;z+=glw(d,.012)*e*g*.55;vec2 v=p-vec2(x-shift,-.30-h*.85);z+=glw(abs(v.x)+abs(v.y)*.48,.014)*e*g*.38;}float layer=exp(-pow((p.y+.27+.025*sin(p.x*21.-t*TAU*3.))*22.,2.));return tone((z+layer*e*.30)*(1.-smoothstep(.80,1.08,abs(p.x))),vec3(.84,.94,1.));",
     "placement": "地表付近（仮）"
   },
   "421": {
@@ -10685,7 +10685,7 @@ const lightDetails={
     "duration": 4,
     "loop": false,
     "note": "広域の光が上空へ集まり、幅広い白金の光柱が上から複数降り注ぐ。強い着点光と余韻。雷なし。",
-    "body": "float z=lGather(p,vec2(0.,.72),q,.45,.66);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.32,s=.45+.035*abs(k-2.),g=lFast(phase(q,s,s+.11)),e=lEnv(q,s,.85);z+=lPillar(p,x,.93-1.63*g,.93,.13+.035*(1.-abs(k-2.)*.5),t+k*.09)*e*1.75;z+=lStar(p,vec2(x,-.70),.20,.0)*gate(q,s+.10,.95)*1.4;}for(int i=0;i<18;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,23.))-.5)*1.54,.90-1.60*f);z+=ball(p,c,.018)*sin(3.14159*f)*lEnv(q,.46,.87)*.72;}return tone(z,vec3(1.,.88,.46));",
+    "body": "float z=lGather(p,vec2(0.,.72),q,.45,.66);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.32,s=.45+.035*abs(k-2.),g=lFast(phase(q,s,s+.11)),e=lEnv(q,s,.85);z+=lPillar(p,x,.93-1.63*g,.93,.13+.035*(1.-abs(k-2.)*.5),t+k*.09)*e*1.75;z+=lStar(p,vec2(x,-.70),.20,.0)*gate(q,s+.10,.95)*1.4;}for(int i=0;i<18;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,23.))-.5)*1.54,.90-1.60*f);z+=ball(p,c,.018)*sin(3.14159*f)*lEnv(q,.46,.87)*.72;}return tone(z*(1.-smoothstep(.94,1.08,abs(p.y))),vec3(1.,.88,.46));",
     "placement": "上空→地表・広域（仮）"
   },
   "427": {
