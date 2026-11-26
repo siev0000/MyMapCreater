@@ -3,7 +3,7 @@
 [ツール選択画面](./index.html) からマップ・名前生成・図形カタログ・エフェクト作成へ移動できます。
 各ツールのヘッダー左端に共通ホームアイコンがあります。押すと未保存の内容が失われる可能性を確認し、OK時のみ選択画面へ戻ります。新規ツールはヘッダーに `data-tool-home` を付け、`shared/tool-home.js` と `shared/tool-home.css` を読み込んで共通化します。検証: `node shared/tool-home.test.cjs`。
 
-- [エフェクト作成](./tools/effect-creator/index.html) — Canvasアニメーション編集・透過スプライトシート出力。CS雷魔法24種のCanvas/GLSL専用プリセット、GLSLコード編集・レイヤー合成と制作備考を収録。
+- [エフェクト作成](./tools/effect-creator/index.html) — GLSLを初期描画方式とするアニメーション編集・透過スプライトシート出力。CS雷魔法24種のCanvas/GLSL専用プリセット、GLSLコード編集・レイヤー合成と制作備考を収録。
 - [エフェクト作成仕様・制約](./docs/specs/12-effect-creator.md)
 - [名前生成](./rebuild/name-generator.html) / [図形カタログ](./rebuild/shape-catalog.html)
 

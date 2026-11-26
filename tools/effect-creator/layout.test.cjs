@@ -10,3 +10,8 @@ for(const id of ['preview','codeFrame','canvasStage','codeStage','settingsScroll
 for(const tab of ['layers','output','save','code']){assert.ok(html.includes('data-settings-tab="'+tab+'"'));assert.ok(html.includes('data-settings-pane="'+tab+'"'))}
 assert.ok(html.includes('data-tool-home'));assert.ok(html.includes('value="fit" selected'));
 console.log('layout tests passed');
+
+assert.match(html, /<option value="shader" selected>GLSL<\/option>/);
+const layoutSource=fs.readFileSync(path.join(__dirname,'effect-layout.js'),'utf8');
+assert.match(layoutSource,/header\.addEventListener\('change',\(\)=>setEngine\(header\.value\)\);setEngine\('shader'\);/);
+assert.match(layoutSource,/if\(notify\)document\.dispatchEvent\(new CustomEvent\('effect-engine-change',\{detail:engine\}\)\)/);

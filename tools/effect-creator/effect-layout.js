@@ -12,7 +12,7 @@ function select(key,focus=false){
 }
 function setEngine(engine,notify=true){const mode=engine==='canvas'?'canvas':engine==='code'?'code':'external';header.value=engine;document.querySelector('.settings-tabs').dataset.engineMode=mode;for(const t of tabs){const k=t.dataset.settingsTab;t.hidden=mode==='canvas'?['external','code'].includes(k):k!==mode;}select(mode==='canvas'?canvasTab:mode);if(notify)document.dispatchEvent(new CustomEvent('effect-engine-change',{detail:engine}));}
 tabs.forEach(t=>{t.onclick=()=>select(t.dataset.settingsTab);t.onkeydown=e=>{const visible=tabs.filter(x=>!x.hidden),i=visible.indexOf(t);let n;if(e.key==='ArrowRight')n=(i+1)%visible.length;else if(e.key==='ArrowLeft')n=(i+visible.length-1)%visible.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=visible.length-1;else return;e.preventDefault();select(visible[n].dataset.settingsTab,true)}});
-header.addEventListener('change',()=>setEngine(header.value));setEngine('canvas',false);
+header.addEventListener('change',()=>setEngine(header.value));setEngine('shader');
 if(typeof ResizeObserver==='function')new ResizeObserver(onPreviewChanged).observe($('canvasStage'));else window.addEventListener('resize',onPreviewChanged);
 }
 return {fitSize,setup};
