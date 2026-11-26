@@ -41,6 +41,40 @@ function syncRegistry(){
 }
 function authorBase(){const v=$("authorBase").value;if(!v)return null;const [id,version]=v.split("@");return C.get(id,Number(version))}
 function uniqueId(base){let id=base.slice(0,50),n=1;while(C.nextVersion(id)!==1)id=base.slice(0,50)+"-"+(++n);return id}
+
+let authorParams=[];
+function authorSignature(){const types={float:"float",int:"int",bool:"bool",color:"vec3"};$("authorSignature").textContent="vec4 part(vec2 p, float t, float q"+authorParams.map(p=>", "+types[p.type||"float"]+" "+p.id).join("")+")";}
+function editParamRows(){
+ const box=$("authorParams");box.replaceChildren();
+ for(const [idx,p] of authorParams.entries()){
+  const card=document.createElement("div");card.className="param-card";const fields=document.createElement("div");fields.className="fields";
+  const change=(k,v)=>{p[k]=v;invalidateAuthor();authorSignature()};
+  const input=(label,k,type="text")=>{const el=document.createElement("input");el.type=type;el.value=p[k]??"";if(type==="number")el.step="any";field(fields,label,el);el.oninput=()=>change(k,type==="number"?(el.value===""?NaN:Number(el.value)):el.value);return el};
+  input("GLSL変数ID","id");input("表示名","name");
+  const type=document.createElement("select");for(const [v,n] of [["float","小数"],["int","整数"],["bool","ON/OFF"],["color","色 RGB"]])option(type,v,n);type.value=p.type||"float";field(fields,"型",type);
+  type.onchange=()=>{p.type=type.value;if(p.type==="bool"){p.default=true;delete p.min;delete p.max;delete p.step}else if(p.type==="color"){p.default="#ffffff";delete p.min;delete p.max;delete p.step}else{p.min=0;p.max= p.type==="int"?10:2;p.default=1;p.step=p.type==="int"?1:.05}invalidateAuthor();editParamRows()};
+  if((p.type||"float")==="bool"){const el=document.createElement("input");el.type="checkbox";el.checked=p.default;field(fields,"初期値",el);el.onchange=()=>change("default",el.checked)}
+  else if(p.type==="color")input("初期色","default","color");
+  else{input("最小値","min","number");input("最大値","max","number");input("初期値","default","number");input("刻み","step","number")}
+  input("単位（任意）","unit");
+  const del=document.createElement("button");del.type="button";del.textContent="項目削除";del.onclick=()=>{authorParams.splice(idx,1);invalidateAuthor();editParamRows()};card.append(fields,del);box.append(card);
+ }
+ $("authorParamAdd").disabled=authorParams.length>=16;authorSignature();
+}
+$("authorParamAdd").onclick=()=>{if(busy||authorParams.length>=16)return;let n=1;while(authorParams.some(p=>p.id==="amount"+n))n++;authorParams.push({id:"amount"+n,name:"調整値 "+n,type:"float",min:0,max:2,default:1,step:.05,unit:"倍"});invalidateAuthor();editParamRows()};
+function parameterField(box,a,p){
+ const label=a.name+(a.unit?"（"+a.unit+"）":""),type=a.type||"float",wrap=document.createElement("div");wrap.className="param-value";
+ const apply=v=>{if(busy)return;try{p.params[a.id]=C.parameterValue(a,v);mark()}catch(e){status(e.message,true);inspector()}};
+ if(type==="bool"){const el=document.createElement("input");el.type="checkbox";el.checked=p.params[a.id];field(wrap,label,el);el.onchange=()=>apply(el.checked)}
+ else if(type==="color"){const el=document.createElement("input");el.type="color";el.value=p.params[a.id];field(wrap,label,el);el.onchange=()=>apply(el.value)}
+ else{
+  const el=document.createElement("input");el.type="number";el.min=a.min;el.max=a.max;el.step=a.step;el.value=p.params[a.id];field(wrap,label,el);
+  const range=document.createElement("input");range.type="range";range.min=a.min;range.max=a.max;range.step=a.step;range.value=p.params[a.id];range.setAttribute("aria-label",label);
+  range.oninput=()=>{el.value=range.value};range.onchange=()=>apply(Number(range.value));el.onchange=()=>{if(el.value===""){inspector();return}range.value=el.value;apply(Number(el.value))};wrap.append(range);
+ }
+ const reset=document.createElement("button");reset.type="button";reset.textContent="初期値に戻す";reset.onclick=()=>{apply(a.default);inspector()};wrap.append(reset);box.append(wrap);
+}
+
 function startAuthor(versionMode=false){
  if(busy)return;const base=authorBase();
  if(versionMode&&!base){authorStatus("新版を作る元の部品を選択してください",true);return}
@@ -48,10 +82,10 @@ function startAuthor(versionMode=false){
  authorTemplate=base||{name:"発光球",category:"発光",view:"BOTH",duration:1,description:"",body:"float a = ball(p, vec2(0.), .22) * sin(3.14159*q);\nreturn light(a);",dependencies:["fire-common@1"],params:[]};
  $("authorId").value=versionMode?base.id:uniqueId(base?"custom-"+base.id:"custom-orb");$("authorId").readOnly=versionMode;$("authorVersionNumber").value=versionMode?C.nextVersion(base.id):1;
  for(const [id,key] of [["authorName","name"],["authorCategory","category"],["authorView","view"],["authorDuration","duration"],["authorDescription","description"],["authorBody","body"]])$(id).value=authorTemplate[key];
- authorStatus(versionMode?"新しい版を編集中。旧版は変更されません。":"新規部品を編集中。試写後に登録してください。");
+ authorParams=JSON.parse(JSON.stringify(authorTemplate.params));editParamRows();authorStatus(versionMode?"新しい版を編集中。旧版は変更されません。":"新規部品を編集中。試写後に登録してください。");
 }
 function readAuthor(){
- const d=C.normalizeDefinition({id:$("authorId").value.trim(),version:Number($("authorVersionNumber").value),name:$("authorName").value.trim(),category:$("authorCategory").value.trim(),view:$("authorView").value,duration:Number($("authorDuration").value),description:$("authorDescription").value,body:$("authorBody").value,dependencies:authorTemplate.dependencies,params:authorTemplate.params});
+ const d=C.normalizeDefinition({id:$("authorId").value.trim(),version:Number($("authorVersionNumber").value),name:$("authorName").value.trim(),category:$("authorCategory").value.trim(),view:$("authorView").value,duration:Number($("authorDuration").value),description:$("authorDescription").value,body:$("authorBody").value,dependencies:authorTemplate.dependencies,params:authorParams});
  if(d.version!==C.nextVersion(d.id)||(!authorVersionMode&&d.version!==1))throw Error("IDが既に登録済み、または版が不正。新規IDまたは新版を作る操作を使用してください");
  return d;
 }
@@ -87,7 +121,7 @@ function timeline(){const box=$("timeline");box.replaceChildren();const ruler=do
 const numericFields=[["start","開始秒",0,30,.01],["end","終了秒",0,30,.01],["x","開始 X",-2,2,.01],["y","開始 Y",-2,2,.01],["endX","終了 X",-2,2,.01],["endY","終了 Y",-2,2,.01],["arc","放物線の高さ",-2,2,.01],["scale","倍率",.05,4,.01],["rotation","回転角",-360,360,1],["opacity","透明度",0,1,.01],["speed","模様の速度",.05,10,.05],["tintMix","色の適用量",0,1,.01]];
 function field(box,title,input){const l=document.createElement("label");l.textContent=title;l.append(input);box.append(l);return input}
 function numberField(box,title,value,min,max,step,cb){const i=document.createElement("input");i.type="number";i.min=min;i.max=max;i.step=step;i.value=value;field(box,title,i);i.onchange=()=>{if(busy)return;const n=Number(i.value);if(i.value===""||!Number.isFinite(n)||n<min||n>max){i.value=value;status(title+" の入力範囲が不正",true);return}cb(n)};return i}
-function inspector(){const p=current(),box=$("partFields");$("inspector").hidden=!p;$("empty").hidden=!!p;box.replaceChildren();if(!p)return;const d=C.get(p.partId,p.version);$("partName").textContent=d.name+" v"+p.version;for(const [k,label,min,max,step] of numericFields)numberField(box,label,p[k],min,k==="start"||k==="end"?composition.duration:max,step,n=>{p[k]=n;timeline();mark()});const tint=document.createElement("input");tint.type="color";tint.value=p.tint;field(box,"色補正",tint);tint.onchange=()=>{p.tint=tint.value;mark()};const mode=document.createElement("select");option(mode,"local","部品内");option(mode,"scene","全体と同期");mode.value=p.timeMode;field(box,"模様の時間",mode);mode.onchange=()=>{p.timeMode=mode.value;mark()};const show=document.createElement("input");show.type="checkbox";show.checked=p.enabled;field(box,"表示",show);show.onchange=()=>{p.enabled=show.checked;timeline();mark()};for(const a of d.params)numberField(box,a.name,p.params[a.id],a.min,a.max,a.step,n=>{p.params[a.id]=n;mark()})}
+function inspector(){const p=current(),box=$("partFields");$("inspector").hidden=!p;$("empty").hidden=!!p;box.replaceChildren();if(!p)return;const d=C.get(p.partId,p.version);$("partName").textContent=d.name+" v"+p.version;for(const [k,label,min,max,step] of numericFields)numberField(box,label,p[k],min,k==="start"||k==="end"?composition.duration:max,step,n=>{p[k]=n;timeline();mark()});const tint=document.createElement("input");tint.type="color";tint.value=p.tint;field(box,"色補正",tint);tint.onchange=()=>{p.tint=tint.value;mark()};const mode=document.createElement("select");option(mode,"local","部品内");option(mode,"scene","全体と同期");mode.value=p.timeMode;field(box,"模様の時間",mode);mode.onchange=()=>{p.timeMode=mode.value;mark()};const show=document.createElement("input");show.type="checkbox";show.checked=p.enabled;field(box,"表示",show);show.onchange=()=>{p.enabled=show.checked;timeline();mark()};for(const a of d.params)parameterField(box,a,p)}
 function drawEditor(){timeline();inspector();showLibrary();const p=current(),i=composition.parts.indexOf(p);$("duplicate").disabled=!p||composition.parts.length>=C.MAX_PARTS;$("delete").disabled=!p;$("up").disabled=i<=0;$("down").disabled=i<0||i>=composition.parts.length-1;outputInfo()}
 function move(delta){const i=composition.parts.indexOf(current()),j=i+delta;if(i<0||j<0||j>=composition.parts.length)return;[composition.parts[i],composition.parts[j]]=[composition.parts[j],composition.parts[i]];drawEditor();mark()}
 $("up").onclick=()=>move(-1);$("down").onclick=()=>move(1);
