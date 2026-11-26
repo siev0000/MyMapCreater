@@ -4,6 +4,7 @@
 各ツールのヘッダー左端に共通ホームアイコンがあります。押すと未保存の内容が失われる可能性を確認し、OK時のみ選択画面へ戻ります。新規ツールはヘッダーに `data-tool-home` を付け、`shared/tool-home.js` と `shared/tool-home.css` を読み込んで共通化します。検証: `node shared/tool-home.test.cjs`。
 
 - [エフェクト作成](./tools/effect-creator/index.html) — GLSLを初期描画方式とするアニメーション編集・透過スプライトシート出力。CS雷魔法24種のCanvas/GLSL専用プリセットとGLSL試作（連鎖球雷）、属性別の他魔法320種のGLSL初期制作案、GLSLコード編集・レイヤー合成と制作備考を収録。
+- [GLSL部品組み合わせ制作（試作）](./tools/effect-creator/component-studio.html) — 部品ライブラリ、タイムライン、単体・全体プレビュー、構成保存・透過画像出力。既存魔法の置換はしない。
 - [エフェクト作成仕様・制約](./docs/specs/12-effect-creator.md)
 - **[最新の作業引き継ぎ](./docs/HANDOFF.md)** — 作業再開時に読む。進捗・確定事項・未完了・次の手順を管理し、作業の区切りで更新する。
 - [名前生成](./rebuild/name-generator.html) / [図形カタログ](./rebuild/shape-catalog.html)
