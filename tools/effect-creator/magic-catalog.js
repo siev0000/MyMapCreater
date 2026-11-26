@@ -10558,7 +10558,147 @@ const earthDetails={
 };
 const earthHelpers="\nfloat quakeEase(float f){return 1.-pow(1.-sat(f),3.);}\nfloat earthEnv(float q,float a,float b){return smoothstep(a,a+.035,q)*(1.-smoothstep(b,1.,q));}\nvec4 stoneShape(vec2 p,vec2 c,vec2 r,float ang,float seed,float heat){\n if(min(r.x,r.y)<.006)return vec4(0.);\n vec2 v=p-c;v=vec2(dot(v,dir2(ang)),dot(v,dir2(ang+1.5707963)))/r;\n float a=atan(v.y,v.x),n=fb(v*3.4+seed),d=length(v)*(.91+.12*cos(a*5.+seed)+.07*cos(a*7.-seed));\n float mask=1.-smoothstep(.94,1.03,d);\n float face=smoothstep(-.055,.055,v.x+.44*v.y+.18*sin(v.y*5.+seed));\n float facet=step(.0,sin(v.x*5.+v.y*4.+seed));\n vec3 col=mix(vec3(.16,.125,.09),mix(vec3(.65,.54,.39),uColor,.22),.25+.35*face+.17*facet+.13*n);\n float cracks=1.-smoothstep(.018,.063,abs(noise(v*4.8+seed)-.48));\n col=mix(col,vec3(.16,.085,.03),cracks*.38);\n col=mix(col,mix(vec3(.58,.06,.012),vec3(1.,.78,.22),cracks),heat*(.34+.66*cracks));\n return vec4(col,mask*.99);\n}\nvec4 soilDust(vec2 p,vec2 c,vec2 r,float t,float seed,float hot){\n float a=shell(p,c,r,t+seed*.03),n=fb((p-c)*8.+vec2(seed,-t*1.8));\n vec3 col=mix(vec3(.25,.17,.095),vec3(.74,.58,.36),n);\n col=mix(col,mix(vec3(.10,.075,.064),vec3(.53,.28,.13),n),hot);\n return vec4(col,a*.70);\n}\nvec4 grit(vec2 p,vec2 c,float f,float r,float seed,float count,float heat){\n if(f<=0.||f>=1.)return vec4(0.);vec4 col=vec4(0.);\n for(int i=0;i<24;i++){float k=float(i);if(k>=count*uDensity)break;float a=k*TAU/count+.25*hash(vec2(k,seed)),s=r*(.35+.65*hash(vec2(k,seed+7.)))*quakeEase(f);\n vec2 v=c+dir2(a)*s+vec2(0.,-.22*f*f);\n float sz=.013+.035*hash(vec2(k,seed+5.));vec4 w=stoneShape(p,v,vec2(sz,sz*.72),k+f*4.,k+seed,heat);w.a*=1.-smoothstep(.57,1.,f);col=over(col,w);}return col;\n}\nvec4 earthCharge(vec2 p,vec2 c,float q,float r){\n float f=phase(q,0.,.35);vec4 col=vec4(0.);\n for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+f*.7;vec2 v=c+dir2(a)*r*(1.-f);vec4 w=stoneShape(p,v,vec2(.022,.018),k+q*3.,k+11.,0.);w.a*=gate(q,0.,.43);col=over(col,w);}return col;\n}\nvec4 earthShock(vec2 p,vec2 c,float f,float r,float force){\n if(f<=0.||f>=1.)return vec4(0.);float radius=.035+r*quakeEase(f),d=length((p-c)/vec2(1.,.34));\n float a=exp(-abs(d-radius)/(.027+.018*f))*sin(3.14159*f)*force;return vec4(vec3(.88,.72,.47),sat(a));\n}\nvec4 groundPatch(vec2 p,vec2 c,vec2 r,float t,float seed,float wet){\n vec2 v=(p-c)/r;float n=fb(v*5.+vec2(seed,t*.4)),d=length(v)+(.5-n)*.22;\n float mask=1.-smoothstep(.86,1.08,d);\n vec3 color=mix(vec3(.22,.15,.09),vec3(.63,.48,.29),n);\n color=mix(color,mix(vec3(.12,.14,.10),vec3(.42,.36,.20),n),wet);\n return vec4(color,mask*.93);\n}\nvec4 fissure(vec2 p,vec2 c,float g,float extent,float seed,float hot,float width){\n if(g<=0.)return vec4(0.);float d=10.,rim=10.;\n for(int i=0;i<7;i++){float k=float(i),a=k*TAU/7.+.35*hash(vec2(k,seed));vec2 v=dir2(a)*vec2(extent,extent*.56)*g;\n vec2 m=c+v*.38+vec2(.07*sin(k+seed),.025)*g,b=c+v*.72+vec2(-.05*cos(k),.03)*g,tip=c+v;\n d=min(d,min(seg(p,c,m),min(seg(p,m,b),seg(p,b,tip))));\n d=min(d,seg(p,b,b+dir2(a+.8)*.20*g));\n }\n float mask=1.-smoothstep(width,width+.012,d);float lip=exp(-abs(d-width-.014)/.013);\n vec3 core=mix(vec3(.075,.044,.023),vec3(1.,.34,.025),hot);\n return over(vec4(vec3(.58,.40,.23),lip*.78),vec4(core,mask*.98));\n}\nvec4 gem(vec2 p,vec2 a,vec2 b,float w,float seed){\n vec2 d=b-a;float l=length(d);if(l<.009||w<.006)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float y=dot(v,ax)/l,x=dot(v,side),width=w*min(sat(y*6.),sat((1.-y)*3.));\n float alpha=(1.-smoothstep(width-.006,width+.005,abs(x)))*smoothstep(-.01,.02,y)*(1.-smoothstep(.97,1.01,y));\n float face=smoothstep(-.008,.008,x),line=1.-smoothstep(.003,.012,abs(x)),edge=1.-smoothstep(.004,.015,abs(abs(x)-width));\n vec3 col=mix(vec3(.21,.29,.41),mix(vec3(.79,.93,1.),uColor,.16),.25+.60*face);\n col=mix(col,vec3(.94,.99,1.),max(line*.64,edge*.64));\n col=mix(col,vec3(.53,.37,.81),.15*hash(vec2(seed,5.)));\n return vec4(col,alpha*.94);\n}\nvec4 crystalCluster(vec2 p,vec2 c,float g,float height,float width,float count,float seed){\n vec4 v=vec4(0.);for(int i=0;i<12;i++){float k=float(i);if(k>=count)break;float x=(k-(count-1.)*.5)/max(1.,count-1.);vec2 a=c+vec2(x*width,.035*sin(k+seed));vec2 b=a+vec2(x*.32,(.52+.48*hash(vec2(k,seed)))*height)*g;v=over(v,gem(p,a,b,.10*g*(.65+.35*hash(vec2(k,seed+1.))),k+seed));}return v;\n}\nvec4 rockWall(vec2 p,float g,float width,float height,float hot,float cut){\n vec4 col=vec4(0.);for(int i=0;i<5;i++){float k=float(i);for(int j=0;j<7;j++){float h=float(j),x=(h-3.)*.23*width+.04*mod(k,2.),y=-.66+k*.22*height;float e=sat(g*5.-k);if(e>0.){vec4 v=stoneShape(p,vec2(x,y+.10*e),vec2(.145*width,.125*height*e),.13*sin(h+k),h+k*7.,hot);v.a*=cut;col=over(col,v);}}}return col;\n}\nvec4 earthFlow(vec2 p,float f,float t,float height,float breadth,float wet,float hot){\n if(f<=0.||f>=1.)return vec4(0.);float x=mix(-.84,.84,f),rel=p.x-x;float n=fb(vec2(p.x*10.-t*4.,p.y*13.));\n float top=-.59+height*exp(-pow((rel+.13)/breadth,2.))+.045*n;\n float mask=smoothstep(-.76,-.66,p.y)*(1.-smoothstep(top-.02,top+.03,p.y))*smoothstep(-breadth*2.2,-breadth,rel)*(1.-smoothstep(.035,.18,rel));\n vec3 col=mix(vec3(.24,.14,.06),vec3(.70,.50,.28),n);col=mix(col,mix(vec3(.14,.11,.08),vec3(.45,.36,.24),n),wet);\n float lavaLine=1.-smoothstep(.035,.11,abs(noise(vec2(p.x*8.-t*3.,p.y*10.))-.48));\n col=mix(col,mix(vec3(.55,.035,.008),vec3(1.,.73,.13),lavaLine),hot);\n vec4 v=vec4(col,mask*sin(3.14159*f)*.94);\n for(int i=0;i<10;i++){float k=float(i),h=hash(vec2(k,13.));vec2 c=vec2(x-breadth*h,-.58+height*.58*hash(vec2(k,9.)));vec4 w=stoneShape(p,c,vec2(.045+.06*h,.035+.04*h),k+t*3.,k+17.,hot);w.a*=sin(3.14159*f);v=over(v,w);}return v;\n}\nvec4 rockFall(vec2 p,float q,float t,float count,float size,float start,float heat,float lateral){\n vec4 col=vec4(0.);for(int i=0;i<12;i++){float k=float(i);if(k>=count)break;float begin=start+k*.038,f=phase(q,begin,begin+.28);\n float x=(hash(vec2(k,13.))-.5)*1.24;vec2 a=vec2(x-lateral*.32,.82),b=vec2(x+lateral*.22,-.61);\n float ch=phase(q,0.,begin);vec2 c=mix(a,b,f*f);float r=size*(.73+.27*hash(vec2(k,17.)))*(.22+.78*ch);\n if(q<begin+.28){vec4 w=stoneShape(p,c,vec2(r,r*.78),k+f*2.,k+15.,heat);w.a*=smoothstep(0.,.07,q)*(1.-smoothstep(.93,1.,f));col=over(col,w);}\n float hit=phase(q,begin+.27,min(.995,begin+.57));col=over(col,grit(p,b,hit,.28+size,k+21.,9.,heat));col=over(col,earthShock(p,b,hit,.34+size,.95));}return col;\n}\nvec4 sandVortex(vec2 p,float t,float g,float radius,float height,float hole){\n float y=(p.y+.62)/max(.02,height*g);float x=p.x-.045*sin(y*8.+t*TAU*2.);\n float w=(.22+.70*pow(sat(y),.8))*radius*g;\n float mask=smoothstep(-.02,.06,y)*(1.-smoothstep(.91,1.04,y))*(1.-smoothstep(.84,1.12,abs(x)/max(.01,w)));\n float n=fb(vec2(x*12.+t*3.,y*10.-t*4.)),band=pow(.5+.5*sin(y*TAU*4.-t*TAU*4.+x/max(.01,w)*3.),3.);\n vec4 v=vec4(mix(vec3(.28,.17,.08),vec3(.80,.61,.34),n*.55+band*.4),mask*(.22+.66*band));\n for(int i=0;i<20;i++){float k=float(i),f=fract(t+hash(vec2(k,5.))),a=t*TAU*3.+k*2.4;vec2 c=vec2(cos(a)*radius*(.32+.55*f)*g,-.62+height*f*g);vec4 w=stoneShape(p,c,vec2(.013,.009),a,k,0.);w.a*=sin(3.14159*f);v=over(v,w);}return v;\n}\nvec4 moltenFountain(vec2 p,float t,float q,float width,float height,float count){\n vec2 root=vec2(0.,-.67);float f=phase(q,.35,1.),g=quakeEase(phase(q,.35,.50));vec4 col=earthCharge(p,root,q,.43);\n float e=earthEnv(q,.35,.77);float y=(p.y-root.y)/max(.01,height*g),x=p.x-.04*sin(y*12.-t*TAU*4.);\n float n=fb(vec2(x*16.+t,y*8.-t*5.));float a=(1.-smoothstep(.68,1.1,abs(x)/max(.01,width*(.45+.55*sat(y)))))*smoothstep(-.03,.06,y)*(1.-smoothstep(.82,1.03,y));\n col=over(col,vec4(mix(vec3(.61,.055,.008),vec3(1.,.78,.10),n),a*e));\n for(int i=0;i<20;i++){float k=float(i);if(k>=count)break;float u=phase(f,.025*k,.96);vec2 c=root+vec2((hash(vec2(k,7.))-.5)*1.65*u,4.*u*(1.-u)*height*(.5+.5*hash(vec2(k,13.))));vec4 w=stoneShape(p,c,vec2(.035+.025*hash(vec2(k,11.)),.027),k+u*4.,k+8.,1.);w.a*=sin(3.14159*u);col=over(col,w);}return over(col,earthShock(p,root,f,.72,.95));\n}\n";
 for(const r of records){const d=earthDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true});}
-function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row]||iceDetails[r.row]||waterDetails[r.row]||windDetails[r.row]||earthDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+(fireDetails[r.row]?fireHelpers:iceDetails[r.row]?iceHelpers:waterDetails[r.row]?waterHelpers:windDetails[r.row]?windHelpers:earthHelpers)+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
+// Individually designed light effects, reviewed with software OpenGL before commit.
+const lightDetails={
+  "407": {
+    "duration": 0.75,
+    "loop": false,
+    "note": "対象中心の白い閃光が星形に弾け、短い光条を残してすぐ消える。画面全体は白塗りしない。",
+    "body": "float f=phase(q,.02,.34),e=gate(q,0.,.82);float z=lStar(p,vec2(0.),.08+.36*lFast(f),.15)*e*1.65;return tone(z,vec3(1.,.94,.74));"
+  },
+  "408": {
+    "duration": 1.45,
+    "loop": false,
+    "note": "入射光が屈折点で曲がり、異なる角度へ伸びる。屈折点に短い色分離。背景屈折は別。",
+    "body": "vec2 a=vec2(-.76,-.34),b=vec2(-.07,.06),c=vec2(.72,.27);float f=phase(q,.04,.40),g=phase(q,.38,.71),e=lEnv(q,.04,.74);float z=lRay(p,a,mix(a,b,f),.008)*e+lRay(p,b,mix(b,c,g),.008)*e;vec4 v=light(z);for(int i=0;i<3;i++){float k=float(i);v=over(v,lSpectrum(lRay(p,b,b+vec2(.23,.04*(k-1.))*g,.0035)*gate(q,.36,.83)*.72,k*.28));}return over(v,light(lStar(p,b,.09,.0)*gate(q,.34,.84)));",
+    "placement": "術者→屈折点→対象（仮）"
+  },
+  "409": {
+    "duration": 1.05,
+    "loop": false,
+    "note": "始点が点灯し、細い白金色の直線光が対象へ鋭く伸び、先端光と共に細く消える。",
+    "body": "vec2 a=vec2(-.77,0.),b=vec2(.75,0.);float f=lFast(phase(q,.10,.26)),e=lEnv(q,.09,.63);float z=ball(p,a,.045)*gate(q,0.,.41)+lRay(p,a,mix(a,b,f),.013*(1.-.70*smoothstep(.63,1.,q)))*e*1.45+lStar(p,b,.11,0.)*gate(q,.25,.83);return light(z);"
+  },
+  "410": {
+    "duration": 1.95,
+    "loop": false,
+    "note": "白光が屈折点に集まってから七色の直線光が扇状に分離し、虹の光路が薄れる。",
+    "body": "vec2 c=vec2(-.14,0.);float g=lFast(phase(q,.35,.58)),e=lEnv(q,.35,.79);vec4 v=light(lGather(p,c,q,.35,.40)+lRay(p,vec2(-.75,0.),c,.013)*gate(q,.06,.54));for(int i=0;i<7;i++){float k=float(i),y=(k-3.)*.20;vec2 end=vec2(.76,y);float z=lRay(p,c,mix(c,end,g),.008)*e*1.2;v=over(v,lSpectrum(z,k/8.));}return over(v,light(lStar(p,c,.13,.0)*gate(q,.31,.72)));",
+    "placement": "屈折点→前方（仮）"
+  },
+  "411": {
+    "duration": 1.95,
+    "loop": false,
+    "note": "細い開口の周囲に光が集まり、弧状の回折波面が影側へ広がる。明暗縞で分光と区別。",
+    "body": "vec2 c=vec2(-.32,0.);float g=phase(q,.32,.92),z=lGather(p,c,q,.32,.32)+lRay(p,vec2(-.78,0.),c,.012)*gate(q,.08,.54);float slit=glw(seg(p,c+vec2(0.,-.38),c+vec2(0.,-.10)),.004)+glw(seg(p,c+vec2(0.,.10),c+vec2(0.,.38)),.004);z+=slit*gate(q,.12,.87)*.45;for(int i=0;i<6;i++){float k=float(i),f=phase(g,k*.105,.99);if(f>0.&&f<1.)z+=lArc(p,c,.04+.98*f,0.,1.2,.0065)*sin(3.14159*f)*(.95-.085*k);}return tone(z,vec3(.91,.96,1.));",
+    "placement": "開口→前方（仮）"
+  },
+  "412": {
+    "duration": 1.95,
+    "loop": false,
+    "note": "黄白の光核を短く溜め、対象に熱光を集中。橙色の熱揺らぎと微小な火の粉が着点に残る。",
+    "body": "vec2 a=vec2(-.73,0.),b=vec2(.60,0.);float f=lFast(phase(q,.32,.48)),e=lEnv(q,.32,.73);vec4 v=light(lGather(p,a,q,.32,.26)+lRay(p,a,mix(a,b,f),.025)*e*1.6);float z=ball(p,b,.15)*gate(q,.44,.88)*1.2+spark(p,b,phase(q,.48,1.),.26,9.)*.7;return over(v,tone(z,vec3(1.,.42,.08)));"
+  },
+  "413": {
+    "duration": 2.8,
+    "loop": true,
+    "note": "中央の光源と左右の偽の太陽が安定して輝く。両側に小さな虹色の尾。",
+    "body": "float b=.89+.11*cos(t*TAU);vec4 v=light(ball(p,vec2(0.,.08),.13)*b*1.4);for(int i=0;i<2;i++){float s=float(i)*2.-1.;vec2 c=vec2(s*.52,.08);v=over(v,light(lStar(p,c,.14,0.)*b*.84));for(int j=0;j<6;j++){float k=float(j);vec2 a=c+vec2(s*(.025+k*.031),0.);v=over(v,lSpectrum(ball(p,a,.036)*(.70-k*.075)*b,k/7.));}}return v;"
+  },
+  "414": {
+    "duration": 2.8,
+    "loop": true,
+    "note": "中央光源を囲む細い大径の暈。縁の淡い虹色が揺らぎ、大きな円環を維持する。",
+    "body": "float d=length(p),a=atan(p.y,p.x),r=.61+.012*cos(t*TAU);vec4 v=light(ball(p,vec2(0.),.10)*1.2);for(int i=0;i<5;i++){float k=float(i),z=glw(abs(d-r-k*.012),.0035)*(.39+.14*cos(a*6.+t*TAU))* (1.-k*.09);v=over(v,lSpectrum(z,k*.13+.03));}return v;"
+  },
+  "415": {
+    "duration": 2.6,
+    "loop": false,
+    "note": "薄い雲へ白光が集まり、縁から虹色が急速に広がる彩雲。雲固有の現象なので雲あり。",
+    "body": "float f=lFast(phase(q,.25,.65));vec4 v=lCloud(p,t,f,0.);v.a*=lEnv(q,.08,.81);return over(v,light(lGather(p,vec2(0.,.23),q,.32,.31)*.62));"
+  },
+  "416": {
+    "duration": 3,
+    "loop": true,
+    "note": "中央の光核が脈動し、近距離に密集した色環が周期的に開く。大径の暈と異なる。",
+    "body": "float h=.5-.5*cos(t*TAU),r=.13+.055*h,d=length(p);vec4 v=light(ball(p,vec2(0.),.09)*(.85+.5*h));for(int i=0;i<9;i++){float k=float(i),rad=r+k*.033;float z=glw(abs(d-rad),.0045)*(.45+.28*h)*(1.-k*.075);v=over(v,lSpectrum(z,k*.18));}return v;"
+  },
+  "417": {
+    "duration": 2.5,
+    "loop": false,
+    "note": "周囲から光束を一点へ集めて白熱させ、強い局所光条を解放する。広域爆発なし。",
+    "body": "float f=phase(q,0.,.46),z=lGather(p,vec2(0.),q,.46,.67);for(int i=0;i<10;i++){float k=float(i),a=k*TAU/10.+.07*sin(k);vec2 d=dir2(a);z+=lRay(p,d*.80,d*.80*(1.-f),.007)*gate(q,.08,.58)*(.48+.52*f);}z+=lStar(p,vec2(0.),.37,.0)*gate(q,.46,.93)*2.3+ball(p,vec2(0.),.16)*gate(q,.43,.87)*1.5;return light(z);"
+  },
+  "418": {
+    "duration": 2.55,
+    "loop": false,
+    "note": "中心の光源へ蓄積して上下へ縦長の白金光柱が急伸。縦筋が流れ、細く消える。雷なし。",
+    "body": "float g=lFast(phase(q,.39,.53)),e=lEnv(q,.39,.80),w=.13*(1.-.70*smoothstep(.80,1.,q));float z=lGather(p,vec2(0.),q,.39,.48)+lPillar(p,0.,-.92*g,.92*g,w,t)*e*1.65;z+=lStar(p,vec2(0.),.25,0.)*gate(q,.39,.70)*1.3;return light(z);",
+    "placement": "光源中心・上下（仮）"
+  },
+  "419": {
+    "duration": 2.8,
+    "loop": false,
+    "note": "光が対象の輪郭を避けて左右に分かれ、背後で再結合。実際の背景透過・透明化はゲーム側。",
+    "body": "float g=phase(q,.31,.72),e=lEnv(q,.28,.83),z=lGather(p,vec2(-.63,0.),q,.31,.28);for(int i=0;i<6;i++){float k=float(i),y=(k-2.5)*.13,s=sign(y);vec2 a=vec2(-.77,y*.35),b=vec2(0.,s*(1.08+.14*abs(y))),c=vec2(.77,y*.35);z+=lCurve(p,a,b,c,g,.006)*e*(.65+.12*sin(k+t*TAU));}return tone(z,vec3(.68,.94,1.));",
+    "placement": "対象周囲・光路（仮）"
+  },
+  "420": {
+    "duration": 2.9,
+    "loop": false,
+    "note": "低い熱揺らぎの層から抽象的な光像が上下にずれて重複し、揺れて消える。風景や人物は固定しない。",
+    "body": "float g=phase(q,0.,.42),e=lEnv(q,.32,.82);float z=lGather(p,vec2(0.,-.30),q,.34,.40)*.6;for(int i=0;i<6;i++){float k=float(i),x=(k-2.5)*.24,h=.10+.15*hash(vec2(k,9.));float shift=.035*sin(t*TAU*3.+p.y*19.+k);vec2 u=p-vec2(x+shift,-.23+h);float d=abs(u.x)+abs(u.y)*.48;z+=glw(d,.012)*e*g*.55;vec2 v=p-vec2(x-shift,-.30-h*.85);z+=glw(abs(v.x)+abs(v.y)*.48,.014)*e*g*.38;}float layer=exp(-pow((p.y+.27+.025*sin(p.x*21.-t*TAU*3.))*22.,2.));return tone(z+layer*e*.30,vec3(.84,.94,1.));",
+    "placement": "地表付近（仮）"
+  },
+  "421": {
+    "duration": 3.05,
+    "loop": false,
+    "note": "大量の光粒を集めて白熱し、太い複数の光束が一斉に前方へ流れる。光線より厚い密度と先端光。",
+    "body": "vec2 a=vec2(-.76,0.),b=vec2(.76,0.);float g=lFast(phase(q,.43,.54)),e=lEnv(q,.43,.81),z=lGather(p,a,q,.43,.42);for(int i=0;i<9;i++){float k=float(i),y=(k-4.)*.080;vec2 c=a+vec2(0.,y*.22),d=b+vec2(0.,y);z+=lRay(p,c,mix(c,d,g),.014+.006*cos(k))*e*(.65+.35*sin(t*TAU*7.+k)*sin(t*TAU*7.+k));}z+=lStar(p,b,.29,.0)*gate(q,.53,.91)*1.8;return light(z);"
+  },
+  "422": {
+    "duration": 3.8,
+    "loop": true,
+    "note": "高層の氷晶に光が入り、青銀の繊維状の雲の縁が波打つ。静かなループ。",
+    "body": "vec4 v=lCloud(p,t,1.,1.);float z=0.;for(int i=0;i<8;i++){float k=float(i),y=.04+(k-3.5)*.048+.025*sin(p.x*12.+t*TAU+k);z+=exp(-abs(p.y-y)/.007)*(1.-smoothstep(.58,.87,abs(p.x)))*v.a*.19;}return over(v,tone(z,vec3(.49,.80,1.)));"
+  },
+  "423": {
+    "duration": 3.3,
+    "loop": false,
+    "note": "対象上方に白金の光を集め、局所的な縦の光幕と金色の粒が対象を包む。穏やかな余光。",
+    "body": "float g=lFast(phase(q,.40,.58)),e=lEnv(q,.40,.83);float z=lGather(p,vec2(0.,.71),q,.40,.47);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.14;z+=lPillar(p,x,.82-1.49*g,.82,.09,t+k*.07)*e*.68;}for(int i=0;i<14;i++){float k=float(i),f=fract(t+hash(vec2(k,7.)));vec2 c=vec2((hash(vec2(k,11.))-.5)*.72,.73-1.35*f);z+=ball(p,c,.018)*sin(3.14159*f)*e*.70;}return tone(z,vec3(1.,.89,.51));"
+  },
+  "424": {
+    "duration": 3.25,
+    "loop": false,
+    "note": "分散した多数の蛍光が集まってから複数方向へ流れ、時間差で鋭く点滅して散る。",
+    "body": "float h=phase(q,0.,.43),f=phase(q,.43,1.);float z=0.;for(int i=0;i<24;i++){float k=float(i),a=k*2.399963;vec2 d=dir2(a);float r=.31+.43*hash(vec2(k,7.));vec2 c=d*r*mix(1.,.26,h)+vec2(.045*sin(t*TAU*2.+k),.04*cos(t*TAU*2.+k));c+=d*r*.90*lFast(f);float blink=.24+.76*pow(.5+.5*sin(t*TAU*7.+k*1.7),6.);z+=ball(p,c,.036)*blink*lEnv(q,.03,.86)*1.15+lStar(p,c,.095,.2)*blink*gate(q,.43,.91)*.90;}return tone(z,vec3(.92,1.,.58));"
+  },
+  "425": {
+    "duration": 3.4,
+    "loop": false,
+    "note": "地表に複数の光点が蓄積し、時間差で縦長の光柱が上へ突き上がる。地表の光が重なる。",
+    "body": "float z=0.;for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.32,s=.36+k*.075,g=lFast(phase(q,s,s+.12));vec2 a=vec2(x,-.66);z+=lGather(p,a,q,s,.16)*.75+lPillar(p,x,-.66,-.66+1.48*g,.085,t+k*.1)*gate(q,s,min(.99,s+.43))*1.5;z+=lStar(p,a,.14,0.)*gate(q,s,min(.99,s+.34))*1.25;}return light(z);",
+    "placement": "地表→上空（仮）"
+  },
+  "426": {
+    "duration": 4,
+    "loop": false,
+    "note": "広域の光が上空へ集まり、幅広い白金の光柱が上から複数降り注ぐ。強い着点光と余韻。雷なし。",
+    "body": "float z=lGather(p,vec2(0.,.72),q,.45,.66);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.32,s=.45+.035*abs(k-2.),g=lFast(phase(q,s,s+.11)),e=lEnv(q,s,.85);z+=lPillar(p,x,.93-1.63*g,.93,.13+.035*(1.-abs(k-2.)*.5),t+k*.09)*e*1.75;z+=lStar(p,vec2(x,-.70),.20,.0)*gate(q,s+.10,.95)*1.4;}for(int i=0;i<18;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,23.))-.5)*1.54,.90-1.60*f);z+=ball(p,c,.018)*sin(3.14159*f)*lEnv(q,.46,.87)*.72;}return tone(z,vec3(1.,.88,.46));",
+    "placement": "上空→地表・広域（仮）"
+  },
+  "427": {
+    "duration": 4,
+    "loop": true,
+    "note": "緑・青・紫の巨大な発光カーテン。縦筋を持つ複数の幕が波打ち、折り重なる。用途未設定の持続案。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<4;i++){float k=float(i),baseY=.38-k*.13+.17*sin(p.x*5.+t*TAU+k*.8)+.07*sin(p.x*12.-t*TAU*2.+k);float h=.22+.09*sin(p.x*8.+t*TAU+k),y=(p.y-baseY)/max(.06,h);float m=smoothstep(-1.15,-.82,y)*(1.-smoothstep(.10,.34,y))*(1.-smoothstep(.64,.88,abs(p.x)));float stripe=.38+.62*pow(.5+.5*sin(p.x*67.+sin(p.x*18.+t*TAU+k)*2.),3.);vec3 col=mix(vec3(.16,.97,.64),vec3(.31,.45,1.),sat((y+1.)*.9));col=mix(col,vec3(.75,.28,.96),.35+.30*sin(k+t*TAU));v=over(v,vec4(col,m*stripe*.61));}return v;",
+    "placement": "上空・広域（仮）"
+  }
+};
+const lightHelpers="\nfloat lFast(float f){return 1.-pow(1.-sat(f),3.);}\nfloat lEnv(float q,float a,float b){return smoothstep(a,a+.04,q)*(1.-smoothstep(b,1.,q));}\nfloat lRay(vec2 p,vec2 a,vec2 b,float w){vec2 d=b-a;float l=length(d);if(l<.005)return 0.;float u=dot(p-a,d)/max(.00001,l*l);return glw(seg(p,a,b),w)*smoothstep(-.04,0.,u)*(1.-smoothstep(1.,1.04,u));}\nfloat lStar(vec2 p,vec2 c,float r,float angle){vec2 v=p-c;float z=ball(p,c,r*.23)*1.4;for(int i=0;i<4;i++){float k=float(i),a=angle+k*TAU/4.;vec2 d=dir2(a);z+=glw(seg(p,c,c+d*r),.0045)*exp(-length(v)/max(.01,r*.47));}return z;}\nfloat lGather(vec2 p,vec2 c,float q,float stop,float radius){float f=phase(q,0.,stop);float z=0.;for(int i=0;i<12;i++){float k=float(i),a=k*TAU/12.+f*.4;vec2 d=dir2(a),v=c+d*radius*(1.-f)*(.55+.45*hash(vec2(k,17.)));z+=ball(p,v,.014)*sin(3.14159*f)+lRay(p,v,v+d*.06,.0035)*sin(3.14159*f)*.5;}return z+ball(p,c,.035+.065*f)*gate(q,0.,stop+.08)*(.65+.65*f);}\nvec4 lSpectrum(float z,float x){return tone(z,rainbow(x));}\nfloat lArc(vec2 p,vec2 c,float radius,float angle,float spread,float w){vec2 v=p-c;float a=atan(v.y,v.x)-angle;float d=abs(atan(sin(a),cos(a)));return glw(abs(length(v)-radius),w)*(1.-smoothstep(spread*.8,spread,d));}\nfloat lPillar(vec2 p,float x,float bottom,float top,float width,float t){if(top-bottom<.008)return 0.;float y=(p.y-bottom)/(top-bottom);float mask=smoothstep(-.025,.14,y)*(1.-smoothstep(.84,1.025,y));float edge=smoothstep(.0,.19,sat(y))*(1.-smoothstep(.82,1.,sat(y)));float w=width*(.40+.60*edge);float d=abs(p.x-x-.006*sin(y*13.-t*TAU*4.));float stream=.48+.52*pow(.5+.5*sin((p.x-x)*85.+sin(y*12.-t*TAU*4.)*1.5),4.);float core=exp(-pow(d/max(.008,w*.64),2.));float halo=exp(-pow(d/max(.01,w*1.36),2.));return mask*(core*(.58+.76*stream)+halo*.29);}\nvec4 lCloud(vec2 p,float t,float glow,float night){float field=0.;for(int i=0;i<7;i++){float k=float(i),x=(k-3.)*.22;vec2 c=vec2(x,.10+.075*sin(k*1.6+t*TAU));vec2 r=vec2(.32,.085+.045*hash(vec2(k,7.)));vec2 u=(p-c)/r;float d=length(u);field+=exp(-d*d*2.)*.85;}float n=fb(vec2(p.x*6.+sin(t*TAU)*.35,p.y*22.+cos(t*TAU)*.28));float filament=.5+.5*sin(p.y*62.+4.*noise(vec2(p.x*9.,p.y*12.+sin(t*TAU))));float m=smoothstep(.15,.65,field+(n-.5)*.23*min(1.,field));float rim=exp(-pow((field-.30)*4.,2.))*m;vec3 col=mix(vec3(.52,.65,.77),vec3(.91,.97,1.),n);vec3 hue=rainbow(n*.65+p.x*.30+.09*sin(t*TAU));vec3 blue=mix(vec3(.14,.34,.65),vec3(.76,.96,1.),pow(n,1.7));col=mix(col,mix(hue,blue,night),glow*(.30+.70*rim));return vec4(col,m*(.24+.46*rim+.23*filament));}\nfloat lCurve(vec2 p,vec2 a,vec2 b,vec2 c,float g,float w){float z=10.;for(int i=0;i<18;i++){float u=float(i)/18.,v=min((float(i)+1.)/18.,g);if(v>u){vec2 r=mix(mix(a,b,u),mix(b,c,u),u),s=mix(mix(a,b,v),mix(b,c,v),v);z=min(z,seg(p,r,s));}}return glw(z,w);}\n";
+for(const r of records){const d=lightDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true,...(d.placement?{placement:d.placement}:{})});}
+function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row]||iceDetails[r.row]||waterDetails[r.row]||windDetails[r.row]||earthDetails[r.row]||lightDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+(fireDetails[r.row]?fireHelpers:iceDetails[r.row]?iceHelpers:waterDetails[r.row]?waterHelpers:windDetails[r.row]?windHelpers:earthDetails[r.row]?earthHelpers:lightHelpers)+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
 const sources=Object.fromEntries(records.map(r=>[r.id,code(r)]));return {records,rows,sources,code};
 })();
 if(typeof module!=='undefined')module.exports=MagicCatalog;
