@@ -6,7 +6,7 @@ const tabs=[...document.querySelectorAll('[data-settings-tab]')],panes=[...docum
 function select(key,focus=false){
  for(const t of tabs){const active=t.dataset.settingsTab===key;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;if(active&&focus)t.focus()}
  for(const p of panes)p.hidden=p.dataset.settingsPane!==key;
- const code=key==='code';$('canvasStage').hidden=code;$('canvasControls').hidden=code;$('codeStage').hidden=!code;$('codeControls').hidden=!code;
+ const code=key==='code',ext=key==='external';$('canvasStage').hidden=code||ext;$('canvasControls').hidden=code||ext;$('codeStage').hidden=!code;$('codeControls').hidden=!code;$('externalStage').hidden=!ext;$('externalControls').hidden=!ext;document.dispatchEvent(new CustomEvent('effect-tab-change',{detail:key}));
  $('settingsScroll').scrollTop=0;onPreviewChanged();
 }
 tabs.forEach((t,i)=>{t.onclick=()=>select(t.dataset.settingsTab);t.onkeydown=e=>{let n;if(e.key==='ArrowRight')n=(i+1)%tabs.length;else if(e.key==='ArrowLeft')n=(i+tabs.length-1)%tabs.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=tabs.length-1;else return;e.preventDefault();select(tabs[n].dataset.settingsTab,true)}});
