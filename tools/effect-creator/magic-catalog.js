@@ -10271,7 +10271,294 @@ const windDetails={
 };
 const windHelpers="\nfloat accelerate(float f){return 1.-pow(1.-sat(f),3.);}\nfloat windEnv(float q,float a,float b){return smoothstep(a,a+.045,q)*(1.-smoothstep(b,1.,q));}\nvec4 airColor(float a,float edge){return vec4(mix(mix(uColor,vec3(.60,.78,.83),.45),vec3(.94,.99,1.),sat(edge)),sat(a));}\nfloat airLine(vec2 p,vec2 a,vec2 b,float w,float t,float seed){\n vec2 d=b-a;float l=length(d);if(l<.008)return 0.;vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/l,x=dot(v,side),bend=.05*sin(u*7.+seed-t*TAU)*sin(sat(u)*3.14159);\n float mask=smoothstep(-.01,.12,u)*(1.-smoothstep(.79,1.02,u));\n return exp(-abs(x-bend)/max(.003,w))*mask;\n}\nvec4 gust(vec2 p,vec2 a,vec2 b,float w,float t,float power,float seed){\n vec2 d=b-a;float l=length(d);if(l<.008)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x);\n float z=0.;for(int i=0;i<18;i++){float k=float(i);float h=hash(vec2(k,seed)),f=fract(t*(1.+.5*h)+h);float y=(hash(vec2(k,seed+3.))-.5)*w;vec2 c=mix(a,b,f)+side*y;vec2 end=c+ax*(.18+.38*h)*min(1.,l);z+=airLine(p,c,end,.005+.006*h,t,k)*sin(3.14159*f);}\n float u=dot(p-a,ax)/l,x=dot(p-a,side);float n=fb(vec2(u*7.-t*5.,x*13.));float haze=(1.-smoothstep(.35,1.,abs(x)/max(.02,w*.65)))*smoothstep(0.,.18,u)*(1.-smoothstep(.83,1.04,u));\n return airColor((z*.66+haze*n*.15)*power,.70);\n}\nvec4 windCharge(vec2 p,vec2 c,float q,float r){float f=phase(q,0.,.34),z=0.;for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+f*1.8;vec2 d=dir2(a),v=c+d*r*(1.-f);z+=airLine(p,v,v+d*.12,.008,q,k);}return airColor(z*gate(q,0.,.40)*.8,.8);}\nvec4 windFront(vec2 p,float f,float t,float radius,float height,float strength){\n if(f<=0.||f>=1.)return vec4(0.);float x=mix(-.82,.82,f),y=p.y/height;float crest=x+.13*(1.-y*y);float e=(1.-smoothstep(.72,1.05,abs(y)))*sin(3.14159*f);\n float z=0.;for(int i=0;i<4;i++){float k=float(i),d=abs(p.x-crest+k*.09+.025*sin(y*11.-t*TAU*3.+k));z+=exp(-d/(.012+.004*k))*(1.-k*.17);}\n return airColor(z*e*strength,.92);\n}\nvec4 airRing(vec2 p,vec2 c,float f,float r,float flattening,float strength){\n if(f<=0.||f>=1.)return vec4(0.);vec2 v=(p-c)/vec2(1.,flattening);float a=atan(v.y,v.x),radius=.035+r*accelerate(f);float d=abs(length(v)-radius-.008*sin(a*17.));float z=exp(-d/.011)+.45*exp(-abs(d-.024)/.008);return airColor(z*sin(3.14159*f)*strength,.92);\n}\nvec4 airShield(vec2 p,vec2 r,float t,float thickness,float speed){\n vec2 v=p/r;float d=length(v),a=atan(v.y,v.x),band=exp(-pow((d-1.)/thickness,2.));\n float str=pow(.5+.5*sin(a*8.-t*TAU*speed+d*14.),5.);\n return airColor(band*(.20+.70*str)+.045*(1.-smoothstep(.88,1.,d)),.48+.45*str);\n}\nvec4 funnel(vec2 p,float t,float g,float h,float bottom,float top,float lean,float dusty){\n if(g<=.001)return vec4(0.);float y=(p.y+.69)/max(.02,h*g);float x=p.x-lean*sat(y)-.035*sin(y*6.+t*TAU*2.);\n float w=mix(bottom,top,pow(sat(y),1.4))*g;float d=abs(x)/max(.01,w);\n float mask=smoothstep(-.035,.04,y)*(1.-smoothstep(.89,1.03,y))*(1.-smoothstep(.80,1.14,d));\n float n=fb(vec2(x*12.+t*3.,y*9.-t*4.));float spiral=pow(.5+.5*sin(y*TAU*3.-t*TAU*4.+x/max(.02,w)*2.8+n*1.2),4.);\n vec3 col=mix(mix(vec3(.45,.57,.62),uColor,.30),vec3(.92,.98,1.),spiral);\n col=mix(col,mix(vec3(.30,.20,.11),vec3(.77,.60,.36),n*.6+spiral*.4),dusty);\n return vec4(col,mask*(.12+.64*spiral+.22*n));\n}\nvec4 driftDebris(vec2 p,float t,float g,float r,float h,float dust,float n){\n float z=0.;vec4 col=vec4(0.);for(int i=0;i<24;i++){float k=float(i);if(k>=n*uDensity)break;float f=fract(t+hash(vec2(k,7.))),a=t*TAU*3.+k*2.4+f*TAU;float rr=r*(.30+.70*f)*g;\n vec2 c=vec2(cos(a)*rr,-.65+h*f*g);vec2 b=c+vec2(-.10*sin(a),.055)*g;float v=airLine(p,c,b,.006+.004*hash(vec2(k,17.)),t,k)*sin(3.14159*f)*g;\n col=over(col,vec4(mix(vec3(.82,.95,.99),vec3(.59,.41,.24),dust),v*.83));}return col;\n}\nvec4 airCloud(vec2 p,vec2 c,vec2 r,float t,float seed,float dust){\n float a=shell(p,c,r,t+seed*.025),n=fb((p-c)*7.+vec2(seed,sin(t*TAU)));\n vec3 col=mix(vec3(.38,.47,.56),vec3(.88,.93,.96),n);col=mix(col,mix(vec3(.36,.23,.13),vec3(.78,.62,.40),n),dust);return vec4(col,a*.82);\n}\nvec4 downflow(vec2 p,float t,float q,float w,float strength){\n float g=accelerate(phase(q,.36,.51)),e=windEnv(q,.36,.78);vec4 v=windCharge(p,vec2(0.,.72),q,.31);\n vec4 a=gust(p,vec2(0.,.86),vec2(0.,.86-1.48*g),w,t,e*strength,13.);v=over(v,a);\n float f=phase(q,.48,1.);v=over(v,airRing(p,vec2(0.,-.62),f,.80,.29,strength));\n for(int i=0;i<2;i++){float k=float(i),s=k*2.-1.;vec4 b=gust(p,vec2(0.,-.60),vec2(s*.82,-.60+.12*f),w*.65,t+k*.18,gate(q,.48,1.)*strength,23.+k);v=over(v,b);}return v;\n}\n";
 for(const r of records){const d=windDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true});}
-function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row]||iceDetails[r.row]||waterDetails[r.row]||windDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+(fireDetails[r.row]?fireHelpers:iceDetails[r.row]?iceHelpers:waterDetails[r.row]?waterHelpers:windHelpers)+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
+// Individually authored earth effects.
+const earthDetails={
+  "472": {
+    "duration": 0.95,
+    "loop": false,
+    "note": "石の小片が足元から集まり、一つの角張った石へ形成。",
+    "body": "float g=phase(q,.04,.60);vec4 v=grit(p,vec2(0.,-.18),1.-g,.20,9.,6.,0.);vec4 w=stoneShape(p,vec2(0.,-.12),vec2(.17,.14)*g,.18,7.,0.);w.a*=1.-smoothstep(.78,1.,q);return over(v,w);"
+  },
+  "473": {
+    "duration": 1.3,
+    "loop": false,
+    "note": "石ころの周囲に土粒が集まり、表面の鉱物模様が強まる強化演出。飛翔や着弾を追加しない。",
+    "body": "float e=gate(q,0.,1.),g=phase(q,.05,.48);vec4 v=stoneShape(p,vec2(0.),vec2(.22,.17),.30,17.,0.);v.a*=e;for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+t*TAU;vec2 c=dir2(a)*mix(.39,.23,g);vec4 w=stoneShape(p,c,vec2(.026,.021),a,k+21.,0.);w.a*=e;v=over(v,w);}return v;"
+  },
+  "474": {
+    "duration": 1.45,
+    "loop": false,
+    "note": "地面に暗い不規則な亀裂が伸び、縁の土が崩れる。",
+    "body": "float g=phase(q,.04,.65),e=1.-smoothstep(.82,1.,q);vec4 v=groundPatch(p,vec2(0.,-.36),vec2(.78,.39),t,7.,0.);v.a*=e*smoothstep(0.,.08,q);vec4 w=fissure(p,vec2(0.,-.36),g,.70,13.,0.,.018);w.a*=e;return over(over(v,w),grit(p,vec2(0.,-.36),phase(q,.21,1.),.40,5.,9.,0.));"
+  },
+  "475": {
+    "duration": 1.35,
+    "loop": false,
+    "note": "薄い円盤状の岩が回転して直線飛翔し、着点で砕ける。",
+    "body": "vec2 a=vec2(-.66,0.),b=vec2(.66,0.);float f=phase(q,.09,.70);vec4 v=stoneShape(p,mix(a,b,f),vec2(.21,.075)*smoothstep(0.,.10,q),t*TAU*2.,5.,0.);v.a*=1.-smoothstep(.67,.74,q);return over(v,grit(p,b,phase(q,.70,1.),.28,17.,10.,0.));"
+  },
+  "476": {
+    "duration": 1.5,
+    "loop": false,
+    "note": "粘性のある暗褐色の燃料球が対象にまとわりつく。未着火のため炎は描かない。",
+    "body": "float g=phase(q,.04,.56),e=earthEnv(q,.04,.76);vec2 v=p/vec2(.30,.34);float d=length(v)+.06*sin(atan(v.y,v.x)*7.-t*TAU),n=fb(v*4.+t);return vec4(mix(vec3(.11,.075,.04),vec3(.68,.47,.17),n*.5+exp(-pow(length(v-vec2(-.32,.36))*3.,2.))*.5),(1.-smoothstep(g-.07,g+.02,d))*e*.92);"
+  },
+  "477": {
+    "duration": 2.5,
+    "loop": true,
+    "note": "低い濁った沼水と泡。水面の緩やかな揺れ、周囲の泥。",
+    "body": "vec4 v=groundPatch(p,vec2(0.,-.48),vec2(.66,.25),sin(t*TAU)*.4,7.,1.);for(int i=0;i<6;i++){float k=float(i),f=fract(t+hash(vec2(k,13.)));vec2 c=vec2((hash(vec2(k,17.))-.5)*.95,-.48+.08*sin(k));float z=ring(p,c,vec2(.025+.07*f,.014+.025*f),.004)*sin(3.14159*f);v=over(v,vec4(vec3(.53,.53,.29),sat(z*.5)));}return v;"
+  },
+  "478": {
+    "duration": 1.3,
+    "loop": false,
+    "note": "鋭く透明感のある水晶片を生成し、先端を向けて直進。着点の小さな水晶片。",
+    "body": "float f=phase(q,.12,.68);vec2 c=mix(vec2(-.64,0.),vec2(.63,0.),f);vec4 v=gem(p,c-vec2(.15,0.),c+vec2(.17,0.),.088*smoothstep(0.,.12,q),7.);v.a*=1.-smoothstep(.65,.74,q);for(int i=0;i<6;i++){float k=float(i),g=phase(q,.68,1.);vec2 d=dir2(k*TAU/6.),a=vec2(.63,0.)+d*.23*g;vec4 w=gem(p,a,a+d*.07*(1.-g),.025,k);w.a*=sin(3.14159*g);v=over(v,w);}return v;"
+  },
+  "479": {
+    "duration": 1.8,
+    "loop": false,
+    "note": "地表の砂が中心へ吸い込まれる浅い流砂。縦長の竜巻にはしない。",
+    "body": "float g=phase(q,.04,.44),e=earthEnv(q,.04,.79);vec2 v=p/vec2(1.,.40);float d=length(v),a=atan(v.y,v.x),n=fb(v*8.+t);float bands=pow(.5+.5*sin(a*4.+d*20.+t*TAU*3.),3.);return vec4(mix(vec3(.26,.15,.065),vec3(.81,.61,.33),n*.55+bands*.38),(1.-smoothstep(.68*g,.80*g+.01,d))*e*(.50+.38*bands));"
+  },
+  "480": {
+    "duration": 2.2,
+    "loop": false,
+    "note": "地下の圧力が溜まり、熱水が上へ噴出。白い蒸気と水滴が広がる。",
+    "body": "vec2 root=vec2(0.,-.65);float g=quakeEase(phase(q,.28,.52)),e=earthEnv(q,.28,.78);vec4 v=earthCharge(p,root,q,.27);float y=(p.y+.65)/max(.02,1.35*g),x=p.x-.03*sin(y*12.-t*TAU*3.);float n=fb(vec2(x*18.,y*9.-t*5.));float a=(1.-smoothstep(.10+.12*sat(y),.18+.16*sat(y),abs(x)))*smoothstep(-.03,.05,y)*(1.-smoothstep(.82,1.05,y));v=over(v,vec4(mix(vec3(.28,.64,.80),vec3(.91,.99,1.),n),a*e));for(int i=0;i<4;i++){float k=float(i);vec4 w=soilDust(p,vec2((k-1.5)*.12,.15+.18*g),vec2(.20,.14),t,k,0.);w.rgb=mix(w.rgb,vec3(.91,.94,.94),.82);w.a*=e*g;v=over(v,w);}return v;"
+  },
+  "481": {
+    "duration": 2.2,
+    "loop": false,
+    "note": "窄い地割れが開き、地下から白灰色の蒸気と火山ガスの柱が噴き出す。熱水や岩弾はなし。",
+    "body": "vec2 root=vec2(0.,-.59);float g=phase(q,.27,.63),e=earthEnv(q,.24,.81);vec4 v=earthCharge(p,root,q,.27);vec4 w=fissure(p,root,g,.34,19.,.15,.012);w.a*=e;v=over(v,w);for(int i=0;i<7;i++){float k=float(i),f=fract(t+hash(vec2(k,11.)));vec2 c=root+vec2(.10*sin(f*TAU+k),1.31*f*g);w=soilDust(p,c,vec2(.11+.19*f,.13+.08*f),t,k,0.);w.rgb=mix(w.rgb,vec3(.79,.83,.81),.87);w.a*=sin(3.14159*f)*e*g;v=over(v,w);}return v;"
+  },
+  "482": {
+    "duration": 2.1,
+    "loop": false,
+    "note": "上空に一つの大きな岩が形成され、短い溜めから落下。着地時に土埃と岩片。",
+    "body": "vec4 v=earthCharge(p,vec2(0.,.59),q,.30);float g=phase(q,.30,.64),ch=phase(q,0.,.30);vec2 c=vec2(0.,mix(.65,-.54,g*g));vec4 w=stoneShape(p,c,vec2(.27,.23)*ch,.3+g*.65,17.,0.);w.a*=1.-smoothstep(.63,.69,q);v=over(v,w);return over(v,grit(p,vec2(0.,-.59),phase(q,.64,1.),.43,17.,14.,0.));"
+  },
+  "483": {
+    "duration": 2.6,
+    "loop": true,
+    "note": "重なった粗い石塊で作る壁。表面の石の輪郭と積み上げた構造を明確にする。",
+    "body": "return rockWall(p,1.,.76,.86,0.,1.);"
+  },
+  "484": {
+    "duration": 2.7,
+    "loop": false,
+    "note": "溜まった赤熱岩が渦を巻いて舞い上がり、溶岩の破片が散る。炎だけの嵐と区別。",
+    "body": "float g=quakeEase(phase(q,.30,.60)),e=earthEnv(q,.26,.80);vec4 v=earthCharge(p,vec2(0.,-.42),q,.40);for(int i=0;i<18;i++){float k=float(i),u=k/17.,a=t*TAU*3.+k*.83;vec2 c=vec2(cos(a)*(.18+.46*u)*g,-.60+1.36*u*g);vec4 w=stoneShape(p,c,vec2(.075,.052),a,k+13.,1.);w.a*=e*g;v=over(v,w);}return v;"
+  },
+  "485": {
+    "duration": 2.9,
+    "loop": true,
+    "note": "広い泥の沼地に波紋と大きな気泡が生まれる。沼水より広い水面。",
+    "body": "vec4 v=groundPatch(p,vec2(0.,-.41),vec2(.86,.40),sin(t*TAU)*.5,17.,1.);for(int i=0;i<10;i++){float k=float(i),f=fract(t+hash(vec2(k,8.)));vec2 c=vec2((hash(vec2(k,13.))-.5)*1.35,-.43+.20*sin(k));float z=ring(p,c,vec2(.035+.14*f,.019+.06*f),.005)*sin(3.14159*f);v=over(v,vec4(vec3(.58,.54,.27),sat(z*.52)));}return v;"
+  },
+  "486": {
+    "duration": 1.9,
+    "loop": false,
+    "note": "短い溜めで長く尖った水晶槍を形成し、まっすぐ突き出す。",
+    "body": "float ch=phase(q,0.,.31),f=phase(q,.31,.69);vec2 a=vec2(-.63,0.),b=vec2(.68,0.);vec4 v=earthCharge(p,a,q,.27);vec2 c=mix(a,b,quakeEase(f));vec4 w=gem(p,c-vec2(.34*ch,0.),c+vec2(.28*ch,0.),.12*ch,13.);w.a*=1.-smoothstep(.73,1.,q);return over(v,w);"
+  },
+  "487": {
+    "duration": 2.5,
+    "loop": false,
+    "note": "足元の砂が集まり、深く暗い穴へ螺旋状に沈み込む。縁から砂が落ち続ける。",
+    "body": "float g=quakeEase(phase(q,.26,.60)),e=earthEnv(q,.22,.82);vec4 v=earthCharge(p,vec2(0.,-.36),q,.35);vec2 u=(p-vec2(0.,-.35))/vec2(1.,.55);float d=length(u),a=atan(u.y,u.x),n=fb(u*9.+t);float band=pow(.5+.5*sin(a*5.+d*22.+t*TAU*3.),3.);vec3 c=mix(vec3(.065,.042,.02),mix(vec3(.39,.24,.11),vec3(.82,.61,.32),band),smoothstep(.09,.38,d));return over(v,vec4(c,(1.-smoothstep(.76*g,.86*g+.01,d))*e*(.75+.20*n)));"
+  },
+  "488": {
+    "duration": 2.5,
+    "loop": false,
+    "note": "溜めの後に地盤が液状化し、泥の面が沈み、揺れながら流動する。光の波だけで表現しない。",
+    "body": "float g=quakeEase(phase(q,.32,.57)),e=earthEnv(q,.13,.82);vec4 v=earthCharge(p,vec2(0.,-.42),q,.42);vec2 w=p+vec2(.035*sin(p.y*23.+t*TAU*7.)*g,.045*sin(p.x*14.-t*TAU*5.)*g);vec4 a=groundPatch(w,vec2(0.,-.36),vec2(.82,.43),t,19.,g);a.a*=e;v=over(v,a);for(int i=0;i<7;i++){float k=float(i),f=fract(t+hash(vec2(k,7.)));vec2 c=vec2((hash(vec2(k,11.))-.5)*1.20,-.36+.20*sin(k));float z=ring(p,c,vec2(.035+.11*f,.02+.04*f),.006)*sin(3.14159*f)*g*e;v=over(v,vec4(vec3(.59,.44,.24),sat(z*.56)));}return v;"
+  },
+  "489": {
+    "duration": 2.7,
+    "loop": false,
+    "note": "多数の岩が斜面に沿って斜め下へ滑落。衝突で岩片と土埃が広がる。",
+    "body": "vec4 v=earthCharge(p,vec2(-.53,.53),q,.40);for(int i=0;i<10;i++){float k=float(i),s=.33+k*.025,f=phase(q,s,s+.40);vec2 a=vec2(-.73+.12*mod(k,4.),.74-.11*mod(k,3.)),b=vec2(.70-.12*mod(k,4.),-.58);vec2 c=mix(a,b,f*f);vec4 w=stoneShape(p,c,vec2(.12,.10),k+f*4.,k+13.,0.);w.a*=gate(q,s-.05,min(.99,s+.48));v=over(v,w);v=over(v,grit(p,b,phase(q,s+.36,min(.995,s+.60)),.28,k+7.,5.,0.));}return v;"
+  },
+  "490": {
+    "duration": 2.7,
+    "loop": false,
+    "note": "地下に赤熱を溜め、高温岩塊が弧を描いて噴出し、落下する。",
+    "body": "vec2 root=vec2(0.,-.66);vec4 v=earthCharge(p,root,q,.36);float f=phase(q,.34,1.);for(int i=0;i<8;i++){float k=float(i),u=phase(f,.035*k,.94);vec2 c=root+vec2((hash(vec2(k,5.))-.5)*1.55*u,4.*u*(1.-u)*(1.30+.15*hash(vec2(k,9.))));vec4 w=stoneShape(p,c,vec2(.105,.083),k+u*4.,k+21.,1.);w.a*=sin(3.14159*u);v=over(v,w);}return over(v,earthShock(p,root,f,.54,1.1));"
+  },
+  "491": {
+    "duration": 2.8,
+    "loop": false,
+    "note": "上空に複数の岩を溜め、時間差で重い落石が降り注ぐ。",
+    "body": "return rockFall(p,q,t,7.,.13,.32,0.,0.);"
+  },
+  "492": {
+    "duration": 2.8,
+    "loop": false,
+    "note": "地面に亀裂が広がり、分かれた地盤の高さがずれて隆起する。",
+    "body": "float g=quakeEase(phase(q,.32,.61)),e=earthEnv(q,.08,.85);vec4 v=earthCharge(p,vec2(0.,-.45),q,.40);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.29;vec4 w=stoneShape(p,vec2(x,-.53+g*(.15+.35*hash(vec2(k,7.)))),vec2(.20,.21),.20*g*sin(k),k+11.,0.);w.a*=e;v=over(v,w);}vec4 w=fissure(p,vec2(0.,-.40),g,.70,13.,0.,.022);w.a*=e;return over(over(v,w),grit(p,vec2(0.,-.40),phase(q,.33,1.),.57,19.,16.,0.));"
+  },
+  "493": {
+    "duration": 2.9,
+    "loop": true,
+    "note": "積み上がった赤熱岩の壁。割れ目に溶岩が流れ、炎の壁と違う重い構造。",
+    "body": "vec4 v=rockWall(p,1.,.92,1.,1.,1.);float z=.0;for(int i=0;i<6;i++){float k=float(i),x=(k-2.5)*.26;float n=fb(vec2(p.y*8.-t*TAU,p.x*12.+k));z+=exp(-abs(p.x-x-.03*sin(p.y*15.+k))/.013)*(1.-smoothstep(.55,.66,abs(p.y)))*n;}return over(v,vec4(vec3(1.,.43,.035),sat(z*.5)*v.a));"
+  },
+  "494": {
+    "duration": 2.4,
+    "loop": false,
+    "note": "固い地面が水分を含むように軟化し、足元がへこみ、緩い泥の波が広がる。",
+    "body": "float g=phase(q,.30,.69),e=earthEnv(q,.10,.82);vec4 v=earthCharge(p,vec2(0.,-.45),q,.36);vec2 w=p+vec2(0.,.10*exp(-p.x*p.x*9.)*g);vec4 a=groundPatch(w,vec2(0.,-.41),vec2(.78,.34),t,31.,g);a.a*=e;return over(v,a);"
+  },
+  "495": {
+    "duration": 2.6,
+    "loop": true,
+    "note": "大きな水晶の面が重なって盾を形成。半透明の青紫の結晶面と明るい縁。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.15;vec4 w=gem(p,vec2(x,-.62+.065*abs(k-2.)),vec2(x,.65-.065*abs(k-2.)),.13,k+7.);w.a*=.78;v=over(v,w);}return v;"
+  },
+  "496": {
+    "duration": 2.8,
+    "loop": true,
+    "note": "長い水晶の刃が術者周辺を巡る持続武器。自動攻撃のタイミングはゲーム側。",
+    "body": "float a=t*TAU;vec2 c=dir2(a)*vec2(.34,.27),d=dir2(a+.7);return gem(p,c-d*.28,c+d*.40,.095,17.);"
+  },
+  "497": {
+    "duration": 3,
+    "loop": true,
+    "note": "砂粒が横方向へ吹き続け、濃淡のある砂の幕が地面を覆う。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<6;i++){float k=float(i),f=fract(t+hash(vec2(k,9.)));vec4 w=soilDust(p,vec2(-.85+1.70*f,-.43+.16*k),vec2(.38,.23),t,k,0.);w.a*=sin(3.14159*f);v=over(v,w);}for(int i=0;i<22;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,7.)));vec2 c=vec2(-.86+1.72*f,-.57+1.12*hash(vec2(k,13.)));vec4 w=stoneShape(p,c,vec2(.022,.012),.12,k,0.);w.a*=sin(3.14159*f);v=over(v,w);}return v;"
+  },
+  "498": {
+    "duration": 3,
+    "loop": false,
+    "note": "赤熱した溶岩が地表から高く噴き上がり、弧を描く溶岩片が降る。",
+    "body": "return moltenFountain(p,t,q,.19,1.48,16.);"
+  },
+  "499": {
+    "duration": 3.2,
+    "loop": false,
+    "note": "斜面を大量の岩屑が崩れながら高速で流下する。単発の岩滑りより密度と土埃を強化。",
+    "body": "vec4 v=earthCharge(p,vec2(-.58,.52),q,.48);for(int i=0;i<18;i++){float k=float(i),s=.34+.016*k,f=phase(q,s,s+.43);vec2 a=vec2(-.80+.09*mod(k,6.),.76-.13*mod(k,4.)),b=vec2(.78-.07*mod(k,6.),-.64+.07*sin(k));vec2 c=mix(a,b,f*f);vec4 w=soilDust(p,c,vec2(.17,.13),t,k,0.);w.a*=gate(q,s,min(.995,s+.46));v=over(v,w);w=stoneShape(p,c,vec2(.09+.05*hash(vec2(k,11.)),.08),k+f*5.,k+23.,0.);w.a*=gate(q,s,min(.995,s+.46));v=over(v,w);}return v;"
+  },
+  "500": {
+    "duration": 3,
+    "loop": true,
+    "note": "厚い石材の塁壁。下段の大きな岩と積み上がった上段で石壁との差を出す。",
+    "body": "vec4 v=rockWall(p,1.,1.02,1.04,0.,1.);for(int i=0;i<3;i++){float k=float(i);v=over(v,stoneShape(p,vec2((k-1.)*.51,.54),vec2(.17,.18),.10*sin(k),k+21.,0.));}return v;"
+  },
+  "501": {
+    "duration": 3.1,
+    "loop": false,
+    "note": "高熱の溶岩が重い波となって地表を押し進む。赤い表面と暗い冷却岩。",
+    "body": "vec4 v=earthCharge(p,vec2(-.60,-.45),q,.44);return over(v,earthFlow(p,phase(q,.39,1.),t,.83,.41,.10,1.));"
+  },
+  "502": {
+    "duration": 3,
+    "loop": false,
+    "note": "地面が大きく隆起し、土と岩の波が前方へ押し寄せる。",
+    "body": "vec4 v=earthCharge(p,vec2(-.60,-.48),q,.42);return over(v,earthFlow(p,phase(q,.37,1.),t,.78,.40,0.,0.));"
+  },
+  "503": {
+    "duration": 3.1,
+    "loop": true,
+    "note": "広域に複数の水晶群を形成し、結晶面に光が巡る領域。追加攻撃の発生条件は変更しない。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<3;i++){float k=float(i);vec2 c=vec2((k-1.)*.53,-.60+.07*sin(k));v=over(v,crystalCluster(p,c,1.,.75+.14*cos(k),.42,4.,k+12.));}float z=pow(.5+.5*sin(p.y*18.-t*TAU*2.),9.);return over(v,vec4(vec3(.84,.96,1.),z*v.a*.20));"
+  },
+  "504": {
+    "duration": 3,
+    "loop": true,
+    "note": "一枚の巨大な多面水晶盾。中心の面と複数の反射面を持ち、光が表面を横切る。",
+    "body": "vec4 v=gem(p,vec2(0.,-.74),vec2(0.,.76),.49,11.);for(int i=0;i<2;i++){float k=float(i),s=k*2.-1.;vec4 w=gem(p,vec2(s*.23,-.54),vec2(s*.23,.55),.22,k+18.);w.a*=.68;v=over(v,w);}float z=exp(-pow((p.x+p.y*.50-.75*cos(t*TAU))*14.,2.));return over(v,vec4(vec3(.97,1.,1.),z*v.a*.67));"
+  },
+  "505": {
+    "duration": 3.2,
+    "loop": false,
+    "note": "地表の砂が集まり、上空へ伸びる大きな砂の竜巻へ展開。密度の高い回転帯と砂粒。",
+    "body": "float g=quakeEase(phase(q,.36,.60)),e=earthEnv(q,.28,.83);vec4 v=earthCharge(p,vec2(0.,-.62),q,.45);vec4 w=sandVortex(p,t,g,.65,1.52,0.);w.a*=e;return over(v,w);"
+  },
+  "506": {
+    "duration": 3.2,
+    "loop": false,
+    "note": "地表を這う熱い火山灰・ガス・岩塊が急速に横へ流れる。溶岩波とは異なる暗い噴煙の前線。",
+    "body": "vec4 v=earthCharge(p,vec2(-.64,-.44),q,.45);float f=phase(q,.36,1.),x=mix(-.80,.84,quakeEase(f)),e=sin(3.14159*f);for(int i=0;i<8;i++){float k=float(i);vec2 c=vec2(x-k*.12,-.43+.16*hash(vec2(k,7.)));vec4 w=soilDust(p,c,vec2(.32,.21+.10*hash(vec2(k,11.))),t,k,1.);w.a*=e;v=over(v,w);}return over(v,earthFlow(p,f,t,.37,.35,.0,.65));"
+  },
+  "507": {
+    "duration": 3.2,
+    "loop": false,
+    "note": "火山灰と水が混ざった泥流が低い位置を高速で押し進む。火炎はなく、泥と岩の混合物。",
+    "body": "vec4 v=earthCharge(p,vec2(-.61,-.48),q,.42);return over(v,earthFlow(p,phase(q,.37,1.),t,.68,.45,1.,0.));"
+  },
+  "508": {
+    "duration": 3.3,
+    "loop": false,
+    "note": "地盤に力が蓄積し、複数の亀裂が急に開く。地面のずれ・土埃・二重の地表衝撃波。",
+    "body": "float g=quakeEase(phase(q,.41,.63)),f=phase(q,.41,1.),e=earthEnv(q,.08,.84);vec4 v=earthCharge(p,vec2(0.,-.35),q,.54);vec2 w=p+vec2(.035*sin(p.y*19.+t*TAU*8.),.045*cos(p.x*17.-t*TAU*7.))*sin(3.14159*f);vec4 a=groundPatch(w,vec2(0.,-.37),vec2(.83,.43),t,47.,0.);a.a*=e;v=over(v,a);a=fissure(w,vec2(0.,-.37),g,.84,41.,0.,.030);a.a*=e;v=over(v,a);v=over(v,grit(p,vec2(0.,-.37),f,.70,37.,20.,0.));return over(over(v,earthShock(p,vec2(0.,-.41),f,.85,1.25)),earthShock(p,vec2(0.,-.41),phase(f,.15,1.),.72,1.));"
+  },
+  "509": {
+    "duration": 3.4,
+    "loop": false,
+    "note": "上空に複数の赤熱隕石が集まり、時間差で降下。岩の塊と着弾衝撃を重ねる。",
+    "body": "return rockFall(p,q,t,8.,.16,.39,1.,.45);"
+  },
+  "510": {
+    "duration": 3.3,
+    "loop": false,
+    "note": "濃い土砂を含む水が厚い流れとなり、前方を呑み込む。濁った水面と流木・岩片に相当する破片。",
+    "body": "vec4 v=earthCharge(p,vec2(-.61,-.43),q,.46);return over(v,earthFlow(p,phase(q,.39,1.),t,.96,.48,.85,0.));"
+  },
+  "511": {
+    "duration": 3.4,
+    "loop": true,
+    "note": "頭上に冠状に浮かぶ複数の水晶。結晶が周回し、面の反射が周期的に強まる。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+t*TAU;vec2 c=vec2(cos(a)*.51,.48+.13*sin(a));vec4 w=gem(p,c-vec2(0.,.09),c+vec2(.045*sin(a),.22),.075,k);w.a*=.68+.32*sin(a)*sin(a);v=over(v,w);}return v;"
+  },
+  "512": {
+    "duration": 3.5,
+    "loop": true,
+    "note": "乾いた地面に細かい亀裂が入り、熱で微かに揺らぐ。雲ではなく乾燥した地表を主体にする。",
+    "body": "vec4 v=groundPatch(p,vec2(0.,-.38),vec2(.85,.43),sin(t*TAU)*.25,61.,0.);vec4 w=fissure(p,vec2(-.24,-.40),1.,.56,17.,0.,.008);v=over(v,w);w=fissure(p,vec2(.29,-.38),1.,.48,37.,0.,.007);return over(v,w);"
+  },
+  "513": {
+    "duration": 3.6,
+    "loop": false,
+    "note": "希薄な高温火山灰とガスが幅広く地表を越える。火砕流より浮いた薄い灰の前線と猛烈な横方向の勢い。",
+    "body": "vec4 v=earthCharge(p,vec2(-.61,-.36),q,.48);float f=phase(q,.40,1.),x=mix(-.84,.86,quakeEase(f)),e=sin(3.14159*f);for(int i=0;i<12;i++){float k=float(i);vec2 c=vec2(x-.10*mod(k,6.),-.42+.16*floor(k/3.)+.05*sin(k));vec4 w=soilDust(p,c,vec2(.40,.18+.07*hash(vec2(k,7.))),t,k,1.);w.a*=e*.80;v=over(v,w);}return v;"
+  },
+  "514": {
+    "duration": 4.1,
+    "loop": false,
+    "note": "広い地盤が激しくずれ、深い亀裂が複数方向に開く。岩の隆起・多重の地表衝撃波・大量の土砂。",
+    "body": "float g=quakeEase(phase(q,.43,.61)),f=phase(q,.43,1.),e=earthEnv(q,.08,.88);vec4 v=earthCharge(p,vec2(0.,-.30),q,.63);for(int i=0;i<7;i++){float k=float(i),x=(k-3.)*.25,y=-.55+.12*sin(k)+g*(.12+.28*hash(vec2(k,11.)));vec4 w=stoneShape(p,vec2(x,y),vec2(.20,.25),g*.35*sin(k+t*TAU*6.),k+33.,0.);w.a*=e;v=over(v,w);}for(int i=0;i<3;i++){float k=float(i);vec2 c=vec2((k-1.)*.36,-.40+.07*sin(k));vec4 w=fissure(p,c,g,.56,k+41.,0.,.03);w.a*=e;v=over(v,w);v=over(v,earthShock(p,c,phase(f,k*.13,1.),.85,1.35));}return over(v,grit(p,vec2(0.,-.32),f,.84,71.,24.,0.));"
+  },
+  "515": {
+    "duration": 4,
+    "loop": false,
+    "note": "上空に巨大な赤熱隕石を形成し、一気に落下。長い熱の尾、着点の土砂と大きな衝撃波。",
+    "body": "float ch=phase(q,0.,.43),f=phase(q,.43,.65);vec2 a=vec2(-.09,.79),b=vec2(.08,-.48),c=mix(a,b,f*f);vec4 v=earthCharge(p,a,q,.52);if(q<.66){for(int i=0;i<5;i++){float k=float(i);vec4 w=soilDust(p,c+vec2(-.035*k,.09*k),vec2(.25-.026*k,.19),t,k,1.);w.a*=smoothstep(.43,.48,q)*gate(q,.43,.68);v=over(v,w);}vec4 w=stoneShape(p,c,vec2(.32,.27)*ch,.2+f,71.,1.);w.a*=1.-smoothstep(.64,.67,q);v=over(v,w);}float hit=phase(q,.65,1.);v=over(v,grit(p,b,hit,.83,91.,24.,.45));v=over(v,earthShock(p,b,hit,.89,1.6));return over(v,earthShock(p,b,phase(hit,.14,1.),.75,1.4));"
+  },
+  "516": {
+    "duration": 3.9,
+    "loop": false,
+    "note": "大量の泥と岩が巨大な厚い前線として流れ込む。主流の後から岩屑と第二波が続く。",
+    "body": "vec4 v=earthCharge(p,vec2(-.62,-.44),q,.61);v=over(v,earthFlow(p,phase(q,.42,1.),t,1.16,.54,.78,0.));return over(v,earthFlow(p,phase(q,.56,1.),t+.21,.80,.42,.85,0.));"
+  },
+  "517": {
+    "duration": 4.1,
+    "loop": false,
+    "note": "無数の尖った水晶が渦を巻き、蓄積した結晶の群れが一斉に飛び回る。",
+    "body": "float g=quakeEase(phase(q,.43,.63)),e=earthEnv(q,.31,.85);vec4 v=earthCharge(p,vec2(0.),q,.62);for(int i=0;i<24;i++){float k=float(i),a=k*2.39996+t*TAU*3.,r=(.17+.63*hash(vec2(k,13.)))*g;vec2 c=dir2(a)*vec2(r,r*.83),d=dir2(a+1.1);vec4 w=gem(p,c-d*.08,c+d*.16,.043,k+51.);w.a*=e*g;v=over(v,w);}return v;"
+  },
+  "518": {
+    "duration": 4.4,
+    "loop": true,
+    "note": "砂の世界を表す巨大な砂の幕と地面を覆う流砂。複数層の砂粒が異なる速度で吹き荒れる。",
+    "body": "vec4 v=groundPatch(p,vec2(0.,-.46),vec2(.87,.36),sin(t*TAU)*.3,71.,0.);for(int i=0;i<8;i++){float k=float(i),f=fract(t+hash(vec2(k,9.)));vec4 w=soilDust(p,vec2(-.89+1.78*f,-.48+.16*k),vec2(.47,.27),t,k,0.);w.a*=sin(3.14159*f)*.88;v=over(v,w);}for(int i=0;i<28;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,7.)));vec2 c=vec2(-.88+1.76*f,-.68+1.36*hash(vec2(k,13.)));vec4 w=stoneShape(p,c,vec2(.024,.013),.17,k,0.);w.a*=sin(3.14159*f);v=over(v,w);}return v;"
+  }
+};
+const earthHelpers="\nfloat quakeEase(float f){return 1.-pow(1.-sat(f),3.);}\nfloat earthEnv(float q,float a,float b){return smoothstep(a,a+.035,q)*(1.-smoothstep(b,1.,q));}\nvec4 stoneShape(vec2 p,vec2 c,vec2 r,float ang,float seed,float heat){\n if(min(r.x,r.y)<.006)return vec4(0.);\n vec2 v=p-c;v=vec2(dot(v,dir2(ang)),dot(v,dir2(ang+1.5707963)))/r;\n float a=atan(v.y,v.x),n=fb(v*3.4+seed),d=length(v)*(.91+.12*cos(a*5.+seed)+.07*cos(a*7.-seed));\n float mask=1.-smoothstep(.94,1.03,d);\n float face=smoothstep(-.055,.055,v.x+.44*v.y+.18*sin(v.y*5.+seed));\n float facet=step(.0,sin(v.x*5.+v.y*4.+seed));\n vec3 col=mix(vec3(.16,.125,.09),mix(vec3(.65,.54,.39),uColor,.22),.25+.35*face+.17*facet+.13*n);\n float cracks=1.-smoothstep(.018,.063,abs(noise(v*4.8+seed)-.48));\n col=mix(col,vec3(.16,.085,.03),cracks*.38);\n col=mix(col,mix(vec3(.58,.06,.012),vec3(1.,.78,.22),cracks),heat*(.34+.66*cracks));\n return vec4(col,mask*.99);\n}\nvec4 soilDust(vec2 p,vec2 c,vec2 r,float t,float seed,float hot){\n float a=shell(p,c,r,t+seed*.03),n=fb((p-c)*8.+vec2(seed,-t*1.8));\n vec3 col=mix(vec3(.25,.17,.095),vec3(.74,.58,.36),n);\n col=mix(col,mix(vec3(.10,.075,.064),vec3(.53,.28,.13),n),hot);\n return vec4(col,a*.70);\n}\nvec4 grit(vec2 p,vec2 c,float f,float r,float seed,float count,float heat){\n if(f<=0.||f>=1.)return vec4(0.);vec4 col=vec4(0.);\n for(int i=0;i<24;i++){float k=float(i);if(k>=count*uDensity)break;float a=k*TAU/count+.25*hash(vec2(k,seed)),s=r*(.35+.65*hash(vec2(k,seed+7.)))*quakeEase(f);\n vec2 v=c+dir2(a)*s+vec2(0.,-.22*f*f);\n float sz=.013+.035*hash(vec2(k,seed+5.));vec4 w=stoneShape(p,v,vec2(sz,sz*.72),k+f*4.,k+seed,heat);w.a*=1.-smoothstep(.57,1.,f);col=over(col,w);}return col;\n}\nvec4 earthCharge(vec2 p,vec2 c,float q,float r){\n float f=phase(q,0.,.35);vec4 col=vec4(0.);\n for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+f*.7;vec2 v=c+dir2(a)*r*(1.-f);vec4 w=stoneShape(p,v,vec2(.022,.018),k+q*3.,k+11.,0.);w.a*=gate(q,0.,.43);col=over(col,w);}return col;\n}\nvec4 earthShock(vec2 p,vec2 c,float f,float r,float force){\n if(f<=0.||f>=1.)return vec4(0.);float radius=.035+r*quakeEase(f),d=length((p-c)/vec2(1.,.34));\n float a=exp(-abs(d-radius)/(.027+.018*f))*sin(3.14159*f)*force;return vec4(vec3(.88,.72,.47),sat(a));\n}\nvec4 groundPatch(vec2 p,vec2 c,vec2 r,float t,float seed,float wet){\n vec2 v=(p-c)/r;float n=fb(v*5.+vec2(seed,t*.4)),d=length(v)+(.5-n)*.22;\n float mask=1.-smoothstep(.86,1.08,d);\n vec3 color=mix(vec3(.22,.15,.09),vec3(.63,.48,.29),n);\n color=mix(color,mix(vec3(.12,.14,.10),vec3(.42,.36,.20),n),wet);\n return vec4(color,mask*.93);\n}\nvec4 fissure(vec2 p,vec2 c,float g,float extent,float seed,float hot,float width){\n if(g<=0.)return vec4(0.);float d=10.,rim=10.;\n for(int i=0;i<7;i++){float k=float(i),a=k*TAU/7.+.35*hash(vec2(k,seed));vec2 v=dir2(a)*vec2(extent,extent*.56)*g;\n vec2 m=c+v*.38+vec2(.07*sin(k+seed),.025)*g,b=c+v*.72+vec2(-.05*cos(k),.03)*g,tip=c+v;\n d=min(d,min(seg(p,c,m),min(seg(p,m,b),seg(p,b,tip))));\n d=min(d,seg(p,b,b+dir2(a+.8)*.20*g));\n }\n float mask=1.-smoothstep(width,width+.012,d);float lip=exp(-abs(d-width-.014)/.013);\n vec3 core=mix(vec3(.075,.044,.023),vec3(1.,.34,.025),hot);\n return over(vec4(vec3(.58,.40,.23),lip*.78),vec4(core,mask*.98));\n}\nvec4 gem(vec2 p,vec2 a,vec2 b,float w,float seed){\n vec2 d=b-a;float l=length(d);if(l<.009||w<.006)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float y=dot(v,ax)/l,x=dot(v,side),width=w*min(sat(y*6.),sat((1.-y)*3.));\n float alpha=(1.-smoothstep(width-.006,width+.005,abs(x)))*smoothstep(-.01,.02,y)*(1.-smoothstep(.97,1.01,y));\n float face=smoothstep(-.008,.008,x),line=1.-smoothstep(.003,.012,abs(x)),edge=1.-smoothstep(.004,.015,abs(abs(x)-width));\n vec3 col=mix(vec3(.21,.29,.41),mix(vec3(.79,.93,1.),uColor,.16),.25+.60*face);\n col=mix(col,vec3(.94,.99,1.),max(line*.64,edge*.64));\n col=mix(col,vec3(.53,.37,.81),.15*hash(vec2(seed,5.)));\n return vec4(col,alpha*.94);\n}\nvec4 crystalCluster(vec2 p,vec2 c,float g,float height,float width,float count,float seed){\n vec4 v=vec4(0.);for(int i=0;i<12;i++){float k=float(i);if(k>=count)break;float x=(k-(count-1.)*.5)/max(1.,count-1.);vec2 a=c+vec2(x*width,.035*sin(k+seed));vec2 b=a+vec2(x*.32,(.52+.48*hash(vec2(k,seed)))*height)*g;v=over(v,gem(p,a,b,.10*g*(.65+.35*hash(vec2(k,seed+1.))),k+seed));}return v;\n}\nvec4 rockWall(vec2 p,float g,float width,float height,float hot,float cut){\n vec4 col=vec4(0.);for(int i=0;i<5;i++){float k=float(i);for(int j=0;j<7;j++){float h=float(j),x=(h-3.)*.23*width+.04*mod(k,2.),y=-.66+k*.22*height;float e=sat(g*5.-k);if(e>0.){vec4 v=stoneShape(p,vec2(x,y+.10*e),vec2(.145*width,.125*height*e),.13*sin(h+k),h+k*7.,hot);v.a*=cut;col=over(col,v);}}}return col;\n}\nvec4 earthFlow(vec2 p,float f,float t,float height,float breadth,float wet,float hot){\n if(f<=0.||f>=1.)return vec4(0.);float x=mix(-.84,.84,f),rel=p.x-x;float n=fb(vec2(p.x*10.-t*4.,p.y*13.));\n float top=-.59+height*exp(-pow((rel+.13)/breadth,2.))+.045*n;\n float mask=smoothstep(-.76,-.66,p.y)*(1.-smoothstep(top-.02,top+.03,p.y))*smoothstep(-breadth*2.2,-breadth,rel)*(1.-smoothstep(.035,.18,rel));\n vec3 col=mix(vec3(.24,.14,.06),vec3(.70,.50,.28),n);col=mix(col,mix(vec3(.14,.11,.08),vec3(.45,.36,.24),n),wet);\n float lavaLine=1.-smoothstep(.035,.11,abs(noise(vec2(p.x*8.-t*3.,p.y*10.))-.48));\n col=mix(col,mix(vec3(.55,.035,.008),vec3(1.,.73,.13),lavaLine),hot);\n vec4 v=vec4(col,mask*sin(3.14159*f)*.94);\n for(int i=0;i<10;i++){float k=float(i),h=hash(vec2(k,13.));vec2 c=vec2(x-breadth*h,-.58+height*.58*hash(vec2(k,9.)));vec4 w=stoneShape(p,c,vec2(.045+.06*h,.035+.04*h),k+t*3.,k+17.,hot);w.a*=sin(3.14159*f);v=over(v,w);}return v;\n}\nvec4 rockFall(vec2 p,float q,float t,float count,float size,float start,float heat,float lateral){\n vec4 col=vec4(0.);for(int i=0;i<12;i++){float k=float(i);if(k>=count)break;float begin=start+k*.038,f=phase(q,begin,begin+.28);\n float x=(hash(vec2(k,13.))-.5)*1.24;vec2 a=vec2(x-lateral*.32,.82),b=vec2(x+lateral*.22,-.61);\n float ch=phase(q,0.,begin);vec2 c=mix(a,b,f*f);float r=size*(.73+.27*hash(vec2(k,17.)))*(.22+.78*ch);\n if(q<begin+.28){vec4 w=stoneShape(p,c,vec2(r,r*.78),k+f*2.,k+15.,heat);w.a*=smoothstep(0.,.07,q)*(1.-smoothstep(.93,1.,f));col=over(col,w);}\n float hit=phase(q,begin+.27,min(.995,begin+.57));col=over(col,grit(p,b,hit,.28+size,k+21.,9.,heat));col=over(col,earthShock(p,b,hit,.34+size,.95));}return col;\n}\nvec4 sandVortex(vec2 p,float t,float g,float radius,float height,float hole){\n float y=(p.y+.62)/max(.02,height*g);float x=p.x-.045*sin(y*8.+t*TAU*2.);\n float w=(.22+.70*pow(sat(y),.8))*radius*g;\n float mask=smoothstep(-.02,.06,y)*(1.-smoothstep(.91,1.04,y))*(1.-smoothstep(.84,1.12,abs(x)/max(.01,w)));\n float n=fb(vec2(x*12.+t*3.,y*10.-t*4.)),band=pow(.5+.5*sin(y*TAU*4.-t*TAU*4.+x/max(.01,w)*3.),3.);\n vec4 v=vec4(mix(vec3(.28,.17,.08),vec3(.80,.61,.34),n*.55+band*.4),mask*(.22+.66*band));\n for(int i=0;i<20;i++){float k=float(i),f=fract(t+hash(vec2(k,5.))),a=t*TAU*3.+k*2.4;vec2 c=vec2(cos(a)*radius*(.32+.55*f)*g,-.62+height*f*g);vec4 w=stoneShape(p,c,vec2(.013,.009),a,k,0.);w.a*=sin(3.14159*f);v=over(v,w);}return v;\n}\nvec4 moltenFountain(vec2 p,float t,float q,float width,float height,float count){\n vec2 root=vec2(0.,-.67);float f=phase(q,.35,1.),g=quakeEase(phase(q,.35,.50));vec4 col=earthCharge(p,root,q,.43);\n float e=earthEnv(q,.35,.77);float y=(p.y-root.y)/max(.01,height*g),x=p.x-.04*sin(y*12.-t*TAU*4.);\n float n=fb(vec2(x*16.+t,y*8.-t*5.));float a=(1.-smoothstep(.68,1.1,abs(x)/max(.01,width*(.45+.55*sat(y)))))*smoothstep(-.03,.06,y)*(1.-smoothstep(.82,1.03,y));\n col=over(col,vec4(mix(vec3(.61,.055,.008),vec3(1.,.78,.10),n),a*e));\n for(int i=0;i<20;i++){float k=float(i);if(k>=count)break;float u=phase(f,.025*k,.96);vec2 c=root+vec2((hash(vec2(k,7.))-.5)*1.65*u,4.*u*(1.-u)*height*(.5+.5*hash(vec2(k,13.))));vec4 w=stoneShape(p,c,vec2(.035+.025*hash(vec2(k,11.)),.027),k+u*4.,k+8.,1.);w.a*=sin(3.14159*u);col=over(col,w);}return over(col,earthShock(p,root,f,.72,.95));\n}\n";
+for(const r of records){const d=earthDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true});}
+function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row]||iceDetails[r.row]||waterDetails[r.row]||windDetails[r.row]||earthDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+(fireDetails[r.row]?fireHelpers:iceDetails[r.row]?iceHelpers:waterDetails[r.row]?waterHelpers:windDetails[r.row]?windHelpers:earthHelpers)+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
 const sources=Object.fromEntries(records.map(r=>[r.id,code(r)]));return {records,rows,sources,code};
 })();
 if(typeof module!=='undefined')module.exports=MagicCatalog;
