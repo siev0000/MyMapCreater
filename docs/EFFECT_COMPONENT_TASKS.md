@@ -38,6 +38,7 @@
 
 - [x] 既存の14部品の登録、生成処理、共通関数の呼出シグネチャを確認（静的確認）。
 - [x] 初版モデル試験・12部品合成・固定バージョン・不正入力・JSON往復・簡易DOM試験の既存結果を確認。
+- [x] 実ブラウザー向け一括診断画面を実装（14単体＋2比較試作＋12部品構成、各12時点、結果JSON保存・コピー）。診断コードのJavaScript構文確認済み。実WebGL実行結果は未確認。
 - [ ] 実WebGL1コンパイルとリンクを全14部品、炎収束/煉獄試作、12部品で確認。
 - [ ] 複数時点の描画、透明、端アルファ、ピークの視認性を確認。自動診断で警告が出たものは目視し意図を判断。
 - [ ] 現在コマPNG、PNG/WebPシート、連番ZIP出力、CSS用フレーム情報の一致を実際のファイルで確認。
@@ -49,4 +50,4 @@
 ## 進捗記録
 
 - EFX-00：初版のモデル `effect-components.js`、UI `component-studio.html/js`、試験 `effect-components.test.cjs` が main に存在。詳細は仕様書の初版実装状況。
-- EFX-01：着手。次の具体作業は初期部品を実際のWebGL描画で検証するための診断ページ/結果記録の用意。実行結果を受けて修正を行う。
+- EFX-01：着手。診断画面 [component-diagnostics.html](../tools/effect-creator/component-diagnostics.html) と [component-diagnostics.js](../tools/effect-creator/component-diagnostics.js) を追加済み（`ab7b643b15a54129540a1f837bca38931020a26f`、`5f25b4c3024b41ba7023ba23e56c7446c3853e18`）。次は実ブラウザーで一括診断を実行し結果を回収、描画・出力・スマホを確認する。
