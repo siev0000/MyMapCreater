@@ -2,16 +2,16 @@
 
 更新日：2026-11-27（日本時間）
 対象：siev0000/MyMapCreater / main
-確認した実装・仕様の基準コミット：`9ca9a3a6617ba6f1904cd0cca5529db1992c5d8f`
+確認した実装・仕様の基準コミット：`1ae13a6e8d57e1571bd95d224a9ea2de69ad4481`
 本ファイルと参照案内のみの更新コミットは上記基準に含まない。作業再開時は必ず最新HEADを確認する。
 
 ## 1. 最初に読む資料
 
 - [README](../README.md)：ツール全体・参照案内
 - [エフェクト作成仕様](specs/12-effect-creator.md)：冒頭付近の「GLSL部品組み合わせ制作方式（採用、初版試作実装済み）」「魔法エフェクト共通制作ルール v1.0」「魔法Lv別エフェクト制作基準」を優先。末尾の個別改修記録も参照。
-- [GLSL部品開発タスク](EFFECT_COMPONENT_TASKS.md)：EFX-00〜14を依存順に管理。EFX-01/02のソフトウェア描画・モデル検証済み、実WebGL・出力・スマホ未確認。次はEFX-03。
-- [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：17構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
-- [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=2)：v2（部品制作・登録追加）。実WebGL・Pages未確認。
+- [GLSL部品開発タスク](EFFECT_COMPONENT_TASKS.md)：EFX-00〜14を依存順に管理。EFX-01〜03のソフトウェア描画・モデル検証済み、実WebGL・出力・スマホ未確認。次はEFX-04。
+- [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：18構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
+- [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=3)：v3（固有パラメータ制作・編集追加）。実WebGL・Pages未確認。
 - [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=fire-revision-20)：現在のキャッシュキー。Pages配信は未確認。
 - ゲーム本体：siev0000/fantasy_Strategy（別リポジトリ）。ゲーム実装・戦闘仕様の正本。ゲーム側の戦闘エフェクトルールは前回確認時 ui/mobile-responsive-port-20260912 の docs/rules/ui/戦闘エフェクトルール.md。次回必要時にブランチと最新実装を確認。
 - シート編集原本：[game_data / CS](https://docs.google.com/spreadsheets/d/1M55erZwPIapl8-fw7NS1Souy1SiW1iH6J56C6C85NPg/edit#gid=1829342689)。AC列エフェクト備考と戦闘データ・効果説明を区別。生成JSONだけを手作業で変更しない。
@@ -36,7 +36,8 @@
 - JavaScriptモデル試験・14部品生成・12部品合成・不正値拒否・固定版参照・保存往復・既存ShaderStudioコード非切断・458件登録数、簡易DOMと模擬描画器の初期表示、編集、保存復元、失敗保持、出力provider呼出を確認。実WebGLコンパイル・描画・画像出力・スマホ・Pagesは未確認。GitHub直接取得はDNS失敗。
 - EFX-01：現行の完全生成GLSL17構成をEGL/OpenGL ES 3.2 Mesa llvmpipeでコンパイル・リンクし、各12時点の計204フレーム描画成功。端アルファ0、単発開始終了透明、ピーク再描画一致。詳細はタスク表。ChromiumのWebGLコンテキストは取得失敗。実ブラウザー、画像出力、端末操作、Pagesは未確認。
 - EFX-02：GLSL部品の新規・複製・新版登録UIを追加。試写6時点成功後のみ登録、旧版固定、追加定義のブラウザー保存・JSON入出力、構成JSONへの同梱。最大128追加版/本体12000文字、固定共通依存。登録自体はGitHubに自動反映しない。既存14部品の生成ソース一致、モデル試験・模擬UI試験・新規v1/v2/混合の完全GLSL OpenGL ES計36フレーム成功、不正GLSLのコンパイル失敗確認。詳細はタスク表。実ブラウザー未確認。
-- 次の優先：EFX-03の独自パラメータ定義・編集・自動UI（初期値・最小最大・刻み・単位等）。既存パラメータ継承は実装済み。EFX-01/02の実WebGL、画像出力、端末操作、Pages配信は残件として追跡。
+- EFX-03：float/int/bool/color型、名称・ID・初期値・範囲・刻み・単位を定義し、部品制作欄の追加/削除/編集、シグネチャ表示、インスタンスごとの数値/スライダー/色/ON-OFF/初期値復元を追加。初期14部品v1は生成コード一致。napalm-cloud@2（7設定、組み込み計15版）追加。3モデル試験、模擬UI、完全GLSL3構成×12時点のOpenGL ES描画成功。全設定の組み合わせ・実機・ユーザー目視未確認。詳細はタスク表。
+- 次の優先：EFX-04の版管理・使用箇所一覧・比較プレビュー・明示切替。EFX-01〜03の実WebGL、画像出力、端末操作、Pages配信を残件として追跡。
 
 ## 3. 現在の進捗（GitHub確認済み）
 
