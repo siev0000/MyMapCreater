@@ -1,6 +1,6 @@
 /* Read-only CS reference snapshot: 2026-11-26. Do not use as game data master. */
 const CSMagicReference=(function referenceFactory(rows){
-function render(id,prefix){const r=rows[id],$=id=>document.getElementById(id);if(!r)return;$(prefix+"Original").textContent=r.original||"元の説明は未記入（CS）";$(prefix+"Data").textContent=r.data||"未設定（CSのデータ列は空欄）";$(prefix+"Condition").textContent=r.condition||"未記入";$(prefix+"Effect").textContent=r.effect||"未記入";$(prefix+"Full").textContent=r.description||"未記入";}
+function render(id,prefix){const r=rows[id],$=id=>document.getElementById(id);if(!r){for(const field of ["Original","Data","Condition","Effect","Full"])$(prefix+field).textContent="CS未登録（制作試作）";return;}$(prefix+"Original").textContent=r.original||"元の説明は未記入（CS）";$(prefix+"Data").textContent=r.data||"未設定（CSのデータ列は空欄）";$(prefix+"Condition").textContent=r.condition||"未記入";$(prefix+"Effect").textContent=r.effect||"未記入";$(prefix+"Full").textContent=r.description||"未記入";}
 return {rows,render};
 })({
   "thunder-spark": {
