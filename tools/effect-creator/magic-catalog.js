@@ -9734,14 +9734,14 @@ const fireDetails={
   "245": {
     "duration": 1.9,
     "loop": false,
-    "note": "小さな電漿核へ光が集まり、紫白の高温球が膨張したあとに発射。短い弧状光を走らせる。",
-    "body": "vec2 a=vec2(-.63,0.),b=vec2(.60,0.);float h=phase(q,0.,.40),f=phase(q,.43,.74);vec4 v=fpl(p,mix(a,b,f),.055+.19*fq(h),t);v.a*=smoothstep(0.,.12,q)*(1.-smoothstep(.75,1.,q));vec4 c=fc(p,a,q,.40,.37);c.rgb=mix(vec3(.58,.24,1.),vec3(1.),c.a);return over(c,v);"
+    "note": "白く発光するプラズマ球に光を溜め、球体を右方向へ高速発射する。白青の光の軌跡を残し、飛翔後に消える。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.68,0.),b=vec2(.72,0.);float g=smoothstep(.02,.48,q),f=fq(phase(q,.49,.80));vec2 c=mix(a,b,f);float r=(.035+.155*g)*(1.-.22*f);float e=smoothstep(.015,.10,q)*(1.-smoothstep(.77,1.,q));vec4 v=vec4(0.);if(q<.54){vec4 w=fc(p,a,q,.49,.31);w.rgb=mix(vec3(.53,.55,1.),vec3(1.),w.a);v=over(v,w);}for(int i=0;i<7;i++){float k=float(i),u=max(0.,f-(k+1.)*.075);vec2 d=mix(a,b,u);float z=1.-smoothstep(.02,.105,length(p-d));z*=smoothstep(.49,.57,q)*(1.-smoothstep(.78,1.,q))*(1.-k/8.)*.68;v=over(v,vec4(.68,.75,1.,z));}float n=lfFlow((p-c)*20.,vec2(4.,0.),t);float d=length(p-c)/max(.01,r);float a0=(1.-smoothstep(.65,1.20,d))*e;vec4 w=vec4(mix(vec3(.65,.72,1.),vec3(1.,1.,1.),smoothstep(.0,.65,1.-d+.16*n)),a0);return over(v,w);"
   },
   "246": {
     "duration": 2,
     "loop": false,
-    "note": "火炎を中心に集めて圧縮し、爆燃の瞬間に火の塊が前線状に広がる。明瞭な圧力波と火の粉の余波。",
-    "body": "vec4 v=fc(p,vec2(0.),q,.39,.45);float f=phase(q,.39,1.);return over(over(v,fx(p,vec2(0.),f,.78,t,11.)),fp(p,vec2(0.),f,.86,1.));"
+    "note": "中心に炎を溜め、大きな爆炎を炸裂させた後に小さな爆炎を重ねる。真上視点。衝撃波の輪は描かない。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 v=fc(p,vec2(0.),q,.32,.42);float f=phase(q,.32,.80),g=phase(q,.58,1.);v=over(v,denseBurst(p,vec2(0.),f,.83,t,11.));v=over(v,denseBurst(p,vec2(0.),g,.49,t,32.));return v;"
   },
   "247": {
     "duration": 2,
@@ -9758,8 +9758,8 @@ const fireDetails={
   "249": {
     "duration": 2.6,
     "loop": false,
-    "note": "地面の小さな赤熱が溜まったあとに火柱拡散しながら急噴出し、溶岩片が弧を描いて飛散する。底部に短い圧力波。",
-    "body": "vec2 a=vec2(0.,-.64);float g=fq(phase(q,.33,.50)),f=phase(q,.33,1.);vec4 v=fc(p,a,q,.33,.30);for(int i=0;i<3;i++){float k=float(i),x=k-1.;vec4 w=lfPlume(p,a,a+vec2(x*.32*g,1.40*g),(.21+.09*(1.-abs(x)))*g,t,k);w.a*=fe(q,.32,.91);v=over(v,w);}return over(over(v,fl(p,a,f,.66,1.24,13.,11.)),fp(p,a,f,.62,.30));"
+    "note": "真横視点。地面に赤熱した亀裂が伸び、力を溜めた後に火柱と濃い黒煙が吹き上がる。溶岩片が飛散する。",
+    "body": "return eruptionScene(p,t,q,0.);"
   },
   "250": {
     "duration": 2.15,
@@ -9770,32 +9770,32 @@ const fireDetails={
   "251": {
     "duration": 2.65,
     "loop": false,
-    "note": "地面を走る燃焼前線。最初の小さな炎が一斉に燃え広がり、豪炎の壁となって広がっていく。",
-    "body": "float f=fq(phase(q,.25,.70));vec4 v=fc(p,vec2(-.65,-.57),q,.25,.25);vec2 k=vec2(p.x+.64-.64*f,p.y);vec4 w=lfWall(k,t);w.a*=smoothstep(-.77,-.62,p.x)*(1.-smoothstep(-.62+1.48*f,-.46+1.48*f,p.x))*fe(q,.24,1.);return over(v,w);"
+    "note": "真上視点。進行方向を横切る一続きの太い炎の壁を形成し、壁全体が右方向へ勢いよく進んで対象を押し出すように見せる。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=fq(phase(q,.13,.39)),f=phase(q,.32,.93);float x=mix(-.64,.64,f);float dx=p.x-x;float n=lfFlow(vec2(p.y*7.,dx*14.),vec2(0.,4.),t),n2=lfFlow(vec2(p.y*12.,dx*21.),vec2(0.,6.),t);float edge=dx-(n-.5)*.23;float thick=(.20+.18*n)*g;float across=1.-smoothstep(.72*g,.88*g,abs(p.y)+(n-.5)*.09);float z=across*(1.-smoothstep(thick*.20,max(.013,thick),abs(edge)))*(.45+.60*n+.28*n2);float e=smoothstep(.12,.24,q)*(1.-smoothstep(.78,1.,q));float heat=sat((1.-abs(edge)/max(.025,thick)*.68)*(.50+.70*n+.22*n2));vec4 v=vec4(firePalette(heat),sat(z)*e);float tail=(1.-smoothstep(.04,.33,abs(dx+.15)))*across*e*g*.48*n;return over(vec4(firePalette(.25+.45*n),tail),v);"
   },
   "252": {
     "duration": 2.8,
     "loop": false,
-    "note": "5方向から炎の流れが一点に吸い込まれ、中心の熱球が連続して炎のリングが爆発して広がる。一点の熱量を強調。",
-    "body": "float f=phase(q,.06,.51);vec4 v=vec4(0.);for(int i=0;i<5;i++){float k=float(i);vec2 a=dir2(k*TAU/5.)*mix(.81,.23,f);vec4 w=lfPlume(p,a,vec2(0.),.16,t,k);w.a*=fe(q,.02,.63);v=over(v,w);}vec4 w=fm(p,vec2(0.),.04+.24*f,t,13.);w.a*=fe(q,.13,.78);v=over(v,w);for(int i=0;i<3;i++){float k=float(i),z=phase(q,.52+k*.105,.82+k*.085);vec4 a=fr(p,vec2(0.),.05+.63*fq(z),.08,t,k);a.a*=sin(3.14159*z);v=over(v,a);}return v;"
+    "note": "真上視点。5方向から炎が激しく渦巻いて中心へ収束し、中央の炎が蓄積する。収束中に2回炎のリングが広がり、3回目の炎のリングと同時に爆発して消える。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 v=vec4(0.);float build=smoothstep(.015,.16,q)*(1.-smoothstep(.74,.81,q)),g=phase(q,.03,.77),r=length(p),a=atan(p.y,p.x);float n=lfFlow(p*8.,vec2(0.,4.),t);float spin=5.*(a+3.8*r)+1.2*(n-.5)-t*TAU*7.;float arms=(1.-smoothstep(.32,.97,abs(sin(spin*.5))))*(.55+.5*n);float env=smoothstep(.055,.22,r)*(1.-smoothstep(.68,.86,r))*build;float band=.6+.4*sin(r*26.+t*TAU*9.+n*2.);float z=arms*env*(.65+.35*band);v=vec4(firePalette(sat(z+.10*n)),sat(z));vec4 core=fm(p,vec2(0.),.08+.30*g,t,15.);core.a*=build;v=over(v,core);for(int i=0;i<3;i++){float k=float(i),start=.28+k*.235,f=phase(q,start,min(1.,start+.26));if(f>0.&&f<1.){vec4 w=fr(p,vec2(0.),.09+.69*fq(f),.09,t,k+9.);w.a*=sin(3.14159*f);v=over(v,w);}}return over(v,denseBurst(p,vec2(0.),phase(q,.75,1.),.79,t,23.));"
   },
   "253": {
     "duration": 2.8,
     "loop": false,
-    "note": "炎が煙を発しながら一つ飛び、煙と友に炎の大爆発を起こす。",
-    "body": "vec2 a=vec2(-.66,0.),b=vec2(.39,0.);float f=phase(q,.16,.52);vec4 v=fc(p,a,q,.16,.22);for(int i=0;i<7;i++){float k=float(i),z=sat(f-k*.08);vec4 w=fs(p,mix(a,b,z)+vec2(0.,.10*k/7.),vec2(.14,.12),t,k);w.a*=fe(q,.16,.78)*smoothstep(0.,.10,z);v=over(v,w);}vec4 w=fm(p,mix(a,b,f),.15,t,7.);w.a*=fe(q,.16,.58);v=over(v,w);float h=phase(q,.52,1.);vec4 smoke=fs(p,b+vec2(-.10,.17),vec2(.44,.40)*fq(h),t,3.);smoke.a*=sin(3.14159*h);return over(over(v,smoke),fx(p,b,h,.58,t,17.));"
+    "note": "真横視点。煙を引く一つの火炎が飛翔して着弾し、黒煙と激しい橙色の炎が不規則な塊となって大きく膨張し、煙が巻き上がる。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.68,-.12),b=vec2(.13,-.47);float f=phase(q,.13,.39);vec4 v=vec4(0.);if(q<.42){vec2 c=mix(a,b,f)+vec2(0.,.30*4.*f*(1.-f));for(int i=0;i<5;i++){float k=float(i),j=max(0.,f-k*.10);vec2 d=mix(a,b,j)+vec2(0.,1.2*j*(1.-j));vec4 w=fs(p,d,vec2(.11,.10),t,k);w.a*=gate(q,.10,.48)*(1.-k*.14);v=over(v,w);}vec4 w=fm(p,c,.115,t,3.);w.a*=gate(q,.11,.45);v=over(v,w);}float h=phase(q,.39,1.);return over(v,rollingBlast(p,b,h,t,0.));"
   },
   "254": {
     "duration": 3.2,
     "loop": false,
-    "note": "灼熱の竜巻を起こす、竜巻と友に周囲に炎が螺旋状に次々立ち上る。",
-    "body": "float g=fq(phase(q,.28,.53)),e=fe(q,.25,1.);vec4 v=fc(p,vec2(0.,-.58),q,.28,.40);vec4 w=lfVortex(p,t,g);w.a*=e;v=over(v,w);for(int i=0;i<7;i++){float k=float(i),f=phase(q,.37+k*.045,.86+k*.018),a=k*TAU/7.+t*TAU;vec2 c=vec2(.62*cos(a),-.57+.17*sin(a));vec4 x=lfPlume(p,c,c+vec2(-.13*cos(a),.83*fq(f)),.16,t,k);x.a*=sin(3.14159*f)*e;v=over(v,x);}return v;"
+    "note": "真横視点。中心に炎を溜め、大きな火災旋風と周囲の4本の小さな火災旋風が時間差で発生し、燃え上がる。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=fq(phase(q,.26,.47)),e=fe(q,.24,1.);vec4 v=fc(p,vec2(0.,-.58),q,.26,.38);for(int i=0;i<4;i++){float k=float(i),u=(k-1.5)/1.5;float h=fq(phase(q,.27+k*.055,.48+k*.055));float scale=.37+.17*(1.-abs(u));vec2 c=vec2(u*.56,-.39+.08*cos(k*2.));vec4 w=lfVortex((p-c)/scale+vec2(0.,-.64),t+k*.17,h);w.a*=fe(q,.26+k*.055,.98);v=over(v,w);}vec4 w=lfVortex(p,t,g);w.a*=e;return over(v,w);"
   },
   "255": {
     "duration": 3.25,
     "loop": false,
-    "note": "深い溜めから複数の大火柱と溶岩弾が噴出。噴火の圧力波が地表に広がる。",
-    "body": "vec2 a=vec2(0.,-.64);float g=fq(phase(q,.36,.51)),f=phase(q,.36,1.);vec4 v=fc(p,a,q,.36,.46);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.14;vec4 w=lfPlume(p,a+vec2(x,0.),a+vec2(x*1.7,1.40*g*(.85+.15*cos(k))),.24*g,t,k);w.a*=fe(q,.35,.94);v=over(v,w);}return over(over(v,fl(p,a,f,.78,1.38,17.,17.)),fp(p,a,f,.82,.27));"
+    "note": "真横視点。噴火より広い赤熱亀裂から力を溜め、巨大な火柱と大量の黒煙、溶岩片を吹き上げる。",
+    "body": "return eruptionScene(p,t,q,1.);"
   },
   "256": {
     "duration": 2.7,
@@ -9842,8 +9842,8 @@ const fireDetails={
   "263": {
     "duration": 4.1,
     "loop": false,
-    "note": "中心に光が吸い込まれ、白熱した恒星状の核が脈動。急激に膨張して巨大な火球と三重の衝撃波を放ち、残光へ。衝撃派は2つが同時にクロスした感じで広がる。これを三連続",
-    "body": "float ch=phase(q,0.,.43),f=phase(q,.43,1.);vec4 v=fc(p,vec2(0.),q,.43,.76);vec4 w=fm(p,vec2(0.),(.05+.20*ch)*(1.+.06*sin(t*TAU*12.)),t,71.);w.a*=fe(q,0.,.50);v=over(v,w);v=over(v,fx(p,vec2(0.),f,.86,t,81.));for(int i=0;i<3;i++){float k=float(i),z=phase(q,.45+k*.135,.73+k*.13);float a=.68;vec2 p1=vec2(p.x*cos(a)-p.y*sin(a),p.x*sin(a)+p.y*cos(a)),p2=vec2(p.x*cos(a)+p.y*sin(a),-p.x*sin(a)+p.y*cos(a));v=over(v,fp(p1,vec2(0.),z,.93,.42));v=over(v,fp(p2,vec2(0.),z,.93,.42));}return v;"
+    "note": "真上視点。中心へ光を集め、白熱した核を形成。交差する大小2つの衝撃波・爆炎・閃光を同時に3回放つ。大きい衝撃波の向きを各回で交互に入れ替える。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=phase(q,0.,.36);vec4 v=fc(p,vec2(0.),q,.36,.70);vec4 w=fm(p,vec2(0.),(.045+.19*g)*(1.+.055*sin(t*TAU*12.)),t,71.);w.a*=gate(q,0.,.40);v=over(v,w);for(int i=0;i<3;i++){float k=float(i),start=.36+k*.205,f=phase(q,start,min(1.,start+.23));if(f>0.&&f<1.){float ang=.68,alt=mod(k,2.);vec2 p1=vec2(p.x*cos(ang)-p.y*sin(ang),p.x*sin(ang)+p.y*cos(ang)),p2=vec2(p.x*cos(ang)+p.y*sin(ang),-p.x*sin(ang)+p.y*cos(ang));v=over(v,denseBurst(p,vec2(0.),f,.76,t,k+80.));float flash=(1.-smoothstep(.10,.88,length(p)/max(.025,.58*fq(f))))*gate(f,0.,.48);v=over(v,vec4(1.,.97,.84,flash*.92));v=over(v,fp(p1,vec2(0.),f,mix(.96,.57,alt),.38));v=over(v,fp(p2,vec2(0.),f,mix(.57,.96,alt),.38));}}return v;"
   }
 };
 const fireHelpers="\nfloat attackEnv(float q,float start,float end){return smoothstep(start,start+.04,q)*(1.-smoothstep(end,1.,q));}\nfloat quick(float f){return 1.-pow(1.-sat(f),3.);}\nvec4 heatColor(float a,float hot){\n vec3 red=mix(vec3(.56,.035,.008),uColor,.45);\n vec3 amber=mix(vec3(1.,.28,.018),uColor,.30);\n vec3 c=mix(red,amber,smoothstep(.08,.50,hot));\n c=mix(c,vec3(1.,.82,.25),smoothstep(.45,.78,hot));\n c=mix(c,uCore,smoothstep(.78,1.05,hot));\n return vec4(c,sat(a));\n}\nvec4 fireTongue(vec2 p,vec2 a,vec2 b,float width,float t,float seed){\n vec2 d=b-a;float len=length(d);if(len<.01)return vec4(0.);\n vec2 ax=d/len,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/len,x=dot(v,side);\n float n=fb(vec2(x*13.+seed,u*5.-t*7.));\n float bend=(noise(vec2(u*5.+seed,t*4.))-.5)*width*.95*uNoise;\n float taper=width*(.20+.80*pow(1.-sat(u),.65))*(.80+.20*sin(u*24.-t*23.+seed));\n float k=abs(x-bend)/max(.008,taper);\n float m=smoothstep(-.08,.045,u)*(1.-smoothstep(.80,1.06,u));\n float a0=(1.-smoothstep(.60,1.18,k+(.48-n)*.70))*m;\n float hot=sat((1.-k*.67)*(1.-.46*sat(u))+.35*n);\n return heatColor(a0,hot);\n}\nvec4 fireMass(vec2 p,vec2 c,float r,float t,float seed){\n if(r<.008)return vec4(0.);\n vec2 v=(p-c)/r;float ang=atan(v.y,v.x);\n float n=fb(v*3.3+vec2(seed,t*3.4));\n float rr=length(v)+(.48-n)*.39*uNoise+.08*sin(ang*9.-t*17.+seed);\n float a=1.-smoothstep(.72,1.10,rr);\n float hot=sat(1.12-rr*.84+(n-.5)*.6);\n return heatColor(a,hot);\n}\nvec4 embers(vec2 p,vec2 c,float f,float radius,float seed,float n){\n if(f<=0.||f>=1.)return vec4(0.);\n float z=0.;for(int j=0;j<32;j++){float k=float(j);if(k>=n*uDensity)break;\n float ang=TAU*hash(vec2(k,seed)),rr=radius*(.35+.65*hash(vec2(k,seed+7.)))*quick(f);\n vec2 d=dir2(ang),v=c+d*rr+vec2(0.,-.14*f*f);\n z+=glw(seg(p,v-d*.065*(1.-f),v),.004+.003*hash(vec2(k,seed+3.)))*(1.-smoothstep(.35,1.,f));\n }return heatColor(z,.95);\n}\nvec4 ash(vec2 p,vec2 c,vec2 r,float t,float seed){\n float a=shell(p,c,r,t+seed*.03),n=fb((p-c)*9.+vec2(seed,-t*2.));\n return vec4(mix(vec3(.065,.055,.052),vec3(.46,.38,.32),n),a*.82);\n}\nvec4 lava(vec2 p,vec2 c,float r,float t,float seed){\n if(r<.01)return vec4(0.);vec2 v=(p-c)/r;\n float d=length(v)+.13*sin(atan(v.y,v.x)*6.+seed)+.12*(fb(v*4.+seed)-.5);\n float a=1.-smoothstep(.84,1.07,d);\n float fiss=abs(noise(v*5.+seed)-.48);\n float hot=(1.-smoothstep(.035,.09,fiss))*.80;\n return vec4(mix(vec3(.16,.056,.023),heatColor(1.,.55+.42*hot).rgb,hot),a);\n}\nvec4 fireBurst(vec2 p,vec2 c,float f,float radius,float seed,float count){\n if(f<=0.||f>=1.)return vec4(0.);\n float g=quick(f),e=smoothstep(0.,.045,f)*(1.-smoothstep(.54,1.,f));vec4 outC=vec4(0.);\n for(int i=0;i<12;i++){float k=float(i);if(k>=count)break;float a=k*TAU/count+.2*hash(vec2(k,seed));\n vec2 d=dir2(a);float r=radius*(.22+.78*g)*(.74+.26*hash(vec2(k,seed+3.)));\n vec4 v=fireMass(p,c+d*r*.56,r*.43,f*1.8+k*.04,seed+k);v.a*=e;outC=over(outC,v);\n }\n vec4 core=fireMass(p,c,radius*(.18+.4*g),f*1.8,seed+9.);core.a*=e*(1.-smoothstep(.15,.65,f));outC=over(outC,core);\n return over(outC,embers(p,c,f,radius*1.17,seed+23.,18.+LEVEL*2.));\n}\nfloat pressure(vec2 p,vec2 c,float f,float radius,float squash){\n if(f<=0.||f>=1.)return 0.;float r=.035+radius*quick(f);vec2 v=(p-c)/vec2(1.,squash);\n return glw(abs(length(v)-r),.009+.007*(1.-f))*smoothstep(0.,.035,f)*(1.-smoothstep(.30,1.,f));\n}\nvec4 ignite(vec2 p,vec2 c,float q,float radius){\n float h=phase(q,0.,.36);float z=charge(p,c,h,radius)*1.3+ball(p,c,.045+.075*h)*gate(q,0.,.43)*(.5+.65*h);\n return heatColor(z,.90);\n}\nvec4 flameStream(vec2 p,vec2 a,vec2 b,float width,float t,float spread){\n vec4 col=vec4(0.);\n for(int i=0;i<7;i++){float k=float(i),s=(k-3.)/3.;vec2 end=b+vec2(0.,s*spread);\n vec4 v=fireTongue(p,a+vec2(0.,s*.035),end,width*(.64+.36*hash(vec2(k,43.))),t+k*.075,k+11.);\n col=over(col,v);}\n return col;\n}\nvec4 flameWall(vec2 p,float t,float grow,float w,float height,float tilt){\n vec4 col=vec4(0.);\n for(int i=0;i<11;i++){float k=float(i),x=(k-5.)*.15*w;\n float h=height*(.65+.35*hash(vec2(k,17.)))*grow*(.87+.13*sin(t*TAU*3.+k));\n vec2 a=vec2(x,-.58),b=a+vec2(tilt+.10*sin(t*TAU*2.+k),h);\n col=over(col,fireTongue(p,a,b,.12*w,t+k*.091,k+1.));\n }\n return col;\n}\nvec4 fireJetBall(vec2 p,vec2 c,float r,float t,float seed){\n vec4 trail=fireTongue(p,c,c-vec2(.34,.0),r*.74,t,seed);\n return over(trail,fireMass(p,c,r,t,seed+6.));\n}\nvec4 plasma(vec2 p,vec2 c,float r,float t){\n float d=length(p-c)/max(.01,r),ang=atan(p.y-c.y,p.x-c.x);\n float edge=glw(abs(d-1.)*r,.009)*( .65+.35*sin(ang*15.-t*TAU*6.));\n float n=fb((p-c)*19.+vec2(t*5.,t*3.));\n float core=(1.-smoothstep(.25,1.,d))*(.65+.45*n);\n vec3 color=mix(uColor,vec3(.76,.34,1.),.55);\n return over(vec4(mix(color,uCore,core),sat(core*.94)),tone(edge*.78,color));\n}\nvec4 heatRay(vec2 p,vec2 a,vec2 b,float width,float t,float e,float hue){\n float d=seg(p,a,b);float l=length(b-a);float u=sat(dot(p-a,b-a)/max(.001,l*l));\n float z=glw(d,width)*e*(.84+.16*sin(u*35.-t*TAU*8.));\n return tone(z,mix(uColor,vec3(.92,.43,1.),hue));\n}\nvec4 ejecta(vec2 p,vec2 root,float f,float width,float height,float seed,float count){\n if(f<=0.||f>=1.)return vec4(0.);vec4 col=vec4(0.);\n for(int i=0;i<18;i++){float k=float(i);if(k>=count)break;\n float u=phase(f,hash(vec2(k,seed))*.20,.95),a=(hash(vec2(k,seed+2.))-.5)*2.;\n vec2 c=root+vec2(a*width*u,4.*u*(1.-u)*height*(.55+.45*hash(vec2(k,seed+4.))));\n vec4 v=lava(p,c,.035+.04*hash(vec2(k,seed+5.)),f,k+seed);v.a*=sin(3.14159*u);col=over(col,v);\n }return col;\n}\n";
@@ -10857,6 +10857,40 @@ function baseCode(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.
 const firePaletteRows=new Set([234,235,236,237,238,241,242,243,244,246,247,248,249,251,252,253,254,255,256,257,260,261,262,263]);
 const firePaletteReplacements=[["vec4 lfColor(float z){return vec4(mix(uColor,uCore,smoothstep(.55,1.1,z)),sat(z));}","vec3 firePalette(float heat){\n heat=sat(heat);\n vec3 col=mix(vec3(.70,.055,.012),vec3(1.,.30,.018),smoothstep(.04,.60,heat));\n col=mix(col,vec3(1.,.76,.13),smoothstep(.45,.84,heat));\n return mix(col,vec3(1.,.96,.76),smoothstep(.74,1.03,heat)*.93);\n}\nvec4 lfColor(float z){return vec4(firePalette(z),sat(z));}"],["vec3 col=mix(uColor*.72,uColor,smoothstep(.05,.40,density));col=mix(col,uCore,smoothstep(.48,1.03,density)*.88);","vec3 col=firePalette(sat((1.-min(1.,abs(x+bend)/max(.08,width*cap))*.74)*(.53+.75*n+.18*detail)-.08*u));"],["vec3 c=mix(uColor*.83,uColor,smoothstep(.05,.4,density));c=mix(c,uCore,smoothstep(.58,1.05,density)*.78);","vec3 c=firePalette(sat(density*1.1));"]];
 function code(r){const src=baseCode(r);return firePaletteRows.has(r.row)?firePaletteReplacements.reduce((v,[a,b])=>v.replace(a,b),src):src;}
-const sources=Object.fromEntries(records.map(r=>[r.id,code(r)]));return {records,rows,sources,code};
+// Activation and persistent variants share CS identity. Original loop source is retained verbatim.
+const fireSceneExtra="vec4 denseBurst(vec2 p,vec2 c,float f,float r,float t,float seed){\n if(f<=0.||f>=1.)return vec4(0.);float g=fq(f),e=smoothstep(0.,.065,f)*(1.-smoothstep(.44,1.,f));vec4 v=vec4(0.);float rad=r*(.13+.72*g);\n for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+hash(vec2(k,seed))*.45;vec2 b=c+dir2(a)*rad*.47;vec4 w=fm(p,b,rad*(.40+.16*hash(vec2(k,seed+1.))),t,k+seed);w.a*=e;v=over(v,w);}\n vec4 w=fm(p,c,rad*.76,t,seed+11.);w.a*=e;return over(v,w);\n}\nvec4 denseSmoke(vec2 p,vec2 c,vec2 r,float t,float seed){\n vec2 v=(p-c)/max(r,vec2(.01));float n=lfFlow(v*3.6+seed,vec2(.4,2.),t);float det=lfFlow(v*8.2+seed,vec2(.3,3.4),t);float d=length(v)+(n-.5)*.46;float a=(1.-smoothstep(.62,1.13,d))*(.83+.17*det);vec3 color=mix(vec3(.055,.047,.043),vec3(.27,.23,.20),sat((n-.28)*1.4+det*.23));return vec4(color,a);\n}\nvec4 rollingBlast(vec2 p,vec2 root,float f,float t,float huge){\n if(f<=0.||f>=1.)return vec4(0.);\n float g=fq(f),e=smoothstep(0.,.055,f)*(1.-smoothstep(.72,1.,f));vec4 v=vec4(0.);\n for(int i=0;i<10;i++){float k=float(i),j=hash(vec2(k,31.)),side=hash(vec2(k,11.))*2.-1.;float rise=phase(f,k*.018,.95);vec2 c=root+vec2(side*(.12+.41*g),(.18+.92*j)*g);vec2 r=vec2(.23+.17*j,.23+.15*j)*(.45+.55*g);vec4 w=denseSmoke(p,c,r,t,k+23.);w.a*=e*smoothstep(0.,.10,rise);v=over(v,w);}\n for(int i=0;i<9;i++){float k=float(i),j=hash(vec2(k,72.)),side=hash(vec2(k,13.))*2.-1.;float u=phase(f,k*.027,.79+k*.016);vec2 c=root+vec2(side*(.05+.43*g),(.14+.86*j)*g);float rad=(.19+.20*j)*(.25+.75*fq(u));vec4 w=fm(p,c,rad,t,k+41.);float n=lfFlow((p-c)*19.+k,vec2(0.,4.),t);w.rgb=firePalette(sat((.86-.65*length(p-c)/max(.02,rad))+.33*n));w.a*=smoothstep(0.,.10,u)*(1.-smoothstep(.62,1.,u))*e;v=over(v,w);}\n for(int i=0;i<4;i++){float k=float(i),side=k<2.?-1.:1.,j=hash(vec2(k,53.));vec2 c=root+vec2(side*(.27+.20*j)*g,(.38+.54*j)*g);vec4 w=denseSmoke(p,c,vec2(.18,.22)*(.35+.65*g),t,k+81.);w.a*=smoothstep(.12,.38,f)*(1.-smoothstep(.78,1.,f))*.90;v=over(v,w);}\n return v;\n}\nvec4 eruptionScene(vec2 p,float t,float q,float big){\n if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(0.,-.62);float ch=phase(q,.025,.34),g=fq(phase(q,.34,.51)),f=phase(q,.34,1.);vec4 v=vec4(0.);float z=0.;\n for(int i=0;i<7;i++){float k=float(i),side=mod(k,2.)*2.-1.,len=(.21+.36*hash(vec2(k,42.)))*mix(.72,1.,big)*ch;vec2 c=a+vec2(side*len,.04*(hash(vec2(k,21.))-.5));vec2 m=mix(a,c,.52)+vec2(0.,.052*sin(k*2.));z+=1.-smoothstep(.008,.026,seg(p,a,m));z+=1.-smoothstep(.008,.024,seg(p,m,c));}\n v=vec4(firePalette(.55+.40*ch),sat(z)*smoothstep(.02,.10,q)*(1.-smoothstep(.39,.69,q)));\n float width=mix(.25,.43,big),height=mix(.86,1.35,big);float e=fe(q,.33,1.);\n for(int i=0;i<7;i++){float k=float(i),side=hash(vec2(k,62.))*2.-1.,j=hash(vec2(k,17.)),u=phase(q,.35+k*.025,.96);vec2 c=a+vec2(side*width*(.4+.65*g),height*(.43+.49*j)*g+.06*u);vec4 w=denseSmoke(p,c,vec2(.20+.15*big,.25+.09*big)*(.33+.67*g),t,k+19.);w.a*=smoothstep(0.,.16,u)*(1.-smoothstep(.72,1.,u))*smoothstep(.34,.49,q);v=over(v,w);}\n for(int i=0;i<5;i++){float k=float(i),x=(k-2.)/2.;vec4 w=lfPlume(p,a+vec2(x*width*.28,0.),a+vec2(x*width*.9,height*g*(.70+.30*cos(k))),width*.74*g,t,k);w.a*=e;v=over(v,w);}\n return over(v,fl(p,a,f,mix(.44,.72,big),height,17.,mix(9.,15.,big)));\n}\n";
+const fireSceneRows=new Set([246,249,252,253,255,263]);
+const ringActivationBody="if(q<=0.)return vec4(0.);\nfloat tt=fract(t);vec4 v=vec4(0.);\nvec2 center=vec2(0.,-.14),r=vec2(.59,.30),pos=p-center;\nfloat xx=pos.x/r.x;\nfloat arch=sqrt(max(0.,1.-xx*xx));\nfloat drawF=smoothstep(.015,.68,q),finish=smoothstep(.68,.90,q),appear=smoothstep(0.,.055,q);\nfloat angle=fract(atan(pos.y/r.y,pos.x/r.x)/TAU+.5);\nfloat trace=mix(1.-smoothstep(drawF-.055,drawF+.008,angle),1.,finish)*appear;\nfloat baseNoise=lfFlow(pos*12.+vec2(8.,2.),vec2(0.,2.),tt);\nfloat dist=abs(length(pos/r)-1.)*r.y;\nfloat root=(1.-smoothstep(.013,.048,dist+(baseNoise-.5)*.018));\nv=vec4(firePalette(.38+.45*root),root*.95*trace);\nfloat tip=exp(-pow((angle-drawF)/.038,2.))*root*appear*(1.-finish);\nv=over(v,vec4(1.,.96,.76,tip*.92));\nfor(int i=0;i<2;i++){\n float k=float(i),side=k*2.-1.;\n float y0=side*r.y*arch;\n float local=fract(atan(side*arch,xx)/TAU+.5);\n float growth=mix(smoothstep(local-.01,local+.16,drawF),1.,finish)*appear;\n float height=.15+.26*lfFlow(vec2(pos.x*7.+k*17.,4.),vec2(0.,2.5),tt);\n float h=(pos.y-y0)/height;\n float n=lfFlow(vec2(pos.x*10.+k*19.,h*4.),vec2(0.,5.),tt);\n float detail=lfFlow(vec2(pos.x*17.+k*23.,h*6.),vec2(0.,7.),tt);\n float top=.83+.32*n;\n float mask=smoothstep(-.15,.10,h)*(1.-smoothstep(top-.32,top,h))*(1.-smoothstep(.94,1.07,abs(xx)));\n float density=mask*(.38+.72*n)*(.72+.36*detail);\n float heat=sat((1.-sat(h)*.68)*(.60+.55*n+.18*detail));\n vec4 f=vec4(firePalette(heat),sat(density*1.24)*growth);\n v=over(v,f);\n}\nreturn v;\n";
+function replaceEffect(source,body){const a=source.indexOf("vec4 effect(vec2 p,float t,float q){");const b=source.lastIndexOf("void main(){");if(a<0||b<a)throw Error("effect source format");return source.slice(0,a)+"vec4 effect(vec2 p,float t,float q){"+body+"}\n"+source.slice(b);}
+function activationSource(source,mode){
+ const tag="void main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=";
+ const at=source.lastIndexOf(tag);if(at<0||!source.endsWith(";}"))throw Error("unsupported persistent shader entry point");
+ const expr=source.slice(at+tag.length,-2).replace(/\buTime\b/g,"stateTime").replace(/\buProgress\b/g,"stateQ");
+ const head=source.slice(0,at)+tag.slice(0,-"gl_FragColor=".length);
+ let formation="float g=smoothstep(.02,.76,uProgress);p/=mix(.16,1.,g);";
+ if(mode==="ring")formation="float g=smoothstep(.015,.76,uProgress);float a=fract(atan(p.y,p.x)/6.2831853+.5);reveal=mix(1.-smoothstep(g-.045,g+.025,a),1.,smoothstep(.76,.94,uProgress));";
+ else if(["wall","platform","crystal","roots"].includes(mode))formation="float g=smoothstep(.02,.76,uProgress);p.y=(p.y+.60)/mix(.08,1.,g)-.60;";
+ else if(["fog","rain","luminouscloud","nebula","aurora","sundog"].includes(mode))formation="float g=smoothstep(.02,.76,uProgress);p/=vec2(mix(.16,1.,g),mix(.30,1.,g));";
+ else if(["wave","slash","resonance"].includes(mode))formation="float g=smoothstep(.02,.76,uProgress);reveal=mix(1.-smoothstep(g-.06,g+.035,clamp((p.x+.95)/1.9,0.,1.)),1.,smoothstep(.76,.94,uProgress));";
+ return head+"\nif(uProgress<=0.){gl_FragColor=vec4(0.);return;}float stateTime=fract(uTime),stateQ=fract(uProgress),reveal=1.;"+formation+"\nif(uProgress>=1.){stateTime=0.;stateQ=0.;}vec4 formed="+expr+";formed.a*=smoothstep(0.,.10,uProgress)*reveal;gl_FragColor=formed;}";
+}
+const rawCode=code;
+const sources=Object.fromEntries(records.map(r=>{
+ let src=rawCode(r);
+ if(fireSceneRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("fire scene entry point");src=src.slice(0,at)+fireSceneExtra+"\n"+src.slice(at);}
+ return [r.id,src];
+}));
+const baseRecords=records.slice();records.length=0;
+for(const r of baseRecords){
+ if(!r.loop){records.push(r);continue}
+ const sid=r.id+"-sustain",sustain={...r,id:sid,name:r.name+"（持続）",variant:"sustain",baseId:r.id};
+ sources[sid]=sources[r.id];rows[sid]=rows[r.id];
+ const special=r.row===241;
+ sources[r.id]=special?replaceEffect(sources[sid],ringActivationBody):activationSource(sources[sid],r.mode);
+ const note=special?"発動用：一点から炎が円周を走って輪を描き、通過した箇所から炎が立ち上る。完成後は持続版へ接続。":"発動用・形成初期版："+r.note+" 発生から完成までを描画し、完成後は持続版へ接続する。";
+ records.push({...r,loop:false,variant:"activation",baseId:r.id,note,formationDraft:!special},sustain);
+}
+function resolvedCode(r){return sources[r.id]||rawCode(r);}
+return {records,rows,sources,code:resolvedCode,activationSource};
 })();
 if(typeof module!=='undefined')module.exports=MagicCatalog;
