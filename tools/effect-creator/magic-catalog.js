@@ -10128,7 +10128,150 @@ const waterDetails={
 };
 const waterHelpers="\nfloat rush(float f){return 1.-pow(1.-sat(f),3.);}\nfloat wetEnv(float q,float a,float b){return smoothstep(a,a+.04,q)*(1.-smoothstep(b,1.,q));}\nvec4 waterColor(float a,float depth,float sheen){\n vec3 deep=mix(vec3(.025,.15,.34),uColor,.35);\n vec3 shallow=mix(vec3(.12,.62,.88),uColor,.34);\n return vec4(mix(mix(deep,shallow,sat(depth)),vec3(.89,.98,1.),sat(sheen)),sat(a));\n}\nvec4 fluidStream(vec2 p,vec2 a,vec2 b,float w,float t,float spray){\n vec2 d=b-a;float l=length(d);if(l<.012)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/l,y=dot(v,side);\n float n=fb(vec2(u*7.-t*5.,y*23.+t));\n float bend=.025*sin(u*17.-t*TAU*3.);\n float width=w*(.58+.42*sat(u))*(.8+.2*sin(u*28.-t*TAU*5.));\n float k=abs(y-bend)/max(.008,width);\n float m=smoothstep(-.04,.035,u)*(1.-smoothstep(.94,1.07,u));\n float a0=(1.-smoothstep(.67,1.09,k+(.5-n)*.37))*m;\n float sheen=(1.-smoothstep(.02,.09,abs(k-.80)))*.75+.25*pow(sat(n),3.);\n vec4 col=waterColor(a0*.94,.35+.60*n,sheen);\n float z=0.;for(int i=0;i<12;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,17.)));vec2 c=mix(a,b,f)+side*(hash(vec2(k,21.))-.5)*w*2.3*spray;z+=ball(p,c,.009+.006*hash(vec2(k,22.)))*sin(3.14159*f);}\n return over(col,waterColor(z*.77,.85,.70));\n}\nvec4 droplets(vec2 p,vec2 c,float f,float radius,float seed,float count){\n if(f<=0.||f>=1.)return vec4(0.);vec4 col=vec4(0.);\n for(int i=0;i<24;i++){float k=float(i);if(k>=count*uDensity)break;float a=k*TAU/count+.4*hash(vec2(k,seed)),r=radius*(.35+.65*hash(vec2(k,seed+3.)));vec2 d=dir2(a);\n vec2 v=c+d*r*rush(f)+vec2(0.,-.22*f*f);float sz=.012+.022*hash(vec2(k,seed+4.));\n float dd=length((p-v)/vec2(sz,sz*1.22));float alpha=(1.-smoothstep(.72,1.08,dd))*(1.-smoothstep(.55,1.,f));\n float spec=1.-smoothstep(.15,.48,length((p-v-vec2(-sz*.28,sz*.30))/sz));\n col=over(col,waterColor(alpha,.72,.74*spec));}\n return col;\n}\nvec4 wetRipples(vec2 p,vec2 c,float f,float r,float squash){\n if(f<=0.||f>=1.)return vec4(0.);float z=0.;\n for(int j=0;j<3;j++){float k=float(j),g=phase(f,k*.13,1.);if(g>0.&&g<1.){float radius=.03+r*rush(g);z+=ring(p,c,vec2(radius,radius*squash),.006+.002*(1.-g))*sin(3.14159*g)*(.75-k*.14);}}\n return waterColor(z,.8,.68);\n}\nvec4 liquidBall(vec2 p,vec2 c,float r,float t){\n if(r<.006)return vec4(0.);vec2 v=(p-c)/r;float a=atan(v.y,v.x),n=fb(v*4.+dir2(t*TAU)*.4);\n float d=length(v)+.045*sin(a*6.-t*TAU*3.)+(.5-n)*.075;\n float mask=1.-smoothstep(.96,1.025,d);\n float rim=exp(-pow((d-.94)*18.,2.)),spec=exp(-pow(length(v-vec2(-.30,.40))*3.4,2.));\n float swirl=(.5+.5*sin(a*3.+d*11.-t*TAU*2.))*n;\n return waterColor(mask*(.32+.58*rim+.20*swirl),.35+.55*n,.8*rim+.72*spec);\n}\nvec4 waterShell(vec2 p,vec2 r,float t,float density,float coat){\n vec2 v=p/r;float d=length(v),a=atan(v.y,v.x);float rim=exp(-pow((d-1.)*19.,2.));\n float stream=.5+.5*sin(a*7.-t*TAU*3.+d*13.);\n float n=fb(v*5.+dir2(t*TAU)*.35);\n float m=1.-smoothstep(.97,1.06,d);float alpha=m*(.05+coat*.15+rim*.50+stream*stream*density*.22)+rim*.32;\n return waterColor(alpha,.38+.54*n,.70*rim+.20*stream);\n}\nvec4 wetCharge(vec2 p,vec2 c,float q,float r){\n float g=phase(q,0.,.35);vec4 v=liquidBall(p,c,.035+.105*g,q);v.a*=gate(q,0.,.43);\n return over(v,waterColor(charge(p,c,g,r),.77,.65));\n}\nvec4 seaSurface(vec2 p,float top,float bottom,float t,float width,float foam){\n float n=fb(vec2(p.x*7.+t,p.y*13.-t*3.));float xmask=1.-smoothstep(width*.91,width*1.05,abs(p.x));\n float m=smoothstep(bottom-.05,bottom+.04,p.y)*(1.-smoothstep(top-.012,top+.025,p.y))*xmask;\n float edge=exp(-pow((p.y-top)*31.,2.))*xmask;\n float stripe=pow(.5+.5*sin(p.x*15.+p.y*18.-t*TAU*3.+n*3.),7.);\n return waterColor(m*.86+edge*.52,.35+.50*n,edge*foam+stripe*.15*m);\n}\nvec4 breakingWave(vec2 p,float f,float t,float height,float lengthV,float curl,float seed){\n // One crest that travels horizontally. The body below the crest is translucent water, not a glowing line.\n if(f<=0.||f>=1.)return vec4(0.);\n float x=mix(-.90,.92,f),rel=p.x-x;\n float rise=height*(.68+.32*sin(3.14159*f));\n float h=-.61+rise*exp(-pow((rel+.13)/max(.10,lengthV),2.));\n float base=-.69+.035*sin(p.x*11.-t*TAU);\n float n=fb(vec2(p.x*10.-t*3.,p.y*11.));\n float back=smoothstep(-lengthV*2.1,-lengthV*.85,rel);\n float front=1.-smoothstep(.015,.17,rel);\n float m=smoothstep(base-.05,base+.02,p.y)*(1.-smoothstep(h-.02,h+.02,p.y))*back*front;\n float edge=exp(-pow((p.y-h)*25.,2.))*back*front;\n vec4 v=waterColor((m*.87+edge*.60)*sin(3.14159*f),.26+.61*n,.85*edge);\n // Curling lip with foam at the moving tip.\n vec2 center=vec2(x-.06,h-.12);vec2 z=p-center;float ang=atan(z.y,z.x),r=length(z);\n float lip=glw(abs(r-.13*curl),.014)*(1.-smoothstep(.15,1.15,abs(ang-1.1)))*back*front;\n v=over(v,waterColor(lip*.65*sin(3.14159*f),.72,.95));\n return over(v,droplets(p,vec2(x,h),fract(f*1.8+.11),.20*curl,seed,9.));\n}\nvec4 spiralWater(vec2 p,float t,float g,float radius,float height,float strength,float count){\n vec4 col=vec4(0.);\n for(int i=0;i<18;i++){float k=float(i);if(k>=count)break;float u=k/max(1.,count-1.),a=t*TAU*2.+u*TAU*2.5;\n float r=radius*(.25+.75*u)*g;vec2 c=vec2(cos(a)*r,-.56+height*u*g);\n vec2 b=c+vec2(.18*sin(a),.15+.08*cos(a));\n vec4 v=fluidStream(p,c,b,.065+.04*u,t+k*.03,.45);v.a*=strength*(.55+.45*pow(.5+.5*sin(a),2.));col=over(col,v);}\n return col;\n}\nvec4 horizontalWhirl(vec2 p,float t,float g,float r,float strength){\n vec2 v=p/vec2(1.,.62);float d=length(v),a=atan(v.y,v.x);\n float n=fb(v*8.+dir2(t*TAU)*.38);\n float band=pow(.5+.5*sin(a*3.-d*18.+t*TAU*4.+n*.8),4.);\n float m=smoothstep(.06,.17,d)*(1.-smoothstep(r*g*.86,r*g*1.05,d));\n vec4 col=waterColor(m*(.20+.68*band)*strength,.33+.55*n,band*.72);\n for(int i=0;i<12;i++){float k=float(i),ang=t*TAU*2.+k*TAU/12.;vec2 c=dir2(ang)*vec2(.80,.49)*r*g;col=over(col,waterColor(ball(p,c,.023)*strength*.75,.85,.70));}\n return col;\n}\nvec4 vapor(vec2 p,vec2 c,vec2 r,float t,float seed,float dark){\n float a=shell(p,c,r,t+seed*.031),n=fb((p-c)*8.+dir2(t*TAU)*.3+seed);\n vec3 lightC=mix(vec3(.55,.70,.77),vec3(.92,.97,1.),n);\n vec3 darkC=mix(vec3(.10,.15,.22),vec3(.40,.49,.59),n);\n return vec4(mix(lightC,darkC,dark),a*(.64+.24*dark));\n}\n";
 for(const r of records){const d=waterDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true});}
-function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row]||iceDetails[r.row]||waterDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+(fireDetails[r.row]?fireHelpers:iceDetails[r.row]?iceHelpers:waterHelpers)+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
+// Individually authored wind effects.
+const windDetails={
+  "448": {
+    "duration": 0.85,
+    "loop": false,
+    "note": "短い風圧が前方へ鋭く吹き抜ける。細い白い流線と弧状の先端。",
+    "body": "float g=accelerate(phase(q,.04,.30));vec2 a=vec2(-.73,0.),b=mix(a,vec2(.73,0.),g);return gust(p,a,b,.31,t,windEnv(q,.035,.64),5.);"
+  },
+  "449": {
+    "duration": 2,
+    "loop": true,
+    "note": "風の薄い障壁が前面を覆い、上へ流れる風の筋と左右に逃げる気流を描く。",
+    "body": "vec4 v=airShield(p,vec2(.37,.70),t,.085,2.);for(int i=0;i<4;i++){float k=float(i),x=.18+.07*k;vec4 w=gust(p,vec2(x,-.55),vec2(x+.08,.65),.11,t+k*.1,.48,7.+k);v=over(v,w);}return v;"
+  },
+  "450": {
+    "duration": 1.35,
+    "loop": false,
+    "note": "足元から上に向けて強い細長い風が突き上がる。上昇方向の流線と足元の小さな風圧。",
+    "body": "float g=accelerate(phase(q,.06,.38));vec4 v=gust(p,vec2(0.,-.68),vec2(0.,-.68+1.55*g),.40,t,windEnv(q,.06,.69),11.);return over(v,airRing(p,vec2(0.,-.63),phase(q,.20,1.),.36,.26,.75));"
+  },
+  "451": {
+    "duration": 2.1,
+    "loop": true,
+    "note": "足元の小さな風の輪と左右へ流れる気流。上半身を覆わない空中歩行補助。",
+    "body": "vec4 v=airShield(p-vec2(0.,-.54),vec2(.38,.13),t,.12,2.);return over(v,gust(p,vec2(-.48,-.56),vec2(.48,-.46),.12,t,.60,13.));"
+  },
+  "452": {
+    "duration": 1.95,
+    "loop": false,
+    "note": "低い位置で冷気が集まり、広い風の前線が地表を横切る。薄い気流の帯と後続する流線。",
+    "body": "vec4 v=windCharge(p,vec2(-.54,-.34),q,.34);float f=phase(q,.29,1.);return over(v,windFront(p-vec2(0.,-.29),f,t,.77,.49,1.25));"
+  },
+  "453": {
+    "duration": 2.15,
+    "loop": false,
+    "note": "上側から集まる冷気が斜め下へ沿って吹き下ろす。長い斜行の流線を維持。",
+    "body": "vec2 a=vec2(-.63,.62),b=mix(a,vec2(.76,-.58),accelerate(phase(q,.27,.53)));vec4 v=windCharge(p,a,q,.25);return over(v,gust(p,a,b,.44,t,windEnv(q,.27,.79)*1.2,17.));"
+  },
+  "454": {
+    "duration": 2.6,
+    "loop": true,
+    "note": "対象の周りを風の帯が螺旋状に巡り、細い流線が上へ抜ける。常時の保護効果。",
+    "body": "vec4 v=airShield(p,vec2(.49,.70),t,.12,3.);for(int i=0;i<9;i++){float k=float(i),y=-.61+k*.14,a=t*TAU*2.+k*.64;vec2 c=vec2(.45*cos(a),y);v=over(v,gust(p,c,c+vec2(.15*sin(a),.14),.11,t,.55,7.+k));}return v;"
+  },
+  "455": {
+    "duration": 3,
+    "loop": true,
+    "note": "雲の切れ間が開閉し、光が差して雲が移動する。晴れ・曇りの選択結果そのものはゲーム側。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<5;i++){float k=float(i),f=fract(t+hash(vec2(k,11.)));vec2 c=vec2(-.85+1.70*f,.43+.10*sin(k));vec4 w=airCloud(p,c,vec2(.31,.19),t,k,0.);w.a*=sin(3.14159*f);v=over(v,w);}return v;"
+  },
+  "456": {
+    "duration": 2.3,
+    "loop": false,
+    "note": "足元に砂塵が集まり、細い低層の旋風が土埃を巻き上げる。竜巻より低く小さい。",
+    "body": "float g=accelerate(phase(q,.26,.52)),e=windEnv(q,.22,.80);vec4 v=windCharge(p,vec2(0.,-.62),q,.30);vec4 w=funnel(p,t,g,.90,.13,.29,.08,1.);w.a*=e;v=over(v,w);w=driftDebris(p,t,g,.39,.86,1.,16.);w.a*=e;return over(v,w);"
+  },
+  "457": {
+    "duration": 2.9,
+    "loop": false,
+    "note": "幅広い下降気流が上空から地面を打ち、左右へ大きな風圧が拡散。",
+    "body": "return downflow(p,t,q,.72,1.45);"
+  },
+  "458": {
+    "duration": 2.5,
+    "loop": false,
+    "note": "気流を短く圧縮し、互いに異なる方向へ流れる三つの渦が不規則に干渉。乱流の振動を見せる。",
+    "body": "vec4 v=windCharge(p,vec2(0.),q,.40);float e=windEnv(q,.30,.81);for(int i=0;i<5;i++){float k=float(i),a=t*TAU*(1.+mod(k,2.))+k*TAU/5.;vec2 c=dir2(a)*vec2(.39,.33);vec2 d=dir2(a+1.57);v=over(v,gust(p,c-d*.29,c+d*.29,.24,t+k*.1,e*.9,31.+k));}return v;"
+  },
+  "459": {
+    "duration": 2.8,
+    "loop": true,
+    "note": "足元に複数の薄い空気層が重なり、左右の風の流れが足場を支える。攻撃衝撃なし。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<3;i++){float k=float(i);v=over(v,airShield(p-vec2(0.,-.64+k*.09),vec2(.52-k*.06,.13),t+k*.12,.09,2.));}return over(v,gust(p,vec2(-.58,-.56),vec2(.58,-.50),.13,t,.7,9.));"
+  },
+  "460": {
+    "duration": 3.2,
+    "loop": true,
+    "note": "上空を巡る気流と変化する雲の配置。天候ごとの雨・雪・雷の素材は別、選択内容を勝手に固定しない。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<6;i++){float k=float(i),a=t*TAU+k*TAU/6.;vec2 c=dir2(a)*vec2(.49,.22)+vec2(0.,.38);vec4 w=airCloud(p,c,vec2(.29,.18),t,k,0.);w.a*=.55+.35*sin(a)*sin(a);v=over(v,w);}return over(v,airShield(p-vec2(0.,.27),vec2(.69,.29),t,.06,2.));"
+  },
+  "461": {
+    "duration": 2.7,
+    "loop": false,
+    "note": "地面に叩きつける強い下降風。着地で風が両側へ急展開。",
+    "body": "return downflow(p,t,q,.46,1.35);"
+  },
+  "462": {
+    "duration": 2.5,
+    "loop": false,
+    "note": "細く強く圧縮された下降噴流。狭い着点から鋭い風圧が高速で弾ける。",
+    "body": "vec4 v=downflow(p,t,q,.23,1.65);return over(v,airRing(p,vec2(0.,-.62),phase(q,.49,.90),.48,.33,1.5));"
+  },
+  "463": {
+    "duration": 2.8,
+    "loop": false,
+    "note": "高所から斜面に沿って乾いた下降風が勢いよく走る。薄い黄白の乾燥した流線。",
+    "body": "vec2 a=vec2(-.72,.69),b=mix(a,vec2(.77,-.58),accelerate(phase(q,.36,.58)));vec4 v=windCharge(p,a,q,.31);vec4 w=gust(p,a,b,.56,t,windEnv(q,.36,.83)*1.5,23.);w.rgb=mix(w.rgb,vec3(.90,.78,.55),.30);return over(v,w);"
+  },
+  "464": {
+    "duration": 3.3,
+    "loop": false,
+    "note": "地面で風が集まり、細い根元から広がる巨大な漏斗状竜巻へ急成長。渦の帯と巻き上がる破片。",
+    "body": "float g=accelerate(phase(q,.36,.60)),e=windEnv(q,.27,.83);vec4 v=windCharge(p,vec2(0.,-.59),q,.50);vec4 w=funnel(p,t,g,1.55,.15,.51,.12,0.);w.a*=e;v=over(v,w);w=driftDebris(p,t,g,.66,1.48,.25,22.);w.a*=e;return over(v,w);"
+  },
+  "465": {
+    "duration": 3.35,
+    "loop": false,
+    "note": "水面に渦が集まり、水しぶきを吸い上げる細長い水上竜巻。下部の水の輪と青白い飛沫を強調。",
+    "body": "float g=accelerate(phase(q,.37,.61)),e=windEnv(q,.28,.84);vec4 v=windCharge(p,vec2(0.,-.61),q,.49);v=over(v,airRing(p,vec2(0.,-.64),phase(q,.32,1.),.66,.25,1.1));vec4 w=funnel(p,t,g,1.52,.21,.42,-.08,0.);w.rgb=mix(w.rgb,vec3(.18,.66,.88),.35);w.a*=e;v=over(v,w);w=driftDebris(p,t,g,.57,1.45,0.,24.);w.rgb=mix(w.rgb,vec3(.48,.84,1.),.4);w.a*=e;return over(v,w);"
+  },
+  "466": {
+    "duration": 3,
+    "loop": false,
+    "note": "圧縮された高速気流帯が広い幅で一方向へ解放される。強い長い流線と先端の圧力前線。",
+    "body": "vec2 a=vec2(-.76,0.),b=mix(a,vec2(.80,0.),accelerate(phase(q,.42,.54)));vec4 v=windCharge(p,a,q,.42);v=over(v,gust(p,a,b,.85,t,windEnv(q,.42,.82)*1.75,37.));return over(v,windFront(p,phase(q,.42,.95),t,.83,.73,1.3));"
+  },
+  "467": {
+    "duration": 3.8,
+    "loop": true,
+    "note": "幅広い砂塵の壁が横に移動し、激しい砂粒と低い風の流れが持続する。",
+    "body": "vec4 v=vec4(0.);for(int i=0;i<7;i++){float k=float(i),f=fract(t+hash(vec2(k,9.)));vec4 w=airCloud(p,vec2(-.87+1.74*f,-.42+.21*k),vec2(.39,.24),t,k,1.);w.a*=sin(3.14159*f);v=over(v,w);}vec4 w=gust(p,vec2(-.85,-.30),vec2(.85,.10),.85,t*2.,1.3,31.);w.rgb=mix(w.rgb,vec3(.79,.56,.32),.65);return over(v,w);"
+  },
+  "468": {
+    "duration": 4,
+    "loop": true,
+    "note": "複数の大きな回転気流と横風が交錯する持続型の嵐。周期的に強くなり、破片が周囲を流れる。",
+    "body": "float e=.73+.27*cos(t*TAU);vec4 v=funnel(p,t,1.,1.50,.29,.67,-.08,0.);v.a*=e;v=over(v,driftDebris(p,t,1.,.75,1.45,.32,24.));for(int i=0;i<3;i++){float k=float(i),y=-.40+k*.39;v=over(v,gust(p,vec2(-.86,y),vec2(.86,y+.16*sin(k)),.33,t*2.+k*.14,e,19.+k));}return v;"
+  },
+  "469": {
+    "duration": 3.8,
+    "loop": false,
+    "note": "神聖な風を大きく溜め、白金の光を帯びた幅広い風圧が一気に吹き抜ける。多重の前線と長い余波。",
+    "body": "vec2 a=vec2(-.76,0.),b=mix(a,vec2(.83,0.),accelerate(phase(q,.45,.56)));vec4 v=windCharge(p,a,q,.52);vec4 w=gust(p,a,b,1.08,t,windEnv(q,.45,.86)*2.,43.);w.rgb=mix(w.rgb,vec3(1.,.94,.75),.32);v=over(v,w);for(int i=0;i<3;i++){float k=float(i);w=windFront(p,phase(q,.45+k*.085,.98),t,.83,.82-k*.11,1.55-k*.25);w.rgb=mix(w.rgb,vec3(1.,.94,.75),.3);v=over(v,w);}return v;"
+  },
+  "470": {
+    "duration": 4.1,
+    "loop": true,
+    "note": "激しい横風に雨滴が斜めに流される暴風雨。風の周期的増強と厚い雨雲、雷は描かない。",
+    "body": "float e=.70+.30*cos(t*TAU);vec4 v=airCloud(p,vec2(0.,.58),vec2(.86,.29),t,7.,0.);v.rgb*=.52;for(int i=0;i<28;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,13.))),x=(hash(vec2(k,17.))-.5)*1.75;vec2 c=vec2(x+.60*(.5-f),.72-1.48*f);float z=airLine(p,c,c+vec2(-.15,.17),.004,t,k)*sin(3.14159*f);v=over(v,vec4(vec3(.64,.82,.96),z*.78*e));}for(int i=0;i<3;i++){float k=float(i),y=-.38+k*.34;v=over(v,gust(p,vec2(-.87,y),vec2(.87,y-.17),.29,t*2.+k*.14,e,23.+k));}return v;"
+  }
+};
+const windHelpers="\nfloat accelerate(float f){return 1.-pow(1.-sat(f),3.);}\nfloat windEnv(float q,float a,float b){return smoothstep(a,a+.045,q)*(1.-smoothstep(b,1.,q));}\nvec4 airColor(float a,float edge){return vec4(mix(mix(uColor,vec3(.60,.78,.83),.45),vec3(.94,.99,1.),sat(edge)),sat(a));}\nfloat airLine(vec2 p,vec2 a,vec2 b,float w,float t,float seed){\n vec2 d=b-a;float l=length(d);if(l<.008)return 0.;vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/l,x=dot(v,side),bend=.05*sin(u*7.+seed-t*TAU)*sin(sat(u)*3.14159);\n float mask=smoothstep(-.01,.12,u)*(1.-smoothstep(.79,1.02,u));\n return exp(-abs(x-bend)/max(.003,w))*mask;\n}\nvec4 gust(vec2 p,vec2 a,vec2 b,float w,float t,float power,float seed){\n vec2 d=b-a;float l=length(d);if(l<.008)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x);\n float z=0.;for(int i=0;i<18;i++){float k=float(i);float h=hash(vec2(k,seed)),f=fract(t*(1.+.5*h)+h);float y=(hash(vec2(k,seed+3.))-.5)*w;vec2 c=mix(a,b,f)+side*y;vec2 end=c+ax*(.18+.38*h)*min(1.,l);z+=airLine(p,c,end,.005+.006*h,t,k)*sin(3.14159*f);}\n float u=dot(p-a,ax)/l,x=dot(p-a,side);float n=fb(vec2(u*7.-t*5.,x*13.));float haze=(1.-smoothstep(.35,1.,abs(x)/max(.02,w*.65)))*smoothstep(0.,.18,u)*(1.-smoothstep(.83,1.04,u));\n return airColor((z*.66+haze*n*.15)*power,.70);\n}\nvec4 windCharge(vec2 p,vec2 c,float q,float r){float f=phase(q,0.,.34),z=0.;for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+f*1.8;vec2 d=dir2(a),v=c+d*r*(1.-f);z+=airLine(p,v,v+d*.12,.008,q,k);}return airColor(z*gate(q,0.,.40)*.8,.8);}\nvec4 windFront(vec2 p,float f,float t,float radius,float height,float strength){\n if(f<=0.||f>=1.)return vec4(0.);float x=mix(-.82,.82,f),y=p.y/height;float crest=x+.13*(1.-y*y);float e=(1.-smoothstep(.72,1.05,abs(y)))*sin(3.14159*f);\n float z=0.;for(int i=0;i<4;i++){float k=float(i),d=abs(p.x-crest+k*.09+.025*sin(y*11.-t*TAU*3.+k));z+=exp(-d/(.012+.004*k))*(1.-k*.17);}\n return airColor(z*e*strength,.92);\n}\nvec4 airRing(vec2 p,vec2 c,float f,float r,float flattening,float strength){\n if(f<=0.||f>=1.)return vec4(0.);vec2 v=(p-c)/vec2(1.,flattening);float a=atan(v.y,v.x),radius=.035+r*accelerate(f);float d=abs(length(v)-radius-.008*sin(a*17.));float z=exp(-d/.011)+.45*exp(-abs(d-.024)/.008);return airColor(z*sin(3.14159*f)*strength,.92);\n}\nvec4 airShield(vec2 p,vec2 r,float t,float thickness,float speed){\n vec2 v=p/r;float d=length(v),a=atan(v.y,v.x),band=exp(-pow((d-1.)/thickness,2.));\n float str=pow(.5+.5*sin(a*8.-t*TAU*speed+d*14.),5.);\n return airColor(band*(.20+.70*str)+.045*(1.-smoothstep(.88,1.,d)),.48+.45*str);\n}\nvec4 funnel(vec2 p,float t,float g,float h,float bottom,float top,float lean,float dusty){\n if(g<=.001)return vec4(0.);float y=(p.y+.69)/max(.02,h*g);float x=p.x-lean*sat(y)-.035*sin(y*6.+t*TAU*2.);\n float w=mix(bottom,top,pow(sat(y),1.4))*g;float d=abs(x)/max(.01,w);\n float mask=smoothstep(-.035,.04,y)*(1.-smoothstep(.89,1.03,y))*(1.-smoothstep(.80,1.14,d));\n float n=fb(vec2(x*12.+t*3.,y*9.-t*4.));float spiral=pow(.5+.5*sin(y*TAU*3.-t*TAU*4.+x/max(.02,w)*2.8+n*1.2),4.);\n vec3 col=mix(mix(vec3(.45,.57,.62),uColor,.30),vec3(.92,.98,1.),spiral);\n col=mix(col,mix(vec3(.30,.20,.11),vec3(.77,.60,.36),n*.6+spiral*.4),dusty);\n return vec4(col,mask*(.12+.64*spiral+.22*n));\n}\nvec4 driftDebris(vec2 p,float t,float g,float r,float h,float dust,float n){\n float z=0.;vec4 col=vec4(0.);for(int i=0;i<24;i++){float k=float(i);if(k>=n*uDensity)break;float f=fract(t+hash(vec2(k,7.))),a=t*TAU*3.+k*2.4+f*TAU;float rr=r*(.30+.70*f)*g;\n vec2 c=vec2(cos(a)*rr,-.65+h*f*g);vec2 b=c+vec2(-.10*sin(a),.055)*g;float v=airLine(p,c,b,.006+.004*hash(vec2(k,17.)),t,k)*sin(3.14159*f)*g;\n col=over(col,vec4(mix(vec3(.82,.95,.99),vec3(.59,.41,.24),dust),v*.83));}return col;\n}\nvec4 airCloud(vec2 p,vec2 c,vec2 r,float t,float seed,float dust){\n float a=shell(p,c,r,t+seed*.025),n=fb((p-c)*7.+vec2(seed,sin(t*TAU)));\n vec3 col=mix(vec3(.38,.47,.56),vec3(.88,.93,.96),n);col=mix(col,mix(vec3(.36,.23,.13),vec3(.78,.62,.40),n),dust);return vec4(col,a*.82);\n}\nvec4 downflow(vec2 p,float t,float q,float w,float strength){\n float g=accelerate(phase(q,.36,.51)),e=windEnv(q,.36,.78);vec4 v=windCharge(p,vec2(0.,.72),q,.31);\n vec4 a=gust(p,vec2(0.,.86),vec2(0.,.86-1.48*g),w,t,e*strength,13.);v=over(v,a);\n float f=phase(q,.48,1.);v=over(v,airRing(p,vec2(0.,-.62),f,.80,.29,strength));\n for(int i=0;i<2;i++){float k=float(i),s=k*2.-1.;vec4 b=gust(p,vec2(0.,-.60),vec2(s*.82,-.60+.12*f),w*.65,t+k*.18,gate(q,.48,1.)*strength,23.+k);v=over(v,b);}return v;\n}\n";
+for(const r of records){const d=windDetails[r.row];if(!d)continue;Object.assign(r,{duration:d.duration,loop:d.loop,note:"個別改修版："+d.note,refined:true});}
+function code(r){const level=r.lv.toFixed(1),power=(.92+Math.max(0,r.lv-3)*.24).toFixed(2),seed=(r.row*.0137).toFixed(5);const constants="const float LEVEL="+level+", POWER="+power+", LOOP="+(r.loop?"1.":"0.")+", MAGIC_SEED="+seed+", FAMILY="+families[r.attribute].toFixed(1)+";\n";const d=fireDetails[r.row]||iceDetails[r.row]||waterDetails[r.row]||windDetails[r.row];if(d)return "// "+r.name+" / CS "+r.row+" / 個別改修版\n"+constants+header+(fireDetails[r.row]?fireHelpers:iceDetails[r.row]?iceHelpers:waterDetails[r.row]?waterHelpers:windHelpers)+"\nvec4 effect(vec2 p,float t,float q){"+d.body+"}\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=effect(p,uTime,uProgress);}";return "// "+r.name+" / "+r.attribute+" / CS "+r.row+" / 初期制作案\n"+constants+header+"\nvec4 effect(vec2 p,float t,float q){"+bodies[r.mode]+"}\n"+decoration+"\nvoid main(){vec2 p=(vUv-.5)*2.;p*=vec2(max(1.,uAspect),max(1.,1./uAspect));p/=max(.1,uSize);gl_FragColor=decorate(p,uTime,uProgress,effect(p,uTime,uProgress));}";}
 const sources=Object.fromEntries(records.map(r=>[r.id,code(r)]));return {records,rows,sources,code};
 })();
 if(typeof module!=='undefined')module.exports=MagicCatalog;
