@@ -18,7 +18,7 @@ function sync(){for(const k of ["name","duration","view","seed"])$(k).value=comp
 function option(select,value,label){const o=document.createElement("option");o.value=value;o.textContent=label;select.append(o)}
 
 const registryKey="effect-component-registry-v1";
-let authorTemplate=null,authorTested=null,authorVersionMode=false,registryLoadError="";
+let authorTemplate=null,authorTested=null,authorVersionMode=false,registryLoadError="",registrySnapshot=null;
 const authorIds=["authorId","authorName","authorCategory","authorView","authorDuration","authorDescription","authorBody"];
 function authorStatus(s,error=false){$("authorStatus").textContent=s;$("authorStatus").classList.toggle("error",error)}
 function invalidateAuthor(){authorTested=null;$("authorRegister").disabled=true}
@@ -26,11 +26,14 @@ function registryData(){return {format:"glsl-part-registry",version:1,definition
 function persistAdditions(raw){
  const added=C.prepareDefinitions(raw);
  if(!added.length)return 0;
- localStorage.setItem(registryKey,JSON.stringify({format:"glsl-part-registry",version:1,definitions:[...C.customDefinitions(),...added]}));
+ if(registryLoadError)throw Error("保存部品の読込エラーがあるため上書きしません。既存の保存内容を確認してください");
+ if(localStorage.getItem(registryKey)!==registrySnapshot)throw Error("別タブ等で部品保存が変更されています。現在の編集を保存して再読込してください");
+ const next=JSON.stringify({format:"glsl-part-registry",version:1,definitions:[...C.customDefinitions(),...added]});
+ localStorage.setItem(registryKey,next);registrySnapshot=next;
  C.installDefinitions(added);syncRegistry();return added.length;
 }
 function parseRegistry(raw){if(!raw||raw.format!=="glsl-part-registry"||raw.version!==1||!Array.isArray(raw.definitions))throw Error("追加部品JSONの形式が不正");return raw.definitions}
-try{const saved=localStorage.getItem(registryKey);if(saved)C.installDefinitions(parseRegistry(JSON.parse(saved)))}catch(e){registryLoadError="保存部品の読込失敗: "+e.message}
+try{registrySnapshot=localStorage.getItem(registryKey);if(registrySnapshot)C.installDefinitions(parseRegistry(JSON.parse(registrySnapshot)))}catch(e){registryLoadError="保存部品の読込失敗: "+e.message}
 function syncRegistry(){
  const cat=$("category"),previous=cat.value;cat.replaceChildren();option(cat,"","すべて");for(const name of [...new Set(C.definitions().map(d=>d.category))])option(cat,name,name);if(C.definitions().some(d=>d.category===previous))cat.value=previous;
  const base=$("authorBase"),choice=base.value;base.replaceChildren();option(base,"","新規（基本発光球）");for(const d of C.definitions())option(base,d.id+"@"+d.version,d.name+" v"+d.version+" ("+d.id+")");if(C.definitions().some(d=>d.id+"@"+d.version===choice))base.value=choice;
@@ -105,7 +108,7 @@ function readSnapshot(x){
  if(!x||x.format!=="glsl-component-composition")throw Error("部品構成JSONではありません");
  if(busy||changed&&!confirm("現在の部品構成を置き換えますか？"))return;
  const defs=x.definitions===undefined?[]:x.definitions,added=C.prepareDefinitions(defs);
- C.withDefinitions(added,()=>C.validate(x.composition));
+ C.withDefinitions(added,()=>C.compile(x.composition));
  if(x.output){const {width,height,fps,columns,color,core}=x.output;if(![width,height,fps,columns].every(Number.isInteger)||width<16||width>512||height<16||height>512||fps<1||fps>60||columns<0||columns>300||!/^#[0-9a-f]{6}$/i.test(color)||!/^#[0-9a-f]{6}$/i.test(core))throw Error("出力設定が不正")}
  verifyAdditions(added);persistAdditions(added);replace(x.composition,x.output,true);
 }
