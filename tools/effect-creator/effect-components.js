@@ -37,10 +37,56 @@ function validate(c){
 const f=n=>{if(!Number.isFinite(n))throw Error("GLSL数値が不正");let s=n.toFixed(8).replace(/0+$/,"");return s.endsWith(".")?s+"0":s};
 const vec=(x,y)=>"vec2("+f(x)+","+f(y)+")";
 function rgb(h){return "vec3("+[1,3,5].map(i=>f(parseInt(h.slice(i,i+2),16)/255)).join(",")+")"}
+
+const MAX_DEPTH=4,MAX_EXPANDED=128;
+function isComposite(d){return d.kind==="composite"}
+function compositeGraph(parts,activeOnly=false){
+ const ordered=[],seen=new Set(),stack=new Set();let count=0;
+ function visit(p,depth){
+  if(activeOnly&&!p.enabled)return;
+  const d=get(p.partId,p.version),k=keyOf(d);
+  if(stack.has(k))throw Error("複合部品の循環参照: "+k);
+  if(depth>MAX_DEPTH)throw Error("複合部品の階層上限 "+MAX_DEPTH);
+  if(++count>MAX_EXPANDED)throw Error("展開部品数の上限 "+MAX_EXPANDED);
+  if(isComposite(d)){stack.add(k);for(const child of d.composition.parts)visit(child,depth+1);stack.delete(k)}
+  if(!seen.has(k)){seen.add(k);ordered.push(d)}
+ }
+ for(const p of parts)visit(p,1);
+ return ordered;
+}
+function compositeDefinition(raw,meta){
+ const c=validate(raw.composition);
+ if(c.view!==meta.view||c.duration!==meta.duration)throw Error("複合部品の視点・時間が構成と一致しません");
+ if(!c.parts.some(p=>p.enabled))throw Error("有効な子部品がありません");
+ if(!Array.isArray(raw.bindings)||raw.bindings.length>16)throw Error("公開パラメータは最大16項目");
+ const names=new Set(["p","t","q","seconds","result"]),targets=new Set(),bindings=[],params=[];
+ for(const b of raw.bindings){
+  const child=c.parts.find(p=>p.uid===b?.uid),param=child&&get(child.partId,child.version).params.find(p=>p.id===b.paramId);
+  if(!param)throw Error("公開パラメータの参照が不明");
+  const key=JSON.stringify([child.uid,param.id]);if(targets.has(key))throw Error("公開パラメータの参照が重複");targets.add(key);
+  const def=normalizeParameter({...param,id:b.id,name:b.name,default:child.params[param.id]},names);
+  bindings.push({id:def.id,name:def.name,uid:child.uid,paramId:param.id});params.push(def);
+ }
+ // A group is one more level above its stored children.
+ compositeGraph(c.parts.map(p=>p)); 
+ return deepFreeze({...meta,kind:"composite",composition:c,bindings,params,dependencies:[]});
+}
+function makeComposite(c,meta,bindings=[]){const x=validate(c);return normalizeDefinition({...meta,view:x.view,duration:x.duration,kind:"composite",composition:x,bindings})}
+function compositeBody(d,symbol){
+ const c=d.composition;
+ const calls=c.parts.filter(p=>p.enabled).map((p,i)=>{
+  const child=get(p.partId,p.version),start=f(p.start),end=f(p.end),duration=f(p.end-p.start),a=f(p.rotation*Math.PI/180);
+  const time=p.timeMode==="scene"?"t*"+f(p.speed):"local*t/max(q,.000001)*"+f(p.speed);
+  const args=child.params.map(k=>{const b=d.bindings.find(b=>b.uid===p.uid&&b.paramId===k.id);return b?", "+b.id:","+glslValue(k,p.params[k.id])}).join("");
+  return "{if(seconds>="+start+"&&seconds<="+end+"){float local=clamp((seconds-"+start+")/"+duration+",0.,1.);vec2 center=mix("+vec(p.x,p.y)+","+vec(p.endX,p.endY)+",local)+vec2(0.,"+f(p.arc)+"*4.*local*(1.-local));vec2 pt=(p-center)/"+f(p.scale)+";float angle="+a+";pt=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*pt;vec4 a"+i+"="+symbol(child)+"(pt,"+time+",local"+args+");a"+i+".rgb=mix(a"+i+".rgb,a"+i+".rgb*"+rgb(p.tint)+","+f(p.tintMix)+");a"+i+".a=clamp(a"+i+".a*"+f(p.opacity)+",0.,1.);result=over(result,a"+i+");}}";
+ }).join("\n");
+ return "float seconds=q*"+f(c.duration)+";vec4 result=vec4(0.);"+(c.loop?"":"if(q<=0.||q>=1.)return result;")+"\n"+calls+"\nreturn result;";
+}
+
 function compile(input){
- const c=validate(input),active=c.parts.filter(p=>p.enabled),unique=[...new Map(active.map(p=>{const d=get(p.partId,p.version);return [d.id+"@"+d.version,d]})).values()];
+ const c=validate(input),active=c.parts.filter(p=>p.enabled),unique=(compositeGraph(c.parts),compositeGraph(active,true));
  const symbol=d=>"part_"+d.id.replace(/-/g,"_")+"_v"+d.version;
- const code=unique.map(d=>"vec4 "+symbol(d)+"(vec2 p,float t,float q"+d.params.map(a=>","+glslType(a)+" "+a.id).join("")+"){\n"+d.body+"\n}").join("\n");
+ const code=unique.map(d=>"vec4 "+symbol(d)+"(vec2 p,float t,float q"+d.params.map(a=>","+glslType(a)+" "+a.id).join("")+"){\n"+(isComposite(d)?compositeBody(d,symbol):d.body)+"\n}").join("\n");
  const calls=active.map((p,i)=>{const d=get(p.partId,p.version),start=f(p.start),end=f(p.end),duration=f(p.end-p.start),a=f(p.rotation*Math.PI/180),time=p.timeMode==="scene"?"uTime*"+f(p.speed):"local*uTime/max(uProgress,.000001)*"+f(p.speed);
  return "{if(seconds>="+start+"&&seconds<="+end+"){float local=clamp((seconds-"+start+")/"+duration+",0.,1.);vec2 center=mix("+vec(p.x,p.y)+","+vec(p.endX,p.endY)+",local)+vec2(0.,"+f(p.arc)+"*4.*local*(1.-local));vec2 pt=(p-center)/"+f(p.scale)+";float angle="+a+";pt=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*pt;vec4 a"+i+"="+symbol(d)+"(pt,"+time+",local"+d.params.map(k=>","+glslValue(k,p.params[k.id])).join("")+");a"+i+".rgb=mix(a"+i+".rgb,a"+i+".rgb*"+rgb(p.tint)+","+f(p.tintMix)+");a"+i+".a=clamp(a"+i+".a*"+f(p.opacity)+",0.,1.);result=over(result,a"+i+");}}";
  }).join("\n");
@@ -75,6 +121,8 @@ function normalizeDefinition(raw){
  const version=number(raw.version,1,9999,"版");if(!Number.isInteger(version))throw Error("版は整数");
  const name=str(raw.name,"部品名"),category=str(raw.category,"分類",40),view=raw.view;if(!["TOP","SIDE","BOTH"].includes(view))throw Error("部品視点が不正");
  const duration=number(raw.duration,.05,30,"部品時間"),description=typeof raw.description==="string"?raw.description.slice(0,1000):"";
+ if(raw.kind==="composite")return compositeDefinition(raw,{id,version,name,category,view,duration,description});
+ if(raw.kind!==undefined)throw Error("部品種類が不正");
  const body=str(raw.body,"GLSL関数本体",MAX_BODY);
  const clean=body.replace(/\/\*[\s\S]*?\*\//g,"").replace(/\/\/[^\n]*/g,"");
  if(/#|\b(?:uniform|varying|attribute|precision|discard|gl_FragColor|gl_FragData|main|part_\w+)\b/.test(clean)||/\/\*|\*\//.test(clean))throw Error("関数本体の外部宣言・プリプロセッサ・他部品直接参照は禁止");
@@ -87,17 +135,27 @@ function normalizeDefinition(raw){
 }
 function prepareDefinitions(raw){
  if(!Array.isArray(raw)||raw.length>MAX_CUSTOM)throw Error("部品定義の件数が不正");
- const staged=new Map(),added=[];
- for(const input of raw){const d=normalizeDefinition(input),k=keyOf(d),old=lookup.get(k)||staged.get(k);if(old){if(JSON.stringify(old)!==JSON.stringify(d))throw Error("同じID・版の内容が異なります: "+k);continue}staged.set(k,d);added.push(d)}
- if(customDefinitions().length+added.length>MAX_CUSTOM)throw Error("追加部品は最大 "+MAX_CUSTOM+" 版");
- return added;
+ const pending=new Map(),added=[],visiting=new Set(),done=new Set();
+ for(const input of raw){if(!input||typeof input.id!=="string"||!Number.isInteger(input.version))throw Error("部品ID・版が不正");const k=keyOf(input);if(pending.has(k)){if(JSON.stringify(pending.get(k))!==JSON.stringify(input))throw Error("同じID・版が重複: "+k);continue}pending.set(k,input)}
+ function stage(k){
+  if(done.has(k))return;if(visiting.has(k))throw Error("複合部品の循環参照: "+k);
+  const input=pending.get(k);if(!input){if(!lookup.has(k))throw Error("依存部品がありません: "+k);return}
+  visiting.add(k);
+  if(input.kind==="composite"){if(!Array.isArray(input.composition?.parts))throw Error("子部品が不正");for(const p of input.composition.parts)stage(p.partId+"@"+p.version)}
+  const d=normalizeDefinition(input),old=lookup.get(k);
+  if(old){if(JSON.stringify(old)!==JSON.stringify(d))throw Error("同じID・版の内容が異なります: "+k)}
+  else{lookup.set(k,d);added.push(d)}
+  if(isComposite(d))compositeGraph([{partId:d.id,version:d.version,enabled:true}]);
+  visiting.delete(k);done.add(k);
+ }
+ try{for(const k of pending.keys())stage(k);if(customDefinitions().length>MAX_CUSTOM)throw Error("追加部品は最大 "+MAX_CUSTOM+" 版");return added}finally{for(const d of added)lookup.delete(keyOf(d))}
 }
 function withDefinitions(raw,fn){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);try{return fn(added)}finally{for(const d of added)lookup.delete(keyOf(d))}}
 function installDefinitions(raw){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);return added}
 function previewDefinition(raw,view="TOP",values={}){
  const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];c.parts[0].params={...c.parts[0].params,...values};if(d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
 }
-function referencedDefinitions(c){return [...new Map(validate(c).parts.map(p=>get(p.partId,p.version)).filter(d=>!builtins.has(keyOf(d))).map(d=>[keyOf(d),d])).values()]}
+function referencedDefinitions(c){return compositeGraph(validate(c).parts).filter(d=>!builtins.has(keyOf(d)))}
 
 
 function versions(id){return definitions().filter(d=>d.id===id).sort((a,b)=>a.version-b.version)}
@@ -146,5 +204,5 @@ function changeTiming(input,uid,start,end){
  p.start=start;p.end=end;return validate(c);
 }
 
-return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,timelineRange,changeTiming,versions,origin,migrateVersion,findUsage,additionalBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
+return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,MAX_DEPTH,MAX_EXPANDED,isComposite,makeComposite,compositeGraph,timelineRange,changeTiming,versions,origin,migrateVersion,findUsage,additionalBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
 });
