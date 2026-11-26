@@ -2,14 +2,14 @@
 
 更新日：2026-11-27（日本時間）
 対象：siev0000/MyMapCreater / main
-確認した実装・仕様の基準コミット：`4f626b2e398cb7dbb427b0416d4d8472dad68896`
+確認した実装・仕様の基準コミット：`ca447357e19efa81d18fc1016ffbee8fbf9896fb`
 本ファイルと参照案内のみの更新コミットは上記基準に含まない。作業再開時は必ず最新HEADを確認する。
 
 ## 1. 最初に読む資料
 
 - [README](../README.md)：ツール全体・参照案内
 - [エフェクト作成仕様](specs/12-effect-creator.md)：冒頭付近の「魔法エフェクト共通制作ルール v1.0」「魔法Lv別エフェクト制作基準」を優先。末尾の個別改修記録も参照。
-- [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=nuclear-ellipse-14)：現在のキャッシュキー。Pages配信は未確認。
+- [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=layer-recovery-15)：現在のキャッシュキー。Pages配信は未確認。
 - ゲーム本体：siev0000/fantasy_Strategy（別リポジトリ）。ゲーム実装・戦闘仕様の正本。ゲーム側の戦闘エフェクトルールは前回確認時 ui/mobile-responsive-port-20260912 の docs/rules/ui/戦闘エフェクトルール.md。次回必要時にブランチと最新実装を確認。
 - シート編集原本：[game_data / CS](https://docs.google.com/spreadsheets/d/1M55erZwPIapl8-fw7NS1Souy1SiW1iH6J56C6C85NPg/edit#gid=1829342689)。AC列エフェクト備考と戦闘データ・効果説明を区別。生成JSONだけを手作業で変更しない。
 - AGENTS.md と docs/README.md は基準コミットでは404。ルートREADMEと対象仕様書を確認した。
@@ -80,6 +80,11 @@ GLSL 345種（CS登録344＋連鎖球雷試作1）と別持続113種、合計458
 | index.html / style.css / effect-layout.js | UI、キャッシュキー、モバイル配置 |
 | shader-studio.test.cjs 等 | プリセット・モデル・レイアウト等の検証 |
 | docs/specs/12-effect-creator.md | 制作ルールと詳細履歴 |
+
+### 直近の不具合修正（2026-11-27）
+
+- レイヤー編集の自動反映・再生位置維持。新GLSL初期描画に失敗した場合は旧描画を保持し、診断を表示、未反映中の出力を禁止。本文入力は手動適用。核爆発CS261の予約語 flat を flatPos に改名（演出不変）。模擬UI試験成功、OpenGL ESの使用関数抜粋で旧コンパイル失敗/修正後成功を確認。実WebGL・端末・Pages配信未確認。
+- 次の確認：ブラウザーで核爆発を選択し、レイヤー追加・動的パラメータ変更・失敗後の復帰を確認する。再現する場合は診断欄のエラー全文を取得する。
 
 ## 5. 未完了・未確認事項
 
