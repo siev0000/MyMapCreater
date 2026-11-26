@@ -1,4 +1,12 @@
-# MyMapCreater — 汎用JSONマップ描画・編集アプリ
+# MyMapCreater — Game Creator Tools
+
+[ツール選択画面](./index.html) からマップ・名前生成・図形カタログ・エフェクト作成へ移動できます。
+
+- [エフェクト作成](./tools/effect-creator/index.html) — Canvasアニメーション編集・透過スプライトシート出力。
+- [エフェクト作成仕様・制約](./docs/specs/12-effect-creator.md)
+- [名前生成](./rebuild/name-generator.html) / [図形カタログ](./rebuild/shape-catalog.html)
+
+## マップ制作機能
 
 ワールドマップ、町、施設、船、ダンジョンなどの**任意のマップ**を、JSONデータから描画・編集するブラウザーアプリです。オートマンのマップはサンプルデータの一つであり、描画プログラムに固有の施設名や構造を登録する必要はありません。
 
