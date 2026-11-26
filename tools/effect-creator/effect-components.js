@@ -124,5 +124,27 @@ function findUsage(id,version,entries){
  return matches;
 }
 
-return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,versions,origin,migrateVersion,findUsage,additionalBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
+
+function timelineRange(start,end,duration,mode,delta,snap=0){
+ number(duration,.05,30,"全体時間");number(start,0,duration,"開始秒");number(end,0,duration,"終了秒");
+ if(end-start<.001||!["move","start","end"].includes(mode)||!Number.isFinite(delta)||!Number.isFinite(snap)||snap<0||snap>30)throw Error("時間操作が不正");
+ if(delta===0)return {start,end};
+ const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x)),grid=x=>snap>0?Math.round(x/snap)*snap:x;
+ const rounded=x=>Math.round(x*1e6)/1e6;
+ const len=end-start,minSpan=Math.min(len,.01);
+ if(mode==="move"){
+  const s=clamp(rounded(grid(start+delta)),0,duration-len);
+  // Preserve the exact original duration, including imported sub-frame times.
+  if(s===duration-len)return {start:duration-len,end:duration};
+  return {start:s,end:s+len};
+ }
+ if(mode==="start")return {start:clamp(rounded(grid(start+delta)),0,end-minSpan),end};
+ return {start,end:clamp(rounded(grid(end+delta)),start+minSpan,duration)};
+}
+function changeTiming(input,uid,start,end){
+ const c=validate(input),p=c.parts.find(p=>p.uid===uid);if(!p)throw Error("対象部品がありません");
+ p.start=start;p.end=end;return validate(c);
+}
+
+return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,timelineRange,changeTiming,versions,origin,migrateVersion,findUsage,additionalBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
 });
