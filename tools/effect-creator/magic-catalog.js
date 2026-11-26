@@ -9710,8 +9710,8 @@ const fireDetails={
   "241": {
     "duration": 2.4,
     "loop": true,
-    "note": "燃える炎の円環。火の舌が円環から立ち上り、周回する火の強弱で周期的な蓄積を示す。",
-    "body": "vec4 v=vec4(0.);float tt=fract(t);for(int i=0;i<16;i++){float k=float(i),a=TAU*(k/16.+tt),h=.17+.15*lfFlow(vec2(k*.7,2.),vec2(0.,2.),tt);vec2 c=dir2(a)*vec2(.57,.35);v=over(v,lfPlume(p,c,c+vec2(.05*cos(a),h),.13,tt,k));}vec4 r=fr(vec2(p.x,p.y/.63),vec2(0.),.57,.075,tt,9.);return over(r,v);"
+    "note": "燃える炎の円環。輪の位置は固定し、円周全体から上向きに炎が立ち上る。各所の炎が独立して揺らぎ、強弱を繰り返す。",
+    "body": "float tt=fract(t);vec4 v=vec4(0.);\nvec2 center=vec2(0.,-.14),r=vec2(.59,.30),pos=p-center;\nfloat xx=pos.x/r.x;\nfloat arch=sqrt(max(0.,1.-xx*xx));\nfloat baseNoise=lfFlow(pos*12.+vec2(8.,2.),vec2(0.,2.),tt);\nfloat dist=abs(length(pos/r)-1.)*r.y;\nfloat root=(1.-smoothstep(.013,.048,dist+(baseNoise-.5)*.018));\nv=vec4(firePalette(.38+.45*root),root*.95);\nfor(int i=0;i<2;i++){\n float k=float(i),side=k*2.-1.;\n float y0=side*r.y*arch;\n float height=.15+.26*lfFlow(vec2(pos.x*7.+k*17.,4.),vec2(0.,2.5),tt);\n float h=(pos.y-y0)/height;\n float n=lfFlow(vec2(pos.x*10.+k*19.,h*4.),vec2(0.,5.),tt);\n float detail=lfFlow(vec2(pos.x*17.+k*23.,h*6.),vec2(0.,7.),tt);\n float top=.83+.32*n;\n float mask=smoothstep(-.15,.10,h)*(1.-smoothstep(top-.32,top,h))*(1.-smoothstep(.94,1.07,abs(xx)));\n float density=mask*(.38+.72*n)*(.72+.36*detail);\n float heat=sat((1.-sat(h)*.68)*(.60+.55*n+.18*detail));\n vec4 f=vec4(firePalette(heat),sat(density*1.24));\n v=over(v,f);\n}\nreturn v;\n"
   },
   "242": {
     "duration": 1.9,
