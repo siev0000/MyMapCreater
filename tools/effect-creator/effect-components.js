@@ -99,5 +99,30 @@ function previewDefinition(raw,view="TOP",values={}){
 }
 function referencedDefinitions(c){return [...new Map(validate(c).parts.map(p=>get(p.partId,p.version)).filter(d=>!builtins.has(keyOf(d))).map(d=>[keyOf(d),d])).values()]}
 
-return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,additionalBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
+
+function versions(id){return definitions().filter(d=>d.id===id).sort((a,b)=>a.version-b.version)}
+function origin(id,version){return builtins.has(keyOf(get(id,version)))?"builtin":"local"}
+function migrateVersion(input,uid,targetVersion){
+ const c=validate(input),i=c.parts.findIndex(p=>p.uid===uid);
+ if(i<0)throw Error("対象部品がありません");
+ const old=c.parts[i],from=get(old.partId,old.version),to=get(old.partId,targetVersion);
+ if(to.view!=="BOTH"&&to.view!==c.view)throw Error("変更先の視点が構成と一致しません");
+ const notes=[],params=Object.fromEntries(to.params.map(a=>{
+  const prev=from.params.find(p=>p.id===a.id);
+  if(prev&&(prev.type||"float")===(a.type||"float")){
+   try{return [a.id,parameterValue(a,old.params[a.id])]}catch(e){notes.push(a.name+": 範囲外のため初期値 "+String(a.default))}
+  }else notes.push(a.name+": "+(prev?"型変更":"新規")+" → 初期値 "+String(a.default));
+  return [a.id,a.default];
+ }));
+ for(const p of from.params)if(!to.params.some(a=>a.id===p.id))notes.push(p.name+": 削除されます");
+ c.parts[i]={...old,version:to.version,params};return {composition:validate(c),from,to,notes};
+}
+function findUsage(id,version,entries){
+ get(id,version);if(!Array.isArray(entries))throw Error("構成一覧が不正");
+ const matches=[];
+ for(const e of entries){if(!e||!Array.isArray(e.composition?.parts))continue;for(const [index,p] of e.composition.parts.entries()){if(p?.partId===id&&p.version===version)matches.push({entryId:e.id,name:String(e.composition.name||"無名"),scope:e.scope,uid:p.uid,index,start:p.start,end:p.end,enabled:p.enabled})}}
+ return matches;
+}
+
+return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,versions,origin,migrateVersion,findUsage,additionalBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
 });
