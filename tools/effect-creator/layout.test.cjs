@@ -15,3 +15,7 @@ assert.match(html, /<option value="shader" selected>GLSL<\/option>/);
 const layoutSource=fs.readFileSync(path.join(__dirname,'effect-layout.js'),'utf8');
 assert.match(layoutSource,/header\.addEventListener\('change',\(\)=>setEngine\(header\.value\)\);setEngine\('shader'\);/);
 assert.match(layoutSource,/if\(notify\)document\.dispatchEvent\(new CustomEvent\('effect-engine-change',\{detail:engine\}\)\)/);
+
+for(const tab of ['shader-magic','shader-layers','shader-output','shader-save'])assert.ok(html.includes('data-settings-tab="'+tab+'"'));
+for(const id of ['shaderMagicPrev','shaderMagicNext','shaderCSOriginal','shaderCSData','canvasCSOriginal','canvasCSData','externalLoop','externalZoom','externalBackground'])assert.ok(ids.includes(id),id);
+const ref=require('./cs-magic-reference.js');assert.equal(Object.keys(ref.rows).length,24);assert.equal(ref.rows['thunder-many'].original,'');assert.equal(ref.rows['thunder-blue-jet'].data,'');

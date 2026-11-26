@@ -2,7 +2,7 @@
 const status=s=>$('status').textContent=s;
 const magic=LightningEffects,magicSelect=$('magicPreset');let modified=false;
 for(const r of magic.records)magicSelect.add(new Option('Lv'+r.lv+' '+r.name,r.id));
-function showMagic(){const r=magic.byId[magicSelect.value];if(!r)return;$('magicMeta').textContent=(r.ruby?r.ruby+' / ':'')+r.placement+' / '+r.duration+'秒 / '+(r.loop?'持続ループ向け':'単発')+' / CS '+r.row+'行';$('magicNotes').textContent=r.note;$('magicSource').textContent=r.description;}
+function showMagic(){const r=magic.byId[magicSelect.value];if(!r)return;$('magicMeta').textContent=(r.ruby?r.ruby+' / ':'')+r.placement+' / '+r.duration+'秒 / '+(r.loop?'持続ループ向け':'単発')+' / CS '+r.row+'行';$('magicNotes').textContent=r.note;CSMagicReference.render(r.id,'canvasCS');}
 function renderNotes(){const r=magic.byId[p.presetId];$('currentNoteTitle').textContent=r?r.name+'：制作備考':'制作備考';$('projectNotes').value=p.notes||'';if(r){magicSelect.value=r.id;showMagic()}}
 magicSelect.onchange=showMagic;function stepMagic(delta){magicSelect.selectedIndex=(magicSelect.selectedIndex+delta+magicSelect.options.length)%magicSelect.options.length;showMagic()}$('magicPrev').onclick=()=>stepMagic(-1);$('magicNext').onclick=()=>stepMagic(1);
 $('projectNotes').oninput=()=>{p.notes=$('projectNotes').value.slice(0,4000);modified=true};

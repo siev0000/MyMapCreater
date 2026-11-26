@@ -57,3 +57,5 @@ label{display:block;font-size:12px;color:#c2d0dd}label>input,label>select,label>
 #extDiagnostic{width:100%;font-size:11px;font-family:monospace;white-space:pre-wrap;margin:5px 0}#extCopyDiagnostic{font-size:12px}
 
 #shaderStudio{padding:7px;margin:8px 0}#shaderStudio summary{margin:6px 0}#shaderStudio select{max-width:100%}#shaderLayerList{display:grid;gap:3px;max-height:150px;overflow:auto}#shaderLayerList button{text-align:left}#shaderLayerList button.active{background:#29445a;border-color:#8ac9ff}#shaderCode{width:100%;font:12px monospace;resize:vertical;white-space:pre;overflow:auto}#shaderMagicNote{white-space:pre-wrap}#shaderStudio .fields{margin:6px 0}#shaderStudio input[type=checkbox]{width:auto}
+
+.settings-tabs[data-engine-mode=shader]{grid-template-columns:repeat(4,minmax(0,1fr))}#shaderStudio{padding:0;margin:0}#shaderStudio [data-ext-part=magic] .magic-note{margin:6px 0}#settings-external a{color:#a9d9ff}#settings-external [data-ext-part=output] .fields{margin-top:6px}#externalTime{white-space:nowrap;font-variant-numeric:tabular-nums}#externalControls .transport{gap:4px}
