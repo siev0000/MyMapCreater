@@ -9831,7 +9831,7 @@ const fireDetails={
     "duration": 3.5,
     "loop": false,
     "note": "中心のエネルギーが圧縮され、極めて強い閃光から膨張する火球と多重圧力波へ展開。炎の余波が広がって戻る。その後にきのこ雲が上へ立ち上る。 横から見た地表の衝撃波と炎の余波は横長の楕円として拡大・収縮する。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nfloat f=phase(q,.35,.68),g=phase(q,.59,.88);\nvec2 c=vec2(0.,-.14),ground=vec2(0.,-.34);\nvec4 v=fc(p,c,q,.35,.65);\nvec4 w=fx(p,c,f,.86,t,54.);v=over(v,w);\nv=over(v,lfColor(ball(p,c,.28)*fe(f,0.,.32)*2.));\nfor(int i=0;i<2;i++){float k=float(i);v=over(v,fp(p,ground,phase(q,.35+k*.08,.67+k*.07),.88,.34));}\nfloat h=sin(3.14159*f);\nvec2 flat=ground+(p-ground)/vec2(1.,.34);\nvec4 ringV=fr(flat,ground,.05+.70*h,.10,t,5.);ringV.a*=h;v=over(v,ringV);\nvec4 stem=fs(p,vec2(0.,-.45+.40*g),vec2(.17,.14+.39*g),t,9.),cap=fs(p,vec2(0.,-.30+.89*g),vec2(.20+.45*g,.15+.20*g),t,12.);\nstem.a*=smoothstep(.56,.69,q)*(1.-smoothstep(.87,1.,q));cap.a*=smoothstep(.60,.71,q)*(1.-smoothstep(.87,1.,q));return over(over(v,stem),cap);\n"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nfloat f=phase(q,.35,.68),g=phase(q,.59,.88);\nvec2 c=vec2(0.,-.14),ground=vec2(0.,-.34);\nvec4 v=fc(p,c,q,.35,.65);\nvec4 w=fx(p,c,f,.86,t,54.);v=over(v,w);\nv=over(v,lfColor(ball(p,c,.28)*fe(f,0.,.32)*2.));\nfor(int i=0;i<2;i++){float k=float(i);v=over(v,fp(p,ground,phase(q,.35+k*.08,.67+k*.07),.88,.34));}\nfloat h=sin(3.14159*f);\nvec2 flatPos=ground+(p-ground)/vec2(1.,.34);\nvec4 ringV=fr(flatPos,ground,.05+.70*h,.10,t,5.);ringV.a*=h;v=over(v,ringV);\nvec4 stem=fs(p,vec2(0.,-.45+.40*g),vec2(.17,.14+.39*g),t,9.),cap=fs(p,vec2(0.,-.30+.89*g),vec2(.20+.45*g,.15+.20*g),t,12.);\nstem.a*=smoothstep(.56,.69,q)*(1.-smoothstep(.87,1.,q));cap.a*=smoothstep(.60,.71,q)*(1.-smoothstep(.87,1.,q));return over(over(v,stem),cap);\n"
   },
   "262": {
     "duration": 4,
