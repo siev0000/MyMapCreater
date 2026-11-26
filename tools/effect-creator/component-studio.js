@@ -13,7 +13,7 @@ function updatePosition(){const d=applied?.composition.duration??composition.dur
 function outputInfo(){try{const p={...config(),duration:composition.duration};if(!Number.isFinite(p.duration)||p.duration<.05||p.duration>30)throw Error("秒数が不正");const a=EffectEngine.plan(p);$("outputInfo").textContent=a.frames+" コマ / "+a.cols+"×"+a.rows+" / "+a.width+"×"+a.height+" px（透過）"}catch(e){$("outputInfo").textContent=e.message}}
 function refresh(){if(busy)return;cancelTimeDrag();dirty=true;buttons();outputInfo();let next=null;
  try{const c=C.compile(composition),settings=config(),p=renderConfig(c.composition,c.source,settings);next=ShaderStudio.createRenderer(p,c.source);const t=Math.min(position,c.composition.duration);draw(next,$("preview"),t);const old=renderer;renderer=next;next=null;applied={...c,settings,p};position=t;dirty=false;old?.dispose();status("反映済み / "+c.composition.parts.length+" 部品 / GLSL "+c.source.length+" 文字"+(c.composition.loop?" / ループの継ぎ目は要確認":""));updatePosition()}catch(e){next?.dispose();status("未反映（前回の正常なプレビューを保持）\n"+e.message,true)}finally{buttons()}}
-function mark(){cancelTimeDrag();closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
+function mark(){invalidateGroup();updateGroupBindings();cancelTimeDrag();closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
 function sync(){for(const k of ["name","duration","view","seed"])$(k).value=composition[k];$("loop").checked=composition.loop;$("repeat").checked=composition.loop}
 function option(select,value,label){const o=document.createElement("option");o.value=value;o.textContent=label;select.append(o)}
 
@@ -36,8 +36,8 @@ function parseRegistry(raw){if(!raw||raw.format!=="glsl-part-registry"||raw.vers
 try{registrySnapshot=localStorage.getItem(registryKey);if(registrySnapshot)C.installDefinitions(parseRegistry(JSON.parse(registrySnapshot)))}catch(e){registryLoadError="保存部品の読込失敗: "+e.message}
 function syncRegistry(){
  const cat=$("category"),previous=cat.value;cat.replaceChildren();option(cat,"","すべて");for(const name of [...new Set(C.definitions().map(d=>d.category))])option(cat,name,name);if(C.definitions().some(d=>d.category===previous))cat.value=previous;
- const base=$("authorBase"),choice=base.value;base.replaceChildren();option(base,"","新規（基本発光球）");for(const d of C.definitions())option(base,d.id+"@"+d.version,d.name+" v"+d.version+" ("+d.id+")");if(C.definitions().some(d=>d.id+"@"+d.version===choice))base.value=choice;
- showLibrary();updateUsageParts();
+ const base=$("authorBase"),choice=base.value;base.replaceChildren();option(base,"","新規（基本発光球）");for(const d of C.definitions().filter(d=>!C.isComposite(d)))option(base,d.id+"@"+d.version,d.name+" v"+d.version+" ("+d.id+")");if(C.definitions().some(d=>d.id+"@"+d.version===choice))base.value=choice;
+ showLibrary();updateUsageParts();syncGroupList();
 }
 function authorBase(){const v=$("authorBase").value;if(!v)return null;const [id,version]=v.split("@");return C.get(id,Number(version))}
 function uniqueId(base){let id=base.slice(0,50),n=1;while(C.nextVersion(id)!==1)id=base.slice(0,50)+"-"+(++n);return id}
@@ -103,7 +103,7 @@ function registerAuthor(){
 }
 function verifyAdditions(raw){
  const added=C.prepareDefinitions(raw);
- for(const d of added){let r=null;try{r=trialRenderer(d)}finally{r?.dispose()}}
+ C.withDefinitions(added,()=>{for(const d of added){let r=null;try{r=trialRenderer(d)}finally{r?.dispose()}}});
  return added;
 }
 $("authorNew").onclick=()=>startAuthor(false);$("authorVersion").onclick=()=>startAuthor(true);
@@ -112,8 +112,8 @@ $("authorTest").onclick=testAuthor;$("authorRegister").onclick=registerAuthor;
 $("authorExport").onclick=()=>{if(!busy)EffectExport.download(new Blob([JSON.stringify(registryData(),null,2)],{type:"application/json"}),"glsl-part-registry.json")};
 $("authorImport").onchange=async()=>{try{if(busy)return;const file=$("authorImport").files[0];if(!file)return;const raw=parseRegistry(JSON.parse(await file.text())),added=verifyAdditions(raw),count=persistAdditions(added);authorStatus(count+"版を追加しました（既存版は変更なし）")}catch(e){authorStatus("読込失敗: "+e.message,true)}finally{$("authorImport").value=""}};
 
-function showLibrary(){const box=$("library"),cat=$("category").value,query=$("search").value.trim().toLowerCase();box.replaceChildren();for(const d of C.definitions()){if(cat&&cat!==d.category||query&&!(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query))continue;const row=document.createElement("div");row.className="part";const preview=document.createElement("button");preview.textContent=d.name+" v"+d.version;preview.onclick=()=>mini(d);const add=document.createElement("button");add.textContent="追加";add.disabled=d.view!=="BOTH"&&d.view!==composition.view;add.title=add.disabled?"視点 "+d.view+" に変更してください":"構成へ追加";add.onclick=()=>addPart(d);const hint=document.createElement("small");hint.textContent=d.view+" / "+d.duration+"秒 / "+d.description;row.append(preview,add,hint);box.append(row)}}
-function mini(d){if(busy)return;let next=null;try{const c=C.create(d.duration,d.view==="BOTH"?composition.view:d.view);c.name=d.name;c.parts=[C.instance(d.id,"preview",0,d.duration,d.version)];if(d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}if(d.id==="shockwave")c.parts[0].params.squash=c.view==="TOP"?1:.34;const x=C.compile(c);const p=renderConfig(x.composition,x.source,{width:128,height:128,fps:12,columns:0,color:$("color").value,core:$("core").value});next=ShaderStudio.createRenderer(p,x.source);draw(next,$("mini"),0);miniRenderer?.dispose();miniRenderer=next;next=null;miniStart=performance.now();miniDuration=d.duration;$("miniTitle").textContent=d.name+" v"+d.version;$("miniStatus").textContent="単体再生中"}catch(e){next?.dispose();$("miniStatus").textContent=e.message}}
+function showLibrary(){const box=$("library"),cat=$("category").value,query=$("search").value.trim().toLowerCase();box.replaceChildren();for(const d of C.definitions()){if(cat&&cat!==d.category||query&&!(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query))continue;const row=document.createElement("div");row.className="part";const preview=document.createElement("button");preview.textContent=d.name+" v"+d.version;preview.onclick=()=>mini(d);const add=document.createElement("button");add.textContent="追加";add.disabled=d.view!=="BOTH"&&d.view!==composition.view;add.title=add.disabled?"視点 "+d.view+" に変更してください":"構成へ追加";add.onclick=()=>addPart(d);const hint=document.createElement("small");hint.textContent=(C.isComposite(d)?"複合 "+d.composition.parts.length+"部品 / ":"")+d.view+" / "+d.duration+"秒 / "+d.description;row.append(preview,add,hint);box.append(row)}}
+function mini(d){if(busy)return;let next=null;try{const c=C.create(d.duration,d.view==="BOTH"?composition.view:d.view);c.name=d.name;c.parts=[C.instance(d.id,"preview",0,d.duration,d.version)];if(C.isComposite(d))c.loop=d.composition.loop;if(!C.isComposite(d)&&d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}if(d.id==="shockwave")c.parts[0].params.squash=c.view==="TOP"?1:.34;const x=C.compile(c);const p=renderConfig(x.composition,x.source,{width:128,height:128,fps:12,columns:0,color:$("color").value,core:$("core").value});next=ShaderStudio.createRenderer(p,x.source);draw(next,$("mini"),0);miniRenderer?.dispose();miniRenderer=next;next=null;miniStart=performance.now();miniDuration=d.duration;$("miniTitle").textContent=d.name+" v"+d.version;$("miniStatus").textContent="単体再生中"}catch(e){next?.dispose();$("miniStatus").textContent=e.message}}
 function addPart(d){if(busy||composition.parts.length>=C.MAX_PARTS){status("部品数の上限です",true);return}const start=0,end=Math.min(composition.duration,d.duration);const p=C.instance(d.id,newId(),start,end,d.version);if(d.category==="飛翔"){p.x=-.65;p.endX=.65}if(d.id==="shockwave")p.params.squash=composition.view==="TOP"?1:.34;composition.parts.push(p);selected=p.uid;drawEditor();mark()}
 function current(){return composition.parts.find(p=>p.uid===selected)}
 function selectPart(id){selected=id;drawEditor()}
@@ -196,7 +196,7 @@ const numericFields=[["start","開始秒",0,30,.01],["end","終了秒",0,30,.01]
 function field(box,title,input){const l=document.createElement("label");l.textContent=title;l.append(input);box.append(l);return input}
 function numberField(box,title,value,min,max,step,cb){const i=document.createElement("input");i.type="number";i.min=min;i.max=max;i.step=step;i.value=value;field(box,title,i);i.onchange=()=>{if(busy)return;const n=Number(i.value);if(i.value===""||!Number.isFinite(n)||n<min||n>max){i.value=value;status(title+" の入力範囲が不正",true);return}cb(n)};return i}
 function inspector(){const p=current(),box=$("partFields");$("inspector").hidden=!p;$("empty").hidden=!!p;box.replaceChildren();if(!p)return;const d=C.get(p.partId,p.version);$("partName").textContent=d.name+" v"+p.version;for(const [k,label,min,max,step] of numericFields)numberField(box,label,p[k],min,k==="start"||k==="end"?composition.duration:max,step,n=>{if(k==="start"||k==="end"){try{const c=C.changeTiming(composition,p.uid,k==="start"?n:p.start,k==="end"?n:p.end);composition=c;playing=false;drawEditor();mark();timeStatus("時間を反映しました")}catch(e){inspector();status(e.message,true)}return}p[k]=n;timeline();mark()});const tint=document.createElement("input");tint.type="color";tint.value=p.tint;field(box,"色補正",tint);tint.onchange=()=>{p.tint=tint.value;mark()};const mode=document.createElement("select");option(mode,"local","部品内");option(mode,"scene","全体と同期");mode.value=p.timeMode;field(box,"模様の時間",mode);mode.onchange=()=>{p.timeMode=mode.value;mark()};const show=document.createElement("input");show.type="checkbox";show.checked=p.enabled;field(box,"表示",show);show.onchange=()=>{p.enabled=show.checked;timeline();mark()};for(const a of d.params)parameterField(box,a,p)}
-function drawEditor(){timeline();inspector();showLibrary();syncVersion();const p=current(),i=composition.parts.indexOf(p);$("duplicate").disabled=!p||composition.parts.length>=C.MAX_PARTS;$("delete").disabled=!p;$("up").disabled=i<=0;$("down").disabled=i<0||i>=composition.parts.length-1;outputInfo()}
+function drawEditor(){invalidateGroup();updateGroupBindings();timeline();inspector();showLibrary();syncVersion();const p=current(),i=composition.parts.indexOf(p);$("duplicate").disabled=!p||composition.parts.length>=C.MAX_PARTS;$("delete").disabled=!p;$("up").disabled=i<=0;$("down").disabled=i<0||i>=composition.parts.length-1;outputInfo()}
 function move(delta){const i=composition.parts.indexOf(current()),j=i+delta;if(i<0||j<0||j>=composition.parts.length)return;[composition.parts[i],composition.parts[j]]=[composition.parts[j],composition.parts[i]];drawEditor();mark()}
 $("up").onclick=()=>move(-1);$("down").onclick=()=>move(1);
 $("duplicate").onclick=()=>{const p=current();if(!p||composition.parts.length>=C.MAX_PARTS)return;const copy=JSON.parse(JSON.stringify(p));copy.uid=newId();composition.parts.splice(composition.parts.indexOf(p)+1,0,copy);selected=copy.uid;drawEditor();mark()};
@@ -245,7 +245,7 @@ function usageEntries(){const entries=[{id:"current",scope:"編集中",compositi
 }
 function updateUsageVersions(){const el=$("usageVersion"),prev=el.value;el.replaceChildren();for(const d of C.versions($("usagePart").value))option(el,String(d.version),"v"+d.version+" / "+(C.origin(d.id,d.version)==="builtin"?"組み込み":"ローカル"));if([...C.versions($("usagePart").value)].some(d=>String(d.version)===prev))el.value=prev;else{const ds=C.versions($("usagePart").value);if(ds.length)el.value=String(ds[ds.length-1].version)}showUsage()}
 function updateUsageParts(){const el=$("usagePart"),prev=el.value;el.replaceChildren();for(const id of [...new Set(C.definitions().map(d=>d.id))]){const ds=C.versions(id),d=ds[ds.length-1];option(el,id,d.name+" ("+id+")")}if(C.definitions().some(d=>d.id===prev))el.value=prev;else el.value=C.definitions()[0]?.id||"";updateUsageVersions()}
-function showUsage(){const box=$("usageResults");box.replaceChildren();try{const {entries,errors}=usageEntries(),id=$("usagePart").value,version=Number($("usageVersion").value),hits=C.findUsage(id,version,entries);for(const x of hits){const item=document.createElement("div");item.className="usage-item";const label=document.createElement("div");label.textContent=x.scope+" / "+x.name+" / #"+(x.index+1)+" / "+x.start+"–"+x.end+"秒"+(x.enabled?"":"（非表示）");item.append(label);if(x.entryId==="current"){const b=document.createElement("button");b.textContent="選択";b.onclick=()=>selectPart(x.uid);item.append(b)}else{const b=document.createElement("button");b.textContent="構成を開く";b.onclick=()=>{try{if(x.entryId==="slot")$("localLoad").onclick();else{const e=readArchive().entries.find(e=>e.id===x.entryId);if(!e)throw Error("保存構成がありません");readSnapshot(e.snapshot)}}catch(e){status(e.message,true)}};item.append(b)}box.append(item)}$("usageStatus").textContent=hits.length+"箇所 / "+entries.length+"構成を確認"+(errors.length?"（一部読込失敗: "+errors.join(" / ")+"）":"")}catch(e){$("usageStatus").textContent=e.message}}
+function showUsage(){const box=$("usageResults");box.replaceChildren();try{const {entries,errors}=usageEntries(),id=$("usagePart").value,version=Number($("usageVersion").value),hits=C.findUsage(id,version,entries);for(const x of hits){const item=document.createElement("div");item.className="usage-item";const label=document.createElement("div");label.textContent=x.scope+" / "+x.name+" / #"+(x.index+1)+" / "+Number(x.start).toFixed(3)+"–"+Number(x.end).toFixed(3)+"秒"+(x.enabled?"":"（非表示）")+(x.path?" / "+x.path:"");item.append(label);if(x.entryId==="current"){const b=document.createElement("button");b.textContent="選択";b.onclick=()=>selectPart(x.uid);item.append(b)}else{const b=document.createElement("button");b.textContent="構成を開く";b.onclick=()=>{try{if(x.entryId==="slot")$("localLoad").onclick();else{const e=readArchive().entries.find(e=>e.id===x.entryId);if(!e)throw Error("保存構成がありません");readSnapshot(e.snapshot)}}catch(e){status(e.message,true)}};item.append(b)}box.append(item)}$("usageStatus").textContent=hits.length+"箇所 / "+entries.length+"構成を確認"+(errors.length?"（一部読込失敗: "+errors.join(" / ")+"）":"")}catch(e){$("usageStatus").textContent=e.message}}
 function closeComparison(message=""){
  if(comparison){comparison.before?.dispose();comparison.after?.dispose();comparison=null}
  $("versionComparison").hidden=true;$("versionApply").disabled=true;$("versionStatus").textContent=message;
@@ -280,5 +280,43 @@ $("archiveRefresh").onclick=()=>{refreshArchive();showUsage()};
 $("usagePart").onchange=updateUsageVersions;$("usageVersion").onchange=showUsage;$("usageRefresh").onclick=showUsage;
 $("versionTarget").onchange=()=>closeComparison("変更先を選び直しました。");$("versionCompare").onclick=compareVersions;$("versionClose").onclick=()=>closeComparison();$("versionSeek").oninput=()=>compareAt(Number($("versionSeek").value)/1000);$("versionApply").onclick=applyVersion;
 
-refreshArchive();syncRegistry();startAuthor(false);if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();refresh();if(renderer){playing=true;last=performance.now();buttons()}requestAnimationFrame(tick);
+
+let groupBindings=new Map(),groupTested=null,groupVersionId=null;
+function groupStatus(s){$("groupStatus").textContent=s}
+function invalidateGroup(){groupTested=null;$("groupRegister").disabled=true}
+function syncGroupList(){const el=$("groupBase"),prev=el.value;el.replaceChildren();option(el,"","選択してください");for(const d of C.definitions().filter(C.isComposite))option(el,d.id+"@"+d.version,d.name+" v"+d.version+" ("+d.id+")");if(C.definitions().some(d=>C.isComposite(d)&&d.id+"@"+d.version===prev))el.value=prev}
+function updateGroupBindings(){
+ const box=$("groupBindings"),valid=new Set();box.replaceChildren();
+ for(const [i,p] of composition.parts.entries()){
+  const d=C.get(p.partId,p.version);
+  for(const param of d.params){
+   const key=JSON.stringify([p.uid,param.id]);valid.add(key);
+   const label=document.createElement("label");label.className="usage-item check";const input=document.createElement("input");input.type="checkbox";input.checked=groupBindings.has(key);
+   const text=document.createElement("span");text.textContent="#"+(i+1)+" "+d.name+" / "+param.name+" = "+String(p.params[param.id]);label.append(input,text);box.append(label);
+   input.onchange=()=>{if(input.checked){if(groupBindings.size>=16){input.checked=false;groupStatus("公開項目は最大16件");return}let n=1;while([...groupBindings.values()].some(b=>b.id==="exposed"+n))n++;groupBindings.set(key,{id:"exposed"+n,name:(d.name+" / "+param.name).slice(0,100),uid:p.uid,paramId:param.id})}else groupBindings.delete(key);invalidateGroup();$("groupInfo").textContent=groupBindings.size+" / 16 公開項目"};
+  }
+ }
+ for(const key of groupBindings.keys())if(!valid.has(key))groupBindings.delete(key);
+ $("groupInfo").textContent=composition.parts.length+" 子部品 / "+composition.duration+"秒 / "+groupBindings.size+" / 16 公開項目";
+}
+function newGroup(){
+ if(busy)return;groupVersionId=null;groupBindings.clear();invalidateGroup();$("groupId").readOnly=false;$("groupId").value=uniqueId("composite");$("groupVersion").value=1;$("groupName").value=(composition.name+"（複合）").slice(0,100);$("groupCategory").value="複合";$("groupDescription").value="";updateGroupBindings();groupStatus("現在の構成から新規部品を制作");
+}
+function openGroup(){
+ if(busy)return;try{const v=$("groupBase").value;if(!v)throw Error("複合部品を選択してください");const [id,ver]=v.split("@"),d=C.get(id,Number(ver));if(!C.isComposite(d))throw Error("複合部品ではありません");
+ if(!confirm("現在の編集を複合部品の子構成で置き換えますか？登録済みの旧版は変更しません。"))return;
+ replace(d.composition,null,true);groupVersionId=d.id;$("groupId").readOnly=true;$("groupId").value=d.id;$("groupVersion").value=C.nextVersion(d.id);$("groupName").value=d.name;$("groupCategory").value=d.category;$("groupDescription").value=d.description;groupBindings=new Map(d.bindings.map(b=>[JSON.stringify([b.uid,b.paramId]),{...b}]));invalidateGroup();updateGroupBindings();groupStatus("子構成を開きました。変更を新版として登録できます");
+ }catch(e){groupStatus(e.message)}
+}
+function readGroup(){
+ const id=$("groupId").value.trim(),version=Number($("groupVersion").value);
+ if(version!==C.nextVersion(id)||groupVersionId!==null&&id!==groupVersionId||groupVersionId===null&&version!==1)throw Error("新規IDまたは新版を指定してください");
+ return C.makeComposite(composition,{id,version,name:$("groupName").value.trim(),category:$("groupCategory").value.trim(),description:$("groupDescription").value},[...groupBindings.values()]);
+}
+$("groupNew").onclick=newGroup;$("groupOpen").onclick=openGroup;
+for(const id of ["groupId","groupName","groupCategory","groupDescription"])$(id).addEventListener("input",invalidateGroup);
+$("groupTest").onclick=()=>{if(busy)return;invalidateGroup();let next=null;try{const d=readGroup();next=trialRenderer(d);draw(next,$("mini"),d.duration*.5);const old=miniRenderer;miniRenderer=next;next=null;old?.dispose();miniStart=performance.now();miniDuration=d.duration;$("miniTitle").textContent=d.name+"（複合部品試写）";$("miniStatus").textContent="試写成功";groupTested=JSON.stringify(d);$("groupRegister").disabled=false;groupStatus("コンパイル・6時点の試写成功。登録できます")}catch(e){next?.dispose();groupStatus("試写失敗: "+e.message)}};
+$("groupRegister").onclick=()=>{if(busy||!groupTested)return;try{const d=readGroup();if(JSON.stringify(d)!==groupTested)throw Error("構成が変更されています。再試写してください");persistAdditions([d]);invalidateGroup();$("groupBase").value=d.id+"@"+d.version;groupStatus(d.id+"@"+d.version+" を登録しました。元の構成は未変更")}catch(e){invalidateGroup();groupStatus(e.message)}};
+
+refreshArchive();syncRegistry();startAuthor(false);newGroup();if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();refresh();if(renderer){playing=true;last=performance.now();buttons()}requestAnimationFrame(tick);
 })();
