@@ -9675,7 +9675,7 @@ const fireDetails={
     "duration": 0.72,
     "loop": false,
     "note": "対象の一点に小さな光が生じて小さな炎が広がる",
-    "body": "float g=phase(q,.03,.36);vec2 a=vec2(0.,-.24),b=a+vec2(.025,.64*g);vec4 v=lfPlume(p,a,b,.22*g,t,13.);v.a*=smoothstep(.03,.13,q)*(1.-smoothstep(.66,1.,q));return over(v,lfColor(ball(p,a,.045)*gate(q,0.,.40)*.78));"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(0.,-.20);\nfloat pre=smoothstep(.012,.070,q)*(1.-smoothstep(.19,.36,q));\nfloat z=ball(p,a,.038+.012*smoothstep(.02,.16,q))*pre;\nvec4 point=vec4(mix(vec3(1.,.64,.12),vec3(1.,.97,.81),smoothstep(.15,.85,z)),sat(z*1.22));\nif(q<=.1666667)return point;\nfloat g=smoothstep(.1666667,.58,q),e=smoothstep(.1666667,.27,q)*(1.-smoothstep(.625,1.,q));\nvec4 v=lfPlume(p,a,a+vec2(.018*sin(t*TAU),.39*g),.15*g,t,13.);\nfor(int i=0;i<2;i++){float k=float(i),side=k*2.-1.;float f=smoothstep(.25,.62,q);vec2 root=a+vec2(side*.065*f,0.);vec4 w=lfPlume(p,root,root+vec2(side*.12*f,.23*f),.115*f,t,17.+k);w.a*=smoothstep(.25,.43,q);v=over(v,w);}\nv.a*=e;return over(point,v);\n"
   },
   "236": {
     "duration": 1.25,
