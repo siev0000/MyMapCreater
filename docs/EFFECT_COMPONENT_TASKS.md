@@ -19,7 +19,7 @@
 | ID | タスク | 依存 | 状態 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | EFX-00 | 部品合成と独立編集画面の初版 | なし | 実装済み（モデル・模擬UI検証済み、実描画は01） | 14部品、固定版、構成保存、単体/全体プレビュー、数値タイムライン、1本のGLSLへ合成、出力接続、旧画面維持 |
-| EFX-01 | 初期14部品・比較試作の描画/出力検証 | 00 | 着手 | 実際の生成GLSLをWebGL1でコンパイル、複数時点で描画、開始終了・空白・端切れ・色・位置・投影・出力確認。2試作と12部品構成、エラー復帰、スマホ操作。失敗は修正・再試験 |
+| EFX-01 | 初期14部品・比較試作の描画/出力検証 | 00 | ソフトウェア描画検証済み・実機待ち | 実際の生成GLSLをWebGL1でコンパイル、複数時点で描画、開始終了・空白・端切れ・色・位置・投影・出力確認。2試作と12部品構成、エラー復帰、スマホ操作。失敗は修正・再試験 |
 | EFX-02 | GLSL部品の作成/編集/登録 | 01 | 未着手 | コード・名称・分類・視点・尺を入力し単体試作、コンパイル成功後に新規ID/新バージョン登録、保存・読込。旧版を保持し未登録・失敗コードを出力しない |
 | EFX-03 | 固有パラメータ管理 | 02 | 未着手 | 型・名前・初期値・範囲・刻み・単位を定義しUI生成、インスタンス別変更、値検証・再現性。爆炎等の膨張・乱流・煙・上昇・減衰を別調整可能にする |
 | EFX-04 | 版管理・使用箇所一覧 | 02,03 | 未着手 | 部品ID+版+依存の固定、保存構成から参照検索、新版差分プレビュー、明示切替、旧版保持、欠落版をエラー。ローカルとGitHub共有の境界を明示 |
@@ -39,6 +39,7 @@
 - [x] 既存の14部品の登録、生成処理、共通関数の呼出シグネチャを確認（静的確認）。
 - [x] 初版モデル試験・12部品合成・固定バージョン・不正入力・JSON往復・簡易DOM試験の既存結果を確認。
 - [x] 実ブラウザー向け一括診断画面を実装（14単体＋2比較試作＋12部品構成、各12時点、結果JSON保存・コピー）。診断コードのJavaScript構文確認済み。実WebGL実行結果は未確認。
+- [x] 完全な生成GLSLのOpenGL ESソフトウェアコンパイル・リンク・描画（17件×12時点）。端アルファ0、開始終了透明、ピーク再描画一致。
 - [ ] 実WebGL1コンパイルとリンクを全14部品、炎収束/煉獄試作、12部品で確認。
 - [ ] 複数時点の描画、透明、端アルファ、ピークの視認性を確認。自動診断で警告が出たものは目視し意図を判断。
 - [ ] 現在コマPNG、PNG/WebPシート、連番ZIP出力、CSS用フレーム情報の一致を実際のファイルで確認。
@@ -50,4 +51,12 @@
 ## 進捗記録
 
 - EFX-00：初版のモデル `effect-components.js`、UI `component-studio.html/js`、試験 `effect-components.test.cjs` が main に存在。詳細は仕様書の初版実装状況。
-- EFX-01：着手。診断画面 [component-diagnostics.html](../tools/effect-creator/component-diagnostics.html) と [component-diagnostics.js](../tools/effect-creator/component-diagnostics.js) を追加済み（`ab7b643b15a54129540a1f837bca38931020a26f`、`5f25b4c3024b41ba7023ba23e56c7446c3853e18`）。次は実ブラウザーで一括診断を実行し結果を回収、描画・出力・スマホを確認する。
+- EFX-01：着手。診断画面 [component-diagnostics.html](../tools/effect-creator/component-diagnostics.html) と [component-diagnostics.js](../tools/effect-creator/component-diagnostics.js) を追加済み（`ab7b643b15a54129540a1f837bca38931020a26f`、`5f25b4c3024b41ba7023ba23e56c7446c3853e18`）。ソフトウェア描画検証済み。次は実ブラウザーで一括診断を実行し結果を回収、出力・スマホを確認する。EFX-02の独立準備は並行可能。
+
+### EFX-01 ソフトウェア描画検証（2026-11-27）
+
+- main HEAD `190c87b6e33f847773492aef1e7ab51d7a3ede12` の `effect-components.js` blob `caf0a4347a9f5c5f30a0ca32d7cc1480d5c17051` を取得し、JavaScriptで実際に生成した17構成の完全なフラグメントシェーダーをローカルに転送。共通部分+個別部分の転送JSONは39632 UTF-8バイト、FNV-1a 6cce87b1 と照合一致。検証用の関数抜粋ではない。
+- EGL/OpenGL ES 3.2 Mesa 25.0.7-2 llvmpipe、GLSL ES 1.00形式、128×128、倍率88%、シード42、発光65%、12進行点（0/.025/.08/.16/.25/.38/.5/.63/.75/.88/.97/1）。現行レンダラーと同じuniform設定。頂点シェーダーも現行と同じ。ブラウザーのCanvas合成・出力処理はこの検証の範囲外。
+- 14単体・炎収束・煉獄・12部品合成の全17件コンパイル/リンク成功。204サンプル全て端アルファ0、全17件開始/終了アルファ0、途中に非透明画素あり、ピーク再描画RGBA完全一致。ピーク画像一覧を目視し、描画内容が現れることを確認した。ユーザーの演出承認・全時点の目視は未確認。
+- Chromium headlessのANGLE/SwiftShader指定2通りでWebGLコンテキスト取得失敗（null）。実WebGL1、実ブラウザーの画像出力、失敗復帰、スマホ操作、Pages配信は未確認。EFX-01は部分検証済み・実機待ち。次のEFX-02の独立した設計・モデル準備は先行可能だが、検証完了とは扱わない。
+- 生成GLSLのSHA256先頭12桁：fire-convergence 9f7caad01916、fire-burst 42743de2af5c、fire-ring 34b308eb225d、charge 6ffcf1febbea、compression 141f10652411、plasma-projectile e4a84d4eee38、plasma-burst c7e1720bf4bd、fire-projectile c5147c09e830、fire-wall 23bc29ba79aa、fire-plume 92a1d95201df、fire-vortex 6876335aedbf、ground-smoke d6718d55f44e、napalm-cloud 4c57e6b383ad、shockwave b5df53c80245、sample-convergence 9d29538cb8cd、sample-inferno 076d2938f5aa、12-parts 5be37e172998。
