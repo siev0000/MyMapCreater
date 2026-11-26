@@ -1,0 +1,28 @@
+const C=require("./effect-components.js");
+const assert=(v,msg)=>{if(!v)throw Error(msg)};
+function rejects(fn,msg){let failed=false;try{fn()}catch(e){failed=true}assert(failed,msg)}
+const d={id:"test-orb",version:1,name:"試作球",category:"発光",view:"BOTH",duration:1,description:"",body:"return light(ball(p,vec2(0.),.2)*sin(3.14159*q));",dependencies:["fire-common@1"],params:[]};
+const original=C.compile(C.sample("inferno")).source;
+const preview=C.previewDefinition(d);
+assert(preview.source.includes("part_test_orb_v1"),"draft compile");
+assert(C.definitions().length===14,"draft must not register");
+rejects(()=>C.get(d.id,1),"draft invisible");
+C.installDefinitions([d]);
+assert(C.nextVersion(d.id)===2,"next version");
+assert(Object.isFrozen(C.get(d.id,1)),"frozen");
+const c=C.create(1,"TOP");c.parts=[C.instance(d.id,"a",0,1,1)];const old=C.compile(c).source;
+const newer={...d,version:2,body:"return vec4(1.,0.,0.,.5);"};C.installDefinitions([newer]);
+assert(C.compile(c).source===old,"old version immutable");
+assert(C.compile(C.sample("inferno")).source===original,"legacy source stable");
+assert(C.referencedDefinitions(c).length===1&&C.referencedDefinitions(c)[0].version===1,"portable dependency");
+assert(C.installDefinitions([d]).length===0,"identical duplicate");
+rejects(()=>C.installDefinitions([{...d,body:"return vec4(0.);"}]),"same version conflict");
+rejects(()=>C.previewDefinition({...d,id:"bad",body:"return vec4(0.); } void main(){"}),"body escape");
+rejects(()=>C.previewDefinition({...d,id:"bad",body:"#define q 1.\nreturn vec4(0.);"}),"preprocessor");
+rejects(()=>C.previewDefinition({...d,id:"bad",dependencies:["unknown@1"]}),"missing dependency");
+const before=C.definitions().length;
+rejects(()=>C.withDefinitions([{...d,id:"temporary"}],()=>{throw Error("abort")}),"staged rollback");
+assert(C.definitions().length===before,"staging rollback");
+rejects(()=>C.installDefinitions([{...d,id:"valid"}, {...d,id:"bad",body:"x"}]),"atomic validation");
+assert(C.definitions().length===before,"atomic install");
+console.log("custom registry tests passed");
