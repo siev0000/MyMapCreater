@@ -64,6 +64,7 @@ function compositeDefinition(raw,meta){
   const child=c.parts.find(p=>p.uid===b?.uid),param=child&&get(child.partId,child.version).params.find(p=>p.id===b.paramId);
   if(!param)throw Error("公開パラメータの参照が不明");
   const key=JSON.stringify([child.uid,param.id]);if(targets.has(key))throw Error("公開パラメータの参照が重複");targets.add(key);
+  if(typeof b.id!=="string"||!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(b.id)||/^(local|center|pt|angle|a\d+)$/.test(b.id))throw Error("公開パラメータIDが不正");
   const def=normalizeParameter({...param,id:b.id,name:b.name,default:child.params[param.id]},names);
   bindings.push({id:def.id,name:def.name,uid:child.uid,paramId:param.id});params.push(def);
  }
@@ -153,7 +154,7 @@ function prepareDefinitions(raw){
 function withDefinitions(raw,fn){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);try{return fn(added)}finally{for(const d of added)lookup.delete(keyOf(d))}}
 function installDefinitions(raw){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);return added}
 function previewDefinition(raw,view="TOP",values={}){
- const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];c.parts[0].params={...c.parts[0].params,...values};if(d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
+ const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];c.parts[0].params={...c.parts[0].params,...values};if(isComposite(d))c.loop=d.composition.loop;if(!isComposite(d)&&d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
 }
 function referencedDefinitions(c){return compositeGraph(validate(c).parts).filter(d=>!builtins.has(keyOf(d)))}
 
@@ -178,7 +179,19 @@ function migrateVersion(input,uid,targetVersion){
 function findUsage(id,version,entries){
  get(id,version);if(!Array.isArray(entries))throw Error("構成一覧が不正");
  const matches=[];
- for(const e of entries){if(!e||!Array.isArray(e.composition?.parts))continue;for(const [index,p] of e.composition.parts.entries()){if(p?.partId===id&&p.version===version)matches.push({entryId:e.id,name:String(e.composition.name||"無名"),scope:e.scope,uid:p.uid,index,start:p.start,end:p.end,enabled:p.enabled})}}
+ for(const e of entries){
+  if(!e||!Array.isArray(e.composition?.parts))continue;
+  let visited=0;
+  function walk(p,index,root,path,start,end,enabled,depth){
+   if(!p||depth>MAX_DEPTH||++visited>MAX_EXPANDED)return;
+   if(p.partId===id&&p.version===version)matches.push({entryId:e.id,name:String(e.composition.name||"無名"),scope:e.scope,uid:root,index,start,end,enabled,...(path.length?{path:path.join(" / ")}:{})});
+   const d=lookup.get(p.partId+"@"+p.version);
+   if(!d||!isComposite(d))return;
+   const span=end-start;
+   for(const child of d.composition.parts){walk(child,index,root,[...path,d.name+" v"+d.version+" → "+child.partId+"@"+child.version],start+span*child.start/d.duration,start+span*child.end/d.duration,enabled&&child.enabled,depth+1)}
+  }
+  for(const [index,p] of e.composition.parts.entries())if(p)walk(p,index,p.uid,[],p.start,p.end,p.enabled,1);
+ }
  return matches;
 }
 
