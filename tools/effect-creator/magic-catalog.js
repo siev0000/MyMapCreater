@@ -9732,10 +9732,10 @@ const fireDetails={
     "body": "float f=fq(phase(q,0.,.53)),e=fe(q,0.,1.);vec4 v=vec4(0.);for(int i=0;i<6;i++){float k=float(i);vec2 c=vec2((k-2.5)*.19*f,-.54+(.31+.32*hash(vec2(k,11.)))*f);vec4 w=fs(p,c,vec2(.28,.30)*(.25+.75*f),t,k);w.a*=e;v=over(v,w);}vec4 a=fm(p,vec2(0.,-.45),.20*f,t,5.);a.a*=e*.18;return over(a,v);"
   },
   "245": {
-    "duration": 2.3,
+    "duration": 2.15,
     "loop": false,
-    "note": "左側に白青の電漿をチャージし、太いプラズマ砲を右へ放つ。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.69,0.),b=vec2(.83,0.);float g=phase(q,.02,.43),e=smoothstep(.02,.13,q)*(1.-smoothstep(.43,.53,q));float z=charge(p,a,g,.33)*e;vec4 v=vec4(.38,.68,1.,sat(z));float r=.035+.14*g;float d0=length(p-a)/r;v=over(v,vec4(mix(vec3(.36,.60,1.),vec3(1.),1.-smoothstep(.15,.9,d0)),(1.-smoothstep(.60,1.14,d0))*e));float f=(1.-pow(1.-phase(q,.43,.54),3.)),fire=smoothstep(.43,.47,q)*(1.-smoothstep(.69,.98,q));float x=p.x;float n=fb(vec2(x*13.-t*18.,p.y*21.));float mask=smoothstep(a.x-.04,a.x+.05,x)*(1.-smoothstep(mix(a.x,b.x,f)-.02,mix(a.x,b.x,f)+.05,x));float y=abs(p.y+.025*sin(x*22.-t*35.));float w=(.12+.045*n)*fire;float outer=(1.-smoothstep(w*.42,max(.004,w*1.5),y))*mask*fire;float core=(1.-smoothstep(w*.10,max(.003,w*.58),y))*mask*fire;return over(v,vec4(mix(vec3(.24,.53,1.),vec3(.98,1.,1.),core),sat(outer*.85+core*.35)));"
+    "note": "左側に白青の電漿をチャージし、電漿の砲弾を放つ。光線ではなく一つの白青色の高密度弾体が高速飛翔する。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-.67,0.),b=vec2(.72,0.);\nfloat ch=phase(q,.015,.48),f=phase(q,.49,.86),e=smoothstep(.015,.10,q)*(1.-smoothstep(.86,1.,q));\nvec2 c=mix(a,b,f);float radius=.025+.16*smoothstep(0.,1.,ch);\nvec4 v=vec4(0.);\nif(q<.50){float z=0.;for(int i=0;i<12;i++){float k=float(i),u=fract(t*2.4+hash(vec2(k,19.))),ang=k*2.39996+t*TAU*1.5;vec2 dir=dir2(ang),pos=a+dir*(radius+.28*(1.-u));z+=glw(seg(p,pos,pos+dir*.045),.007)*sin(3.14159*u);}v=vec4(.45,.75,1.,sat(z)*smoothstep(.02,.12,q)*(1.-smoothstep(.44,.50,q)));}\nvec2 pos=p-c;pos.x/=1.+.25*smoothstep(.49,.56,q);\nfloat n=lfFlow(pos*28.,vec2(5.,0.),t),dist=length(pos)/radius;\nfloat edge=1.-smoothstep(.72,1.12,dist+(n-.5)*.22);\nfloat core=1.-smoothstep(.12,.78,dist);\nfloat halo=(1.-smoothstep(.82,1.65,dist))*.35;\nvec3 col=mix(vec3(.22,.51,1.),vec3(.96,1.,1.),sat(core+.25*n));\nvec4 shell=vec4(col,sat(edge*.95+halo)*e);\nif(q>.49){float x=-(p.x-c.x),w=radius*.65;float tail=smoothstep(.025,.09,x)*(1.-smoothstep(.10,.29,x))*exp(-pow(p.y/max(.01,w*(1.-.65*sat(x/.29))),2.));v=over(v,vec4(.35,.67,1.,tail*.48*e*smoothstep(.49,.53,q)));}\nreturn over(v,shell);"
   },
   "246": {
     "duration": 2,
@@ -9774,16 +9774,16 @@ const fireDetails={
     "body": "if(q<=0.||q>=1.)return vec4(0.);float g=fq(phase(q,.13,.39)),f=phase(q,.32,.93);float x=mix(-.64,.64,f);float dx=p.x-x;float n=lfFlow(vec2(p.y*7.,dx*14.),vec2(0.,4.),t),n2=lfFlow(vec2(p.y*12.,dx*21.),vec2(0.,6.),t);float edge=dx-(n-.5)*.23;float thick=(.20+.18*n)*g;float across=1.-smoothstep(.72*g,.88*g,abs(p.y)+(n-.5)*.09);float z=across*(1.-smoothstep(thick*.20,max(.013,thick),abs(edge)))*(.45+.60*n+.28*n2);float e=smoothstep(.12,.24,q)*(1.-smoothstep(.78,1.,q));float heat=sat((1.-abs(edge)/max(.025,thick)*.68)*(.50+.70*n+.22*n2));vec4 v=vec4(firePalette(heat),sat(z)*e);float tail=(1.-smoothstep(.04,.33,abs(dx+.15)))*across*e*g*.48*n;return over(vec4(firePalette(.25+.45*n),tail),v);"
   },
   "252": {
-    "duration": 2.3,
-    "loop": false,
-    "note": "真上視点。炎が中心へ収束し一度だけ爆発する。炎環なし。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=phase(q,.02,.66),e=smoothstep(.02,.12,q)*(1.-smoothstep(.59,.69,q));vec4 v=vec4(0.);for(int i=0;i<5;i++){float k=float(i),a=k*TAU/5.+g*1.5;vec2 c=dir2(a)*(.72*(1.-g)+.07);vec4 w=lfPlume(p,c,c+dir2(a)*.19,.13,t,k);w.a*=e;v=over(v,w);}vec4 core=fm(p,vec2(0.),.05+.17*g,t,15.);core.a*=e;return over(over(v,core),denseBurst(p,vec2(0.),phase(q,.65,1.),.62,t,23.));"
-  },
-  "253": {
     "duration": 2.8,
     "loop": false,
-    "note": "真横視点。煙を引く一つの火炎が飛翔して着弾し、黒煙と激しい橙色の炎が不規則な塊となって大きく膨張し、煙が巻き上がる。 黒煙を半透明にする。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.68,-.12),b=vec2(.13,-.47);float f=phase(q,.13,.39);vec4 v=vec4(0.);if(q<.42){vec2 c=mix(a,b,f)+vec2(0.,.30*4.*f*(1.-f));for(int i=0;i<5;i++){float k=float(i),j=max(0.,f-k*.10);vec2 d=mix(a,b,j)+vec2(0.,1.2*j*(1.-j));vec4 w=fs(p,d,vec2(.11,.10),t,k);w.a*=gate(q,.10,.48)*(1.-k*.14)*.24;v=over(v,w);}vec4 w=fm(p,c,.115,t,3.);w.a*=gate(q,.11,.45);v=over(v,w);}float h=phase(q,.39,1.);return over(v,rollingBlast(p,b,h,t,1.));"
+    "note": "真上視点。旧演出と同じ5方向の高速旋回収束、中央の炎の蓄積、最後に一度爆発。途中と最後の炎環のみ廃止。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 v=vec4(0.);float build=smoothstep(.015,.16,q)*(1.-smoothstep(.74,.81,q)),g=phase(q,.03,.77),r=length(p),a=atan(p.y,p.x);float n=lfFlow(p*8.,vec2(0.,4.),t);float spin=5.*(a+3.8*r)+1.2*(n-.5)-t*TAU*7.;float arms=(1.-smoothstep(.32,.97,abs(sin(spin*.5))))*(.55+.5*n);float env=smoothstep(.055,.22,r)*(1.-smoothstep(.68,.86,r))*build;float band=.6+.4*sin(r*26.+t*TAU*9.+n*2.);float z=arms*env*(.65+.35*band);v=vec4(firePalette(sat(z+.10*n)),sat(z));vec4 core=fm(p,vec2(0.),.08+.30*g,t,15.);core.a*=build;v=over(v,core);return over(v,denseBurst(p,vec2(0.),phase(q,.75,1.),.79,t,23.));"
+  },
+  "253": {
+    "duration": 3.5,
+    "loop": false,
+    "note": "真横視点。煙を引く火炎弾が飛翔、着弾してその場で炎と熱を溜めた後に大きく爆発。黒煙は見える半透明とし、炎と煙を重ねて巻き上げる。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.68,-.12),b=vec2(.13,-.47);float f=phase(q,.13,.39);vec4 v=vec4(0.);if(q<.42){vec2 c=mix(a,b,f)+vec2(0.,.30*4.*f*(1.-f));for(int i=0;i<5;i++){float k=float(i),j=max(0.,f-k*.10);vec2 d=mix(a,b,j)+vec2(0.,1.2*j*(1.-j));vec4 w=fs(p,d,vec2(.11,.10),t,k);w.a*=gate(q,.10,.48)*(1.-k*.14)*.70;v=over(v,w);}vec4 w=fm(p,c,.115,t,3.);w.a*=gate(q,.11,.45);v=over(v,w);}float ch=phase(q,.39,.65),ce=smoothstep(.38,.43,q)*(1.-smoothstep(.65,.72,q));\nif(q>.38&&q<.72){for(int i=0;i<4;i++){float k=float(i),u=fract(t*1.5+hash(vec2(k,21.)));vec2 c=b+vec2((k-1.5)*.07,.09+.22*u);vec4 w=fs(p,c,vec2(.12,.15),t,k+18.);w.a*=ce*.62*sin(3.14159*u);v=over(v,w);}vec4 hot=fm(p,b,.085+.12*ch,t,19.);hot.a*=ce;v=over(v,hot);}\nfloat h=phase(q,.65,1.);return over(v,rollingBlast(p,b,h,t,.38));"
   },
   "254": {
     "duration": 3.2,
