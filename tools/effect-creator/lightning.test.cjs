@@ -1,0 +1,4 @@
+const assert=require('node:assert/strict');const E=require('./effect-engine.js'),T=require('./lightning-presets.js');
+assert.equal(T.records.length,24);assert.equal(new Set(T.records.map(r=>r.id)).size,24);assert.equal(Object.keys(E.basicTypes).length,18);
+for(const r of T.records){const p=E.normalize(T.project(r.id,{width:64,height:64,fps:12,columns:4}));assert.equal(p.presetId,r.id);assert.equal(p.notes,r.note);assert.equal(p.layers[0].type,r.type);assert.equal(p.width,64);assert.equal(p.height,64);assert.equal(p.fps,12);assert.equal(p.columns,4);assert.deepEqual(E.normalize(JSON.parse(JSON.stringify(p))),p);let strokes=0;const mock=new Proxy({globalAlpha:1,createRadialGradient:()=>({addColorStop(){}}),stroke:()=>strokes++,fillRect:()=>strokes++},{get(t,k){return k in t?t[k]:()=>{}},set(t,k,v){t[k]=v;return true}});for(let i=0;i<E.plan(p).frames;i++)E.draw(mock,p,i/p.fps);assert.ok(strokes>0,r.name)}
+console.log('24 thunder presets: passed');
