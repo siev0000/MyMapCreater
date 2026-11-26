@@ -9732,10 +9732,10 @@ const fireDetails={
     "body": "float f=fq(phase(q,0.,.53)),e=fe(q,0.,1.);vec4 v=vec4(0.);for(int i=0;i<6;i++){float k=float(i);vec2 c=vec2((k-2.5)*.19*f,-.54+(.31+.32*hash(vec2(k,11.)))*f);vec4 w=fs(p,c,vec2(.28,.30)*(.25+.75*f),t,k);w.a*=e;v=over(v,w);}vec4 a=fm(p,vec2(0.,-.45),.20*f,t,5.);a.a*=e*.18;return over(a,v);"
   },
   "245": {
-    "duration": 1.9,
+    "duration": 2.3,
     "loop": false,
-    "note": "白く発光するプラズマ球に光を溜め、球体を右方向へ高速発射する。白青の光の軌跡を残し、飛翔後に消える。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.68,0.),b=vec2(.72,0.);float g=smoothstep(.02,.48,q),f=fq(phase(q,.49,.80));vec2 c=mix(a,b,f);float r=(.035+.155*g)*(1.-.22*f);float e=smoothstep(.015,.10,q)*(1.-smoothstep(.77,1.,q));vec4 v=vec4(0.);if(q<.54){vec4 w=fc(p,a,q,.49,.31);w.rgb=mix(vec3(.53,.55,1.),vec3(1.),w.a);v=over(v,w);}for(int i=0;i<7;i++){float k=float(i),u=max(0.,f-(k+1.)*.075);vec2 d=mix(a,b,u);float z=1.-smoothstep(.02,.105,length(p-d));z*=smoothstep(.49,.57,q)*(1.-smoothstep(.78,1.,q))*(1.-k/8.)*.68;v=over(v,vec4(.68,.75,1.,z));}float n=lfFlow((p-c)*20.,vec2(4.,0.),t);float d=length(p-c)/max(.01,r);float a0=(1.-smoothstep(.65,1.20,d))*e;vec4 w=vec4(mix(vec3(.65,.72,1.),vec3(1.,1.,1.),smoothstep(.0,.65,1.-d+.16*n)),a0);return over(v,w);"
+    "note": "左側に白青の電漿をチャージし、太いプラズマ砲を右へ放つ。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.69,0.),b=vec2(.83,0.);float g=phase(q,.02,.43),e=smoothstep(.02,.13,q)*(1.-smoothstep(.43,.53,q));float z=charge(p,a,g,.33)*e;vec4 v=vec4(.38,.68,1.,sat(z));float r=.035+.14*g;float d0=length(p-a)/r;v=over(v,vec4(mix(vec3(.36,.60,1.),vec3(1.),1.-smoothstep(.15,.9,d0)),(1.-smoothstep(.60,1.14,d0))*e));float f=(1.-pow(1.-phase(q,.43,.54),3.)),fire=smoothstep(.43,.47,q)*(1.-smoothstep(.69,.98,q));float x=p.x;float n=fb(vec2(x*13.-t*18.,p.y*21.));float mask=smoothstep(a.x-.04,a.x+.05,x)*(1.-smoothstep(mix(a.x,b.x,f)-.02,mix(a.x,b.x,f)+.05,x));float y=abs(p.y+.025*sin(x*22.-t*35.));float w=(.12+.045*n)*fire;float outer=(1.-smoothstep(w*.42,max(.004,w*1.5),y))*mask*fire;float core=(1.-smoothstep(w*.10,max(.003,w*.58),y))*mask*fire;return over(v,vec4(mix(vec3(.24,.53,1.),vec3(.98,1.,1.),core),sat(outer*.85+core*.35)));"
   },
   "246": {
     "duration": 2,
@@ -9762,10 +9762,10 @@ const fireDetails={
     "body": "return eruptionRevised(p,t,q,0.);"
   },
   "250": {
-    "duration": 2.3,
+    "duration": 2.15,
     "loop": false,
-    "note": "左側に白青の電漿をチャージし、太いプラズマ砲を右へ放つ。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.69,0.),b=vec2(.83,0.);float g=phase(q,.02,.43),e=smoothstep(.02,.13,q)*(1.-smoothstep(.43,.53,q));float z=charge(p,a,g,.33)*e;vec4 v=vec4(.38,.68,1.,sat(z));float r=.035+.14*g;float d0=length(p-a)/r;v=over(v,vec4(mix(vec3(.36,.60,1.),vec3(1.),1.-smoothstep(.15,.9,d0)),(1.-smoothstep(.60,1.14,d0))*e));float f=quick(phase(q,.43,.54)),fire=smoothstep(.43,.47,q)*(1.-smoothstep(.69,.98,q));float x=p.x;float n=fb(vec2(x*13.-t*18.,p.y*21.));float mask=smoothstep(a.x-.04,a.x+.05,x)*(1.-smoothstep(mix(a.x,b.x,f)-.02,mix(a.x,b.x,f)+.05,x));float y=abs(p.y+.025*sin(x*22.-t*35.));float w=(.12+.045*n)*fire;float outer=(1.-smoothstep(w*.42,max(.004,w*1.5),y))*mask*fire;float core=(1.-smoothstep(w*.10,max(.003,w*.58),y))*mask*fire;return over(v,vec4(mix(vec3(.24,.53,1.),vec3(.98,1.,1.),core),sat(outer*.85+core*.35)));"
+    "note": "紫白色の高密度電漿を集め、細い高温の光線を急放出。周囲を揺らめく電漿と着点の瞬間閃光。",
+    "body": "vec2 a=vec2(-.71,0.),b=vec2(.74,0.);float ch=phase(q,0.,.36),g=quick(phase(q,.36,.49)),e=attackEnv(q,.36,.72);vec4 v=plasma(p,a,.045+.13*ch,t);v.a*=gate(q,0.,.43);v=over(v,heatRay(p,a,mix(a,b,g),.028,t,e*2.,.78));return over(v,tone(ball(p,b,.14)*gate(q,.46,.88),vec3(.95,.42,1.)));"
   },
   "251": {
     "duration": 2.65,
