@@ -9692,8 +9692,8 @@ const fireDetails={
   "238": {
     "duration": 1.35,
     "loop": false,
-    "note": "一つの火球が燃える外縁と炎の尾を保って飛翔し、着点で小さく爆ぜる。",
-    "body": "vec2 a=vec2(-.65,0.),b=vec2(.56,0.);float f=phase(q,.10,.65);vec4 v=vec4(0.);if(q<.67){vec2 c=mix(a,b,f);float r=.15*smoothstep(0.,.10,q);v=over(lfPlume(p,c,c-vec2(.39*f,0.),r,t,6.),fm(p,c,r,t,18.));v.a*=1.-smoothstep(.60,.67,q);}return over(v,fx(p,b,phase(q,.63,1.),.30,t,8.));"
+    "note": "一つの火球が燃える外縁と炎の尾を保って飛翔し、着弾時に強い閃光とともに炎が大きく炸裂する。火球本体より大きな爆炎と火の粉が全方向へ広がる。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.70,0.),b=vec2(.20,0.);float f=phase(q,.08,.53);vec4 v=vec4(0.);if(q<.55){vec2 c=mix(a,b,f);float r=.15*smoothstep(0.,.08,q);v=over(lfPlume(p,c,c-vec2(.38*f,0.),r,t,6.),fm(p,c,r,t,18.));v.a*=1.-smoothstep(.50,.55,q);}float h=phase(q,.52,1.),g=fq(h);if(h>0.&&h<1.){vec4 w=fx(p,b,h,.69,t,8.);v=over(v,w);for(int i=0;i<9;i++){float k=float(i),ang=k*TAU/9.+.22*hash(vec2(k,8.));vec2 dir=dir2(ang);vec4 x=lfPlume(p,b+dir*.05,b+dir*(.17+.49*g),.14,t,k);x.a*=smoothstep(0.,.09,h)*(1.-smoothstep(.32,.83,h));v=over(v,x);}vec4 ringV=fp(p,b,phase(h,0.,.52),.75,1.);ringV.a*=.30;v=over(v,ringV);v=over(v,lfColor(ball(p,b,.22)*gate(h,0.,.28)*2.1));}return v;"
   },
   "239": {
     "duration": 2.6,
@@ -9716,8 +9716,8 @@ const fireDetails={
   "242": {
     "duration": 1.9,
     "loop": false,
-    "note": "上空に一つの火球が短く溜まり、落下。着弾したときに炎と火の粉を広げる。",
-    "body": "vec2 a=vec2(0.,.67),b=vec2(0.,-.59);float f=phase(q,.32,.66),g=phase(q,0.,.32);vec4 v=fc(p,a,q,.32,.26);if(q<.67){vec2 c=mix(a,b,f*f);vec4 w=over(lfPlume(p,c,c+vec2(0.,.30*f),.16,t,3.),fm(p,c,.18*g,t,8.));w.a*=smoothstep(0.,.10,q)*(1.-smoothstep(.62,.67,q));v=over(v,w);}return over(v,fx(p,b,phase(q,.64,1.),.48,t,6.));"
+    "note": "術者側に一つの火球が短く溜まり、上へ放り投げられて放物線を描き落下する。着弾時に大きな炎が炸裂し、地面を伝って広範囲に燃え広がる。複数の火柱と火の粉が立ち上る。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.68,-.18),b=vec2(.06,-.55);float f=phase(q,.20,.57),g=phase(q,0.,.20);vec4 v=fc(p,a,q,.20,.20);if(q<.59){vec2 c=mix(a,b,f)+vec2(0.,3.65*f*(1.-f));float prev=max(0.,f-.16);vec2 tail=mix(a,b,prev)+vec2(0.,3.65*prev*(1.-prev));vec4 w=over(lfPlume(p,c,tail,.16,t,3.),fm(p,c,.18*g,t,8.));w.a*=smoothstep(0.,.10,q)*(1.-smoothstep(.55,.59,q));v=over(v,w);}float h=phase(q,.56,1.),spread=fq(h);if(h>0.&&h<1.){vec4 w=fx(p,b+vec2(0.,.18),h,.56,t,6.);v=over(v,w);vec4 wall=lfWall(vec2((p.x-b.x)/max(.05,spread), (p.y-b.y)/.78-.64),t);wall.a*=smoothstep(0.,.10,h)*(1.-smoothstep(.58,1.,h));v=over(v,wall);for(int i=0;i<9;i++){float k=float(i),u=(k-4.)/4.,delay=abs(u)*.17,hh=phase(h,delay,.95);vec2 c=b+vec2(u*.83*spread,.02);vec4 x=lfPlume(p,c,c+vec2(u*.15,.29+.39*(1.-abs(u))*spread),.13,t,k);x.a*=sin(3.14159*hh)*smoothstep(0.,.18,h);v=over(v,x);}vec4 ringV=fp(p,b,phase(h,0.,.60),.94,.25);ringV.a*=.35;v=over(v,ringV);v=over(v,lfColor(spark(p,b+vec2(0.,.23),h,.80,18.)*.7));}return v;"
   },
   "243": {
     "duration": 2.6,
