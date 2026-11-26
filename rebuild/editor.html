@@ -379,9 +379,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(280px,335px);m
 ::-webkit-scrollbar-thumb:hover{background:var(--scrollbar-hover)}
 ::-webkit-scrollbar-corner{background:transparent}
 </style>
-</head>
+<link rel="stylesheet" href="../shared/tool-home.css?v=1"><script defer src="../shared/tool-home.js?v=1"></script></head>
 <body>
-<header class="editor-header" aria-label="マップ編集ヘッダー">
+<header class="editor-header" data-tool-home aria-label="マップ編集ヘッダー">
  <select id="scene-select" aria-label="選択ワールド内のマップを切り替え"></select>
  <button id="undo" type="button" title="編集を戻す" aria-label="戻る" disabled>↶</button>
  <button id="redo" type="button" title="編集を進める" aria-label="進む" disabled>↷</button>
