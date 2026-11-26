@@ -9675,7 +9675,7 @@ const fireDetails={
     "duration": 0.72,
     "loop": false,
     "note": "対象の一点に小さな光が生じて小さな炎が広がる",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(0.,-.20);\nfloat pre=smoothstep(.012,.070,q)*(1.-smoothstep(.30,.45,q));\nfloat z=ball(p,a,.038+.012*smoothstep(.02,.27,q))*pre;\nvec4 point=vec4(mix(vec3(1.,.64,.12),vec3(1.,.97,.81),smoothstep(.15,.85,z)),sat(z*1.22));\nif(q<=.2777778)return point;\nfloat g=smoothstep(.2777778,.64,q),e=smoothstep(.2777778,.38,q)*(1.-smoothstep(.68,1.,q));\nvec4 v=lfPlume(p,a,a+vec2(.018*sin(t*TAU),.39*g),.15*g,t,13.);\nfor(int i=0;i<2;i++){float k=float(i),side=k*2.-1.;float f=smoothstep(.36,.70,q);vec2 root=a+vec2(side*.065*f,0.);vec4 w=lfPlume(p,root,root+vec2(side*.12*f,.23*f),.115*f,t,17.+k);w.a*=smoothstep(.36,.49,q);v=over(v,w);}\nv.a*=e;return over(point,v);\n"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(0.,-.20);\nfloat pre=smoothstep(.012,.070,q)*(1.-smoothstep(.50,.63,q));\nfloat z=ball(p,a,.038+.012*smoothstep(.02,.48,q))*pre;\nvec4 point=vec4(mix(vec3(1.,.64,.12),vec3(1.,.97,.81),smoothstep(.15,.85,z)),sat(z*1.22));\nif(q<=.4861111)return point;\nfloat g=smoothstep(.4861111,.76,q),e=smoothstep(.4861111,.57,q)*(1.-smoothstep(.79,1.,q));\nvec4 v=lfPlume(p,a,a+vec2(.018*sin(t*TAU),.39*g),.15*g,t,13.);\nfor(int i=0;i<2;i++){float k=float(i),side=k*2.-1.;float f=smoothstep(.56,.80,q);vec2 root=a+vec2(side*.065*f,0.);vec4 w=lfPlume(p,root,root+vec2(side*.12*f,.23*f),.115*f,t,17.+k);w.a*=smoothstep(.56,.67,q);v=over(v,w);}\nv.a*=e;return over(point,v);\n"
   },
   "236": {
     "duration": 1.25,
@@ -9705,7 +9705,7 @@ const fireDetails={
     "duration": 0.95,
     "loop": false,
     "note": "細い高温光路の微かな揺らぎと着点の発熱。視認不可のデータに配慮し、派手な発光弾は作らない。背景自体の屈折は未実装。",
-    "body": "vec2 a=vec2(-.76,0.),b=mix(a,vec2(.65,0.),quick(phase(q,.07,.27)));float e=gate(q,.04,.80);float d=seg(p,a,b);float z=glw(d,.0045)*e*.26;vec4 v=vec4(mix(uColor,vec3(1.,.68,.27),.4),sat(z));return over(v,heatColor(ball(p,b,.07)*gate(q,.24,.86)*.75,.70));"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-.76,0.),b=vec2(.65,0.);\nfloat f=quick(phase(q,.07,.23)),e=smoothstep(.07,.16,q)*(1.-smoothstep(.45,.78,q));\nfloat front=mix(a.x,b.x,f),x=p.x,y=p.y;\nfloat mask=smoothstep(a.x-.025,a.x+.04,x)*(1.-smoothstep(front-.025,front+.035,x));\nfloat u=sat((x-a.x)/(b.x-a.x));\nfloat n=fb(vec2(x*15.-t*11.,y*19.));\nfloat wave=.012*sin(x*22.-t*TAU*5.)+.010*(n-.5)*uNoise;\nfloat core=(1.-smoothstep(.004,.021,abs(y-wave*.32)))*mask*e;\nfloat glow=(1.-smoothstep(.014,.095,abs(y-wave)))*mask*e*(.35+.40*n);\nfloat ripple=(1.-smoothstep(.006,.024,abs(abs(y-wave)-(.045+.018*sin(x*19.-t*TAU*4.)))))*mask*e*(.16+.20*n);\nvec4 v=vec4(mix(vec3(1.,.24,.035),vec3(1.,.93,.65),sat(core*1.25)),sat(glow*.70+core*.88+ripple));\nfloat h=phase(q,.20,1.),impact=smoothstep(.20,.29,q)*(1.-smoothstep(.48,1.,q));\nfloat hot=ball(p,b,.065+.055*quick(h))*impact;\nvec4 spot=vec4(mix(vec3(1.,.25,.035),vec3(1.,.95,.71),smoothstep(.12,.85,hot)),sat(hot*1.45));\nfloat z=0.;for(int i=0;i<9;i++){float k=float(i),ang=TAU*hash(vec2(k,27.)),r=(.06+.14*hash(vec2(k,31.)))*quick(h);vec2 c=b+dir2(ang)*r+vec2(0.,.07*h);float d=length(p-c);z+=(1.-smoothstep(.009,.025,d))*sin(3.14159*h)*impact;}\nreturn over(over(v,spot),vec4(1.,.55,.12,sat(z)));\n"
   },
   "241": {
     "duration": 2.4,
