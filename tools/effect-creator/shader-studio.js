@@ -1,5 +1,7 @@
 /* Native WebGL shader presets and layer editor. No external assets. */
 const ShaderStudio=(function studioFactory(sources){
+const catalog=typeof MagicCatalog!=='undefined'?MagicCatalog:typeof module!=='undefined'?require('./magic-catalog.js'):{records:[],sources:{}};
+Object.assign(sources,catalog.sources);
 const reserved=new Set(["uTime","uProgress","uSize","uGlow","uSeed","uAspect","uDuration","uResolution","uColor","uCore","uMode"]);
 const bound=(x,a,b,d)=>x!==""&&x!==null&&Number.isFinite(Number(x))?Math.max(a,Math.min(b,Number(x))):d;
 const blends=["source-over","lighter","multiply","screen"];
@@ -120,9 +122,20 @@ const upgradedMagic={
   }
 };
 function setup({defaultSource,onChange,onPreset,onApply,getConfig}){
- const $=id=>document.getElementById(id),records=LightningEffects.records.map(r=>r.id==="thunder-ball-lightning"?{...r,duration:2.6,note:"8つの青白い球体が分散した地点から時間差で浮き上がる。爆発前に球体が約2倍の大きさまで膨張し、頂点で閃光と枝状の雷を放つ。同時に円形の電撃衝撃波が外側へ拡大し、球体、電撃、円環の順に減衰して消える。下降なし。"}:{...r,...(upgradedMagic[r.id]||{})}).concat({"id":"thunder-chain-ball-lightning","name":"連鎖球雷（仮）","lv":6,"ruby":"チェイン・ボールライトニング","duration":3,"color":"#757bff","loop":false,"placement":"対象周辺・広域","trial":true,"note":"分散した8球が浮上し、周囲の光粒・細い電流を吸収して過充電。膨張と脈動、表面放電を経て時間差で爆発する。白い芯と青紫の外光、10方向の太い枝状雷、時間差の三重電撃衝撃波、隣接する球雷・爆発地点を結ぶ連鎖放電。球は下降せずその場で消える。"});let layers=[],selected=0,presetId="",locked=false;
- const select=$("shaderMagic");for(const r of records)select.add(new Option((r.trial?"試作・想定Lv":"Lv")+r.lv+" "+r.name,r.id));
- const note=(persist=false)=>{const r=records.find(r=>r.id===select.value);if(!r)return;$("shaderMagicMeta").textContent=(r.ruby?r.ruby+" / ":"")+r.placement+" / "+r.duration+"秒 / "+(r.loop?"持続ループ向け":"単発")+(r.trial?" / CS未登録・演出試作":" / CS "+r.row+"行");$("shaderMagicNote").textContent=r.note;CSMagicReference.render(r.id,"shaderCS");$("shaderTrialInfo").hidden=!r.trial;if(persist)EffectViewState.patch({shaderMagic:r.id})};const savedMagic=EffectViewState.get().shaderMagic;if(sources[savedMagic])select.value=savedMagic;select.onchange=()=>note(true);function stepMagic(n){select.selectedIndex=(select.selectedIndex+n+select.options.length)%select.options.length;note(true)}$("shaderMagicPrev").onclick=()=>stepMagic(-1);$("shaderMagicNext").onclick=()=>stepMagic(1);note();
+ const $=id=>document.getElementById(id),records=LightningEffects.records.map(r=>r.id==="thunder-ball-lightning"?{...r,duration:2.6,note:"8つの青白い球体が分散した地点から時間差で浮き上がる。爆発前に球体が約2倍の大きさまで膨張し、頂点で閃光と枝状の雷を放つ。同時に円形の電撃衝撃波が外側へ拡大し、球体、電撃、円環の順に減衰して消える。下降なし。"}:{...r,...(upgradedMagic[r.id]||{})}).concat({"id":"thunder-chain-ball-lightning","name":"連鎖球雷（仮）","lv":6,"ruby":"チェイン・ボールライトニング","duration":3,"color":"#757bff","loop":false,"placement":"対象周辺・広域","trial":true,"note":"分散した8球が浮上し、周囲の光粒・細い電流を吸収して過充電。膨張と脈動、表面放電を経て時間差で爆発する。白い芯と青紫の外光、10方向の太い枝状雷、時間差の三重電撃衝撃波、隣接する球雷・爆発地点を結ぶ連鎖放電。球は下降せずその場で消える。"}).map(r=>({...r,attribute:"雷"})).concat(catalog.records);let layers=[],selected=0,presetId="",locked=false;
+ const select=$("shaderMagic"),attribute=$("shaderAttribute");
+ const groupNames=[...new Set(records.map(r=>r.attribute))];
+ const byId=id=>records.find(r=>r.id===id);
+ for(const name of groupNames)attribute.add(new Option(name+"（"+records.filter(r=>r.attribute===name).length+"）",name));
+ function fill(name,id){attribute.value=groupNames.includes(name)?name:"雷";select.replaceChildren();for(const r of records.filter(r=>r.attribute===attribute.value))select.add(new Option((r.trial?"試作・想定Lv":"Lv")+r.lv+" "+r.name+(r.draft?" [初期]":""),r.id));if(byId(id)?.attribute===attribute.value)select.value=id;}
+ function choose(id){const r=byId(id);if(r)fill(r.attribute,id);return r;}
+ const note=(persist=false)=>{const r=byId(select.value);if(!r)return;$("shaderMagicMeta").textContent=(r.ruby?r.ruby+" / ":"")+r.attribute+" / "+r.placement+" / "+r.duration+"秒 / "+(r.loop?"持続ループ向け":"単発")+(r.trial?" / CS未登録・演出試作":" / CS "+r.row+"行")+(r.inferred?" / 系統仮分類":"");$("shaderMagicNote").textContent=r.note;CSMagicReference.render(r.id,"shaderCS");$("shaderTrialInfo").hidden=!r.trial&&!r.draft;$("shaderTrialInfo").textContent=r.trial?"制作試作：名称・Lv・戦闘性能・取得条件は未確定。CS未登録。":"初期制作案：個別の演出・見た目は未確認。"+(r.inferred?" 系統欄が空欄のため制作上の仮分類。":"")+(r.draft&&!r.action?" 行動欄未記入。":"");const link=$("shaderCSLink");link.href="https://docs.google.com/spreadsheets/d/1M55erZwPIapl8-fw7NS1Souy1SiW1iH6J56C6C85NPg/edit#gid=1829342689"+(r.row?"&range=A"+r.row+":M"+r.row:"");link.textContent=r.row?"game_data / CS "+r.row+"行":"game_data / CS（この試作は未登録）";if(persist)EffectViewState.patch({shaderMagic:r.id})};
+ const savedMagic=EffectViewState.get().shaderMagic;
+ if(!choose(savedMagic))fill("雷","");
+ attribute.onchange=()=>{fill(attribute.value,"");note(true)};
+ select.onchange=()=>note(true);
+ function stepMagic(n){if(!select.options.length)return;select.selectedIndex=(select.selectedIndex+n+select.options.length)%select.options.length;note(true)}
+ $("shaderMagicPrev").onclick=()=>stepMagic(-1);$("shaderMagicNext").onclick=()=>stepMagic(1);note();
  function current(){return layers[selected]}
  function render(){const l=current(),list=$("shaderLayerList");list.replaceChildren();layers.forEach((v,i)=>{const b=document.createElement("button");b.type="button";b.textContent=(v.visible?"● ":"○ ")+(i+1)+". "+v.name;b.className=i===selected?"active":"";b.disabled=locked;b.onclick=()=>{selected=i;render()};list.append(b)});$("shaderLayerEditor").hidden=!l;if(!l)return;
  for(const key of ["name","blend","opacity","start","end","x","y","scale","rotation","code"]){$("shader"+key[0].toUpperCase()+key.slice(1)).value=l[key]}$("shaderVisible").checked=l.visible;const box=$("shaderParams");box.replaceChildren();for(const a of parameters(l.code)){const lab=document.createElement("label"),i=document.createElement("input");lab.textContent=a.name;i.type="number";i.min=a.min;i.max=a.max;i.step=a.step;i.value=l.values[a.name]??a.value;i.disabled=locked;i.onchange=()=>{l.values[a.name]=bound(i.value,a.min,a.max,a.value);i.value=l.values[a.name];onChange()};lab.append(i);box.append(lab)}}
@@ -135,7 +148,7 @@ function setup({defaultSource,onChange,onPreset,onApply,getConfig}){
  $("shaderCode").addEventListener("input",()=>{if(current()&&!locked){current().code=$("shaderCode").value;onChange()}});
  $("shaderApplyCode").onclick=()=>{if(!locked)onApply()};
  $("shaderCopy").onclick=async()=>{if(!current())return;try{await navigator.clipboard.writeText(current().code)}catch{$("shaderCode").focus();$("shaderCode").select()}};
- return {restorePreset(id){const r=records.find(r=>r.id===id);if(!r)return null;layers=[preset(r)];selected=0;presetId=r.id;if(!sources[EffectViewState.get().shaderMagic]){select.value=id;note()}render();return r},read:()=>({shaderLayers:normalize(layers),shaderPresetId:presetId}),write(c){layers=normalize(c.shaderLayers);presetId=c.shaderPresetId||"";if(presetId&&sources[presetId]){select.value=presetId;note(true)}selected=0;render()},lock(v){if(locked===v)return;locked=v;for(const el of $("shaderStudio").querySelectorAll("button,input,select,textarea"))el.disabled=v;if(!v)render()},show(v){$("shaderStudio").hidden=!v;},reset(){layers=[];selected=0;presetId="";render()}};
+ return {restorePreset(id){const r=records.find(r=>r.id===id);if(!r)return null;layers=[preset(r)];selected=0;presetId=r.id;if(!byId(EffectViewState.get().shaderMagic)){choose(id);note()}render();return r},read:()=>({shaderLayers:normalize(layers),shaderPresetId:presetId}),write(c){layers=normalize(c.shaderLayers);presetId=c.shaderPresetId||"";if(presetId&&byId(presetId)){choose(presetId);note(true)}selected=0;render()},lock(v){if(locked===v)return;locked=v;for(const el of $("shaderStudio").querySelectorAll("button,input,select,textarea"))el.disabled=v;if(!v)render()},show(v){$("shaderStudio").hidden=!v;},reset(){layers=[];selected=0;presetId="";render()}};
 }
 return {sources,parameters,layer,normalize,preset,createRenderer,setup};
 })({

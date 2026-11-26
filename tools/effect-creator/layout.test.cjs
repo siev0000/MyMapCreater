@@ -18,6 +18,8 @@ assert.match(layoutSource,/if\(notify\)document\.dispatchEvent\(new CustomEvent\
 
 for(const tab of ['shader-magic','shader-layers','shader-output','shader-save'])assert.ok(html.includes('data-settings-tab="'+tab+'"'));
 for(const id of ['shaderMagicPrev','shaderMagicNext','shaderCSOriginal','shaderCSData','canvasCSOriginal','canvasCSData','externalLoop','externalZoom','externalBackground'])assert.ok(ids.includes(id),id);
-const ref=require('./cs-magic-reference.js');assert.equal(Object.keys(ref.rows).length,24);assert.equal(ref.rows['thunder-many'].original,'');assert.equal(ref.rows['thunder-blue-jet'].data,'');
+const ref=require('./cs-magic-reference.js');const M=require('./magic-catalog.js');assert.equal(Object.keys(ref.rows).length,24+M.records.length);assert.ok(ids.includes('shaderAttribute'));assert.ok(ids.includes('shaderCSLink'));assert.equal(ref.rows['thunder-many'].original,'');assert.equal(ref.rows['thunder-blue-jet'].data,'');
 
 const V=require('./effect-view-state.js');assert.equal(V.normalize({engine:'bad'}).engine,'shader');assert.equal(V.normalize({shaderTab:'magic',shaderLoaded:'thunder-ball-lightning'}).shaderLoaded,'thunder-ball-lightning');assert.equal(V.normalize({shaderLoaded:'invalid'}).shaderLoaded,'');
+
+assert.equal(V.normalize({shaderMagic:'magic-cs-234',shaderLoaded:'magic-cs-234',canvasMagic:'magic-cs-234'}).shaderLoaded,'magic-cs-234');assert.equal(V.normalize({canvasMagic:'magic-cs-234'}).canvasMagic,'');
