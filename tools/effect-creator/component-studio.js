@@ -132,6 +132,7 @@ function cancelTimeDrag(){
  timeStatus("時間調整をキャンセルしました");
 }
 function bindTimeHandle(handle,mode,p,rail,clip,body){
+ handle.dataset.timelineUid=p.uid;handle.dataset.timelineMode=mode;
  handle.onpointerdown=e=>{
   if(busy||timeDrag||e.isPrimary===false||e.button!==0)return;
   const width=rail.getBoundingClientRect().width;if(!(width>0))return;
@@ -156,6 +157,7 @@ function bindTimeHandle(handle,mode,p,rail,clip,body){
   try{
    if(busy||composition!==d.composition||composition.duration!==d.duration||!composition.parts.includes(d.p)||d.p.start!==d.start||d.p.end!==d.end)throw Error("構成が変更されたため操作を中止しました");
    if(!d.next)throw Error("変更位置を取得できません");
+   if(d.next.start===d.start&&d.next.end===d.end){selectPart(d.uid);timeStatus("時間は変更されていません");return}
    const next=C.changeTiming(composition,d.uid,d.next.start,d.next.end);
    selected=d.uid;composition=next;drawEditor();mark();timeStatus("時間を反映: "+d.next.start.toFixed(3)+"〜"+d.next.end.toFixed(3)+" 秒");
   }catch(err){drawEditor();timeStatus(err.message)}
@@ -167,7 +169,7 @@ function bindTimeHandle(handle,mode,p,rail,clip,body){
   if(busy||timeDrag||!["ArrowLeft","ArrowRight"].includes(e.key))return;
   e.preventDefault();e.stopPropagation();
   const step=snapSeconds()||.01,delta=(e.key==="ArrowLeft"?-1:1)*step*(e.shiftKey?10:1);
-  try{const r=C.timelineRange(p.start,p.end,composition.duration,mode,delta,snapSeconds());composition=C.changeTiming(composition,p.uid,r.start,r.end);selected=p.uid;playing=false;drawEditor();mark();timeStatus("時間を反映: "+r.start.toFixed(3)+"〜"+r.end.toFixed(3)+" 秒")}catch(err){timeStatus(err.message)}
+  try{const r=C.timelineRange(p.start,p.end,composition.duration,mode,delta,snapSeconds());composition=C.changeTiming(composition,p.uid,r.start,r.end);selected=p.uid;playing=false;drawEditor();mark();for(const el of document.querySelectorAll("[data-timeline-uid]"))if(el.dataset.timelineUid===p.uid&&el.dataset.timelineMode===mode){el.focus({preventScroll:true});break}timeStatus("時間を反映: "+r.start.toFixed(3)+"〜"+r.end.toFixed(3)+" 秒")}catch(err){timeStatus(err.message)}
  };
 }
 function timeline(){
