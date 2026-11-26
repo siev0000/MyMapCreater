@@ -13,7 +13,7 @@ function create(duration=2.8,view="TOP"){return {schema:SCHEMA,name:"新規エ�
 function instance(id,uid,start=0,end,version=1){const d=get(id,version);return {uid,partId:id,version,start,end:end??start+d.duration,x:0,y:0,endX:0,endY:0,arc:0,scale:1,rotation:0,opacity:1,speed:1,timeMode:"local",tint:"#ffffff",tintMix:0,enabled:true,params:Object.fromEntries(d.params.map(p=>[p.id,p.default]))}}
 function validate(c){
  if(!c||c.schema!==SCHEMA)throw Error("構成バージョンが未対応");
- const duration=number(c.duration,.2,30,"全体時間"),view=c.view;
+ const duration=number(c.duration,.05,30,"全体時間"),view=c.view;
  if(!["TOP","SIDE"].includes(view))throw Error("視点が不正");
  if(typeof c.loop!=="boolean")throw Error("ループ設定が不正");
  if(!Array.isArray(c.parts)||c.parts.length>MAX_PARTS)throw Error("部品数は最大 "+MAX_PARTS);
