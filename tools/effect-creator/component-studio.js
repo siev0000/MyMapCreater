@@ -13,7 +13,7 @@ function updatePosition(){const d=applied?.composition.duration??composition.dur
 function outputInfo(){try{const p={...config(),duration:composition.duration};if(!Number.isFinite(p.duration)||p.duration<.05||p.duration>30)throw Error("秒数が不正");const a=EffectEngine.plan(p);$("outputInfo").textContent=a.frames+" コマ / "+a.cols+"×"+a.rows+" / "+a.width+"×"+a.height+" px（透過）"}catch(e){$("outputInfo").textContent=e.message}}
 function refresh(){if(busy)return;dirty=true;buttons();outputInfo();let next=null;
  try{const c=C.compile(composition),settings=config(),p=renderConfig(c.composition,c.source,settings);next=ShaderStudio.createRenderer(p,c.source);const t=Math.min(position,c.composition.duration);draw(next,$("preview"),t);const old=renderer;renderer=next;next=null;applied={...c,settings,p};position=t;dirty=false;old?.dispose();status("反映済み / "+c.composition.parts.length+" 部品 / GLSL "+c.source.length+" 文字"+(c.composition.loop?" / ループの継ぎ目は要確認":""));updatePosition()}catch(e){next?.dispose();status("未反映（前回の正常なプレビューを保持）\n"+e.message,true)}finally{buttons()}}
-function mark(){changed=true;dirty=true;buttons();refresh()}
+function mark(){closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
 function sync(){for(const k of ["name","duration","view","seed"])$(k).value=composition[k];$("loop").checked=composition.loop;$("repeat").checked=composition.loop}
 function option(select,value,label){const o=document.createElement("option");o.value=value;o.textContent=label;select.append(o)}
 
@@ -37,7 +37,7 @@ try{registrySnapshot=localStorage.getItem(registryKey);if(registrySnapshot)C.ins
 function syncRegistry(){
  const cat=$("category"),previous=cat.value;cat.replaceChildren();option(cat,"","すべて");for(const name of [...new Set(C.definitions().map(d=>d.category))])option(cat,name,name);if(C.definitions().some(d=>d.category===previous))cat.value=previous;
  const base=$("authorBase"),choice=base.value;base.replaceChildren();option(base,"","新規（基本発光球）");for(const d of C.definitions())option(base,d.id+"@"+d.version,d.name+" v"+d.version+" ("+d.id+")");if(C.definitions().some(d=>d.id+"@"+d.version===choice))base.value=choice;
- showLibrary();
+ showLibrary();updateUsageParts();
 }
 function authorBase(){const v=$("authorBase").value;if(!v)return null;const [id,version]=v.split("@");return C.get(id,Number(version))}
 function uniqueId(base){let id=base.slice(0,50),n=1;while(C.nextVersion(id)!==1)id=base.slice(0,50)+"-"+(++n);return id}
@@ -122,7 +122,7 @@ const numericFields=[["start","開始秒",0,30,.01],["end","終了秒",0,30,.01]
 function field(box,title,input){const l=document.createElement("label");l.textContent=title;l.append(input);box.append(l);return input}
 function numberField(box,title,value,min,max,step,cb){const i=document.createElement("input");i.type="number";i.min=min;i.max=max;i.step=step;i.value=value;field(box,title,i);i.onchange=()=>{if(busy)return;const n=Number(i.value);if(i.value===""||!Number.isFinite(n)||n<min||n>max){i.value=value;status(title+" の入力範囲が不正",true);return}cb(n)};return i}
 function inspector(){const p=current(),box=$("partFields");$("inspector").hidden=!p;$("empty").hidden=!!p;box.replaceChildren();if(!p)return;const d=C.get(p.partId,p.version);$("partName").textContent=d.name+" v"+p.version;for(const [k,label,min,max,step] of numericFields)numberField(box,label,p[k],min,k==="start"||k==="end"?composition.duration:max,step,n=>{p[k]=n;timeline();mark()});const tint=document.createElement("input");tint.type="color";tint.value=p.tint;field(box,"色補正",tint);tint.onchange=()=>{p.tint=tint.value;mark()};const mode=document.createElement("select");option(mode,"local","部品内");option(mode,"scene","全体と同期");mode.value=p.timeMode;field(box,"模様の時間",mode);mode.onchange=()=>{p.timeMode=mode.value;mark()};const show=document.createElement("input");show.type="checkbox";show.checked=p.enabled;field(box,"表示",show);show.onchange=()=>{p.enabled=show.checked;timeline();mark()};for(const a of d.params)parameterField(box,a,p)}
-function drawEditor(){timeline();inspector();showLibrary();const p=current(),i=composition.parts.indexOf(p);$("duplicate").disabled=!p||composition.parts.length>=C.MAX_PARTS;$("delete").disabled=!p;$("up").disabled=i<=0;$("down").disabled=i<0||i>=composition.parts.length-1;outputInfo()}
+function drawEditor(){timeline();inspector();showLibrary();syncVersion();const p=current(),i=composition.parts.indexOf(p);$("duplicate").disabled=!p||composition.parts.length>=C.MAX_PARTS;$("delete").disabled=!p;$("up").disabled=i<=0;$("down").disabled=i<0||i>=composition.parts.length-1;outputInfo()}
 function move(delta){const i=composition.parts.indexOf(current()),j=i+delta;if(i<0||j<0||j>=composition.parts.length)return;[composition.parts[i],composition.parts[j]]=[composition.parts[j],composition.parts[i]];drawEditor();mark()}
 $("up").onclick=()=>move(-1);$("down").onclick=()=>move(1);
 $("duplicate").onclick=()=>{const p=current();if(!p||composition.parts.length>=C.MAX_PARTS)return;const copy=JSON.parse(JSON.stringify(p));copy.uid=newId();composition.parts.splice(composition.parts.indexOf(p)+1,0,copy);selected=copy.uid;drawEditor();mark()};
@@ -148,12 +148,63 @@ function readSnapshot(x){
 }
 $("save").onclick=()=>{try{EffectExport.download(new Blob([JSON.stringify(snapshot(),null,2)],{type:"application/json"}),"effect-composition.json");changed=false}catch(e){status(e.message,true)}};
 $("load").onchange=async()=>{try{const f=$("load").files[0];if(f)readSnapshot(JSON.parse(await f.text()))}catch(e){status(e.message,true)}finally{$("load").value=""}};
-$("localSave").onclick=()=>{try{localStorage.setItem(storageKey,JSON.stringify(snapshot()));changed=false;status("ブラウザーに保存しました")}catch(e){status(e.message,true)}};
+$("localSave").onclick=()=>{try{localStorage.setItem(storageKey,JSON.stringify(snapshot()));changed=false;showUsage();status("ブラウザーに保存しました")}catch(e){status(e.message,true)}};
 $("localLoad").onclick=()=>{try{const raw=localStorage.getItem(storageKey);if(!raw)throw Error("保存された構成がありません");readSnapshot(JSON.parse(raw))}catch(e){status(e.message,true)}};
 $("source").onclick=()=>{if(!dirty&&applied)EffectExport.download(new Blob([applied.source],{type:"text/plain"}),"effect.frag")};
 async function exportImage(kind){if(busy||dirty||!renderer||!applied)return;busy=true;playing=false;const states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;buttons();const p=applied.p,r=renderer,t=position;try{const plan=EffectEngine.plan(p),frame=Math.min(plan.frames-1,Math.floor(t*p.fps));await EffectExport.run(p,kind,frame,(i,n)=>status("出力中 "+i+"/"+n),async(_p,i,c)=>{r.render(i/p.fps);const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(r.canvas,0,0);return c});status("画像出力完了")}catch(e){status("出力失敗: "+e.message,true)}finally{busy=false;for(const [e,v] of states)e.disabled=v;position=t;renderAt();buttons()}}
 for(const b of exports)b.onclick=()=>exportImage(b.dataset.export);
 function tick(now){if(!busy&&playing&&renderer){const delta=Math.min(.10,Math.max(0,(now-last)/1000));position+=delta;const d=applied.composition.duration;if(position>=d){if($("repeat").checked)position%=d;else{position=d;playing=false;buttons()}}renderAt()}last=now;if(!busy&&miniRenderer){try{draw(miniRenderer,$("mini"),((now-miniStart)/1000)%miniDuration)}catch(e){miniRenderer.dispose();miniRenderer=null;$("miniStatus").textContent=e.message;invalidateAuthor()}}requestAnimationFrame(tick)}
 window.addEventListener("beforeunload",e=>{if(changed){e.preventDefault();e.returnValue=""}});
-syncRegistry();startAuthor(false);if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();refresh();if(renderer){playing=true;last=performance.now();buttons()}requestAnimationFrame(tick);
+
+const archiveKey="effect-component-archive-v1";
+let comparison=null,archiveRaw=null;
+function readArchive(){
+ const raw=localStorage.getItem(archiveKey);const data=raw===null?{version:1,entries:[]}:JSON.parse(raw);
+ if(data.version!==1||!Array.isArray(data.entries)||data.entries.length>50||new Set(data.entries.map(x=>x.id)).size!==data.entries.length||data.entries.some(x=>typeof x.id!=="string"||x.snapshot?.format!=="glsl-component-composition"||!Array.isArray(x.snapshot.composition?.parts)))throw Error("保存構成一覧が不正です。上書きしません");
+ return {raw,entries:data.entries};
+}
+function refreshArchive(){try{const {raw,entries}=readArchive();archiveRaw=raw;const el=$("archiveList"),prev=el.value;el.replaceChildren();option(el,"","選択してください");for(const e of entries)option(el,e.id,e.snapshot.composition.name+" / "+e.savedAt);if(entries.some(e=>e.id===prev))el.value=prev;$("archiveStatus").textContent=entries.length+" / 50 件"}catch(e){$("archiveStatus").textContent=e.message;$("archiveList").replaceChildren();archiveRaw=null}}
+function usageEntries(){const entries=[{id:"current",scope:"編集中",composition}],errors=[];
+ try{const raw=localStorage.getItem(storageKey);if(raw){const x=JSON.parse(raw);if(x.format!=="glsl-component-composition"||!Array.isArray(x.composition?.parts))throw Error("形式不正");entries.push({id:"slot",scope:"従来の保存枠",composition:x.composition})}}catch(e){errors.push("従来枠: "+e.message)}
+ try{for(const e of readArchive().entries)entries.push({id:e.id,scope:"名前付き保存",composition:e.snapshot.composition})}catch(e){errors.push("保存一覧: "+e.message)}
+ return {entries,errors};
+}
+function updateUsageVersions(){const el=$("usageVersion"),prev=el.value;el.replaceChildren();for(const d of C.versions($("usagePart").value))option(el,String(d.version),"v"+d.version+" / "+(C.origin(d.id,d.version)==="builtin"?"組み込み":"ローカル"));if([...C.versions($("usagePart").value)].some(d=>String(d.version)===prev))el.value=prev;else{const ds=C.versions($("usagePart").value);if(ds.length)el.value=String(ds[ds.length-1].version)}showUsage()}
+function updateUsageParts(){const el=$("usagePart"),prev=el.value;el.replaceChildren();for(const id of [...new Set(C.definitions().map(d=>d.id))]){const ds=C.versions(id),d=ds[ds.length-1];option(el,id,d.name+" ("+id+")")}if(C.definitions().some(d=>d.id===prev))el.value=prev;else el.value=C.definitions()[0]?.id||"";updateUsageVersions()}
+function showUsage(){const box=$("usageResults");box.replaceChildren();try{const {entries,errors}=usageEntries(),id=$("usagePart").value,version=Number($("usageVersion").value),hits=C.findUsage(id,version,entries);for(const x of hits){const item=document.createElement("div");item.className="usage-item";const label=document.createElement("div");label.textContent=x.scope+" / "+x.name+" / #"+(x.index+1)+" / "+x.start+"–"+x.end+"秒"+(x.enabled?"":"（非表示）");item.append(label);if(x.entryId==="current"){const b=document.createElement("button");b.textContent="選択";b.onclick=()=>selectPart(x.uid);item.append(b)}else{const b=document.createElement("button");b.textContent="構成を開く";b.onclick=()=>{try{if(x.entryId==="slot")$("localLoad").onclick();else{const e=readArchive().entries.find(e=>e.id===x.entryId);if(!e)throw Error("保存構成がありません");readSnapshot(e.snapshot)}}catch(e){status(e.message,true)}};item.append(b)}box.append(item)}$("usageStatus").textContent=hits.length+"箇所 / "+entries.length+"構成を確認"+(errors.length?"（一部読込失敗: "+errors.join(" / ")+"）":"")}catch(e){$("usageStatus").textContent=e.message}}
+function closeComparison(message=""){
+ if(comparison){comparison.before?.dispose();comparison.after?.dispose();comparison=null}
+ $("versionComparison").hidden=true;$("versionApply").disabled=true;$("versionStatus").textContent=message;
+}
+function syncVersion(){closeComparison();const p=current(),el=$("versionTarget"),prev=el.value;el.replaceChildren();$("versionCurrent").textContent=p?p.partId+"@"+p.version+" / "+(C.origin(p.partId,p.version)==="builtin"?"組み込み":"ローカル"):"タイムラインから部品を選択してください";
+ const ds=p?C.versions(p.partId).filter(d=>d.version!==p.version):[];for(const d of ds)option(el,String(d.version),"v"+d.version+" / "+d.name+" / "+d.view);
+ if(ds.some(d=>String(d.version)===prev))el.value=prev;else if(ds.length)el.value=String(ds[ds.length-1].version);
+ $("versionCompare").disabled=!ds.length;showUsage();
+}
+function comparisonFingerprint(){return JSON.stringify({composition:C.validate(composition),settings:config(),uid:selected,target:$("versionTarget").value})}
+function compareAt(q){if(!comparison)return;try{const t=comparison.candidate.composition.duration*q;draw(comparison.before,$("versionBefore"),t);draw(comparison.after,$("versionAfter"),t);$("versionTime").textContent=t.toFixed(2)+" 秒 / "+comparison.candidate.composition.duration.toFixed(2)+" 秒"}catch(e){closeComparison("比較描画失敗: "+e.message)}}
+function compareVersions(){
+ if(busy)return;closeComparison();let before=null,after=null;
+ try{const p=current();if(!p)throw Error("部品を選択してください");const target=Number($("versionTarget").value);if(target===p.version)throw Error("異なる版を選択してください");
+ const result=C.migrateVersion(composition,p.uid,target),original=C.compile(composition),candidate=C.compile(result.composition),settings=config(),fingerprint=comparisonFingerprint(),oldP=renderConfig(original.composition,original.source,settings),newP=renderConfig(candidate.composition,candidate.source,settings);
+ before=ShaderStudio.createRenderer(oldP,original.source);after=ShaderStudio.createRenderer(newP,candidate.source);
+ for(const q of [0,.1,.35,.5,.8,1]){before.render(original.composition.duration*q);after.render(candidate.composition.duration*q)}
+ comparison={before,after,candidate,p:newP,settings,fingerprint};before=after=null;
+ $("versionBeforeLabel").textContent="変更前 v"+result.from.version;$("versionAfterLabel").textContent="変更後 v"+result.to.version;$("versionNotes").textContent=result.notes.length?result.notes.join("\n"):"互換パラメータを引継ぎ。";
+ $("versionComparison").hidden=false;$("versionSeek").value="500";compareAt(.5);if(comparison){$("versionApply").disabled=false;$("versionStatus").textContent="両版のコンパイル・6時点描画成功。構成全体の比較です。"}
+ }catch(e){before?.dispose();after?.dispose();closeComparison("比較失敗: "+e.message)}
+}
+function applyVersion(){
+ if(busy||!comparison)return;try{if(comparison.fingerprint!==comparisonFingerprint())throw Error("構成が変わりました。再比較してください");if(!confirm("選択部品だけ版を切り替えますか？保存済み構成は変更しません。"))return;
+ const c=comparison,t=Math.min(position,c.candidate.composition.duration);draw(c.after,$("preview"),t);
+ const old=renderer;renderer=c.after;c.after=null;composition=c.candidate.composition;applied={...c.candidate,settings:c.settings,p:c.p};position=t;dirty=false;changed=true;old?.dispose();closeComparison();drawEditor();updatePosition();buttons();status("選択部品の版を切り替えました。保存済み構成は未変更。");
+ }catch(e){closeComparison("切替失敗: "+e.message)}
+}
+$("archiveSave").onclick=()=>{if(busy)return;try{const {raw,entries}=readArchive();if(raw!==archiveRaw)throw Error("別タブ等で保存一覧が変わりました。一覧更新してください");if(entries.length>=50)throw Error("保存上限50件です");let id="save-"+Date.now(),i=0;while(entries.some(e=>e.id===id))id="save-"+Date.now()+"-"+(++i);const next={version:1,entries:[...entries,{id,savedAt:new Date().toISOString(),snapshot:snapshot()}]};localStorage.setItem(archiveKey,JSON.stringify(next));changed=false;refreshArchive();$("archiveList").value=id;showUsage();$("archiveStatus").textContent="別保存しました。既存構成は未変更。"}catch(e){$("archiveStatus").textContent=e.message}};
+$("archiveLoad").onclick=()=>{if(busy)return;try{const e=readArchive().entries.find(e=>e.id===$("archiveList").value);if(!e)throw Error("保存構成を選択してください");readSnapshot(e.snapshot)}catch(e){$("archiveStatus").textContent=e.message}};
+$("archiveRefresh").onclick=()=>{refreshArchive();showUsage()};
+$("usagePart").onchange=updateUsageVersions;$("usageVersion").onchange=showUsage;$("usageRefresh").onclick=showUsage;
+$("versionTarget").onchange=()=>closeComparison("変更先を選び直しました。");$("versionCompare").onclick=compareVersions;$("versionClose").onclick=()=>closeComparison();$("versionSeek").oninput=()=>compareAt(Number($("versionSeek").value)/1000);$("versionApply").onclick=applyVersion;
+
+refreshArchive();syncRegistry();startAuthor(false);if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();refresh();if(renderer){playing=true;last=performance.now();buttons()}requestAnimationFrame(tick);
 })();
