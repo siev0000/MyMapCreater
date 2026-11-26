@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GLSL部品診断</title>
+<style>body{font:14px system-ui,sans-serif;background:#181d26;color:#ecf0f6;margin:16px}a{color:#8bbdff}button{font:inherit;padding:8px 12px;margin:4px;background:#303b4d;color:#fff;border:1px solid #69778c;border-radius:5px}button:disabled{opacity:.5}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#252c38;padding:12px;border-radius:6px}table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px;border-bottom:1px solid #495363;text-align:left;vertical-align:top}canvas{width:96px;height:96px;image-rendering:auto;background-color:#666;background-image:conic-gradient(#888 25%,#444 0 50%,#888 0 75%,#444 0);background-size:16px 16px}small{color:#b9c5d6}.scroll{overflow-x:auto}.ok{color:#9bd8a5}.warn{color:#ffd38a}.error{color:#ffaaa5}</style></head>
+<body><h1>GLSL部品の実描画診断</h1><p><a href="component-studio.html">部品制作画面へ戻る</a></p>
+<p>現行14部品・炎収束/煉獄試作・12部品構成を実際のWebGLで描画します。透明度、端のアルファ、同時点の再現性を確認します。警告は目視確認が必要で、演出の承認を意味しません。</p>
+<button id="run">一括診断を開始</button><button id="save" disabled>結果JSON保存</button><button id="copy" disabled>結果をコピー</button><p id="status" role="status">未実行</p>
+<div class="scroll"><table><thead><tr><th>対象</th><th>結果</th><th>ピーク時点</th><th>詳細</th></tr></thead><tbody id="results"></tbody></table></div><pre id="summary"></pre>
+<script src="lightning-presets.js?v=1"></script><script src="magic-catalog.js?v=fire-revision-20"></script><script src="shader-studio.js?v=layer-recovery-15"></script><script src="effect-export.js"></script><script src="effect-components.js?v=1"></script><script src="component-diagnostics.js?v=1"></script></body></html>
