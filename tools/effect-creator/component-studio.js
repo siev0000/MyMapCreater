@@ -11,9 +11,9 @@ function buttons(){for(const b of exports)b.disabled=busy||dirty||!renderer;$("s
 function draw(r,canvas,t){r.render(t);if(canvas.width!==r.canvas.width||canvas.height!==r.canvas.height){canvas.width=r.canvas.width;canvas.height=r.canvas.height}const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(r.canvas,0,0)}
 function updatePosition(){const d=applied?.composition.duration??composition.duration;$("seek").value=String(Math.round(1000*position/d));$("time").textContent=position.toFixed(2)+" / "+d.toFixed(2)+" 秒";for(const n of document.querySelectorAll(".cursor"))n.style.left=Math.min(100,position/Math.max(.001,composition.duration)*100)+"%"}
 function outputInfo(){try{const p={...config(),duration:composition.duration};if(!Number.isFinite(p.duration)||p.duration<.05||p.duration>30)throw Error("秒数が不正");const a=EffectEngine.plan(p);$("outputInfo").textContent=a.frames+" コマ / "+a.cols+"×"+a.rows+" / "+a.width+"×"+a.height+" px（透過）"}catch(e){$("outputInfo").textContent=e.message}}
-function refresh(){if(busy)return;dirty=true;buttons();outputInfo();let next=null;
+function refresh(){if(busy)return;cancelTimeDrag();dirty=true;buttons();outputInfo();let next=null;
  try{const c=C.compile(composition),settings=config(),p=renderConfig(c.composition,c.source,settings);next=ShaderStudio.createRenderer(p,c.source);const t=Math.min(position,c.composition.duration);draw(next,$("preview"),t);const old=renderer;renderer=next;next=null;applied={...c,settings,p};position=t;dirty=false;old?.dispose();status("反映済み / "+c.composition.parts.length+" 部品 / GLSL "+c.source.length+" 文字"+(c.composition.loop?" / ループの継ぎ目は要確認":""));updatePosition()}catch(e){next?.dispose();status("未反映（前回の正常なプレビューを保持）\n"+e.message,true)}finally{buttons()}}
-function mark(){closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
+function mark(){cancelTimeDrag();closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
 function sync(){for(const k of ["name","duration","view","seed"])$(k).value=composition[k];$("loop").checked=composition.loop;$("repeat").checked=composition.loop}
 function option(select,value,label){const o=document.createElement("option");o.value=value;o.textContent=label;select.append(o)}
 
@@ -117,11 +117,83 @@ function mini(d){if(busy)return;let next=null;try{const c=C.create(d.duration,d.
 function addPart(d){if(busy||composition.parts.length>=C.MAX_PARTS){status("部品数の上限です",true);return}const start=0,end=Math.min(composition.duration,d.duration);const p=C.instance(d.id,newId(),start,end,d.version);if(d.category==="飛翔"){p.x=-.65;p.endX=.65}if(d.id==="shockwave")p.params.squash=composition.view==="TOP"?1:.34;composition.parts.push(p);selected=p.uid;drawEditor();mark()}
 function current(){return composition.parts.find(p=>p.uid===selected)}
 function selectPart(id){selected=id;drawEditor()}
-function timeline(){const box=$("timeline");box.replaceChildren();const ruler=document.createElement("div");ruler.className="ruler";const label=document.createElement("span");label.textContent="秒";const scale=document.createElement("div");scale.className="rulerline";for(let i=0;i<=4;i++){const e=document.createElement("span");e.textContent=(composition.duration*i/4).toFixed(2);scale.append(e)}ruler.append(label,scale);box.append(ruler);for(const p of composition.parts){const d=C.get(p.partId,p.version),row=document.createElement("div");row.className="track";const name=document.createElement("button");name.textContent=(p.enabled?"":"非表示 ")+d.name;name.title=d.name;name.onclick=()=>selectPart(p.uid);if(p.uid===selected)name.classList.add("selected");const rail=document.createElement("div");rail.className="rail";const clip=document.createElement("button");clip.className="clip"+(p.uid===selected?" selected":"");clip.style.left=Math.max(0,Math.min(100,p.start/composition.duration*100))+"%";clip.style.width=Math.max(0,Math.min(100,(p.end-p.start)/composition.duration*100))+"%";clip.style.opacity=p.enabled?1:.4;clip.textContent=p.start.toFixed(2)+"–"+p.end.toFixed(2);clip.title=d.name+" "+clip.textContent+"秒";clip.onclick=e=>{e.stopPropagation();selectPart(p.uid)};rail.onclick=e=>{if(!renderer||busy)return;const r=rail.getBoundingClientRect();playing=false;position=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*applied.composition.duration;renderAt();buttons()};const cursor=document.createElement("span");cursor.className="cursor";rail.append(clip,cursor);row.append(name,rail);box.append(row)}updatePosition()}
+
+let timeDrag=null;
+function timeStatus(s){$("timelineStatus").textContent=s}
+function snapSeconds(){const v=$("timelineSnap").value;if(v==="frame"){const fps=Number($("fps").value);return Number.isFinite(fps)&&fps>=1&&fps<=60?1/fps:0}return Number(v)||0}
+function paintClip(clip,body,start,end,duration){
+ clip.style.left=(start/duration*100)+"%";clip.style.width=((end-start)/duration*100)+"%";
+ body.textContent=start.toFixed(3)+"–"+end.toFixed(3);clip.title=body.textContent+" 秒";
+}
+function cancelTimeDrag(){
+ const d=timeDrag;if(!d)return;timeDrag=null;
+ paintClip(d.clip,d.body,d.start,d.end,d.duration);d.clip.classList.remove("dragging");
+ try{if(d.handle.hasPointerCapture(d.pointer))d.handle.releasePointerCapture(d.pointer)}catch{}
+ timeStatus("時間調整をキャンセルしました");
+}
+function bindTimeHandle(handle,mode,p,rail,clip,body){
+ handle.onpointerdown=e=>{
+  if(busy||timeDrag||e.isPrimary===false||e.button!==0)return;
+  const width=rail.getBoundingClientRect().width;if(!(width>0))return;
+  e.stopPropagation();e.preventDefault();
+  try{handle.setPointerCapture(e.pointerId)}catch{return}
+  timeDrag={handle,mode,p,uid:p.uid,composition,start:p.start,end:p.end,duration:composition.duration,clip,body,width,x:e.clientX,pointer:e.pointerId,moved:false,snap:snapSeconds(),next:null};
+ };
+ handle.onpointermove=e=>{
+  const d=timeDrag;if(!d||d.handle!==handle||d.pointer!==e.pointerId)return;
+  e.preventDefault();e.stopPropagation();const px=e.clientX-d.x;
+  if(!d.moved&&Math.abs(px)<4)return;
+  if(!d.moved){d.moved=true;playing=false;buttons();d.clip.classList.add("dragging");closeComparison()}
+  try{d.next=C.timelineRange(d.start,d.end,d.duration,d.mode,px/d.width*d.duration,d.snap);paintClip(d.clip,d.body,d.next.start,d.next.end,d.duration);timeStatus(d.next.start.toFixed(3)+"〜"+d.next.end.toFixed(3)+" 秒 / 長さ "+(d.next.end-d.next.start).toFixed(3)+" 秒（未反映）")}catch(err){cancelTimeDrag();timeStatus(err.message)}
+ };
+ handle.onpointerup=e=>{
+  const d=timeDrag;if(!d||d.handle!==handle||d.pointer!==e.pointerId)return;
+  e.preventDefault();e.stopPropagation();
+  if(d.moved)handle.onpointermove(e);
+  if(timeDrag!==d)return;
+  timeDrag=null;d.clip.classList.remove("dragging");try{if(handle.hasPointerCapture(e.pointerId))handle.releasePointerCapture(e.pointerId)}catch{}
+  if(!d.moved){selectPart(d.uid);return}
+  try{
+   if(busy||composition!==d.composition||composition.duration!==d.duration||!composition.parts.includes(d.p)||d.p.start!==d.start||d.p.end!==d.end)throw Error("構成が変更されたため操作を中止しました");
+   if(!d.next)throw Error("変更位置を取得できません");
+   const next=C.changeTiming(composition,d.uid,d.next.start,d.next.end);
+   selected=d.uid;composition=next;drawEditor();mark();timeStatus("時間を反映: "+d.next.start.toFixed(3)+"〜"+d.next.end.toFixed(3)+" 秒");
+  }catch(err){drawEditor();timeStatus(err.message)}
+ };
+ handle.onpointercancel=e=>{if(timeDrag?.handle===handle&&timeDrag.pointer===e.pointerId)cancelTimeDrag()};
+ handle.onlostpointercapture=e=>{if(timeDrag?.handle===handle&&timeDrag.pointer===e.pointerId)cancelTimeDrag()};
+ handle.onclick=e=>{e.stopPropagation();if(e.detail===0&&!timeDrag)selectPart(p.uid)};
+ handle.onkeydown=e=>{
+  if(busy||timeDrag||!["ArrowLeft","ArrowRight"].includes(e.key))return;
+  e.preventDefault();e.stopPropagation();
+  const step=snapSeconds()||.01,delta=(e.key==="ArrowLeft"?-1:1)*step*(e.shiftKey?10:1);
+  try{const r=C.timelineRange(p.start,p.end,composition.duration,mode,delta,snapSeconds());composition=C.changeTiming(composition,p.uid,r.start,r.end);selected=p.uid;playing=false;drawEditor();mark();timeStatus("時間を反映: "+r.start.toFixed(3)+"〜"+r.end.toFixed(3)+" 秒")}catch(err){timeStatus(err.message)}
+ };
+}
+function timeline(){
+ cancelTimeDrag();const box=$("timeline"),viewport=$("timelineViewport"),scroll=viewport.scrollLeft;box.replaceChildren();
+ const zoom=Number($("timelineZoom").value)||1;box.style.width=(zoom*100)+"%";box.style.minWidth=(280*zoom)+"px";
+ const ruler=document.createElement("div");ruler.className="ruler";const label=document.createElement("span");label.textContent="秒";const scale=document.createElement("div");scale.className="rulerline";const ticks=4*zoom;
+ for(let i=0;i<=ticks;i++){const e=document.createElement("span");e.textContent=(composition.duration*i/ticks).toFixed(composition.duration<1?3:2);scale.append(e)}ruler.append(label,scale);box.append(ruler);
+ for(const p of composition.parts){
+  const d=C.get(p.partId,p.version),row=document.createElement("div");row.className="track";const name=document.createElement("button");name.textContent=(p.enabled?"":"非表示 ")+d.name+" v"+p.version;name.title=d.name;name.onclick=()=>selectPart(p.uid);if(p.uid===selected)name.classList.add("selected");
+  const rail=document.createElement("div");rail.className="rail";const clip=document.createElement("div");clip.className="clip"+(p.uid===selected?" selected":"");clip.style.opacity=p.enabled?1:.4;
+  const body=document.createElement("button");body.type="button";body.className="clip-body";body.setAttribute("aria-label",d.name+" 移動");
+  const grip=(side,label)=>{const el=document.createElement("button");el.type="button";el.className="clip-grip";el.textContent=side==="start"?"‹":"›";el.setAttribute("aria-label",d.name+" "+label);el.title=label;bindTimeHandle(el,side,p,rail,clip,body);return el};
+  clip.append(grip("start","開始時刻"),body,grip("end","終了時刻"));bindTimeHandle(body,"move",p,rail,clip,body);paintClip(clip,body,p.start,p.end,composition.duration);
+  rail.onclick=e=>{if(!renderer||busy||timeDrag||e.target!==rail)return;const r=rail.getBoundingClientRect();if(!(r.width>0))return;playing=false;position=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*applied.composition.duration;renderAt();buttons()};
+  const cursor=document.createElement("span");cursor.className="cursor";rail.append(clip,cursor);row.append(name,rail);box.append(row);
+ }
+ viewport.scrollLeft=scroll;updatePosition();
+}
+$("timelineZoom").onchange=()=>{if(!busy)timeline()};
+$("timelineSnap").onchange=()=>cancelTimeDrag();
+window.addEventListener("keydown",e=>{if(e.key==="Escape")cancelTimeDrag()});
+
 const numericFields=[["start","開始秒",0,30,.01],["end","終了秒",0,30,.01],["x","開始 X",-2,2,.01],["y","開始 Y",-2,2,.01],["endX","終了 X",-2,2,.01],["endY","終了 Y",-2,2,.01],["arc","放物線の高さ",-2,2,.01],["scale","倍率",.05,4,.01],["rotation","回転角",-360,360,1],["opacity","透明度",0,1,.01],["speed","模様の速度",.05,10,.05],["tintMix","色の適用量",0,1,.01]];
 function field(box,title,input){const l=document.createElement("label");l.textContent=title;l.append(input);box.append(l);return input}
 function numberField(box,title,value,min,max,step,cb){const i=document.createElement("input");i.type="number";i.min=min;i.max=max;i.step=step;i.value=value;field(box,title,i);i.onchange=()=>{if(busy)return;const n=Number(i.value);if(i.value===""||!Number.isFinite(n)||n<min||n>max){i.value=value;status(title+" の入力範囲が不正",true);return}cb(n)};return i}
-function inspector(){const p=current(),box=$("partFields");$("inspector").hidden=!p;$("empty").hidden=!!p;box.replaceChildren();if(!p)return;const d=C.get(p.partId,p.version);$("partName").textContent=d.name+" v"+p.version;for(const [k,label,min,max,step] of numericFields)numberField(box,label,p[k],min,k==="start"||k==="end"?composition.duration:max,step,n=>{p[k]=n;timeline();mark()});const tint=document.createElement("input");tint.type="color";tint.value=p.tint;field(box,"色補正",tint);tint.onchange=()=>{p.tint=tint.value;mark()};const mode=document.createElement("select");option(mode,"local","部品内");option(mode,"scene","全体と同期");mode.value=p.timeMode;field(box,"模様の時間",mode);mode.onchange=()=>{p.timeMode=mode.value;mark()};const show=document.createElement("input");show.type="checkbox";show.checked=p.enabled;field(box,"表示",show);show.onchange=()=>{p.enabled=show.checked;timeline();mark()};for(const a of d.params)parameterField(box,a,p)}
+function inspector(){const p=current(),box=$("partFields");$("inspector").hidden=!p;$("empty").hidden=!!p;box.replaceChildren();if(!p)return;const d=C.get(p.partId,p.version);$("partName").textContent=d.name+" v"+p.version;for(const [k,label,min,max,step] of numericFields)numberField(box,label,p[k],min,k==="start"||k==="end"?composition.duration:max,step,n=>{if(k==="start"||k==="end"){try{const c=C.changeTiming(composition,p.uid,k==="start"?n:p.start,k==="end"?n:p.end);composition=c;playing=false;drawEditor();mark();timeStatus("時間を反映しました")}catch(e){inspector();status(e.message,true)}return}p[k]=n;timeline();mark()});const tint=document.createElement("input");tint.type="color";tint.value=p.tint;field(box,"色補正",tint);tint.onchange=()=>{p.tint=tint.value;mark()};const mode=document.createElement("select");option(mode,"local","部品内");option(mode,"scene","全体と同期");mode.value=p.timeMode;field(box,"模様の時間",mode);mode.onchange=()=>{p.timeMode=mode.value;mark()};const show=document.createElement("input");show.type="checkbox";show.checked=p.enabled;field(box,"表示",show);show.onchange=()=>{p.enabled=show.checked;timeline();mark()};for(const a of d.params)parameterField(box,a,p)}
 function drawEditor(){timeline();inspector();showLibrary();syncVersion();const p=current(),i=composition.parts.indexOf(p);$("duplicate").disabled=!p||composition.parts.length>=C.MAX_PARTS;$("delete").disabled=!p;$("up").disabled=i<=0;$("down").disabled=i<0||i>=composition.parts.length-1;outputInfo()}
 function move(delta){const i=composition.parts.indexOf(current()),j=i+delta;if(i<0||j<0||j>=composition.parts.length)return;[composition.parts[i],composition.parts[j]]=[composition.parts[j],composition.parts[i]];drawEditor();mark()}
 $("up").onclick=()=>move(-1);$("down").onclick=()=>move(1);
@@ -151,7 +223,7 @@ $("load").onchange=async()=>{try{const f=$("load").files[0];if(f)readSnapshot(JS
 $("localSave").onclick=()=>{try{localStorage.setItem(storageKey,JSON.stringify(snapshot()));changed=false;showUsage();status("ブラウザーに保存しました")}catch(e){status(e.message,true)}};
 $("localLoad").onclick=()=>{try{const raw=localStorage.getItem(storageKey);if(!raw)throw Error("保存された構成がありません");readSnapshot(JSON.parse(raw))}catch(e){status(e.message,true)}};
 $("source").onclick=()=>{if(!dirty&&applied)EffectExport.download(new Blob([applied.source],{type:"text/plain"}),"effect.frag")};
-async function exportImage(kind){if(busy||dirty||!renderer||!applied)return;busy=true;playing=false;const states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;buttons();const p=applied.p,r=renderer,t=position;try{const plan=EffectEngine.plan(p),frame=Math.min(plan.frames-1,Math.floor(t*p.fps));await EffectExport.run(p,kind,frame,(i,n)=>status("出力中 "+i+"/"+n),async(_p,i,c)=>{r.render(i/p.fps);const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(r.canvas,0,0);return c});status("画像出力完了")}catch(e){status("出力失敗: "+e.message,true)}finally{busy=false;for(const [e,v] of states)e.disabled=v;position=t;renderAt();buttons()}}
+async function exportImage(kind){if(busy||dirty||!renderer||!applied||timeDrag)return;busy=true;playing=false;const states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;buttons();const p=applied.p,r=renderer,t=position;try{const plan=EffectEngine.plan(p),frame=Math.min(plan.frames-1,Math.floor(t*p.fps));await EffectExport.run(p,kind,frame,(i,n)=>status("出力中 "+i+"/"+n),async(_p,i,c)=>{r.render(i/p.fps);const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(r.canvas,0,0);return c});status("画像出力完了")}catch(e){status("出力失敗: "+e.message,true)}finally{busy=false;for(const [e,v] of states)e.disabled=v;position=t;renderAt();buttons()}}
 for(const b of exports)b.onclick=()=>exportImage(b.dataset.export);
 function tick(now){if(!busy&&playing&&renderer){const delta=Math.min(.10,Math.max(0,(now-last)/1000));position+=delta;const d=applied.composition.duration;if(position>=d){if($("repeat").checked)position%=d;else{position=d;playing=false;buttons()}}renderAt()}last=now;if(!busy&&miniRenderer){try{draw(miniRenderer,$("mini"),((now-miniStart)/1000)%miniDuration)}catch(e){miniRenderer.dispose();miniRenderer=null;$("miniStatus").textContent=e.message;invalidateAuthor()}}requestAnimationFrame(tick)}
 window.addEventListener("beforeunload",e=>{if(changed){e.preventDefault();e.returnValue=""}});
