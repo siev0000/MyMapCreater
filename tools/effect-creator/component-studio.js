@@ -189,7 +189,40 @@ $("authorTest").onclick=testAuthor;$("authorRegister").onclick=registerAuthor;
 $("authorExport").onclick=()=>{if(!busy)EffectExport.download(new Blob([JSON.stringify(registryData(),null,2)],{type:"application/json"}),"glsl-part-registry.json")};
 $("authorImport").onchange=async()=>{try{if(busy)return;const file=$("authorImport").files[0];if(!file)return;const raw=parseRegistry(JSON.parse(await file.text())),added=verifyAdditions(raw),count=persistAdditions(added);authorStatus(count+"版を追加しました（既存版は変更なし）")}catch(e){authorStatus("読込失敗: "+e.message,true)}finally{$("authorImport").value=""}};
 
-function showLibrary(){const box=$("library"),cat=$("category").value,query=$("search").value.trim().toLowerCase();box.replaceChildren();for(const d of C.definitions()){if(cat&&cat!==d.category||query&&!(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query))continue;const row=document.createElement("div");row.className="part";const preview=document.createElement("button");preview.textContent="▶ "+d.name+" v"+d.version;preview.title="単体プレビュー";preview.onclick=()=>{mini(d);for(const b of box.querySelectorAll?box.querySelectorAll(".selected"):[])b.classList.remove("selected");preview.classList.add("selected")};const add=document.createElement("button");add.textContent="＋追加";add.disabled=d.view!=="BOTH"&&d.view!==composition.view;add.title=add.disabled?"視点 "+d.view+" に変更してください":"構成へ追加";add.onclick=()=>{addPart(d);const tab=$("studio-tab-part");if(tab)tab.click()};const hint=document.createElement("small");hint.textContent=(C.isComposite(d)?"複合 "+d.composition.parts.length+"部品 / ":"")+d.view+" / "+d.duration+"秒 / "+d.description;row.append(preview,add,hint);box.append(row)}}
+let libraryChoice=null;
+function clearLibraryChoice(){
+ libraryChoice=null;
+ const label=$("libraryChoice"),add=$("libraryAdd"),cancel=$("libraryCancel");
+ if(label)label.textContent="部品名を選択して試写";
+ if(add)add.hidden=true;if(cancel)cancel.hidden=true;
+ const box=$("library");if(box.querySelectorAll)for(const el of box.querySelectorAll(".selected"))el.classList.remove("selected");
+}
+function chooseLibraryPart(d,button){
+ if(busy)return;
+ clearLibraryChoice();libraryChoice=d;button.classList.add("selected");mini(d);
+ const label=$("libraryChoice"),add=$("libraryAdd"),cancel=$("libraryCancel");
+ const compatible=d.view==="BOTH"||d.view===composition.view;
+ if(label)label.textContent=compatible?d.name+" v"+d.version+" を追加しますか？":d.name+"：視点を "+d.view+" に変更すると追加できます";
+ if(add){add.hidden=false;add.disabled=!compatible||composition.parts.length>=C.MAX_PARTS}
+ if(cancel)cancel.hidden=false;
+}
+function showLibrary(){
+ const box=$("library"),cat=$("category").value,query=$("search").value.trim().toLowerCase(),scroll=box.scrollTop;
+ clearLibraryChoice();box.replaceChildren();
+ for(const d of C.definitions()){
+  if(cat&&cat!==d.category||query&&!(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query))continue;
+  const row=document.createElement("div");row.className="part";
+  const name=document.createElement("button");name.type="button";name.textContent=d.name+" v"+d.version;name.title=d.name+" v"+d.version+"：単体試写";name.onclick=()=>chooseLibraryPart(d,name);
+  const desc=document.createElement("small");desc.textContent=d.description||"説明なし";desc.title=d.view+" / "+d.duration+"秒 / "+desc.textContent;
+  row.append(name,desc);box.append(row);
+ }
+ box.scrollTop=scroll;
+}
+if($("libraryCancel"))$("libraryCancel").onclick=()=>clearLibraryChoice();
+if($("libraryAdd"))$("libraryAdd").onclick=()=>{
+ const d=libraryChoice;if(!d||busy||composition.parts.length>=C.MAX_PARTS||d.view!=="BOTH"&&d.view!==composition.view)return;
+ addPart(d);const tab=$("studio-tab-part");if(tab)tab.click();
+};
 function mini(d){if(busy)return;let next=null;try{const c=C.create(d.duration,d.view==="BOTH"?composition.view:d.view);c.name=d.name;c.parts=[C.instance(d.id,"preview",0,d.duration,d.version)];if(C.isComposite(d))c.loop=d.composition.loop;else if(d.category==="氷・持続")c.loop=true;if(d.id==="fire-smoky-flight"){c.parts[0].x=c.parts[0].endX=-.4;c.parts[0].y=c.parts[0].endY=.175}else if(!C.isComposite(d)&&d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}if(d.id==="shockwave"||d.id==="electric-wave")c.parts[0].params.squash=c.view==="TOP"?1:.34;const x=C.compile(c);const p=renderConfig(x.composition,x.source,{width:128,height:128,fps:12,columns:0,color:$("color").value,core:$("core").value});next=ShaderStudio.createRenderer(p,x.source);draw(next,$("mini"),0);miniRenderer?.dispose();miniRenderer=next;next=null;miniStart=performance.now();miniDuration=d.duration;$("miniTitle").textContent=d.name+" v"+d.version;$("miniStatus").textContent="単体再生中"}catch(e){next?.dispose();$("miniStatus").textContent=e.message}}
 function addPart(d){if(busy||composition.parts.length>=C.MAX_PARTS){status("部品数の上限です",true);return}const start=0,end=Math.min(composition.duration,d.duration);const p=C.instance(d.id,newId(),start,end,d.version);if(d.id==="fire-smoky-flight"){p.x=p.endX=-.4;p.y=p.endY=.175}else if(!C.isComposite(d)&&d.category==="飛翔"){p.x=-.65;p.endX=.65}if(d.id==="shockwave"||d.id==="electric-wave"||d.id==="ice-ground-freeze"||d.id==="ice-freeze-front")p.params.squash=composition.view==="TOP"?1:.34;composition.parts.push(p);selected=p.uid;drawEditor();mark()}
 function current(){return composition.parts.find(p=>p.uid===selected)}
