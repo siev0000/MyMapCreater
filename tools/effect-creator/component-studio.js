@@ -8,7 +8,7 @@ const A=SpellAssignments.create(C,ShaderStudio.records,CSMagicReference.rows);
 let magicId="",magicRaw=null,magicOutput=null,magicReadError="";
 const magicExportIds=["magicPng","magicSheet","magicWebp","magicZip"];
 function magicData(){const raw=localStorage.getItem(SpellAssignments.KEY);return {raw,data:A.parse(raw)}}
-function magicState(){try{const {raw,data}=magicData();magicRaw=raw;magicReadError="";return data}catch(e){magicReadError=e.message;return A.empty()}}
+function magicState(reset=false){try{const {raw,data}=magicData();if(reset)magicRaw=raw;magicReadError=raw===magicRaw?"":"別タブで保存が変更されました。魔法を再選択してください";return data}catch(e){magicReadError=e.message;return A.empty()}}
 function magicMessage(s){$("magicStatus").textContent=s}
 function magicButtons(data){const e=data?.entries[magicId];$("magicSave").disabled=!magicId||!!magicReadError||dirty;$("magicAdopt").disabled=!magicId||!!magicReadError||dirty||!e||!e.draft;$("magicLegacy").disabled=!magicId||!!magicReadError||e?.mode!=="components";$("magicRestore").disabled=!magicId||!e?.adopted;$("magicPreview").disabled=!magicId||!!magicReadError;$("magicDetach").disabled=!magicId;const opts=magicChoices(),i=opts.findIndex(r=>r.id===magicId);$("magicPrev").disabled=i<=0;$("magicNext").disabled=i<0||i>=opts.length-1}
 function magicChoices(){const attr=$("magicAttribute").value;return A.records.filter(r=>!attr||r.attribute===attr)}
@@ -26,7 +26,7 @@ function magicLoadSnapshot(id,x){const n=A.snapshot(id,x),added=C.prepareDefinit
 function selectMagic(id,source="draft"){
  if(busy)return false;if(!id){magicDetach();return true}
  if(changed&&!confirm("現在の未保存編集を破棄して魔法を切り替えますか？")){magicList();return false}
- try{const data=magicState();if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="adopted"?e?.adopted:e?.draft;
+ try{const data=magicState(true);if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="adopted"?e?.adopted:e?.draft;
  if(source==="adopted"&&!x)throw Error("採用済み構成がありません");
  if(x)magicLoadSnapshot(id,x);else{const initial=A.initial(id,composition.view),s={...config(),color:r.color||"#ff8634"};replace(initial.composition,s,true,id);magicMessage(initial.kind==="sample"?"比較試作を読み込みました（未採用）":"空の作業構成を用意しました。視点は仮設定。旧個別版は採用出力から確認できます")}
  $("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}if(x)magicMessage(source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
@@ -56,8 +56,8 @@ async function magicExport(kind){if(busy||!magicOutput)return;const o=magicOutpu
  try{if(localStorage.getItem(SpellAssignments.KEY)!==o.raw||o.id!==magicId)throw Error("採用状態が変更されました。再試写してください");busy=true;playing=false;const states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;try{const plan=EffectEngine.plan(o.p),frame=Math.max(0,Math.min(plan.frames-1,Math.floor(o.position*o.p.fps)));await EffectExport.run(o.p,kind,frame,(i,n)=>{$("magicOutputStatus").textContent="出力中 "+i+"/"+n},async(_p,i,c)=>{o.renderer.render(i/o.p.fps);const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(o.renderer.canvas,0,0);return c});$("magicOutputStatus").textContent="採用出力完了: "+o.id+" / "+o.mode}finally{busy=false;for(const [e,v] of states)e.disabled=v;magicDraw();buttons()}}
  catch(e){$("magicOutputStatus").textContent="出力失敗: "+e.message}}
 function initMagic(){
- option($("magicAttribute"),"","すべて");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicAttribute"),attr,attr);magicList();magicSync();
- $("magicAttribute").onchange=magicList;$("magicSelect").onchange=()=>selectMagic($("magicSelect").value);
+ magicState(true);option($("magicAttribute"),"","すべて");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicAttribute"),attr,attr);magicList();magicSync();
+ $("magicAttribute").onchange=()=>{const opts=magicChoices();if(magicId&&!opts.some(r=>r.id===magicId)&&opts.length){if(!selectMagic(opts[0].id)){$("magicAttribute").value=A.record(magicId).attribute;magicList();magicSync()}}else{magicList();magicSync()}};$("magicSelect").onchange=()=>selectMagic($("magicSelect").value);
  $("magicPrev").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>0)selectMagic(rs[i-1].id)};
  $("magicNext").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>=0&&i<rs.length-1)selectMagic(rs[i+1].id)};
  $("magicDetach").onclick=magicDetach;
@@ -284,7 +284,8 @@ function readSnapshot(x){
  const defs=x.definitions===undefined?[]:x.definitions,added=C.prepareDefinitions(defs);
  C.withDefinitions(added,()=>C.compile(x.composition));
  if(x.output){const {width,height,fps,columns,color,core}=x.output;if(![width,height,fps,columns].every(Number.isInteger)||width<16||width>512||height<16||height>512||fps<1||fps>60||columns<0||columns>300||!/^#[0-9a-f]{6}$/i.test(color)||!/^#[0-9a-f]{6}$/i.test(core))throw Error("出力設定が不正")}
- verifyAdditions(added);persistAdditions(added);replace(x.composition,x.output,true);
+ let associated="";if(x.magicId!==undefined){const n=A.snapshot(x.magicId,x);associated=n.magicId;if(!confirm("この構成を "+A.record(associated).name+" の作業構成として開きますか？採用状態は変更しません。"))return;magicState(true);if(magicReadError)throw Error(magicReadError);$("magicAttribute").value=A.record(associated).attribute}
+ verifyAdditions(added);persistAdditions(added);replace(x.composition,x.output,true,associated);
 }
 $("save").onclick=()=>{try{EffectExport.download(new Blob([JSON.stringify(snapshot(),null,2)],{type:"application/json"}),"effect-composition.json");changed=false}catch(e){status(e.message,true)}};
 $("load").onchange=async()=>{try{const f=$("load").files[0];if(f)readSnapshot(JSON.parse(await f.text()))}catch(e){status(e.message,true)}finally{$("load").value=""}};
