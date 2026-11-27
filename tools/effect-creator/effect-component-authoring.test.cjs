@@ -5,7 +5,7 @@ const d={id:"test-orb",version:1,name:"試作球",category:"発光",view:"BOTH",
 const original=C.compile(C.sample("inferno")).source;
 const preview=C.previewDefinition(d);
 assert(preview.source.includes("part_test_orb_v1"),"draft compile");
-assert(C.definitions().length===C.library.length+C.additionalBuiltins.length+C.extractedBuiltins.length,"draft must not register");
+assert(C.definitions().length===C.library.length+C.additionalBuiltins.length+C.extractedBuiltins.length+C.representativeBuiltins.length,"draft must not register");
 rejects(()=>C.get(d.id,1),"draft invisible");
 C.installDefinitions([d]);
 assert(C.nextVersion(d.id)===2,"next version");
