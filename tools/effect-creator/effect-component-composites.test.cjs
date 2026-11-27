@@ -5,7 +5,7 @@ const meta=(id,version=1)=>({id,version,name:id,category:"複合",description:""
 const original=C.sample("inferno"),saved=JSON.stringify(original),source=C.compile(original).source;
 const g=C.makeComposite(original,meta("inferno-group"));
 const pre=C.previewDefinition(g);
-assert(C.definitions().length===C.library.length+C.additionalBuiltins.length+C.extractedBuiltins.length+C.representativeBuiltins.length,"trial not registered");
+assert(C.definitions().length===C.library.length+C.additionalBuiltins.length+C.extractedBuiltins.length+C.representativeBuiltins.length+C.iceBuiltins.length,"trial not registered");
 assert(pre.source.includes("part_inferno_group_v1")&&pre.source.includes("part_fire_ring_v1"),"nested functions");
 assert((pre.source.match(/vec4 part_fire_ring_v1\(/g)||[]).length===1,"dedup");
 C.installDefinitions([g]);assert(JSON.stringify(original)===saved&&C.compile(original).source===source,"original unchanged");
