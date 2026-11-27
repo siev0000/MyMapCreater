@@ -18,8 +18,8 @@ function magicChoices(){const attr=$("magicAttribute").value;return A.records.fi
 function magicList(){const el=$("magicSelect");el.replaceChildren();option(el,"","選択してください");for(const r of magicChoices())option(el,r.id,(r.row?"CS"+r.row+" ":"")+r.name+(r.ruby?" / "+r.ruby:"")+" / Lv"+r.lv);el.value=magicChoices().some(r=>r.id===magicId)?magicId:""}
 function magicSync(){
  const data=magicState(),e=data.entries[magicId];magicButtons(data);
- if(!magicId){$("magicState").textContent="魔法未選択（自由制作）";$("magicReference").hidden=true;return}
- const r=A.record(magicId);$("magicReference").hidden=false;CSMagicReference.render(magicId,"magic");$("magicNote").textContent=r.note||"制作備考なし";
+ if(!magicId){if($("magicCopyName"))$("magicCopyName").textContent="";$("magicState").textContent="魔法未選択（自由制作）";$("magicReference").hidden=true;return}
+ const r=A.record(magicId);if($("magicCopyName"))$("magicCopyName").textContent=r.name;$("magicReference").hidden=false;CSMagicReference.render(magicId,"magic");$("magicNote").textContent=r.note||"制作備考なし";
  $("magicState").textContent=magicId+" / "+(r.loop?"持続":"発動・単発")+" / "+(e?.draft?"作業構成保存済み":"未保存")+" / 採用出力："+(e?.mode==="components"?"部品版":"旧個別版")+(changed?" / 編集中の変更あり":"")+(applied?.previewOnly?" / 上段：旧個別GLSL（参照用）":"");
  if(magicReadError)magicMessage("保存データ読込失敗（上書きしません）: "+magicReadError);
 }
