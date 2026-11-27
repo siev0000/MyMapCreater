@@ -31,7 +31,7 @@ function selectMagic(id,source="draft"){
  if(changed&&!confirm("現在の未保存編集を破棄して魔法を切り替えますか？")){magicList();return false}
  try{const data=magicState(true);if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="adopted"?e?.adopted:e?.draft;
  if(source==="adopted"&&!x)throw Error("採用済み構成がありません");
- if(x)magicLoadSnapshot(id,x);else{const initial=A.initial(id,composition.view),s={...config(),color:r.color||"#ff8634"};replace(initial.composition,s,true,id);magicMessage(initial.kind==="sample"?"比較試作を読み込みました（未採用）":"部品版は未作成。上段で旧個別GLSLを再生します。部品を追加すると部品版へ切り替わります")}
+ if(x)magicLoadSnapshot(id,x);else{const initial=A.initial(id,composition.view),s={...config(),color:r.color||"#ff8634"};replace(initial.composition,s,true,id);magicMessage(initial.kind==="thunder-extracted"?"完成版の雷を分解した初期部品構成を読み込みました（編集用・未採用）":initial.kind==="sample"?"比較試作を読み込みました（未採用）":"部品版は未作成。上段で旧個別GLSLを再生します。部品を追加すると部品版へ切り替わります")}
  $("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}saveView();if(x)magicMessage(applied?.previewOnly?"保存構成に部品がないため旧個別GLSLを再生します":source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
  }catch(e){magicList();magicMessage("魔法読込失敗: "+e.message);return false}
 }
