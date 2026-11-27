@@ -1,4 +1,6 @@
-const C=require("./effect-components.js"),SA=require("./spell-assignments.js"),S=require("./shader-studio.js"),R=require("./cs-magic-reference.js");
+const C=require("./effect-components.js"),SA=require("./spell-assignments.js");
+globalThis.LightningEffects=require("./lightning-presets.js");
+const S=require("./shader-studio.js"),R=require("./cs-magic-reference.js");
 const A=SA.create(C,S.records,R.rows),ok=(v,m)=>{if(!v)throw Error(m)},reject=(f,m)=>{let bad=false;try{f()}catch{bad=true}ok(bad,m)};
 const id="magic-cs-252",other="magic-cs-257",output={width:128,height:128,fps:12,columns:0,color:"#ff8634",core:"#ffffff"},wrap=(id,c)=>({format:"glsl-component-composition",magicId:id,composition:c,definitions:[],output});
 ok(A.records.length===458&&new Set(A.records.map(r=>r.id)).size===458,"all catalog IDs");
