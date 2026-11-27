@@ -100,6 +100,37 @@ function compile(input){
 }
 function sample(kind){let c=create(2.8,"TOP");c.name=kind==="inferno"?"煉獄（比較試作）":"炎収束（比較試作）";c.parts.push({...instance("fire-convergence","convergence",0,2.268),timeMode:"scene"});if(kind==="inferno")for(let i=0;i<3;i++){let start=(.28+i*.235)*2.8;c.parts.push({...instance("fire-ring","ring-"+i,start,Math.min(2.8,start+.728)),timeMode:"scene"})}c.parts.push({...instance("fire-burst","burst",2.1,2.8),timeMode:"scene"});return c}
 
+
+const spellComparisons=deepFreeze([
+ {row:252,name:"炎収束（フレイム・コンバージェンス）",duration:2.8,view:"TOP",note:"5方向の旋回収束→中央蓄積→爆発。炎環なし。"},
+ {row:257,name:"煉獄（インフェルノ）",duration:2.8,view:"TOP",note:"炎収束と同じ収束、炎環3回→爆発。"},
+ {row:245,name:"電漿球（プラズマ・キャノン）",duration:2.15,view:"SIDE",note:"左側で白青の電漿をチャージ→高速の単一砲弾（0.129秒）→右側で球状爆発・火花。"},
+ {row:253,name:"燃焼火炎（バーニング・ナパーム）",duration:4.8,view:"SIDE",note:"煙を引く放物線火炎弾→白熱圧縮→閃光→巻き上がる爆炎・内部煤煙・地表残煙・残留燃焼。"}
+]);
+function spellSample(row){
+ const info=spellComparisons.find(x=>x.row===row);if(!info)throw Error("比較対象がありません");
+ const c=create(info.duration,info.view);c.name=info.name+"（部品比較試作）";
+ function add(id,uid,start,end,version=1,x=0,y=0,endX=x,endY=y,params={}){
+  const p=instance(id,uid,start,end,version);Object.assign(p,{x,y,endX,endY,timeMode:"scene"});Object.assign(p.params,params);c.parts.push(p);return p;
+ }
+ if(row===252||row===257){
+  add("fire-convergence","convergence",0,2.268);
+  if(row===257)for(let i=0;i<3;i++){const start=(.28+i*.235)*2.8;add("fire-ring","ring-"+i,start,Math.min(2.8,start+.728),2,0,0,0,0,{ringSeed:9+i})}
+  add("fire-burst","burst",2.1,2.8);
+ }else if(row===245){
+  add("plasma-charge","charge",.015*2.15,.49*2.15,1,-.67);
+  add("plasma-projectile","projectile",.49*2.15,.55*2.15,2,-.67,0,.72,0);
+  add("plasma-burst","burst",.55*2.15,.94*2.15,1,.72);
+  add("plasma-impact-sparks","sparks",.55*2.15,.94*2.15,1,.72);
+ }else{
+  add("fire-smoky-flight","flight",.10*3.5,.42*3.5,1,-.68,-.12);
+  add("compression","compression",.39*3.5,.615*3.5,2,.13,-.47);
+  add("impact-flash","flash",.595*3.5,.625*3.5,1,.13,-.47);
+  for(const [id,version] of [["ground-smoke",2],["fire-roll-cloud",1],["fire-roll-soot",1],["fire-residual",1]])add(id,id,2.24,4.8,version,.13,0);
+ }
+ return validate(c);
+}
+
 const MAX_CUSTOM=128,MAX_BODY=12000;
 const keyOf=d=>d.id+"@"+d.version;
 const builtins=new Set([...library,...additionalBuiltins,...extractedBuiltins,...representativeBuiltins].map(keyOf));
@@ -157,7 +188,7 @@ function prepareDefinitions(raw){
 function withDefinitions(raw,fn){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);try{return fn(added)}finally{for(const d of added)lookup.delete(keyOf(d))}}
 function installDefinitions(raw){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);return added}
 function previewDefinition(raw,view="TOP",values={}){
- const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];c.parts[0].params={...c.parts[0].params,...values};if(isComposite(d))c.loop=d.composition.loop;if(!isComposite(d)&&d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
+ const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];c.parts[0].params={...c.parts[0].params,...values};if(isComposite(d))c.loop=d.composition.loop;if(d.id==="fire-smoky-flight"){c.parts[0].x=c.parts[0].endX=-.4;c.parts[0].y=c.parts[0].endY=.175}else if(!isComposite(d)&&d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
 }
 function referencedDefinitions(c){return compositeGraph(validate(c).parts).filter(d=>!builtins.has(keyOf(d)))}
 
@@ -220,5 +251,5 @@ function changeTiming(input,uid,start,end){
  p.start=start;p.end=end;return validate(c);
 }
 
-return {library,get,create,instance,validate,compile,sample,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,MAX_DEPTH,MAX_EXPANDED,isComposite,makeComposite,compositeGraph,timelineRange,changeTiming,versions,origin,migrateVersion,findUsage,additionalBuiltins,extractedBuiltins,representativeBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
+return {library,get,create,instance,validate,compile,sample,spellSample,spellComparisons,MAX_PARTS,MAX_SOURCE,SCHEMA,MAX_CUSTOM,MAX_DEPTH,MAX_EXPANDED,isComposite,makeComposite,compositeGraph,timelineRange,changeTiming,versions,origin,migrateVersion,findUsage,additionalBuiltins,extractedBuiltins,representativeBuiltins,normalizeParameter,parameterValue,definitions,customDefinitions,nextVersion,normalizeDefinition,prepareDefinitions,withDefinitions,installDefinitions,previewDefinition,referencedDefinitions};
 });
