@@ -2,16 +2,16 @@
 
 更新日：2026-11-27（日本時間）
 対象：siev0000/MyMapCreater / main
-確認した実装・仕様の基準コミット：`6dbb8b26196b27c1a9ae1ec241ec1c8028538fba`
+確認した実装・仕様の基準コミット：`5218b1b26b6645bef363770236a08911932a73b2`
 本ファイルと参照案内のみの更新コミットは上記基準に含まない。作業再開時は必ず最新HEADを確認する。
 
 ## 1. 最初に読む資料
 
 - [README](../README.md)：ツール全体・参照案内
 - [エフェクト作成仕様](specs/12-effect-creator.md)：冒頭付近の「GLSL部品組み合わせ制作方式（採用、初版試作実装済み）」「魔法エフェクト共通制作ルール v1.0」「魔法Lv別エフェクト制作基準」を優先。末尾の個別改修記録も参照。
-- [GLSL部品開発タスク](EFFECT_COMPONENT_TASKS.md)：EFX-00〜14を依存順に管理。EFX-01〜04/06〜08のソフトウェア描画・モデル検証済み、EFX-05/09のモデル・模擬UI検証済み。実WebGL・出力・スマホ未確認。次はEFX-10。
-- [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：42構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
-- [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=9.1)：v9.1（魔法別管理・採用切替、28種類33版）。実WebGL・Pages未確認。
+- [GLSL部品開発タスク](EFFECT_COMPONENT_TASKS.md)：EFX-00〜14を依存順に管理。EFX-01〜04/06〜08/10Aのソフトウェア描画・モデル検証済み、EFX-05/09のモデル・模擬UI検証済み。実WebGL・出力・スマホ未確認。次はEFX-10B。
+- [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：61構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
+- [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=10.1)：v10.1（氷14部品・優先4魔法、42種類47版）。実WebGL・Pages未確認。
 - [旧個別GLSLと代表魔法比較](https://siev0000.github.io/MyMapCreater/tools/effect-creator/spell-comparison.html?v=8)：4魔法の同時刻比較、構成JSON入出力。未承認試作。
 - [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=fire-revision-20)：現在のキャッシュキー。Pages配信は未確認。
 - ゲーム本体：siev0000/fantasy_Strategy（別リポジトリ）。ゲーム実装・戦闘仕様の正本。ゲーム側の戦闘エフェクトルールは前回確認時 ui/mobile-responsive-port-20260912 の docs/rules/ui/戦闘エフェクトルール.md。次回必要時にブランチと最新実装を確認。
@@ -44,7 +44,8 @@
 - EFX-07：ナパームv2を残煙・巻き上がる爆炎・内部煤煙・残留燃焼の4層に分離、電漿チャージ/尾光付き弾/着弾火花と雷7部品を追加。26種類29版、electric-common@1依存、旧15版単体生成GLSL一致。7モデル試験、完全GLSL17構成×12時点のOpenGL ES描画成功。分離ナパームはアルファ差最大1/255、被覆数一致、完全RGBA一致ではない。診断34構成。詳細はタスク表。
 - EFX-08：CS252/257/245/253の新構成を追加、旧版と同一尺（2.8/2.8/2.15/4.8秒）・視点、0.129秒砲弾・2.24秒ナパーム爆発。4版追加、28種33版。旧29版と458個別素材を保持。比較画面（同時刻再生/シーク・編集済みJSON比較）、8モデル試験・模擬UI・完全GLSL8構成×17時点136フレームのOpenGL ES描画成功。新4構成端警告なし、旧CS245端アルファ14、CS252以外の比較に画素差あり。承認・実WebGL・出力・スマホ・Pages未確認。
 - EFX-09：458素材・19属性選択、前後移動、自動読込、CS参照、ID別draft/adopted/mode保存、明示確認後の採用、旧版復帰、独立採用出力、魔法ID付き構成JSON、魔法別使用箇所検索。既定は旧版。作業保存は採用済みを変更しない。localStorage effect-spell-assignments-v1、採用はローカル限定。9モデル試験・模擬UI/出力プロバイダ成功。旧部品/旧GLSL/CSスナップショット不変。CS最新・実機・出力・スマホ・Pages未確認。
-- 次の優先：EFX-10。氷・水・風・地・光・植物の部品拡充、氷AC274/281/285/288を優先。現行ソースとCS備考・原文を確認し属性固有現象を作る。シート変更は明示指示時のみ、未承認素材を自動採用しない。EFX-01〜09の実機確認は残件。
+- EFX-10A：CS原本AC274/281/285/288を読み取り確認。氷14部品・ice-common@1、42種47版。CS274対象凍結、281中心から地表凍結、285地面から巨大氷柱、288暗域/風/凍結・別持続の5素材試作を魔法別初期読込（未採用）。旧33版の生成コードと旧458個別GLSLは不変。10モデル試験、完全GLSL19構成×12時点228フレームGLES成功、持続4構成端RGBA一致、端警告なし。極夜発動→持続はEFX-12で接続。原本シート・ゲーム変更なし。詳細はタスク表。
+- 次の優先：EFX-10B水属性。続けて10C風、10D地、10E光、10F植物。現行CS備考・旧GLSLから固有部品を抽出し、試作を別管理。EFX-10全体は未完。EFX-01〜10Aの実機・画像出力・端末・Pages・承認は残件。
 
 ## 3. 現在の進捗（GitHub確認済み）
 
