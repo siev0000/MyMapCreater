@@ -2,16 +2,17 @@
 
 更新日：2026-11-27（日本時間）
 対象：siev0000/MyMapCreater / main
-確認した実装・仕様の基準コミット：`1e04608f0ed2136ca84f0c261c7caaac2946c4e8`
+確認した実装・仕様の基準コミット：`1fe5c3e83d8c1bcbb3de9678c43d6136652178fc`
 本ファイルと参照案内のみの更新コミットは上記基準に含まない。作業再開時は必ず最新HEADを確認する。
 
 ## 1. 最初に読む資料
 
 - [README](../README.md)：ツール全体・参照案内
 - [エフェクト作成仕様](specs/12-effect-creator.md)：冒頭付近の「GLSL部品組み合わせ制作方式（採用、初版試作実装済み）」「魔法エフェクト共通制作ルール v1.0」「魔法Lv別エフェクト制作基準」を優先。末尾の個別改修記録も参照。
-- [GLSL部品開発タスク](EFFECT_COMPONENT_TASKS.md)：EFX-00〜14を依存順に管理。EFX-01〜04/06〜07のソフトウェア描画・モデル検証済み、EFX-05のモデル・模擬UI検証済み。実WebGL・出力・スマホ未確認。次はEFX-08。
-- [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：34構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
-- [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=7.1)：v7.1（炎・雷の共通部品抽出、26種類29版）。実WebGL・Pages未確認。
+- [GLSL部品開発タスク](EFFECT_COMPONENT_TASKS.md)：EFX-00〜14を依存順に管理。EFX-01〜04/06〜08のソフトウェア描画・モデル検証済み、EFX-05のモデル・模擬UI検証済み。実WebGL・出力・スマホ未確認。次はEFX-09。
+- [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：42構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
+- [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=8)：v8（代表4魔法、28種類33版）。実WebGL・Pages未確認。
+- [旧個別GLSLと代表魔法比較](https://siev0000.github.io/MyMapCreater/tools/effect-creator/spell-comparison.html?v=8)：4魔法の同時刻比較、構成JSON入出力。未承認試作。
 - [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=fire-revision-20)：現在のキャッシュキー。Pages配信は未確認。
 - ゲーム本体：siev0000/fantasy_Strategy（別リポジトリ）。ゲーム実装・戦闘仕様の正本。ゲーム側の戦闘エフェクトルールは前回確認時 ui/mobile-responsive-port-20260912 の docs/rules/ui/戦闘エフェクトルール.md。次回必要時にブランチと最新実装を確認。
 - シート編集原本：[game_data / CS](https://docs.google.com/spreadsheets/d/1M55erZwPIapl8-fw7NS1Souy1SiW1iH6J56C6C85NPg/edit#gid=1829342689)。AC列エフェクト備考と戦闘データ・効果説明を区別。生成JSONだけを手作業で変更しない。
@@ -41,7 +42,8 @@
 - EFX-05：タイムライン中央ドラッグ移動・両端リサイズ、ズーム1/2/4/8、横スクロール、時間スナップなし/0.01/0.05/0.1秒/1フレーム、数値・矢印キー、キャンセル。ドラッグ中はバーだけ動かし確定時に1回再生成。全体時間内に制限し他部品不変。モデル5試験・模擬DOM操作を確認。実タッチ・フォーカス・スクロール等は未確認。既存部品定義・458個別GLSLは不変。
 - EFX-06：複合部品を固定版で新規登録、子構成を開き新版登録。公開固有値最大16、入れ子、依存推移同梱、順不同読込、循環・欠落拒否、最大4階層・展開128（非表示/中間含む）、直下32・GLSL50000文字維持。親の尺で子時間を伸縮、親の変換を合成結果へ適用。シード・共通色は使用先全体設定を共有。入れ子の使用箇所検索。旧構成・15組み込み版・458個別GLSLは不変。6モデル試験、模擬UI、完全GLSL3構成×12時点のOpenGL ES描画成功、直接構成と複合化のアルファ統計一致。全ピクセル比較・実機は未確認。
 - EFX-07：ナパームv2を残煙・巻き上がる爆炎・内部煤煙・残留燃焼の4層に分離、電漿チャージ/尾光付き弾/着弾火花と雷7部品を追加。26種類29版、electric-common@1依存、旧15版単体生成GLSL一致。7モデル試験、完全GLSL17構成×12時点のOpenGL ES描画成功。分離ナパームはアルファ差最大1/255、被覆数一致、完全RGBA一致ではない。診断34構成。詳細はタスク表。
-- 次の優先：EFX-08。CS252/257の旧個別版との比較、CS245のチャージ→高速砲弾→爆発、CS253の飛翔→収束→巻き上がる爆炎/残煙の構成試作。元の魔法は置換せず比較・承認。EFX-01〜07の実WebGL・出力・端末操作・Pagesは残件。
+- EFX-08：CS252/257/245/253の新構成を追加、旧版と同一尺（2.8/2.8/2.15/4.8秒）・視点、0.129秒砲弾・2.24秒ナパーム爆発。4版追加、28種33版。旧29版と458個別素材を保持。比較画面（同時刻再生/シーク・編集済みJSON比較）、8モデル試験・模擬UI・完全GLSL8構成×17時点136フレームのOpenGL ES描画成功。新4構成端警告なし、旧CS245端アルファ14、CS252以外の比較に画素差あり。承認・実WebGL・出力・スマホ・Pages未確認。
+- 次の優先：EFX-09。既存魔法ID・CS参照・構成の関連付け、選択/前後・自動読込、明示採用と旧個別版復帰。正式採用はユーザー承認後。ゲーム性能・CS原本・旧個別GLSLは変更しない。EFX-01〜08実機確認は残件。
 
 ## 3. 現在の進捗（GitHub確認済み）
 
