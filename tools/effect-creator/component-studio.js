@@ -13,7 +13,7 @@ const magicExportIds=["magicPng","magicSheet","magicWebp","magicZip"];
 function magicData(){const raw=localStorage.getItem(SpellAssignments.KEY);return {raw,data:A.parse(raw)}}
 function magicState(reset=false){try{const {raw,data}=magicData();if(reset)magicRaw=raw;magicReadError=raw===magicRaw?"":"別タブで保存が変更されました。魔法を再選択してください";return data}catch(e){magicReadError=e.message;return A.empty()}}
 function magicMessage(s){$("magicStatus").textContent=s}
-function magicButtons(data){const e=data?.entries[magicId];$("magicSave").disabled=!magicId||!!magicReadError||dirty;$("magicAdopt").disabled=!magicId||!!magicReadError||dirty||!e||!e.draft;$("magicLegacy").disabled=!magicId||!!magicReadError||e?.mode!=="components";$("magicRestore").disabled=!magicId||!e?.adopted;$("magicPreview").disabled=!magicId||!!magicReadError;$("magicDetach").disabled=!magicId;const opts=magicChoices(),i=opts.findIndex(r=>r.id===magicId);$("magicPrev").disabled=i<=0;$("magicNext").disabled=i>=opts.length-1}
+function magicButtons(data){const e=data?.entries[magicId];$("magicSave").disabled=!magicId||!!magicReadError||dirty;$("magicAdopt").disabled=!magicId||!!magicReadError||dirty||!e||!e.draft;$("magicLegacy").disabled=!magicId||!!magicReadError||e?.mode!=="components";$("magicRestore").disabled=!magicId||!e?.adopted;if($("magicInitial"))$("magicInitial").hidden=!magicId.startsWith("thunder-");$("magicPreview").disabled=!magicId||!!magicReadError;$("magicDetach").disabled=!magicId;const opts=magicChoices(),i=opts.findIndex(r=>r.id===magicId);$("magicPrev").disabled=i<=0;$("magicNext").disabled=i>=opts.length-1}
 function magicChoices(){const attr=$("magicAttribute").value;return A.records.filter(r=>!attr||r.attribute===attr)}
 function magicList(){const el=$("magicSelect");el.replaceChildren();option(el,"","選択してください");for(const r of magicChoices())option(el,r.id,(r.row?"CS"+r.row+" ":"")+r.name+(r.ruby?" / "+r.ruby:"")+" / Lv"+r.lv);el.value=magicChoices().some(r=>r.id===magicId)?magicId:""}
 function magicSync(){
@@ -29,7 +29,7 @@ function magicLoadSnapshot(id,x){const n=A.snapshot(id,x),added=C.prepareDefinit
 function selectMagic(id,source="draft"){
  if(busy)return false;if(!id){magicDetach();return true}
  if(changed&&!confirm("現在の未保存編集を破棄して魔法を切り替えますか？")){magicList();return false}
- try{const data=magicState(true);if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="adopted"?e?.adopted:e?.draft;
+ try{const data=magicState(true);if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="initial"?null:source==="adopted"?e?.adopted:e?.draft;
  if(source==="adopted"&&!x)throw Error("採用済み構成がありません");
  if(x)magicLoadSnapshot(id,x);else{const initial=A.initial(id,composition.view),s={...config(),color:r.color||"#ff8634"};replace(initial.composition,s,true,id);magicMessage(initial.kind==="thunder-extracted"?"完成版の雷を分解した初期部品構成を読み込みました（編集用・未採用）":initial.kind==="sample"?"比較試作を読み込みました（未採用）":"部品版は未作成。上段で旧個別GLSLを再生します。部品を追加すると部品版へ切り替わります")}
  $("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}saveView();if(x)magicMessage(applied?.previewOnly?"保存構成に部品がないため旧個別GLSLを再生します":source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
@@ -66,7 +66,7 @@ function initMagic(){
  $("magicDetach").onclick=magicDetach;
  $("magicSave").onclick=()=>{if(busy||dirty)return;try{magicWrite("save",snapshot());changed=false;magicSync();magicMessage("魔法の作業構成を保存しました。採用出力は未変更")}catch(e){magicMessage("保存失敗: "+e.message)}};
  $("magicAdopt").onclick=magicAdopt;$("magicLegacy").onclick=()=>{if(busy||!confirm("採用出力を旧個別GLSLへ戻しますか？保存した部品構成は保持します。"))return;try{magicWrite("legacy",null);magicMessage("旧個別版へ戻しました")}catch(e){magicMessage(e.message)}};
- $("magicRestore").onclick=()=>selectMagic(magicId,"adopted");$("magicPreview").onclick=magicPreview;$("magicClose").onclick=magicClose;$("magicSeek").oninput=()=>{if(magicOutput){magicOutput.position=Number($("magicSeek").value)/1000*magicOutput.p.duration;magicDraw()}};
+ $("magicRestore").onclick=()=>selectMagic(magicId,"adopted");if($("magicInitial"))$("magicInitial").onclick=()=>selectMagic(magicId,"initial");$("magicPreview").onclick=magicPreview;$("magicClose").onclick=magicClose;$("magicSeek").oninput=()=>{if(magicOutput){magicOutput.position=Number($("magicSeek").value)/1000*magicOutput.p.duration;magicDraw()}};
  for(const [i,k] of ["png","sheet","webp","zip"].entries())$(magicExportIds[i]).onclick=()=>magicExport(k);
  $("magicBackup").onclick=()=>{try{EffectExport.download(new Blob([JSON.stringify(magicData().data,null,2)],{type:"application/json"}),"effect-spell-assignments.json")}catch(e){magicMessage(e.message)}};
  window.addEventListener("pagehide",()=>{saveView();magicClose()});
