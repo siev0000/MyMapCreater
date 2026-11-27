@@ -6,11 +6,14 @@ const settingsIds=["width","height","fps","columns","color","core"];
 
 const A=SpellAssignments.create(C,ShaderStudio.records,CSMagicReference.rows);
 let magicId="",magicRaw=null,magicOutput=null,magicReadError="";
+const viewKey="effect-component-studio-view-v1";
+function readView(){try{return JSON.parse(localStorage.getItem(viewKey)||"{}")||{}}catch(e){return {}}}
+function saveView(){try{localStorage.setItem(viewKey,JSON.stringify({magicId,attribute:$("magicAttribute").value,output:config(),repeat:$("repeat").checked,position,playing}))}catch(e){}}
 const magicExportIds=["magicPng","magicSheet","magicWebp","magicZip"];
 function magicData(){const raw=localStorage.getItem(SpellAssignments.KEY);return {raw,data:A.parse(raw)}}
 function magicState(reset=false){try{const {raw,data}=magicData();if(reset)magicRaw=raw;magicReadError=raw===magicRaw?"":"別タブで保存が変更されました。魔法を再選択してください";return data}catch(e){magicReadError=e.message;return A.empty()}}
 function magicMessage(s){$("magicStatus").textContent=s}
-function magicButtons(data){const e=data?.entries[magicId];$("magicSave").disabled=!magicId||!!magicReadError||dirty;$("magicAdopt").disabled=!magicId||!!magicReadError||dirty||!e||!e.draft;$("magicLegacy").disabled=!magicId||!!magicReadError||e?.mode!=="components";$("magicRestore").disabled=!magicId||!e?.adopted;$("magicPreview").disabled=!magicId||!!magicReadError;$("magicDetach").disabled=!magicId;const opts=magicChoices(),i=opts.findIndex(r=>r.id===magicId);$("magicPrev").disabled=i<=0;$("magicNext").disabled=i<0||i>=opts.length-1}
+function magicButtons(data){const e=data?.entries[magicId];$("magicSave").disabled=!magicId||!!magicReadError||dirty;$("magicAdopt").disabled=!magicId||!!magicReadError||dirty||!e||!e.draft;$("magicLegacy").disabled=!magicId||!!magicReadError||e?.mode!=="components";$("magicRestore").disabled=!magicId||!e?.adopted;$("magicPreview").disabled=!magicId||!!magicReadError;$("magicDetach").disabled=!magicId;const opts=magicChoices(),i=opts.findIndex(r=>r.id===magicId);$("magicPrev").disabled=i<=0;$("magicNext").disabled=i>=opts.length-1}
 function magicChoices(){const attr=$("magicAttribute").value;return A.records.filter(r=>!attr||r.attribute===attr)}
 function magicList(){const el=$("magicSelect");el.replaceChildren();option(el,"","選択してください");for(const r of magicChoices())option(el,r.id,(r.row?"CS"+r.row+" ":"")+r.name+(r.ruby?" / "+r.ruby:"")+" / Lv"+r.lv);el.value=magicChoices().some(r=>r.id===magicId)?magicId:""}
 function magicSync(){
@@ -21,7 +24,7 @@ function magicSync(){
  if(magicReadError)magicMessage("保存データ読込失敗（上書きしません）: "+magicReadError);
 }
 function magicClose(){magicOutput?.renderer.dispose();magicOutput=null;$("magicStage").hidden=true;$("magicSeek").disabled=true;for(const id of magicExportIds)$(id).disabled=true;$("magicTime").textContent="";$("magicOutputStatus").textContent=""}
-function magicDetach(){magicClose();magicId="";if(applied?.previewOnly){playing=false;position=0;refresh()}magicList();magicSync()}
+function magicDetach(){magicClose();magicId="";if(applied?.previewOnly){playing=false;position=0;refresh()}magicList();magicSync();saveView()}
 function magicLoadSnapshot(id,x){const n=A.snapshot(id,x),added=C.prepareDefinitions(n.definitions);verifyAdditions(added);persistAdditions(added);replace(n.composition,n.output,true,id)}
 function selectMagic(id,source="draft"){
  if(busy)return false;if(!id){magicDetach();return true}
@@ -29,7 +32,7 @@ function selectMagic(id,source="draft"){
  try{const data=magicState(true);if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="adopted"?e?.adopted:e?.draft;
  if(source==="adopted"&&!x)throw Error("採用済み構成がありません");
  if(x)magicLoadSnapshot(id,x);else{const initial=A.initial(id,composition.view),s={...config(),color:r.color||"#ff8634"};replace(initial.composition,s,true,id);magicMessage(initial.kind==="sample"?"比較試作を読み込みました（未採用）":"部品版は未作成。上段で旧個別GLSLを再生します。部品を追加すると部品版へ切り替わります")}
- $("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}if(x)magicMessage(applied?.previewOnly?"保存構成に部品がないため旧個別GLSLを再生します":source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
+ $("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}saveView();if(x)magicMessage(applied?.previewOnly?"保存構成に部品がないため旧個別GLSLを再生します":source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
  }catch(e){magicList();magicMessage("魔法読込失敗: "+e.message);return false}
 }
 function magicWrite(action,x){
@@ -57,16 +60,16 @@ async function magicExport(kind){if(busy||!magicOutput)return;const o=magicOutpu
  catch(e){$("magicOutputStatus").textContent="出力失敗: "+e.message}}
 function initMagic(){
  magicState(true);option($("magicAttribute"),"","すべて");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicAttribute"),attr,attr);magicList();magicSync();
- $("magicAttribute").onchange=()=>{const opts=magicChoices();if(magicId&&!opts.some(r=>r.id===magicId)&&opts.length){if(!selectMagic(opts[0].id)){$("magicAttribute").value=A.record(magicId).attribute;magicList();magicSync()}}else{magicList();magicSync()}};$("magicSelect").onchange=()=>selectMagic($("magicSelect").value);
+ $("magicAttribute").onchange=()=>{const opts=magicChoices();if(!opts.some(r=>r.id===magicId)&&opts.length){const previous=magicId?A.record(magicId).attribute:"";if(!selectMagic(opts[0].id)){$("magicAttribute").value=previous;magicList();magicSync()}}else{magicList();magicSync();saveView()}};$("magicSelect").onchange=()=>selectMagic($("magicSelect").value);
  $("magicPrev").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>0)selectMagic(rs[i-1].id)};
- $("magicNext").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>=0&&i<rs.length-1)selectMagic(rs[i+1].id)};
+ $("magicNext").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i<rs.length-1)selectMagic(rs[i+1].id)};
  $("magicDetach").onclick=magicDetach;
  $("magicSave").onclick=()=>{if(busy||dirty)return;try{magicWrite("save",snapshot());changed=false;magicSync();magicMessage("魔法の作業構成を保存しました。採用出力は未変更")}catch(e){magicMessage("保存失敗: "+e.message)}};
  $("magicAdopt").onclick=magicAdopt;$("magicLegacy").onclick=()=>{if(busy||!confirm("採用出力を旧個別GLSLへ戻しますか？保存した部品構成は保持します。"))return;try{magicWrite("legacy",null);magicMessage("旧個別版へ戻しました")}catch(e){magicMessage(e.message)}};
  $("magicRestore").onclick=()=>selectMagic(magicId,"adopted");$("magicPreview").onclick=magicPreview;$("magicClose").onclick=magicClose;$("magicSeek").oninput=()=>{if(magicOutput){magicOutput.position=Number($("magicSeek").value)/1000*magicOutput.p.duration;magicDraw()}};
  for(const [i,k] of ["png","sheet","webp","zip"].entries())$(magicExportIds[i]).onclick=()=>magicExport(k);
  $("magicBackup").onclick=()=>{try{EffectExport.download(new Blob([JSON.stringify(magicData().data,null,2)],{type:"application/json"}),"effect-spell-assignments.json")}catch(e){magicMessage(e.message)}};
- window.addEventListener("pagehide",magicClose);
+ window.addEventListener("pagehide",()=>{saveView();magicClose()});
 }
 
 const newId=()=>{let id;do{id="part-"+(++serial)}while(composition.parts.some(p=>p.uid===id));return id};
@@ -437,5 +440,10 @@ for(const id of ["groupId","groupName","groupCategory","groupDescription"])$(id)
 $("groupTest").onclick=()=>{if(busy)return;invalidateGroup();let next=null;try{const d=readGroup();next=trialRenderer(d);draw(next,$("mini"),d.duration*.5);const old=miniRenderer;miniRenderer=next;next=null;old?.dispose();miniStart=performance.now();miniDuration=d.duration;$("miniTitle").textContent=d.name+"（複合部品試写）";$("miniStatus").textContent="試写成功";groupTested=JSON.stringify(d);$("groupRegister").disabled=false;groupStatus("コンパイル・6時点の試写成功。登録できます")}catch(e){next?.dispose();groupStatus("試写失敗: "+e.message)}};
 $("groupRegister").onclick=()=>{if(busy||!groupTested)return;try{const d=readGroup();if(JSON.stringify(d)!==groupTested)throw Error("構成が変更されています。再試写してください");persistAdditions([d]);invalidateGroup();$("groupBase").value=d.id+"@"+d.version;groupStatus(d.id+"@"+d.version+" を登録しました。元の構成は未変更")}catch(e){invalidateGroup();groupStatus(e.message)}};
 
-initMagic();refreshArchive();syncRegistry();startAuthor(false);newGroup();if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();refresh();if(renderer){playing=true;last=performance.now();buttons()}requestAnimationFrame(tick);
+const savedView=readView();initMagic();refreshArchive();syncRegistry();startAuthor(false);newGroup();if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();
+if(savedView.output){try{const settings=A.output(savedView.output);for(const k of settingsIds)$(k).value=settings[k]}catch(e){}}
+if([...$("magicAttribute").options].some(o=>o.value===savedView.attribute))$("magicAttribute").value=savedView.attribute;
+const restored=typeof savedView.magicId==="string"&&A.records.some(r=>r.id===savedView.magicId)&&selectMagic(savedView.magicId);
+if(!restored){magicList();magicSync();refresh()}
+if(renderer){playing=true;last=performance.now();if(restored){if(typeof savedView.repeat==="boolean")$("repeat").checked=savedView.repeat;if(Number.isFinite(savedView.position)){position=Math.max(0,Math.min(applied.composition.duration,savedView.position));playing=savedView.playing!==false;if(playing&&position>=applied.composition.duration)position=0;renderAt()}}buttons()}saveView();requestAnimationFrame(tick);
 })();
