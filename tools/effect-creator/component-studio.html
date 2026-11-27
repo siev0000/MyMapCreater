@@ -61,6 +61,18 @@ header .hint{font-size:10px;white-space:nowrap}
 .library-filter{display:grid;grid-template-columns:minmax(110px,1fr) minmax(120px,2fr);gap:6px;align-items:end}
 .library-filter .bar{margin:0}.library-guide{margin:4px 0}.studio-scroll .library{max-height: min(33vh,300px);margin:4px 0}.part>button:first-child{text-align:left}.part small{font-size:11px}.part{padding:4px}
 #authorSimpleParams{margin:8px 0}#studioPartSelect{max-width:100%}#partName{margin:5px 0}
+
+/* Compact library: name and description side by side, one shared add action. */
+.studio-scroll .library{display:block;max-height:min(36vh,360px);margin:3px 0;overflow:auto;border:1px solid var(--border);border-radius:4px}
+.studio-scroll .library .part{display:grid;grid-template-columns:minmax(0,37%) minmax(0,1fr);gap:6px;align-items:center;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:2px 4px;min-height:28px}
+.studio-scroll .library .part:last-child{border-bottom:0}
+.studio-scroll .library .part>button{width:100%;border:0;border-radius:3px;background:transparent;text-align:left;font-size:12px;line-height:1.25;padding:3px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.studio-scroll .library .part>button:hover{background:#303846}
+.studio-scroll .library .part small{grid-column:auto;min-width:0;line-height:1.3;font-size:11px;overflow-wrap:anywhere}
+.library-action{display:flex;align-items:center;gap:4px;min-height:28px;margin:3px 0}
+.library-action #libraryChoice{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.3}
+.library-action button{flex:none;padding:3px 8px;font-size:12px}
+@media(min-width:900px){.studio-scroll .library .part{grid-template-columns:minmax(0,230px) minmax(0,1fr)}}
 </style></head><body>
 <header data-tool-home><h1>GLSL 部品組み合わせ制作</h1><a href="index.html">個別GLSL制作</a><span class="hint">v10.1</span></header>
 <div class="layout">
@@ -69,7 +81,7 @@ header .hint{font-size:10px;white-space:nowrap}
 <div class="toolbar"><button id="magicSave" class="primary">魔法の作業構成を保存</button><button id="magicAdopt">保存構成を採用</button><button id="magicLegacy">旧個別版へ戻す</button><button id="magicRestore">採用済み構成を編集に読込</button></div><p id="magicStatus" class="status" role="status"></p>
 <details><summary>採用出力の確認（旧版／採用済み部品版）</summary><p class="hint">通常の全体プレビューと画像出力は編集中の試作です。ここでは保存済みの採用状態だけを描画します。既定は旧版。採用はこのブラウザー内のみで、GitHubやゲーム本体には反映しません。</p><div class="toolbar"><button id="magicPreview">採用出力を試写</button><button id="magicClose">閉じる・解放</button></div><div class="stage" id="magicStage" hidden><canvas id="magicCanvas" width="128" height="128"></canvas></div><label>採用出力の再生位置<input id="magicSeek" type="range" min="0" max="1000" value="0" disabled></label><p id="magicTime" class="hint"></p><div class="toolbar"><button id="magicPng" disabled>現在コマPNG</button><button id="magicSheet" disabled>PNGシート</button><button id="magicWebp" disabled>WebPシート</button><button id="magicZip" disabled>連番PNG ZIP</button></div><p id="magicOutputStatus" class="hint" role="status"></p></details>
 <div class="toolbar"><button id="magicBackup">魔法管理JSONバックアップ</button></div><p class="hint">発動と持続は別の素材IDです。保存と採用は別操作。新しい作業構成を保存しても採用済み構成は変わりません。</p></section>
-<aside class="panel" id="studio-pane-library" role="tabpanel" aria-labelledby="studio-tab-library" hidden><div class="library-filter"><label>分類<select id="category"><option value="">すべて</option></select></label><label class="bar">検索<input id="search" type="search" placeholder="部品名"></label></div><div class="hint library-guide">部品名で試写 → 追加で構成へ → 部品設定で調整</div><div id="library" class="library"></div><details class="section" id="authorPanel"><summary><strong>既存部品を元に新規登録・新版作成</strong></summary>
+<aside class="panel" id="studio-pane-library" role="tabpanel" aria-labelledby="studio-tab-library" hidden><div class="library-filter"><label>分類<select id="category"><option value="">すべて</option></select></label><label class="bar">検索<input id="search" type="search" placeholder="部品名"></label></div><div class="library-action" id="libraryAction"><span id="libraryChoice" class="hint" aria-live="polite">部品名を選択して試写</span><button type="button" id="libraryAdd" class="primary" hidden>追加</button><button type="button" id="libraryCancel" hidden>取消</button></div><div id="library" class="library"></div><details class="section" id="authorPanel"><summary><strong>既存部品を元に新規登録・新版作成</strong></summary>
 <p class="hint">元の部品を選択すると形状と設定項目を引き継ぎます。名前・初期値を変更して試写し、登録してください。元の部品は変更されません。</p>
 <label>形状テンプレート<select id="authorBase"><option value="">基本発光球</option></select></label>
 <div class="toolbar"><button id="authorNew">新規・複製</button><button id="authorVersion">新版を作る</button></div>
@@ -91,4 +103,4 @@ header .hint{font-size:10px;white-space:nowrap}
 <script>
 (()=>{const tabs=[...document.querySelectorAll('[data-studio-tab]')],scroll=document.querySelector('.studio-scroll');function select(tab,focus=false){for(const t of tabs){const active=t===tab;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!active}document.getElementById('studioMiniWrap').hidden=!['library','group','part'].includes(tab.dataset.studioTab);scroll.scrollTop=0;if(focus)tab.focus();tab.scrollIntoView({block:'nearest',inline:'nearest'})}for(const t of tabs){t.addEventListener('click',()=>select(t));t.addEventListener('keydown',e=>{const i=tabs.indexOf(t);let n;if(e.key==='ArrowRight')n=(i+1)%tabs.length;else if(e.key==='ArrowLeft')n=(i+tabs.length-1)%tabs.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=tabs.length-1;else return;e.preventDefault();select(tabs[n],true)})}})();
 </script>
-<script src="lightning-presets.js?v=1"></script><script src="magic-catalog.js?v=fire-revision-20"></script><script src="shader-studio.js?v=layer-recovery-15"></script><script src="effect-engine.js?v=thunder-1"></script><script src="effect-export.js"></script><script src="cs-magic-reference.js?v=1"></script><script src="effect-components.js?v=10.1a"></script><script src="spell-assignments.js?v=10.1"></script><script src="component-studio.js?v=visual-editor-1"></script></body></html>
+<script src="lightning-presets.js?v=1"></script><script src="magic-catalog.js?v=fire-revision-20"></script><script src="shader-studio.js?v=layer-recovery-15"></script><script src="effect-engine.js?v=thunder-1"></script><script src="effect-export.js"></script><script src="cs-magic-reference.js?v=1"></script><script src="effect-components.js?v=10.1a"></script><script src="spell-assignments.js?v=10.1"></script><script src="component-studio.js?v=compact-library-1"></script></body></html>
