@@ -35,7 +35,7 @@ function create(C,records,refs){
   else throw Error("不明な操作");
   if(Object.keys(data.entries).length>MAX)throw Error("保存上限 "+MAX+" 件");return data
  }
- function initial(id,view="SIDE"){const r=record(id),s=C.spellComparisons.find(d=>id==="magic-cs-"+d.row);if(s)return {composition:C.spellSample(s.row),kind:"sample"};const c=C.create(r.duration,view);c.name=r.name;c.loop=r.loop;return {composition:c,kind:"empty"}}
+ function initial(id,view="SIDE"){const r=record(id),s=C.spellComparisons.find(d=>id==="magic-cs-"+d.row);if(s)return {composition:C.spellSample(s.row),kind:"sample"};if(C.iceSamples.some(d=>d.id===id))return {composition:C.iceSample(id),kind:"sample"};const c=C.create(r.duration,view);c.name=r.name;c.loop=r.loop;return {composition:c,kind:"empty"}}
  function active(data,id){record(id);const e=data.entries[id];return e?.mode==="components"?{mode:"components",snapshot:snapshot(id,e.adopted,true)}:{mode:"legacy",record:record(id)}}
  return {record,reference,output,snapshot,empty,parse,transition,initial,active,records}
 }
