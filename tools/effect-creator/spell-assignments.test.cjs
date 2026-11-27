@@ -1,0 +1,21 @@
+const C=require("./effect-components.js"),SA=require("./spell-assignments.js"),S=require("./shader-studio.js"),R=require("./cs-magic-reference.js");
+const A=SA.create(C,S.records,R.rows),ok=(v,m)=>{if(!v)throw Error(m)},reject=(f,m)=>{let bad=false;try{f()}catch{bad=true}ok(bad,m)};
+const id="magic-cs-252",other="magic-cs-257",output={width:128,height:128,fps:12,columns:0,color:"#ff8634",core:"#ffffff"},wrap=(id,c)=>({format:"glsl-component-composition",magicId:id,composition:c,definitions:[],output});
+ok(A.records.length===458&&new Set(A.records.map(r=>r.id)).size===458,"all catalog IDs");
+for(const r of A.records){ok(A.initial(r.id).composition.loop===r.loop,"loop "+r.id);ok(A.active(A.empty(),r.id).mode==="legacy","legacy default");ok(!!A.reference(r.id).record,"reference")}
+ok(A.reference("thunder-chain-ball-lightning").ref===null,"trial has no CS ref");
+ok(A.reference("thunder-st-elmo-sustain").ref.row===314,"sustain reference");
+let d=A.empty(),x=wrap(id,A.initial(id).composition);d=A.transition(d,id,"save",x,"t1");ok(A.active(d,id).mode==="legacy","save not adoption");
+const adopted=A.transition(d,id,"adopt",x,"t2");ok(A.active(adopted,id).mode==="components"&&A.active(d,id).mode==="legacy","explicit immutable adoption");
+const edit=JSON.parse(JSON.stringify(x));edit.composition.parts[0].scale=.8;const next=A.transition(adopted,id,"save",edit,"t3");
+ok(A.active(next,id).snapshot.composition.parts[0].scale===1,"adopted snapshot frozen against drafts");
+ok(next.entries[id].draft.composition.parts[0].scale===.8,"draft changed");reject(()=>A.transition(next,id,"adopt",x),"stale adoption");
+ok(A.active(A.transition(next,id,"legacy"),id).mode==="legacy","legacy restore");
+ok(A.transition(next,id,"legacy").entries[id].adopted.composition.parts[0].scale===1,"retain adopted copy");
+ok(A.active(next,other).mode==="legacy","independent ID");
+reject(()=>A.transition(next,other,"save",x),"wrong id");reject(()=>A.snapshot(id,{...x,composition:{...x.composition,loop:true}}),"loop mismatch");
+reject(()=>A.transition(A.empty(),id,"adopt",x),"must save first");
+const empty=wrap(id,C.create(2.8,"TOP"));reject(()=>A.snapshot(id,empty,true),"empty adoption");
+reject(()=>A.parse('{"version":1,"entries":{"fake":{"mode":"legacy"}}}'),"unknown catalog key");
+ok(JSON.stringify(A.parse(JSON.stringify(next)))===JSON.stringify(next),"roundtrip");
+console.log("spell assignment tests passed");
