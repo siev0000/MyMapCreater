@@ -228,7 +228,7 @@ function prepareDefinitions(raw){
 function withDefinitions(raw,fn){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);try{return fn(added)}finally{for(const d of added)lookup.delete(keyOf(d))}}
 function installDefinitions(raw){const added=prepareDefinitions(raw);for(const d of added)lookup.set(keyOf(d),d);return added}
 function previewDefinition(raw,view="TOP",values={}){
- const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];c.parts[0].params={...c.parts[0].params,...values};if(isComposite(d))c.loop=d.composition.loop;if(d.id==="fire-smoky-flight"){c.parts[0].x=c.parts[0].endX=-.4;c.parts[0].y=c.parts[0].endY=.175}else if(!isComposite(d)&&d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
+ const d=normalizeDefinition(raw);return withDefinitions([d],()=>{const c=create(d.duration,d.view==="BOTH"?view:d.view);c.name=d.name;c.parts=[instance(d.id,"preview",0,d.duration,d.version)];c.parts[0].params={...c.parts[0].params,...values};if(isComposite(d))c.loop=d.composition.loop;else if(d.category==="氷・持続")c.loop=true;if(d.id==="fire-smoky-flight"){c.parts[0].x=c.parts[0].endX=-.4;c.parts[0].y=c.parts[0].endY=.175}else if(!isComposite(d)&&d.category==="飛翔"){c.parts[0].x=-.65;c.parts[0].endX=.65}return compile(c)});
 }
 function referencedDefinitions(c){return compositeGraph(validate(c).parts).filter(d=>!builtins.has(keyOf(d)))}
 
