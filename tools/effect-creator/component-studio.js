@@ -83,7 +83,8 @@ function outputInfo(){try{const p={...config(),duration:composition.duration};if
 function refresh(){if(busy)return;cancelTimeDrag();dirty=true;buttons();outputInfo();let next=null;
  try{const legacy=!!magicId&&composition.parts.length===0,rec=legacy?A.record(magicId):null;const c=legacy?{composition:{...composition,duration:rec.duration},source:ShaderStudio.sources[rec.id],previewOnly:true}:C.compile(composition);if(!c.source)throw Error("旧個別GLSLがありません");const settings=config(),p=renderConfig(c.composition,c.source,settings);next=ShaderStudio.createRenderer(p,c.source);const t=Math.min(position,c.composition.duration);draw(next,$("preview"),t);const old=renderer;renderer=next;next=null;applied={...c,settings,p};position=t;dirty=false;old?.dispose();status(c.previewOnly?"旧個別GLSLを再生中（部品構成未作成）":"反映済み / "+c.composition.parts.length+" 部品 / GLSL "+c.source.length+" 文字"+(c.composition.loop?" / ループの継ぎ目は要確認":""));updatePosition()}catch(e){next?.dispose();status("未反映（前回の正常なプレビューを保持）\n"+e.message,true)}finally{buttons();magicSync()}}
 function mark(){magicClose();invalidateGroup();updateGroupBindings();cancelTimeDrag();closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
-function sync(){for(const k of ["name","duration","view","seed"])$(k).value=composition[k];$("loop").checked=composition.loop;$("repeat").checked=composition.loop}
+let repeatPreference=typeof readView().repeat==="boolean"?readView().repeat:null;
+function sync(){for(const k of ["name","duration","view","seed"])$(k).value=composition[k];$("loop").checked=composition.loop;$("repeat").checked=repeatPreference===null?composition.loop:repeatPreference}
 function option(select,value,label){const o=document.createElement("option");o.value=value;o.textContent=label;select.append(o)}
 
 const registryKey="effect-component-registry-v1";
@@ -440,10 +441,11 @@ for(const id of ["groupId","groupName","groupCategory","groupDescription"])$(id)
 $("groupTest").onclick=()=>{if(busy)return;invalidateGroup();let next=null;try{const d=readGroup();next=trialRenderer(d);draw(next,$("mini"),d.duration*.5);const old=miniRenderer;miniRenderer=next;next=null;old?.dispose();miniStart=performance.now();miniDuration=d.duration;$("miniTitle").textContent=d.name+"（複合部品試写）";$("miniStatus").textContent="試写成功";groupTested=JSON.stringify(d);$("groupRegister").disabled=false;groupStatus("コンパイル・6時点の試写成功。登録できます")}catch(e){next?.dispose();groupStatus("試写失敗: "+e.message)}};
 $("groupRegister").onclick=()=>{if(busy||!groupTested)return;try{const d=readGroup();if(JSON.stringify(d)!==groupTested)throw Error("構成が変更されています。再試写してください");persistAdditions([d]);invalidateGroup();$("groupBase").value=d.id+"@"+d.version;groupStatus(d.id+"@"+d.version+" を登録しました。元の構成は未変更")}catch(e){invalidateGroup();groupStatus(e.message)}};
 
+$("repeat").addEventListener("change",()=>{repeatPreference=$("repeat").checked;saveView()});
 const savedView=readView();initMagic();refreshArchive();syncRegistry();startAuthor(false);newGroup();if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();
 if(savedView.output){try{const settings=A.output(savedView.output);for(const k of settingsIds)$(k).value=settings[k]}catch(e){}}
 if([...$("magicAttribute").options].some(o=>o.value===savedView.attribute))$("magicAttribute").value=savedView.attribute;
 const restored=typeof savedView.magicId==="string"&&A.records.some(r=>r.id===savedView.magicId)&&selectMagic(savedView.magicId);
 if(!restored){magicList();magicSync();refresh()}
-if(renderer){playing=true;last=performance.now();if(restored){if(typeof savedView.repeat==="boolean")$("repeat").checked=savedView.repeat;if(Number.isFinite(savedView.position)){position=Math.max(0,Math.min(applied.composition.duration,savedView.position));playing=savedView.playing!==false;if(playing&&position>=applied.composition.duration)position=0;renderAt()}}buttons()}saveView();requestAnimationFrame(tick);
+if(renderer){playing=true;last=performance.now();if(restored){if(Number.isFinite(savedView.position)){position=Math.max(0,Math.min(applied.composition.duration,savedView.position));playing=savedView.playing!==false;if(playing&&position>=applied.composition.duration)position=0;renderAt()}}buttons()}saveView();requestAnimationFrame(tick);
 })();
