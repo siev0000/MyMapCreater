@@ -3,6 +3,72 @@ const C=EffectComponents,$=id=>document.getElementById(id);
 let composition=C.sample("convergence"),selected=composition.parts[0].uid,serial=0,renderer=null,miniRenderer=null,applied=null,dirty=true,playing=false,position=0,last=0,busy=false,miniStart=0,miniDuration=1,changed=false;
 const exports=[...document.querySelectorAll("[data-export]")],storageKey="effect-components-v1";
 const settingsIds=["width","height","fps","columns","color","core"];
+
+const A=SpellAssignments.create(C,ShaderStudio.records,CSMagicReference.rows);
+let magicId="",magicRaw=null,magicOutput=null,magicReadError="";
+const magicExportIds=["magicPng","magicSheet","magicWebp","magicZip"];
+function magicData(){const raw=localStorage.getItem(SpellAssignments.KEY);return {raw,data:A.parse(raw)}}
+function magicState(){try{const {raw,data}=magicData();magicRaw=raw;magicReadError="";return data}catch(e){magicReadError=e.message;return A.empty()}}
+function magicMessage(s){$("magicStatus").textContent=s}
+function magicButtons(data){const e=data?.entries[magicId];$("magicSave").disabled=!magicId||!!magicReadError||dirty;$("magicAdopt").disabled=!magicId||!!magicReadError||dirty||!e||!e.draft;$("magicLegacy").disabled=!magicId||!!magicReadError||e?.mode!=="components";$("magicRestore").disabled=!magicId||!e?.adopted;$("magicPreview").disabled=!magicId||!!magicReadError;$("magicDetach").disabled=!magicId;const opts=magicChoices(),i=opts.findIndex(r=>r.id===magicId);$("magicPrev").disabled=i<=0;$("magicNext").disabled=i<0||i>=opts.length-1}
+function magicChoices(){const attr=$("magicAttribute").value;return A.records.filter(r=>!attr||r.attribute===attr)}
+function magicList(){const el=$("magicSelect");el.replaceChildren();option(el,"","選択してください");for(const r of magicChoices())option(el,r.id,(r.row?"CS"+r.row+" ":"")+r.name+(r.ruby?" / "+r.ruby:"")+" / Lv"+r.lv);el.value=magicChoices().some(r=>r.id===magicId)?magicId:""}
+function magicSync(){
+ const data=magicState(),e=data.entries[magicId];magicButtons(data);
+ if(!magicId){$("magicState").textContent="魔法未選択（自由制作）";$("magicReference").hidden=true;return}
+ const r=A.record(magicId);$("magicReference").hidden=false;CSMagicReference.render(magicId,"magic");$("magicNote").textContent=r.note||"制作備考なし";
+ $("magicState").textContent=magicId+" / "+(r.loop?"持続":"発動・単発")+" / "+(e?.draft?"作業構成保存済み":"未保存")+" / 採用出力："+(e?.mode==="components"?"部品版":"旧個別版")+(changed?" / 編集中の変更あり":"");
+ if(magicReadError)magicMessage("保存データ読込失敗（上書きしません）: "+magicReadError);
+}
+function magicClose(){magicOutput?.renderer.dispose();magicOutput=null;$("magicStage").hidden=true;$("magicSeek").disabled=true;for(const id of magicExportIds)$(id).disabled=true;$("magicTime").textContent="";$("magicOutputStatus").textContent=""}
+function magicDetach(){magicClose();magicId="";magicList();magicSync()}
+function magicLoadSnapshot(id,x){const n=A.snapshot(id,x),added=C.prepareDefinitions(n.definitions);verifyAdditions(added);persistAdditions(added);replace(n.composition,n.output,true,id)}
+function selectMagic(id,source="draft"){
+ if(busy)return false;if(!id){magicDetach();return true}
+ if(changed&&!confirm("現在の未保存編集を破棄して魔法を切り替えますか？")){magicList();return false}
+ try{const data=magicState();if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="adopted"?e?.adopted:e?.draft;
+ if(source==="adopted"&&!x)throw Error("採用済み構成がありません");
+ if(x)magicLoadSnapshot(id,x);else{const initial=A.initial(id,composition.view),s={...config(),color:r.color||"#ff8634"};replace(initial.composition,s,true,id);magicMessage(initial.kind==="sample"?"比較試作を読み込みました（未採用）":"空の作業構成を用意しました。視点は仮設定。旧個別版は採用出力から確認できます")}
+ $("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}if(x)magicMessage(source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
+ }catch(e){magicList();magicMessage("魔法読込失敗: "+e.message);return false}
+}
+function magicWrite(action,x){
+ if(!magicId)throw Error("魔法を選択してください");
+ const {raw,data}=magicData();if(raw!==magicRaw)throw Error("別タブで魔法保存が変更されました。魔法を再選択してください");
+ const next=A.transition(data,magicId,action,x,new Date().toISOString());const saved=JSON.stringify(next);localStorage.setItem(SpellAssignments.KEY,saved);magicRaw=saved;magicClose();magicSync();showUsage();
+}
+function magicConfig(s){const x=A.snapshot(magicId,s,true),c=C.withDefinitions(x.definitions,()=>C.compile(x.composition));return {source:c.source,p:renderConfig(c.composition,c.source,x.output)}}
+function magicAdopt(){
+ if(busy||dirty||!magicId)return;let r=null;
+ try{const {raw,data}=magicData();if(raw!==magicRaw)throw Error("別タブで保存が変更されています");const current=snapshot(),candidate=A.snapshot(magicId,current,true),saved=data.entries[magicId]?.draft;if(!saved||JSON.stringify(A.snapshot(magicId,saved,true))!==JSON.stringify(candidate))throw Error("現在の構成を先に魔法の作業構成として保存してください");
+ const {p,source}=magicConfig(candidate);r=ShaderStudio.createRenderer(p,source);for(const q of [0,.1,.35,.5,.8,1])r.render(p.duration*q);r.dispose();r=null;
+ if(!confirm("現在保存されている部品構成をこの魔法の採用出力にしますか？見た目を確認・承認済みの場合だけ実行してください。旧個別GLSLは保持されます。"))return;
+ magicWrite("adopt",candidate);magicMessage("部品版を採用しました（このブラウザーのみ）")
+ }catch(e){r?.dispose();magicMessage("採用失敗: "+e.message)}
+}
+function magicDraw(){if(!magicOutput)return;try{const o=magicOutput;draw(o.renderer,$("magicCanvas"),o.position);$("magicTime").textContent=o.position.toFixed(3)+" / "+o.p.duration.toFixed(3)+" 秒 / "+o.mode}catch(e){magicClose();$("magicOutputStatus").textContent="描画失敗: "+e.message}}
+function magicPreview(){if(busy||!magicId)return;magicClose();let next=null;
+ try{const {raw,data}=magicData();const active=A.active(data,magicId),rec=A.record(magicId);let source,p;
+ if(active.mode==="components"){({source,p}=magicConfig(active.snapshot))}else{source=ShaderStudio.sources[rec.id];if(!source)throw Error("旧個別GLSLがありません");p=renderConfig({name:rec.name,duration:rec.duration,seed:42},source,{...config(),color:rec.color||"#ff8634"});}
+ next=ShaderStudio.createRenderer(p,source);for(const q of [0,.1,.35,.5,.8,1])next.render(p.duration*q);magicOutput={renderer:next,p,source,raw,id:magicId,mode:active.mode==="components"?"採用済み部品版":"旧個別版",position:p.duration*.5};next=null;$("magicStage").hidden=false;$("magicSeek").disabled=false;$("magicSeek").value="500";for(const id of magicExportIds)$(id).disabled=false;magicDraw();if(magicOutput)$("magicOutputStatus").textContent="採用出力を確認できます（試写6時点成功）";
+ }catch(e){next?.dispose();magicClose();$("magicOutputStatus").textContent="採用出力の試写失敗: "+e.message}}
+async function magicExport(kind){if(busy||!magicOutput)return;const o=magicOutput;
+ try{if(localStorage.getItem(SpellAssignments.KEY)!==o.raw||o.id!==magicId)throw Error("採用状態が変更されました。再試写してください");busy=true;playing=false;const states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;try{const plan=EffectEngine.plan(o.p),frame=Math.max(0,Math.min(plan.frames-1,Math.floor(o.position*o.p.fps)));await EffectExport.run(o.p,kind,frame,(i,n)=>{$("magicOutputStatus").textContent="出力中 "+i+"/"+n},async(_p,i,c)=>{o.renderer.render(i/o.p.fps);const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(o.renderer.canvas,0,0);return c});$("magicOutputStatus").textContent="採用出力完了: "+o.id+" / "+o.mode}finally{busy=false;for(const [e,v] of states)e.disabled=v;magicDraw();buttons()}}
+ catch(e){$("magicOutputStatus").textContent="出力失敗: "+e.message}}
+function initMagic(){
+ option($("magicAttribute"),"","すべて");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicAttribute"),attr,attr);magicList();magicSync();
+ $("magicAttribute").onchange=magicList;$("magicSelect").onchange=()=>selectMagic($("magicSelect").value);
+ $("magicPrev").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>0)selectMagic(rs[i-1].id)};
+ $("magicNext").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>=0&&i<rs.length-1)selectMagic(rs[i+1].id)};
+ $("magicDetach").onclick=magicDetach;
+ $("magicSave").onclick=()=>{if(busy||dirty)return;try{magicWrite("save",snapshot());changed=false;magicSync();magicMessage("魔法の作業構成を保存しました。採用出力は未変更")}catch(e){magicMessage("保存失敗: "+e.message)}};
+ $("magicAdopt").onclick=magicAdopt;$("magicLegacy").onclick=()=>{if(busy||!confirm("採用出力を旧個別GLSLへ戻しますか？保存した部品構成は保持します。"))return;try{magicWrite("legacy",null);magicMessage("旧個別版へ戻しました")}catch(e){magicMessage(e.message)}};
+ $("magicRestore").onclick=()=>selectMagic(magicId,"adopted");$("magicPreview").onclick=magicPreview;$("magicClose").onclick=magicClose;$("magicSeek").oninput=()=>{if(magicOutput){magicOutput.position=Number($("magicSeek").value)/1000*magicOutput.p.duration;magicDraw()}};
+ for(const [i,k] of ["png","sheet","webp","zip"].entries())$(magicExportIds[i]).onclick=()=>magicExport(k);
+ $("magicBackup").onclick=()=>{try{EffectExport.download(new Blob([JSON.stringify(magicData().data,null,2)],{type:"application/json"}),"effect-spell-assignments.json")}catch(e){magicMessage(e.message)}};
+ window.addEventListener("pagehide",magicClose);
+}
+
 const newId=()=>{let id;do{id="part-"+(++serial)}while(composition.parts.some(p=>p.uid===id));return id};
 function status(message,error=false){$("status").textContent=message;$("status").classList.toggle("error",error)}
 function config(){const n=(id,min,max)=>{const v=Number($(id).value);if($(id).value===""||!Number.isInteger(v)||v<min||v>max)throw Error(id+" の範囲が不正");return v};return {width:n("width",16,512),height:n("height",16,512),fps:n("fps",1,60),columns:n("columns",0,300),color:$("color").value,core:$("core").value}}
@@ -12,8 +78,8 @@ function draw(r,canvas,t){r.render(t);if(canvas.width!==r.canvas.width||canvas.h
 function updatePosition(){const d=applied?.composition.duration??composition.duration;$("seek").value=String(Math.round(1000*position/d));$("time").textContent=position.toFixed(2)+" / "+d.toFixed(2)+" 秒";for(const n of document.querySelectorAll(".cursor"))n.style.left=Math.min(100,position/Math.max(.001,composition.duration)*100)+"%"}
 function outputInfo(){try{const p={...config(),duration:composition.duration};if(!Number.isFinite(p.duration)||p.duration<.05||p.duration>30)throw Error("秒数が不正");const a=EffectEngine.plan(p);$("outputInfo").textContent=a.frames+" コマ / "+a.cols+"×"+a.rows+" / "+a.width+"×"+a.height+" px（透過）"}catch(e){$("outputInfo").textContent=e.message}}
 function refresh(){if(busy)return;cancelTimeDrag();dirty=true;buttons();outputInfo();let next=null;
- try{const c=C.compile(composition),settings=config(),p=renderConfig(c.composition,c.source,settings);next=ShaderStudio.createRenderer(p,c.source);const t=Math.min(position,c.composition.duration);draw(next,$("preview"),t);const old=renderer;renderer=next;next=null;applied={...c,settings,p};position=t;dirty=false;old?.dispose();status("反映済み / "+c.composition.parts.length+" 部品 / GLSL "+c.source.length+" 文字"+(c.composition.loop?" / ループの継ぎ目は要確認":""));updatePosition()}catch(e){next?.dispose();status("未反映（前回の正常なプレビューを保持）\n"+e.message,true)}finally{buttons()}}
-function mark(){invalidateGroup();updateGroupBindings();cancelTimeDrag();closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
+ try{const c=C.compile(composition),settings=config(),p=renderConfig(c.composition,c.source,settings);next=ShaderStudio.createRenderer(p,c.source);const t=Math.min(position,c.composition.duration);draw(next,$("preview"),t);const old=renderer;renderer=next;next=null;applied={...c,settings,p};position=t;dirty=false;old?.dispose();status("反映済み / "+c.composition.parts.length+" 部品 / GLSL "+c.source.length+" 文字"+(c.composition.loop?" / ループの継ぎ目は要確認":""));updatePosition()}catch(e){next?.dispose();status("未反映（前回の正常なプレビューを保持）\n"+e.message,true)}finally{buttons();magicSync()}}
+function mark(){magicClose();invalidateGroup();updateGroupBindings();cancelTimeDrag();closeComparison();showUsage();changed=true;dirty=true;buttons();refresh()}
 function sync(){for(const k of ["name","duration","view","seed"])$(k).value=composition[k];$("loop").checked=composition.loop;$("repeat").checked=composition.loop}
 function option(select,value,label){const o=document.createElement("option");o.value=value;o.textContent=label;select.append(o)}
 
@@ -209,9 +275,9 @@ function renderAt(){if(!renderer)return;try{draw(renderer,$("preview"),position)
 $("play").onclick=()=>{if(!renderer)return;playing=!playing;if(playing&&position>=applied.composition.duration)position=0;last=performance.now();buttons()};
 $("reset").onclick=()=>{position=0;playing=false;renderAt();buttons()};
 $("seek").oninput=()=>{if(!renderer||busy)return;position=Number($("seek").value)/1000*applied.composition.duration;playing=false;renderAt();buttons()};
-function replace(c,settings,confirmed=false){if(busy)return;if(!confirmed&&changed&&!confirm("現在の部品構成を置き換えますか？"))return;const next=C.validate(c);if(settings){const {width,height,fps,columns,color,core}=settings;if(![width,height,fps,columns].every(Number.isInteger)||width<16||width>512||height<16||height>512||fps<1||fps>60||columns<0||columns>300||!/^#[0-9a-f]{6}$/i.test(color)||!/^#[0-9a-f]{6}$/i.test(core))throw Error("出力設定が不正");for(const k of settingsIds)$(k).value=settings[k]}composition=next;selected=composition.parts[0]?.uid;playing=false;position=0;changed=false;sync();drawEditor();refresh()}
+function replace(c,settings,confirmed=false,associatedId=""){if(busy)return;if(!confirmed&&changed&&!confirm("現在の部品構成を置き換えますか？"))return;const next=C.validate(c);if(settings){const {width,height,fps,columns,color,core}=settings;if(![width,height,fps,columns].every(Number.isInteger)||width<16||width>512||height<16||height>512||fps<1||fps>60||columns<0||columns>300||!/^#[0-9a-f]{6}$/i.test(color)||!/^#[0-9a-f]{6}$/i.test(core))throw Error("出力設定が不正");for(const k of settingsIds)$(k).value=settings[k]}magicClose();magicId=associatedId;composition=next;selected=composition.parts[0]?.uid;playing=false;position=0;changed=false;sync();drawEditor();refresh();magicList();magicSync()}
 $("new").onclick=()=>replace(C.create(2.8,composition.view));$("sampleConvergence").onclick=()=>replace(C.spellSample(252));$("sampleInferno").onclick=()=>replace(C.spellSample(257));$("samplePlasma").onclick=()=>replace(C.spellSample(245));$("sampleNapalm").onclick=()=>replace(C.spellSample(253));
-function snapshot(){return {format:"glsl-component-composition",composition:C.validate(composition),output:config(),definitions:C.referencedDefinitions(composition)}}
+function snapshot(){return {format:"glsl-component-composition",...(magicId?{magicId}:{}),composition:C.validate(composition),output:config(),definitions:C.referencedDefinitions(composition)}}
 function readSnapshot(x){
  if(!x||x.format!=="glsl-component-composition")throw Error("部品構成JSONではありません");
  if(busy||changed&&!confirm("現在の部品構成を置き換えますか？"))return;
@@ -241,11 +307,12 @@ function refreshArchive(){try{const {raw,entries}=readArchive();archiveRaw=raw;c
 function usageEntries(){const entries=[{id:"current",scope:"編集中",composition}],errors=[];
  try{const raw=localStorage.getItem(storageKey);if(raw){const x=JSON.parse(raw);if(x.format!=="glsl-component-composition"||!Array.isArray(x.composition?.parts))throw Error("形式不正");entries.push({id:"slot",scope:"従来の保存枠",composition:x.composition})}}catch(e){errors.push("従来枠: "+e.message)}
  try{for(const e of readArchive().entries)entries.push({id:e.id,scope:"名前付き保存",composition:e.snapshot.composition})}catch(e){errors.push("保存一覧: "+e.message)}
+ try{for(const [id,e] of Object.entries(magicData().data.entries)){entries.push({id:"magic-draft:"+id,scope:"魔法作業構成 "+id,composition:e.draft.composition});if(e.adopted)entries.push({id:"magic-adopted:"+id,scope:"魔法採用保存 "+id,composition:e.adopted.composition})}}catch(e){errors.push("魔法保存: "+e.message)}
  return {entries,errors};
 }
 function updateUsageVersions(){const el=$("usageVersion"),prev=el.value;el.replaceChildren();for(const d of C.versions($("usagePart").value))option(el,String(d.version),"v"+d.version+" / "+(C.origin(d.id,d.version)==="builtin"?"組み込み":"ローカル"));if([...C.versions($("usagePart").value)].some(d=>String(d.version)===prev))el.value=prev;else{const ds=C.versions($("usagePart").value);if(ds.length)el.value=String(ds[ds.length-1].version)}showUsage()}
 function updateUsageParts(){const el=$("usagePart"),prev=el.value;el.replaceChildren();for(const id of [...new Set(C.definitions().map(d=>d.id))]){const ds=C.versions(id),d=ds[ds.length-1];option(el,id,d.name+" ("+id+")")}if(C.definitions().some(d=>d.id===prev))el.value=prev;else el.value=C.definitions()[0]?.id||"";updateUsageVersions()}
-function showUsage(){const box=$("usageResults");box.replaceChildren();try{const {entries,errors}=usageEntries(),id=$("usagePart").value,version=Number($("usageVersion").value),hits=C.findUsage(id,version,entries);for(const x of hits){const item=document.createElement("div");item.className="usage-item";const label=document.createElement("div");label.textContent=x.scope+" / "+x.name+" / #"+(x.index+1)+" / "+Number(x.start).toFixed(3)+"–"+Number(x.end).toFixed(3)+"秒"+(x.enabled?"":"（非表示）")+(x.path?" / "+x.path:"");item.append(label);if(x.entryId==="current"){const b=document.createElement("button");b.textContent="選択";b.onclick=()=>selectPart(x.uid);item.append(b)}else{const b=document.createElement("button");b.textContent="構成を開く";b.onclick=()=>{try{if(x.entryId==="slot")$("localLoad").onclick();else{const e=readArchive().entries.find(e=>e.id===x.entryId);if(!e)throw Error("保存構成がありません");readSnapshot(e.snapshot)}}catch(e){status(e.message,true)}};item.append(b)}box.append(item)}$("usageStatus").textContent=hits.length+"箇所 / "+entries.length+"構成を確認"+(errors.length?"（一部読込失敗: "+errors.join(" / ")+"）":"")}catch(e){$("usageStatus").textContent=e.message}}
+function showUsage(){const box=$("usageResults");box.replaceChildren();try{const {entries,errors}=usageEntries(),id=$("usagePart").value,version=Number($("usageVersion").value),hits=C.findUsage(id,version,entries);for(const x of hits){const item=document.createElement("div");item.className="usage-item";const label=document.createElement("div");label.textContent=x.scope+" / "+x.name+" / #"+(x.index+1)+" / "+Number(x.start).toFixed(3)+"–"+Number(x.end).toFixed(3)+"秒"+(x.enabled?"":"（非表示）")+(x.path?" / "+x.path:"");item.append(label);if(x.entryId==="current"){const b=document.createElement("button");b.textContent="選択";b.onclick=()=>selectPart(x.uid);item.append(b)}else{const b=document.createElement("button");b.textContent="構成を開く";b.onclick=()=>{try{if(x.entryId==="slot")$("localLoad").onclick();else if(x.entryId.startsWith("magic-draft:"))selectMagic(x.entryId.slice(12));else if(x.entryId.startsWith("magic-adopted:"))selectMagic(x.entryId.slice(14),"adopted");else{const e=readArchive().entries.find(e=>e.id===x.entryId);if(!e)throw Error("保存構成がありません");readSnapshot(e.snapshot)}}catch(e){status(e.message,true)}};item.append(b)}box.append(item)}$("usageStatus").textContent=hits.length+"箇所 / "+entries.length+"構成を確認"+(errors.length?"（一部読込失敗: "+errors.join(" / ")+"）":"")}catch(e){$("usageStatus").textContent=e.message}}
 function closeComparison(message=""){
  if(comparison){comparison.before?.dispose();comparison.after?.dispose();comparison=null}
  $("versionComparison").hidden=true;$("versionApply").disabled=true;$("versionStatus").textContent=message;
@@ -268,10 +335,10 @@ function compareVersions(){
  $("versionComparison").hidden=false;$("versionSeek").value="500";compareAt(.5);if(comparison){$("versionApply").disabled=false;$("versionStatus").textContent="両版のコンパイル・6時点描画成功。構成全体の比較です。"}
  }catch(e){before?.dispose();after?.dispose();closeComparison("比較失敗: "+e.message)}
 }
-function applyVersion(){
+function applyVersion(){magicClose();
  if(busy||!comparison)return;try{if(comparison.fingerprint!==comparisonFingerprint())throw Error("構成が変わりました。再比較してください");if(!confirm("選択部品だけ版を切り替えますか？保存済み構成は変更しません。"))return;
  const c=comparison,t=Math.min(position,c.candidate.composition.duration);draw(c.after,$("preview"),t);
- const old=renderer;renderer=c.after;c.after=null;composition=c.candidate.composition;applied={...c.candidate,settings:c.settings,p:c.p};position=t;dirty=false;changed=true;old?.dispose();closeComparison();drawEditor();updatePosition();buttons();status("選択部品の版を切り替えました。保存済み構成は未変更。");
+ const old=renderer;renderer=c.after;c.after=null;composition=c.candidate.composition;applied={...c.candidate,settings:c.settings,p:c.p};position=t;dirty=false;changed=true;old?.dispose();closeComparison();drawEditor();updatePosition();buttons();status("選択部品の版を切り替えました。保存済み構成は未変更。");magicSync();
  }catch(e){closeComparison("切替失敗: "+e.message)}
 }
 $("archiveSave").onclick=()=>{if(busy)return;try{const {raw,entries}=readArchive();if(raw!==archiveRaw)throw Error("別タブ等で保存一覧が変わりました。一覧更新してください");if(entries.length>=50)throw Error("保存上限50件です");let id="save-"+Date.now(),i=0;while(entries.some(e=>e.id===id))id="save-"+Date.now()+"-"+(++i);const next={version:1,entries:[...entries,{id,savedAt:new Date().toISOString(),snapshot:snapshot()}]};localStorage.setItem(archiveKey,JSON.stringify(next));changed=false;refreshArchive();$("archiveList").value=id;showUsage();$("archiveStatus").textContent="別保存しました。既存構成は未変更。"}catch(e){$("archiveStatus").textContent=e.message}};
@@ -318,5 +385,5 @@ for(const id of ["groupId","groupName","groupCategory","groupDescription"])$(id)
 $("groupTest").onclick=()=>{if(busy)return;invalidateGroup();let next=null;try{const d=readGroup();next=trialRenderer(d);draw(next,$("mini"),d.duration*.5);const old=miniRenderer;miniRenderer=next;next=null;old?.dispose();miniStart=performance.now();miniDuration=d.duration;$("miniTitle").textContent=d.name+"（複合部品試写）";$("miniStatus").textContent="試写成功";groupTested=JSON.stringify(d);$("groupRegister").disabled=false;groupStatus("コンパイル・6時点の試写成功。登録できます")}catch(e){next?.dispose();groupStatus("試写失敗: "+e.message)}};
 $("groupRegister").onclick=()=>{if(busy||!groupTested)return;try{const d=readGroup();if(JSON.stringify(d)!==groupTested)throw Error("構成が変更されています。再試写してください");persistAdditions([d]);invalidateGroup();$("groupBase").value=d.id+"@"+d.version;groupStatus(d.id+"@"+d.version+" を登録しました。元の構成は未変更")}catch(e){invalidateGroup();groupStatus(e.message)}};
 
-refreshArchive();syncRegistry();startAuthor(false);newGroup();if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();refresh();if(renderer){playing=true;last=performance.now();buttons()}requestAnimationFrame(tick);
+initMagic();refreshArchive();syncRegistry();startAuthor(false);newGroup();if(registryLoadError)authorStatus(registryLoadError,true);sync();drawEditor();refresh();if(renderer){playing=true;last=performance.now();buttons()}requestAnimationFrame(tick);
 })();
