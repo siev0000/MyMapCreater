@@ -9897,9 +9897,9 @@ const iceDetails={
     "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 root=vec2(-.75,0.);vec4 v=vec4(0.);\nfor(int i=0;i<9;i++){float k=float(i),born=.04+.044*k,h=phase(q,born,born+.55);if(h<=0.||h>=1.)continue;float lane=2.*hash(vec2(k,12.))-1.;vec2 c=root+vec2(1.52*h,lane*(.04+.20*h)+.025*sin(h*6.+k));vec4 w=coldMist(p,c,vec2(.12+.15*h,.048+.09*h),t,k+8.);w.a*=sin(3.14159*h)*.92;v=over(v,w);}\nfor(int i=0;i<17;i++){float k=float(i),born=.05+.027*k,h=phase(q,born,born+.43);if(h<=0.||h>=1.)continue;vec2 c=root+vec2(1.53*h,(hash(vec2(k,22.))-.5)*(.07+.42*h));float z=(1.-smoothstep(.003,.012,seg(p,c,c-vec2(.045,.008))))*sin(3.14159*h);v=over(v,vec4(.82,.95,1.,z*.8));}return v;"
   },
   "271": {
-    "duration": 1.3,
+    "duration": 0.43333333333333335,
     "loop": false,
-    "note": "尖った単一の氷柱弾が生成され、横向きに飛翔して着弾時に結晶片へ砕ける。",
+    "note": "尖った単一の氷柱弾が生成され、従来の3倍速で左から右へ飛翔し、着弾時に結晶片へ砕ける。",
     "body": "vec2 a=vec2(-.65,0.),b=vec2(.60,0.);float g=phase(q,.10,.69);vec2 c=mix(a,b,g);vec4 v=iceFacet(p,c-vec2(.18,0.),c+vec2(.16,0.),.10*smoothstep(0.,.12,q));v.a*=1.-smoothstep(.65,.72,q);return over(v,iceBurst(p,b,phase(q,.69,1.),.25,5.,8.));"
   },
   "272": {
@@ -9917,8 +9917,8 @@ const iceDetails={
   "274": {
     "duration": 1.9,
     "loop": false,
-    "note": "接触対象へ周囲から冷気がまとわりつき、霜が対象表面を覆う。透明感のある縦長の氷膜が完成し、枝状の亀裂が走る。飛翔・落下なし。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nfloat g=swift(phase(q,.20,.58)),fade=1.-smoothstep(.80,1.,q);vec4 v=vec4(0.);\nfor(int i=0;i<5;i++){float k=float(i),a=k*TAU/5.;float m=phase(q,.02,.48);vec2 c=dir2(a)*vec2(.39,.57)*(1.-.68*m);vec4 w=coldMist(p,c,vec2(.23,.25),t,k+11.);w.a*=smoothstep(0.,.10,q)*(1.-smoothstep(.49,.77,q))*.8;v=over(v,w);}\nvec4 coat=frost(p,vec2(0.,-.025),vec2(.39,.70),g,43.);coat.a*=fade;v=over(v,coat);\nfor(int i=0;i<5;i++){float k=float(i),side=k-2.;vec2 a=vec2(side*.13,-.59),b=a+vec2(-side*.032,(1.12-.13*abs(side))*g);vec4 w=iceFacet(p,a,b,.105*g);w.a*=fade*.55;v=over(v,w);}\nvec2 uv=(p-vec2(0.,-.025))/vec2(.39,.70);float cr=swift(phase(q,.50,.79)),z=0.;\nfor(int i=0;i<6;i++){float k=float(i),a=k*TAU/6.+.27*hash(vec2(k,3.));vec2 d=dir2(a),mid=d*.44+dir2(a+1.57)*.09,end=d*.85;float h=sat(cr*2.),j=sat(cr*2.-1.);z=max(z,(1.-smoothstep(.009,.023,seg(uv,d*.06,mix(d*.06,mid,h))))*h);z=max(z,(1.-smoothstep(.008,.020,seg(uv,mid,mix(mid,end,j))))*j);z=max(z,(1.-smoothstep(.006,.018,seg(uv,mid,mid+dir2(a+.65)*.27*j)))*j);}\nz*=fade*coat.a;return over(v,vec4(mix(vec3(.16,.35,.52),vec3(.85,.97,1.),.62),sat(z*.95)));"
+    "note": "接触対象に冷気がまとわりつき、霜と透明感のある氷膜が表面を覆い、枝状の亀裂が走る。独立した氷柱は発生しない。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nfloat g=swift(phase(q,.20,.58)),fade=1.-smoothstep(.80,1.,q);vec4 v=vec4(0.);\nfor(int i=0;i<5;i++){float k=float(i),a=k*TAU/5.;float m=phase(q,.02,.48);vec2 c=dir2(a)*vec2(.39,.57)*(1.-.68*m);vec4 w=coldMist(p,c,vec2(.23,.25),t,k+11.);w.a*=smoothstep(0.,.10,q)*(1.-smoothstep(.49,.77,q))*.8;v=over(v,w);}\nvec4 coat=frost(p,vec2(0.,-.025),vec2(.39,.70),g,43.);coat.a*=fade;v=over(v,coat);\nvec2 uv=(p-vec2(0.,-.025))/vec2(.39,.70);float cr=swift(phase(q,.50,.79)),z=0.;\nfor(int i=0;i<6;i++){float k=float(i),a=k*TAU/6.+.27*hash(vec2(k,3.));vec2 d=dir2(a),mid=d*.44+dir2(a+1.57)*.09,end=d*.85;float h=sat(cr*2.),j=sat(cr*2.-1.);z=max(z,(1.-smoothstep(.009,.023,seg(uv,d*.06,mix(d*.06,mid,h))))*h);z=max(z,(1.-smoothstep(.008,.020,seg(uv,mid,mix(mid,end,j))))*j);z=max(z,(1.-smoothstep(.006,.018,seg(uv,mid,mid+dir2(a+.65)*.27*j)))*j);}\nz*=fade*coat.a;return over(v,vec4(mix(vec3(.16,.35,.52),vec3(.85,.97,1.),.62),sat(z*.95)));"
   },
   "275": {
     "duration": 1.85,
