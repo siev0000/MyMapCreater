@@ -61,6 +61,7 @@ async function magicExport(kind){if(busy||!magicOutput)return;const o=magicOutpu
  try{if(localStorage.getItem(SpellAssignments.KEY)!==o.raw||o.id!==magicId)throw Error("採用状態が変更されました。再試写してください");busy=true;playing=false;const states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;try{const plan=EffectEngine.plan(o.p),frame=Math.max(0,Math.min(plan.frames-1,Math.floor(o.position*o.p.fps)));await EffectExport.run(o.p,kind,frame,(i,n)=>{$("magicOutputStatus").textContent="出力中 "+i+"/"+n},async(_p,i,c)=>{o.renderer.render(i/o.p.fps);const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(o.renderer.canvas,0,0);return c});$("magicOutputStatus").textContent="採用出力完了: "+o.id+" / "+o.mode}finally{busy=false;for(const [e,v] of states)e.disabled=v;magicDraw();buttons()}}
  catch(e){$("magicOutputStatus").textContent="出力失敗: "+e.message}}
 function initMagic(){
+ if($("magicBatchAttr")){option($("magicBatchAttr"),"","すべての属性");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicBatchAttr"),attr,attr);$("magicBatchAttr").onchange=magicBatchUpdate;$("magicBatchPng").onclick=()=>batchSheets("png","magic");$("magicBatchWebp").onclick=()=>batchSheets("webp","magic");$("magicBatchJson").onclick=magicBatchCatalog;$("magicBatchStop").onclick=()=>{batchCanceled=true;$("magicBatchStatus").textContent="中止中…"};magicBatchUpdate()}
  magicState(true);option($("magicAttribute"),"","すべて");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicAttribute"),attr,attr);magicList();magicSync();
  $("magicAttribute").onchange=()=>{const opts=magicChoices();if(!opts.some(r=>r.id===magicId)&&opts.length){const previous=magicId?A.record(magicId).attribute:"";if(!selectMagic(opts[0].id)){$("magicAttribute").value=previous;magicList();magicSync()}}else{magicList();magicSync();saveView()}};$("magicSelect").onchange=()=>selectMagic($("magicSelect").value);
  $("magicPrev").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>0)selectMagic(rs[i-1].id)};
@@ -242,9 +243,10 @@ function batchFileNames(defs,mode,ext){
  const key=value=>value.normalize("NFC").toLowerCase();
  const used=new Set();
  return defs.map(d=>{
-  const id=d.id.replace(/[^a-zA-Z0-9_-]/g,"_"),version="-v"+d.version;
+  const id=d.id.replace(/[^a-zA-Z0-9_-]/g,"_"),version=d.version==null?"":"-v"+d.version;
   const title=Array.from(clean(d.name)).slice(0,48).join("");
   let base=mode==="name"?(title||id)+version:id+version;
+  if(/^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(base))base="_"+base;
   let result=base,n=1;
   if(used.has(key(result)))result=base+"-"+id;
   while(used.has(key(result)))result=base+"-"+id+"-"+(++n);
@@ -252,41 +254,65 @@ function batchFileNames(defs,mode,ext){
   return "sheets/"+result+ext;
  });
 }
+function magicBatchRecords(){const attr=$("magicBatchAttr").value;return A.records.filter(r=>!attr||r.attribute===attr)}
+function magicBatchUpdate(){if(!$("magicBatchAttr"))return;const n=magicBatchRecords().length;$("magicBatchCount").textContent=n+" 魔法素材（発動・持続を含む）";for(const id of ["magicBatchPng","magicBatchWebp","magicBatchJson"])$(id).disabled=busy||!n}
+function magicBatchCatalog(){if(busy)return;try{const data=magicData().data,records=magicBatchRecords().map(r=>({...r,outputMode:data.entries[r.id]?.mode==="components"?"components":"legacy"}));EffectExport.download(new Blob([JSON.stringify({format:"effect-magic-catalog",version:1,count:records.length,records},null,2)],{type:"application/json"}),"effect-magic-catalog.json");$("magicBatchStatus").textContent=records.length+" 魔法素材の一覧JSONを保存しました"}catch(e){$("magicBatchStatus").textContent=e.message}}
+function magicBatchJob(d,data,settings,name){
+ try{
+  const active=A.active(data,d.id);
+  if(active.mode==="components"){
+   const x=active.snapshot,c=x.composition;
+   const output={...settings,color:x.output.color,core:x.output.core};
+   return {d,c,a:EffectEngine.plan({...output,duration:c.duration}),name,output,active};
+  }
+  const c={name:d.name,duration:d.duration,seed:42,loop:d.loop,view:null};
+  const output={...settings,color:d.color||"#ff8634"};
+  return {d,c,a:EffectEngine.plan({...output,duration:c.duration}),name,output,active};
+ }catch(e){return {d,c:{duration:d.duration,loop:d.loop,view:null},a:EffectEngine.plan({...settings,duration:d.duration}),name,output:settings,error:String(e.message||e)}}
+}
 let batchCanceled=false;
-async function batchSheets(kind="png"){
+async function batchSheets(kind="png",target="parts"){
  if(busy||timeDrag)return;
  let states=[],wasPlaying=playing,completed=0;
+ const magic=target==="magic",prefix=magic?"magicBatch":"batch",unit=magic?"魔法素材":"部品・版";
+ const message=(value,error=false)=>{const el=$(prefix+"Status");el.textContent=value;el.classList.toggle("error",error)};
  const webp=kind==="webp",mime=webp?"image/webp":"image/png",ext=webp?".webp":".png",label=webp?"WebP":"PNG";
  try{
-  const defs=batchDefinitions(),settings=config(),filenameMode=$("batchFilename")?.value==="name"?"name":"id";
-  if(!defs.length)throw Error("出力する部品がありません");
+  const defs=magic?magicBatchRecords():batchDefinitions(),settings=config(),filenameMode=$(prefix+"Filename")?.value==="name"?"name":"id";
+  const saved=magic?magicData():null;
+  if(!defs.length)throw Error("出力対象がありません");
   const names=batchFileNames(defs,filenameMode,ext);
-  const jobs=defs.map((d,i)=>{const c=batchComposition(d),a=EffectEngine.plan({...settings,duration:c.duration});return {d,c,a,name:names[i]}});
+  const jobs=defs.map((d,i)=>{if(magic)return magicBatchJob(d,saved.data,settings,names[i]);const c=batchComposition(d),a=EffectEngine.plan({...settings,duration:c.duration});return {d,c,a,name:names[i],output:settings}});
   if(jobs.some(j=>j.a.width>16384||j.a.height>16384||j.a.width*j.a.height>32000000))throw Error("シートが大きすぎます。列数・解像度・FPSを調整してください");
   const pixels=jobs.reduce((sum,j)=>sum+j.a.frames*settings.width*settings.height,0);
   if(pixels>250000000)throw Error("一括出力が大きすぎます。分類で分けるか、解像度・FPSを下げてください（上限2.5億フレーム画素）");
-  if(!confirm(defs.length+" 部品・版の透過"+label+"シートをZIPで出力します。現在の編集中構成は変更しません。続けますか？"))return;
+  if(!confirm(defs.length+" "+unit+"の透過"+label+"シートをZIPで出力します。現在の編集中構成は変更しません。続けますか？"))return;
   busy=true;playing=false;batchCanceled=false;
   states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;
-  $("batchStop").disabled=false;buttons();
+  $(prefix+"Stop").disabled=false;buttons();
   // Browsers may silently return PNG for an unsupported requested MIME type.
   if(webp){const probe=document.createElement("canvas");probe.width=probe.height=1;
    try{await new Promise((resolve,reject)=>probe.toBlob(b=>b&&b.type===mime?resolve():reject(Error("このブラウザーはWebP画像出力に対応していません")) ,mime,.9));}
    finally{probe.width=probe.height=0;}
   }
   const files=[],items=[];let bytes=0;const enc=new TextEncoder();
-  for(const {d,c,a,name} of jobs){
+  for(const {d,c,a,name,output,active,error} of jobs){
    if(batchCanceled)break;
+   if(magic&&localStorage.getItem(SpellAssignments.KEY)!==saved.raw){batchCanceled=true;message("採用状態が変わったため中止",true);break}
    let renderer0=null,sheet=null;
-   const item={id:d.id,version:d.version,name:d.name,category:d.category,view:c.view,duration:c.duration,loop:c.loop,frames:a.frames,columns:a.cols,rows:a.rows,width:settings.width,height:settings.height,fps:settings.fps};
+   const item={id:d.id,...(magic?{attribute:d.attribute,lv:d.lv,row:d.row,variant:d.variant||"single",outputMode:active?.mode||"unknown",color:output.color,core:output.core}:{version:d.version,category:d.category}),name:d.name,view:c.view,duration:c.duration,loop:c.loop,frames:a.frames,columns:a.cols,rows:a.rows,width:settings.width,height:settings.height,fps:settings.fps};
    try{
-    const x=C.compile(c),p=renderConfig(x.composition,x.source,settings);
+    if(error)throw Error(error);
+    let x;if(magic&&active.mode==="legacy"){const source=ShaderStudio.sources[d.id];if(!source)throw Error("旧個別GLSLがありません");x={composition:c,source};}
+    else if(magic)x=C.withDefinitions(active.snapshot.definitions,()=>C.compile(c));
+    else x=C.compile(c);
+    const p=renderConfig(x.composition,x.source,output);
     renderer0=ShaderStudio.createRenderer(p,x.source);
     sheet=document.createElement("canvas");sheet.width=a.width;sheet.height=a.height;const ctx=sheet.getContext("2d");if(!ctx)throw Error("Canvas作成失敗");
     for(let i=0;i<a.frames;i++){
      if(batchCanceled)break;
      renderer0.render(i/settings.fps);ctx.drawImage(renderer0.canvas,(i%a.cols)*settings.width,Math.floor(i/a.cols)*settings.height);
-     if(i%8===0){batchMessage((completed+1)+"/"+jobs.length+" "+d.name+" "+(i+1)+"/"+a.frames);await new Promise(resolve=>setTimeout(resolve,0))}
+     if(i%8===0){message((completed+1)+"/"+jobs.length+" "+d.name+" "+(i+1)+"/"+a.frames);await new Promise(resolve=>setTimeout(resolve,0))}
     }
     if(batchCanceled)break;
     const blob=await new Promise((resolve,reject)=>sheet.toBlob(b=>b&&b.type===mime?resolve(b):reject(Error(label+"生成失敗、または形式非対応")),mime,.9));
@@ -296,13 +322,13 @@ async function batchSheets(kind="png"){
    finally{renderer0?.dispose();if(sheet){sheet.width=0;sheet.height=0}}
    items.push(item);completed++;await new Promise(resolve=>setTimeout(resolve,0));
   }
-  if(!files.length&&!items.length){batchMessage("中止しました（出力なし）");return}
-  const manifest={format:"effect-part-sheet-batch",version:1,imageFormat:kind,mimeType:mime,filenameMode,...(webp?{quality:.9}:{}),settings,requested:jobs.length,exported:files.length,canceled:batchCanceled,items};
+  if(!files.length&&!items.length){message("中止しました（出力なし）");return}
+  const manifest={format:magic?"effect-magic-sheet-batch":"effect-part-sheet-batch",version:1,imageFormat:kind,mimeType:mime,filenameMode,...(webp?{quality:.9}:{}),settings,requested:jobs.length,exported:files.length,canceled:batchCanceled,items};
   files.push({name:"manifest.json",bytes:enc.encode(JSON.stringify(manifest,null,2))});
-  EffectExport.download(EffectExport.zip(files),"effect-parts"+(webp?"-webp":"")+(batchCanceled?"-partial":"")+".zip");
-  batchMessage("出力 "+manifest.exported+"/"+jobs.length+" 件"+(batchCanceled?"（途中まで）":"")+" / エラー "+items.filter(x=>x.error).length+" 件。詳細はmanifest.json",items.some(x=>x.error));
- }catch(e){batchMessage("一括出力失敗: "+e.message,true)}
- finally{if(states.length){busy=false;for(const [e,v] of states)e.disabled=v;$("batchStop").disabled=true;playing=wasPlaying;last=miniStart=performance.now();buttons();batchUpdate()}}
+  EffectExport.download(EffectExport.zip(files),(magic?"effect-magic":"effect-parts")+(webp?"-webp":"")+(batchCanceled?"-partial":"")+".zip");
+  message("出力 "+manifest.exported+"/"+jobs.length+" 件"+(batchCanceled?"（途中まで）":"")+" / エラー "+items.filter(x=>x.error).length+" 件。詳細はmanifest.json",items.some(x=>x.error));
+ }catch(e){message("一括出力失敗: "+e.message,true)}
+ finally{if(states.length){busy=false;for(const [e,v] of states)e.disabled=v;$(prefix+"Stop").disabled=true;playing=wasPlaying;last=miniStart=performance.now();buttons();batchUpdate();magicBatchUpdate()}}
 }
 if($("batchScope")){$("batchScope").onchange=batchUpdate;$("batchJson").onclick=batchCatalog;$("batchPng").onclick=()=>batchSheets("png");if($("batchWebp"))$("batchWebp").onclick=()=>batchSheets("webp");$("batchStop").onclick=()=>{batchCanceled=true;batchMessage("中止中…")}}
 function showLibrary(){
