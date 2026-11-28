@@ -236,15 +236,32 @@ function batchCatalog(){
  EffectExport.download(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),"effect-part-catalog.json");batchMessage(definitions.length+" 部品・版の一覧JSONを保存しました（参照用）");
  }catch(e){batchMessage(e.message,true)}
 }
+// Windows-compatible filenames, with deterministic collision handling.
+function batchFileNames(defs,mode,ext){
+ const clean=value=>String(value).normalize("NFC").replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g,"_").replace(/^[ .]+|[ .]+$/g,"");
+ const key=value=>value.normalize("NFC").toLowerCase();
+ const used=new Set();
+ return defs.map(d=>{
+  const id=d.id.replace(/[^a-zA-Z0-9_-]/g,"_"),version="-v"+d.version;
+  const title=Array.from(clean(d.name)).slice(0,48).join("");
+  let base=mode==="name"?(title||id)+version:id+version;
+  let result=base,n=1;
+  if(used.has(key(result)))result=base+"-"+id;
+  while(used.has(key(result)))result=base+"-"+id+"-"+(++n);
+  used.add(key(result));
+  return "sheets/"+result+ext;
+ });
+}
 let batchCanceled=false;
 async function batchSheets(kind="png"){
  if(busy||timeDrag)return;
  let states=[],wasPlaying=playing,completed=0;
  const webp=kind==="webp",mime=webp?"image/webp":"image/png",ext=webp?".webp":".png",label=webp?"WebP":"PNG";
  try{
-  const defs=batchDefinitions(),settings=config();
+  const defs=batchDefinitions(),settings=config(),filenameMode=$("batchFilename")?.value==="name"?"name":"id";
   if(!defs.length)throw Error("出力する部品がありません");
-  const jobs=defs.map(d=>{const c=batchComposition(d),a=EffectEngine.plan({...settings,duration:c.duration});return {d,c,a}});
+  const names=batchFileNames(defs,filenameMode,ext);
+  const jobs=defs.map((d,i)=>{const c=batchComposition(d),a=EffectEngine.plan({...settings,duration:c.duration});return {d,c,a,name:names[i]}});
   if(jobs.some(j=>j.a.width>16384||j.a.height>16384||j.a.width*j.a.height>32000000))throw Error("シートが大きすぎます。列数・解像度・FPSを調整してください");
   const pixels=jobs.reduce((sum,j)=>sum+j.a.frames*settings.width*settings.height,0);
   if(pixels>250000000)throw Error("一括出力が大きすぎます。分類で分けるか、解像度・FPSを下げてください（上限2.5億フレーム画素）");
@@ -258,10 +275,9 @@ async function batchSheets(kind="png"){
    finally{probe.width=probe.height=0;}
   }
   const files=[],items=[];let bytes=0;const enc=new TextEncoder();
-  for(const {d,c,a} of jobs){
+  for(const {d,c,a,name} of jobs){
    if(batchCanceled)break;
    let renderer0=null,sheet=null;
-   const safe=d.id.replace(/[^a-zA-Z0-9_-]/g,"_")+"-v"+d.version;
    const item={id:d.id,version:d.version,name:d.name,category:d.category,view:c.view,duration:c.duration,loop:c.loop,frames:a.frames,columns:a.cols,rows:a.rows,width:settings.width,height:settings.height,fps:settings.fps};
    try{
     const x=C.compile(c),p=renderConfig(x.composition,x.source,settings);
@@ -275,13 +291,13 @@ async function batchSheets(kind="png"){
     if(batchCanceled)break;
     const blob=await new Promise((resolve,reject)=>sheet.toBlob(b=>b&&b.type===mime?resolve(b):reject(Error(label+"生成失敗、または形式非対応")),mime,.9));
     if(bytes+blob.size>256*1024*1024){batchCanceled=true;item.error="ZIP容量上限256MiB";items.push(item);break}
-    const name="sheets/"+safe+ext;files.push({name,bytes:new Uint8Array(await blob.arrayBuffer())});bytes+=blob.size;item.file=name;
+    files.push({name,bytes:new Uint8Array(await blob.arrayBuffer())});bytes+=blob.size;item.file=name;
    }catch(e){item.error=String(e.message||e)}
    finally{renderer0?.dispose();if(sheet){sheet.width=0;sheet.height=0}}
    items.push(item);completed++;await new Promise(resolve=>setTimeout(resolve,0));
   }
   if(!files.length&&!items.length){batchMessage("中止しました（出力なし）");return}
-  const manifest={format:"effect-part-sheet-batch",version:1,imageFormat:kind,mimeType:mime,...(webp?{quality:.9}:{}),settings,requested:jobs.length,exported:files.length,canceled:batchCanceled,items};
+  const manifest={format:"effect-part-sheet-batch",version:1,imageFormat:kind,mimeType:mime,filenameMode,...(webp?{quality:.9}:{}),settings,requested:jobs.length,exported:files.length,canceled:batchCanceled,items};
   files.push({name:"manifest.json",bytes:enc.encode(JSON.stringify(manifest,null,2))});
   EffectExport.download(EffectExport.zip(files),"effect-parts"+(webp?"-webp":"")+(batchCanceled?"-partial":"")+".zip");
   batchMessage("出力 "+manifest.exported+"/"+jobs.length+" 件"+(batchCanceled?"（途中まで）":"")+" / エラー "+items.filter(x=>x.error).length+" 件。詳細はmanifest.json",items.some(x=>x.error));
