@@ -11149,6 +11149,17 @@ for(const id of ["magic-cs-511-attack","magic-cs-511-projectile"]){
  if(a<0||b<a)throw Error("crown fast flight");
  sources[id]=src.slice(0,a)+crownFastFlight+src.slice(b);
 }
+
+// Local preview entry; do not assign an invented CS row.
+{
+ const id="magic-extra-light-reap",base=records.find(r=>r.id==="magic-cs-409"),src=sources[base.id];
+ const at=src.indexOf("vec4 effect(vec2 p,float t,float q){"),main=src.lastIndexOf("void main(){");
+ if(at<0||main<at)throw Error("light reap entry");
+ const rec={...base,id,row:null,name:"刈り取る光",lv:3,ruby:"",mode:"slash",duration:1.55,loop:false,placement:"術者手元→右前方（迎撃用・仮）",note:"追加制作素材：左側の手元位置へ白金の光粒が収束し、短い止めから右前方へ横視点の弧状光刃を高速で薙ぎ払う。手形・人物・魔法陣なし。短い残光と光片で迎撃の鋭さを表す。CS未登録の独立ID、戦闘データ未確定。",inferred:true,refined:true};
+ records.splice(records.findIndex(r=>r.id==="magic-cs-412")+1,0,rec);
+ rows[id]={row:null,name:rec.name,ruby:"",data:"",effect:"",description:"手に光を集めて薙ぎ払う迎撃用の魔法。",original:"",condition:"",series:"光",action:""};
+ sources[id]=src.slice(0,at).replace("LEVEL=2.0","LEVEL=3.0").replace(/^\/\/[^\n]*/,"// 刈り取る光 / 光 / 追加制作素材・CS未登録")+"\nvec4 lrLight(float d,float w,float e,vec3 hue){\n float core=exp(-abs(d)/max(.002,w)),halo=exp(-abs(d)/max(.006,w*4.));\n return vec4(mix(hue,vec3(1.,.99,.91),core),sat(e*(core*.90+halo*.35)));\n}\nvec2 lrArc(float u){float a=mix(1.20,-1.15,u);return vec2(-.47,-.04)+vec2(.99*cos(a),.72*sin(a));}\nvec4 effect(vec2 p,float t,float q){\n if(q<=0.||q>=1.)return vec4(0.);\n vec2 root=vec2(-.47,-.04);vec4 v=vec4(0.);\n float f=phase(q,.015,.35),e=gate(q,0.,.38);\n for(int i=0;i<16;i++){float k=float(i),a=k*2.39996+f*1.2;vec2 d=dir2(a);float r=(.19+.27*hash(vec2(k,19.)))*(1.-f*f);vec2 c=root+d*r;v=over(v,lrLight(seg(p,c,c+d*.065),.005,e*.8,vec3(.85,.75,.35)));}\n v=over(v,light(ball(p,root,.035+.035*f)*smoothstep(0.,.27,q)*(1.-smoothstep(.40,.51,q))*1.65));\n float front=lFast(phase(q,.40,.57)),back=phase(q,.57,.85),fade=1.-smoothstep(.68,.91,q);\n if(front>back){\n  for(int i=0;i<28;i++){\n   float k=float(i),a=max(back,k/28.),b=min(front,(k+1.)/28.);\n   if(b<=a)continue;\n   vec2 x=lrArc(a),y=lrArc(b);float age=front-(a+b)*.5;\n   float w=.020+.045*sin(3.14159*(a+b)*.5);float en=fade*(.33+.67*exp(-age*2.));\n   v=over(v,lrLight(seg(p,x,y),w,en*.83,vec3(.94,.73,.22)));\n   vec2 x0=mix(root,x,.87),y0=mix(root,y,.87);\n   v=over(v,lrLight(seg(p,x0,y0),.012,en*.55,vec3(.56,.80,1.)));\n  }\n  vec2 tip=lrArc(front);v=over(v,lrLight(length(p-tip),.040,gate(q,.40,.76),vec3(1.,.90,.50)));\n }\n for(int i=0;i<15;i++){float k=float(i),u=hash(vec2(k,17.)),born=.43+.15*u,h=phase(q,born,.98);if(h<=0.||h>=1.)continue;vec2 c=lrArc(u)+vec2(.12+.30*hash(vec2(k,12.)),-.08+.16*hash(vec2(k,21.)))*h;v=over(v,lrLight(seg(p,c,c-vec2(.05,.02)*(1.-h)),.004,sin(3.14159*h)*.70,vec3(.94,.82,.43)));}\n return v;\n}\n"+"\n"+src.slice(main);
+}
 function resolvedCode(r){return sources[r.id]||rawCode(r);}
 return {records,rows,sources,code:resolvedCode,activationSource};
 })();
