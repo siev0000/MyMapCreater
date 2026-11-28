@@ -9869,8 +9869,8 @@ const iceDetails={
   "266": {
     "duration": 1,
     "loop": false,
-    "note": "細い冷気光線が前方へ走り、着点に小さな霜の結晶が付着する。",
-    "body": "vec2 a=vec2(-.74,0.),b=vec2(.66,0.);float f=swift(phase(q,.08,.32));vec4 v=freezeBeam(p,a,mix(a,b,f),.013,t,activeEnv(q,.06,.63));vec4 x=frost(p,b,vec2(.15,.27),phase(q,.30,.62),9.);x.a*=1.-smoothstep(.70,1.,q);return over(v,x);"
+    "note": "横視点。細い白青の冷気光線が短く左から右へ走り、着点に霜が付く。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-.74,0.),b=vec2(.66,0.);float g=swift(phase(q,.05,.25)),tail=swift(phase(q,.37,.61));vec2 st=mix(a,b,tail),en=mix(a,b,g);float env=gate(q,.02,.66);vec4 v=vec4(0.);\nif(g>tail&&length(en-st)>.008){float d=seg(p,st,en);v=vec4(mix(vec3(.25,.70,.98),vec3(.88,.98,1.),1.-smoothstep(.002,.008,d)),(1.-smoothstep(.004,.018,d))*env);v=over(v,vec4(.66,.88,1.,exp(-d*80.)*env*.25));}\nvec4 f=frost(p,b,vec2(.12,.19),phase(q,.24,.57),9.);f.a*=1.-smoothstep(.69,1.,q);return over(over(v,f),iceBurst(p,b,phase(q,.25,.76),.11,8.,4.));"
   },
   "267": {
     "duration": 1.05,
@@ -9893,8 +9893,8 @@ const iceDetails={
   "270": {
     "duration": 1.4,
     "loop": false,
-    "note": "白い冷気の帯が扇状に吹き抜け、細い霜粒が風に乗って進む。",
-    "body": "vec2 a=vec2(-.73,0.),b=mix(a,vec2(.77,0.),swift(phase(q,.07,.34)));vec4 v=frostJet(p,a,b,.25,t);v.a*=activeEnv(q,.07,.68);return v;"
+    "note": "横視点。白い冷気の塊と霜粒が左から右へ扇状に流れ、停止後も右へ進んで消える。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 root=vec2(-.75,0.);vec4 v=vec4(0.);\nfor(int i=0;i<9;i++){float k=float(i),born=.04+.044*k,h=phase(q,born,born+.55);if(h<=0.||h>=1.)continue;float lane=2.*hash(vec2(k,12.))-1.;vec2 c=root+vec2(1.52*h,lane*(.04+.20*h)+.025*sin(h*6.+k));vec4 w=coldMist(p,c,vec2(.12+.15*h,.048+.09*h),t,k+8.);w.a*=sin(3.14159*h)*.92;v=over(v,w);}\nfor(int i=0;i<17;i++){float k=float(i),born=.05+.027*k,h=phase(q,born,born+.43);if(h<=0.||h>=1.)continue;vec2 c=root+vec2(1.53*h,(hash(vec2(k,22.))-.5)*(.07+.42*h));float z=(1.-smoothstep(.003,.012,seg(p,c,c-vec2(.045,.008))))*sin(3.14159*h);v=over(v,vec4(.82,.95,1.,z*.8));}return v;"
   },
   "271": {
     "duration": 1.3,
@@ -9953,14 +9953,14 @@ const iceDetails={
   "280": {
     "duration": 2.2,
     "loop": false,
-    "note": "濃い冷気を術者側に蓄積し、一気に幅のある冷気放射へ展開。氷片が高速で吹き抜ける。",
-    "body": "vec2 a=vec2(-.74,0.),b=mix(a,vec2(.78,0.),swift(phase(q,.32,.52)));vec4 v=iceCharge(p,a,q,.28);vec4 w=frostJet(p,a,b,.36,t);w.a*=activeEnv(q,.32,.80);v=over(v,w);return over(v,iceBurst(p,b,phase(q,.50,.98),.32,11.,12.));"
+    "note": "横視点。冷気を蓄積し、厚い乱流の冷霧と氷片を連続放射。狭い噴出口から広く展開し、停止後も右へ流れて消える。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 root=vec2(-.76,0.);vec4 v=iceCharge(p,root,q,.27);\nfor(int i=0;i<14;i++){float k=float(i),born=.29+.023*k,h=phase(q,born,born+.38);if(h<=0.||h>=1.)continue;float lane=2.*hash(vec2(k,41.))-1.;vec2 c=root+vec2(1.50*h,lane*(.035+.31*h)+.047*sin(h*7.+k));vec4 w=coldMist(p,c,vec2(.14+.17*h,.065+.15*h),t,k+30.);w.a*=smoothstep(0.,.12,h)*(1.-smoothstep(.69,1.,h));v=over(v,w);}\nfor(int i=0;i<22;i++){float k=float(i),born=.30+.016*k,h=phase(q,born,born+.32);if(h<=0.||h>=1.)continue;vec2 c=root+vec2(1.56*h,(hash(vec2(k,11.))-.5)*(.08+.62*h));vec4 w=iceFacet(p,c-vec2(.075,.012),c+vec2(.055,.004),.020+.012*hash(vec2(k,13.)));w.a*=sin(3.14159*h);v=over(v,w);}vec4 m=coldMist(p,vec2(.64,0.),vec2(.20,.34),t,53.);m.a*=gate(q,.48,1.)*.65;return over(v,m);"
   },
   "281": {
     "duration": 2.5,
     "loop": false,
-    "note": "真上視点。中心の冷気から地面を伝う円形の凍結前線が広がり、通過した地表が不規則な霜と枝状の割れ目で凍りつく。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nfloat g=swift(phase(q,.22,.73)),fade=1.-smoothstep(.83,1.,q);vec4 v=vec4(0.);\nfloat build=gate(q,0.,.34);vec4 mist=coldMist(p,vec2(0.),vec2(.27,.27),t,7.);mist.a*=build;v=over(v,mist);\nvec4 floorIce=frost(p,vec2(0.),vec2(.82),g,21.);floorIce.a*=fade;v=over(v,floorIce);\nfloat r=length(p),n=fb(p*17.+t*.2),front=(1.-smoothstep(.010,.049,abs(r-.82*g)+(n-.5)*.024))*gate(q,.22,.85);\nv=over(v,vec4(mix(vec3(.43,.77,.95),vec3(.93,.99,1.),n),front*.85));\nfloat z=0.;for(int i=0;i<10;i++){float k=float(i),a=k*TAU/10.+.24*hash(vec2(k,7.));vec2 d=dir2(a),mid=d*.36+dir2(a+1.57)*.08,end=d*(.65+.13*hash(vec2(k,17.)));z=max(z,1.-smoothstep(.006,.019,seg(p,d*.04,mid)));z=max(z,1.-smoothstep(.005,.016,seg(p,mid,end)));z=max(z,1.-smoothstep(.005,.015,seg(p,mid,mid+dir2(a+.7)*.22)));}\nv=over(v,vec4(.73,.91,1.,z*floorIce.a*.75));\nfor(int i=0;i<11;i++){float k=float(i),a=k*2.39996;float dist=.15+.55*hash(vec2(k,12.));float f=smoothstep(dist/.82,min(1.,dist/.82+.18),g);vec2 c=dir2(a)*dist;vec4 w=iceFacet(p,c,c+dir2(a+.4)*.10*f,.025*f);w.a*=fade*.72;v=over(v,w);}return v;",
+    "note": "横視点。横1:縦0.34の楕円の凍結前線が中心から地表を伝い、霜と亀裂が残る。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 ground=vec2(0.,-.32),surface=(p-ground)/vec2(1.,.34);\nfloat g=swift(phase(q,.22,.73)),fade=1.-smoothstep(.83,1.,q);vec4 v=vec4(0.);\nfloat build=gate(q,0.,.34);vec4 mist=coldMist(p,ground,vec2(.27,.13),t,7.);mist.a*=build;v=over(v,mist);\nvec4 floorIce=frost(p,ground,vec2(.82,.82*.34),g,21.);floorIce.a*=fade;v=over(v,floorIce);\nfloat r=length(surface),n=fb(surface*17.+t*.2),front=(1.-smoothstep(.010,.049,abs(r-.82*g)+(n-.5)*.024))*gate(q,.22,.85);\nv=over(v,vec4(mix(vec3(.43,.77,.95),vec3(.93,.99,1.),n),front*.85));\nfloat z=0.;for(int i=0;i<10;i++){float k=float(i),a=k*TAU/10.+.24*hash(vec2(k,7.));vec2 d=dir2(a),mid=d*.36+dir2(a+1.57)*.08,end=d*(.65+.13*hash(vec2(k,17.)));z=max(z,1.-smoothstep(.006,.019,seg(surface,d*.04,mid)));z=max(z,1.-smoothstep(.005,.016,seg(surface,mid,end)));z=max(z,1.-smoothstep(.005,.015,seg(surface,mid,mid+dir2(a+.7)*.22)));}\nv=over(v,vec4(.73,.91,1.,z*floorIce.a*.75));\nfor(int i=0;i<11;i++){float k=float(i),a=k*2.39996;float dist=.15+.55*hash(vec2(k,12.));float f=smoothstep(dist/.82,min(1.,dist/.82+.18),g);vec2 c=ground+dir2(a)*dist*vec2(1.,.34);vec4 w=iceFacet(p,c,c+vec2(.02*sin(k),.11*f),.025*f);w.a*=fade*.72;v=over(v,w);}return v;",
     "placement": "地表・中心から周囲（仮）"
   },
   "282": {
@@ -9978,8 +9978,8 @@ const iceDetails={
   "284": {
     "duration": 2.65,
     "loop": false,
-    "note": "高密度の氷光を蓄積し、太い凍結光線を瞬時に放射。光路に氷の破片、着点に急成長する氷層。",
-    "body": "vec2 a=vec2(-.74,0.),b=vec2(.70,0.);float g=swift(phase(q,.40,.51)),e=activeEnv(q,.40,.77);vec4 v=iceCharge(p,a,q,.36);v=over(v,freezeBeam(p,a,mix(a,b,g),.055,t,e*1.9));vec4 w=frost(p,b,vec2(.22,.40),swift(phase(q,.50,.76)),27.);w.a*=1.-smoothstep(.83,1.,q);v=over(v,w);return over(v,iceBurst(p,b,phase(q,.50,1.),.27,19.,11.));"
+    "note": "横視点。白熱した氷光を蓄積し、太い光線を左から右へ放射。氷片が光路を進み、着点で氷膜と氷晶が急成長。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.74,0.),b=vec2(.65,0.);vec4 v=iceCharge(p,a,q,.34);float head=swift(phase(q,.35,.46)),tail=swift(phase(q,.70,.82)),env=gate(q,.34,.83);vec2 st=mix(a,b,tail),en=mix(a,b,head);\nif(head>tail){float x=(p.x-a.x)/(b.x-a.x),n=fb(vec2(x*14.-t*7.,p.y*28.));float mask=smoothstep(st.x-.018,st.x+.025,p.x)*(1.-smoothstep(en.x-.025,en.x+.018,p.x));float wid=.056+.012*n;float core=(1.-smoothstep(wid*.45,wid,abs(p.y)))*mask*env;float halo=(1.-smoothstep(wid*.8,wid*2.6,abs(p.y)+(n-.5)*.028))*mask*env;v=over(v,vec4(.32,.74,1.,halo*.60));v=over(v,vec4(mix(vec3(.58,.86,1.),vec3(.97,1.,1.),1.-smoothstep(.008,.030,abs(p.y))),core));\nfor(int i=0;i<13;i++){float k=float(i),h=fract(t*3.+hash(vec2(k,3.)));vec2 c=mix(st,en,h)+vec2(0.,(hash(vec2(k,9.))-.5)*.25);vec4 w=iceFacet(p,c-vec2(.06,0.),c+vec2(.08,0.),.022);w.a*=env*sin(3.14159*h);v=over(v,w);}}\nfloat g=swift(phase(q,.45,.75)),fade=1.-smoothstep(.84,1.,q);vec4 coat=frost(p,b,vec2(.19,.40),g,27.);coat.a*=fade;v=over(v,coat);for(int i=0;i<4;i++){float k=float(i),dx=(k-1.5)*.095;vec2 c=b+vec2(dx,-.30);vec4 w=iceFacet(p,c,c+vec2(dx*.25,(.53-.07*abs(k-1.5))*g),.045*g);w.a*=fade;v=over(v,w);}return over(v,iceBurst(p,b,phase(q,.46,.96),.25,19.,10.));"
   },
   "285": {
     "duration": 2.8,
@@ -10003,8 +10003,8 @@ const iceDetails={
   "288": {
     "duration": 3,
     "loop": true,
-    "note": "真上視点。夜の闇が周囲を包み、暗い青の冷気領域に強い冷風が流れる。中心から地面が凍りつき、完成後は暗域・氷面と吹き抜ける冷風を持続させる。",
-    "body": "float polarFormation=1.;\nfloat polarTime=fract(t);\nfloat dark=smoothstep(0.,.42,polarFormation),frozen=smoothstep(.18,.86,polarFormation),wind=smoothstep(.12,.72,polarFormation);\nfloat d=length(p/vec2(.83,.75)),n=fb(p*5.+dir2(polarTime*TAU)*.22);\nfloat mask=(1.-smoothstep(.58,1.08,d));vec4 v=vec4(mix(vec3(.018,.028,.08),vec3(.105,.18,.30),n),mask*.84*dark);\nvec4 floorIce=frost(p,vec2(0.),vec2(.74),frozen,21.);floorIce.rgb=mix(vec3(.12,.22,.34),floorIce.rgb,.42);floorIce.a*=.68;v=over(v,floorIce);\nfloat z=0.;for(int i=0;i<19;i++){float k=float(i),f=fract(polarTime+hash(vec2(k,13.)));float y=(hash(vec2(k,15.))-.5)*1.30;vec2 a=vec2(mix(-.82,.82,f),y+.06*sin(k+f*TAU)),b=a-vec2(.08+.12*hash(vec2(k,19.)),.025);z=max(z,(1.-smoothstep(.005,.019,seg(p,a,b)))*sin(3.14159*f));}\nfloat mist=fb(p*8.+dir2(polarTime*TAU)*.4);v=over(v,vec4(mix(vec3(.35,.57,.73),vec3(.88,.97,1.),mist),sat(z*.82+mist*.12)*mask*wind));return v;",
+    "note": "横視点。夜の闇と冷風が空間を包み、地表の凍結面は横1:縦0.34の楕円。発動後は暗域・氷面・冷風が持続。",
+    "body": "float polarFormation=1.;\nfloat polarTime=fract(t);\nfloat dark=smoothstep(0.,.42,polarFormation),frozen=smoothstep(.18,.86,polarFormation),wind=smoothstep(.12,.72,polarFormation);\nfloat d=length(p/vec2(.83,.75)),n=fb(p*5.+dir2(polarTime*TAU)*.22);\nfloat mask=(1.-smoothstep(.58,1.08,d));vec4 v=vec4(mix(vec3(.018,.028,.08),vec3(.105,.18,.30),n),mask*.84*dark);\nvec4 floorIce=frost(p,vec2(0.,-.35),vec2(.74,.74*.34),frozen,21.);floorIce.rgb=mix(vec3(.12,.22,.34),floorIce.rgb,.42);floorIce.a*=.68;v=over(v,floorIce);\nfloat z=0.;for(int i=0;i<19;i++){float k=float(i),f=fract(polarTime+hash(vec2(k,13.)));float y=(hash(vec2(k,15.))-.5)*1.30;vec2 a=vec2(mix(-.82,.82,f),y+.06*sin(k+f*TAU)),b=a-vec2(.08+.12*hash(vec2(k,19.)),.025);z=max(z,(1.-smoothstep(.005,.019,seg(p,a,b)))*sin(3.14159*f));}\nfloat mist=fb(p*8.+dir2(polarTime*TAU)*.4);v=over(v,vec4(mix(vec3(.35,.57,.73),vec3(.88,.97,1.),mist),sat(z*.82+mist*.12)*mask*wind));return v;",
     "placement": "広域・地表（仮）"
   },
   "289": {
