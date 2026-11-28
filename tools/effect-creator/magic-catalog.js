@@ -10633,85 +10633,85 @@ const lightDetails={
   "415": {
     "duration": 2.6,
     "loop": false,
-    "note": "薄い雲へ白光が集まり、縁から虹色が急速に広がる彩雲。雲固有の現象なので雲あり。",
-    "body": "float f=lFast(phase(q,.25,.65));vec4 v=lCloud(p,t,f,0.);v.a*=lEnv(q,.08,.81);return over(v,light(lGather(p,vec2(0.,.23),q,.32,.31)*.62));"
+    "note": "彩雲。白光の蓄積後、横長の雲の奥から手前へ虹色が時間差で広がる。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.39,.76)),e=1.-smoothstep(.81,1.,q);vec4 v=light(lpCharge(p,vec2(0.,.35),q,.34,.53,1.5)+lpHold(p,vec2(0.,.35),q,.29,.43,1.1));vec4 w=lpCloud(p,t,g,0.);w.a*=e;return over(v,w);"
   },
   "416": {
     "duration": 3,
     "loop": true,
-    "note": "中央の光核が脈動し、近距離に密集した色環が周期的に開く。大径の暈と異なる。",
-    "body": "float h=.5-.5*cos(t*TAU),r=.13+.055*h,d=length(p);vec4 v=light(ball(p,vec2(0.),.09)*(.85+.5*h));for(int i=0;i<9;i++){float k=float(i),rad=r+k*.033;float z=glw(abs(d-rad),.0045)*(.45+.28*h)*(1.-k*.075);v=over(v,lSpectrum(z,k*.18));}return v;"
+    "note": "光冠。中心光核の溜めと止めから近距離の色環が時間差で展開。持続は静かな周期脈動。",
+    "body": "float fieldForm=1.;float ft=fract(t);float f=fieldForm;float g=lFast(phase(f,.37,.70)),h=.5-.5*cos(ft*TAU),d=length(p);vec4 v=light(lpCharge(p,vec2(0.),f,.33,.51,1.7)+lpHold(p,vec2(0.),f,.28,.43,1.5)+ball(p,vec2(0.),.095)*g*(1.1+.32*h));for(int i=0;i<9;i++){float k=float(i),u=lFast(phase(f,.37+.023*k,.62+.023*k)),rad=(.13+.038*k+.035*h)*u;if(u>0.)v=over(v,lSpectrum(glw(abs(d-rad),.0045)*u*(.65+.25*h)*(1.-k*.068),k*.13));}return v;"
   },
   "417": {
     "duration": 2.5,
     "loop": false,
-    "note": "周囲から光束を一点へ集めて白熱させ、強い局所光条を解放する。広域爆発なし。",
-    "body": "float f=phase(q,0.,.46),z=lGather(p,vec2(0.),q,.46,.67);for(int i=0;i<10;i++){float k=float(i),a=k*TAU/10.+.07*sin(k);vec2 d=dir2(a);z+=lRay(p,d*.80,d*.80*(1.-f),.007)*gate(q,.08,.58)*(.48+.52*f);}z+=lStar(p,vec2(0.),.37,.0)*gate(q,.46,.93)*2.3+ball(p,vec2(0.),.16)*gate(q,.43,.87)*1.5;return light(z);"
+    "note": "光収束。22本の高速収束光と白熱核、一瞬の停止後に局所光条を強烈に解放。広域爆発なし。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float z=lpCharge(p,vec2(0.),q,.43,.87,2.)+lpHold(p,vec2(0.),q,.34,.54,2.1);float f=phase(q,.07,.43);for(int i=0;i<12;i++){float k=float(i),a=k*2.39996;vec2 d=dir2(a);float r=.88*(1.-f*f);z+=lRay(p,d*r,d*(r+.12),.006)*gate(q,.07,.44)*1.15;}float h=lFast(phase(q,.51,.59)),e=gate(q,.51,.99);z+=lStar(p,vec2(0.),.42*h,0.)*e*3.1+ball(p,vec2(0.),.14)*e*2.2;return light(z);"
   },
   "418": {
     "duration": 2.55,
     "loop": false,
-    "note": "中心の光源へ蓄積して上下へ縦長の白金光柱が急伸。縦筋が流れ、細く消える。雷なし。",
-    "body": "float g=lFast(phase(q,.39,.53)),e=lEnv(q,.39,.80),w=.13*(1.-.70*smoothstep(.80,1.,q));float z=lGather(p,vec2(0.),q,.39,.48)+lPillar(p,0.,-.92*g,.92*g,w,t)*e*1.65;z+=lStar(p,vec2(0.),.25,0.)*gate(q,.39,.70)*1.3;return light(z);",
+    "note": "光柱。光源へ収束、短い停止の後に上下へ太い白金光柱が急伸し余光が残る。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.47,.57)),e=lEnv(q,.47,.78),w=.15*(1.-.65*smoothstep(.79,1.,q));float shake=.009*sin(q*TAU*27.)*gate(q,.32,.57);float z=lpCharge(p,vec2(0.),q,.39,.60,1.8)+lpHold(p,vec2(0.),q,.33,.49,1.8)+lPillar(p,shake,-.94*g,.94*g,w,t)*e*2.25;z+=lStar(p,vec2(0.),.30,0.)*gate(q,.47,.72)*2.;return light(z);",
     "placement": "光源中心・上下（仮）"
   },
   "419": {
     "duration": 2.8,
     "loop": false,
-    "note": "光が対象の輪郭を避けて左右に分かれ、背後で再結合。実際の背景透過・透明化はゲーム側。",
-    "body": "float g=phase(q,.31,.72),e=lEnv(q,.28,.83),z=lGather(p,vec2(-.63,0.),q,.31,.28);for(int i=0;i<6;i++){float k=float(i),y=(k-2.5)*.13,s=sign(y);vec2 a=vec2(-.77,y*.35),b=vec2(0.,s*(1.08+.14*abs(y))),c=vec2(.77,y*.35);z+=lCurve(p,a,b,c,g,.006)*e*(.65+.12*sin(k+t*TAU));}return tone(z,vec3(.68,.94,1.));",
+    "note": "光迷彩。光を対象の上下へ迂回させ、背後で再結合。実背景の透明化は別。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.38,.65)),e=lEnv(q,.36,.83),z=lpCharge(p,vec2(-.68,0.),q,.33,.38,1.8)+lpHold(p,vec2(-.68,0.),q,.28,.40,1.2);for(int i=0;i<10;i++){float k=float(i),y=(k-4.5)*.10,s0=sign(y);vec2 a=vec2(-.85,y*.25),b=vec2(0.,s0*(1.04+.25*abs(y))),c=vec2(.85,y*.25);z+=lCurve(p,a,b,c,g,.0055)*e*(.7+.25*sin(k+t*TAU*4.)*sin(k+t*TAU*4.));}z+=lStar(p,vec2(.85,0.),.13,0.)*gate(q,.65,.91);return tone(z,vec3(.68,.94,1.));",
     "placement": "対象周囲・光路（仮）"
   },
   "420": {
     "duration": 2.9,
     "loop": false,
-    "note": "低い熱揺らぎの層から抽象的な光像が上下にずれて重複し、揺れて消える。風景や人物は固定しない。",
-    "body": "float g=phase(q,0.,.42),e=lEnv(q,.32,.82);float z=lGather(p,vec2(0.,-.30),q,.34,.40)*.6;for(int i=0;i<6;i++){float k=float(i),x=(k-2.5)*.24,h=.10+.15*hash(vec2(k,9.));float shift=.035*sin(t*TAU*3.+p.y*19.+k);vec2 u=p-vec2(x+shift,-.23+h);float d=abs(u.x)+abs(u.y)*.48;z+=glw(d,.012)*e*g*.55;vec2 v=p-vec2(x-shift,-.30-h*.85);z+=glw(abs(v.x)+abs(v.y)*.48,.014)*e*g*.38;}float layer=exp(-pow((p.y+.27+.025*sin(p.x*21.-t*TAU*3.))*22.,2.));return tone((z+layer*e*.30)*(1.-smoothstep(.80,1.08,abs(p.x))),vec3(.84,.94,1.));",
+    "note": "光蜃気楼。地面に沿った奥行きのある屈折層と上下にずれる抽象虚像を強調。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.35,.59)),e=lEnv(q,.35,.82);float z=lpCharge(p,vec2(0.,-.40),q,.31,.53,1.6);for(int i=0;i<3;i++){float k=float(i),y=-.48+.085*k+.025*sin(p.x*18.-t*TAU*3.+k);z+=exp(-abs(p.y-y)/.012)*(1.-smoothstep(.64,.94,abs(p.x)))*g*e*.40;}for(int i=0;i<8;i++){float k=float(i),x=(k-3.5)*.21,h=.12+.22*hash(vec2(k,9.)),shift=.05*sin(t*TAU*3.+p.y*17.+k);vec2 u=p-vec2(x+shift,-.34+h),v=p-vec2(x-shift,-.35-h*.68);z+=glw(abs(u.x)+abs(u.y)*.35,.012)*e*g*.65+glw(abs(v.x)+abs(v.y)*.42,.012)*e*g*.40;}return tone(z,vec3(.84,.94,1.));",
     "placement": "地表付近（仮）"
   },
   "421": {
     "duration": 3.05,
     "loop": false,
-    "note": "大量の光粒を集めて白熱し、太い複数の光束が一斉に前方へ流れる。光線より厚い密度と先端光。",
-    "body": "vec2 a=vec2(-.76,0.),b=vec2(.76,0.);float g=lFast(phase(q,.43,.54)),e=lEnv(q,.43,.81),z=lGather(p,a,q,.43,.42);for(int i=0;i<9;i++){float k=float(i),y=(k-4.)*.080;vec2 c=a+vec2(0.,y*.22),d=b+vec2(0.,y);z+=lRay(p,c,mix(c,d,g),.014+.006*cos(k))*e*(.65+.35*sin(t*TAU*7.+k)*sin(t*TAU*7.+k));}z+=lStar(p,b,.29,.0)*gate(q,.53,.91)*1.8;return light(z);"
+    "note": "光の奔流。大量の光の収束と停止、左から右へ太い複数光束が急放出される。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(-.76,0.),b=vec2(.83,0.);float g=lFast(phase(q,.49,.58)),h=lFast(phase(q,.71,.97)),e=lEnv(q,.49,.79),z=lpCharge(p,a,q,.41,.62,2.3)+lpHold(p,a,q,.35,.51,2.4);for(int i=0;i<13;i++){float k=float(i),y=(k-6.)*.065;vec2 c=a+vec2(0.,y*.26),d=b+vec2(0.,y);if(g>h)z+=lRay(p,mix(c,d,h),mix(c,d,g),.016+.009*cos(k))*e*(.64+.36*sin(t*TAU*9.+k)*sin(t*TAU*9.+k));}z+=lStar(p,b,.31,0.)*gate(q,.57,.95)*2.4;return light(z);"
   },
   "422": {
     "duration": 3.8,
     "loop": true,
-    "note": "高層の氷晶に光が入り、青銀の繊維状の雲の縁が波打つ。静かなループ。",
-    "body": "vec4 v=lCloud(p,t,1.,1.);float z=0.;for(int i=0;i<8;i++){float k=float(i),y=.04+(k-3.5)*.048+.025*sin(p.x*12.+t*TAU+k);z+=exp(-abs(p.y-y)/.007)*(1.-smoothstep(.58,.87,abs(p.x)))*v.a*.19;}return over(v,tone(z,vec3(.49,.80,1.)));"
+    "note": "夜光雲。横長の青銀色の氷晶雲が奥から手前へ広がり、繊維光が静かに流動。",
+    "body": "float fieldForm=1.;float ft=fract(t);float f=fieldForm;float g=lFast(phase(f,.38,.78));vec4 v=light(lpCharge(p,vec2(0.,.48),f,.33,.69,2.1)*.75);return over(v,lpCloud(p,ft,g,1.));"
   },
   "423": {
     "duration": 3.3,
     "loop": false,
-    "note": "対象上方に白金の光を集め、局所的な縦の光幕と金色の粒が対象を包む。穏やかな余光。",
-    "body": "float g=lFast(phase(q,.40,.58)),e=lEnv(q,.40,.83);float z=lGather(p,vec2(0.,.71),q,.40,.47);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.14;z+=lPillar(p,x,.82-1.49*g,.82,.09,t+k*.07)*e*.68;}for(int i=0;i<14;i++){float k=float(i),f=fract(t+hash(vec2(k,7.)));vec2 c=vec2((hash(vec2(k,11.))-.5)*.72,.73-1.35*f);z+=ball(p,c,.018)*sin(3.14159*f)*e*.70;}return tone(z,vec3(1.,.89,.51));"
+    "note": "聖光。上空に白金の光を蓄積、静止後に幅のある神聖光が降り、金粒と余光が残る。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.47,.60)),e=lEnv(q,.47,.83),z=lpCharge(p,vec2(0.,.75),q,.40,.68,2.5)+lpHold(p,vec2(0.,.75),q,.34,.49,2.1);z+=lPillar(p,0.,.88-1.56*g,.88,.32,t)*e*2.;for(int i=0;i<24;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,7.)));vec2 c=vec2((hash(vec2(k,11.))-.5)*.83,.78-1.43*f);z+=ball(p,c,.012+.009*hash(vec2(k,31.)))*sin(3.14159*f)*e*.61;}z+=lpGround(p,vec2(0.,-.68),phase(q,.60,1.),.67);return tone(z,vec3(1.,.89,.51));"
   },
   "424": {
     "duration": 3.25,
     "loop": false,
-    "note": "分散した多数の蛍光が集まってから複数方向へ流れ、時間差で鋭く点滅して散る。",
-    "body": "float h=phase(q,0.,.43),f=phase(q,.43,1.);float z=0.;for(int i=0;i<24;i++){float k=float(i),a=k*2.399963;vec2 d=dir2(a);float r=.31+.43*hash(vec2(k,7.));vec2 c=d*r*mix(1.,.26,h)+vec2(.045*sin(t*TAU*2.+k),.04*cos(t*TAU*2.+k));c+=d*r*.90*lFast(f);float blink=.24+.76*pow(.5+.5*sin(t*TAU*7.+k*1.7),6.);z+=ball(p,c,.036)*blink*lEnv(q,.03,.86)*1.15+lStar(p,c,.095,.2)*blink*gate(q,.43,.91)*.90;}return tone(z,vec3(.92,1.,.58));"
+    "note": "蛍の群光。多数の蛍光が収束して停止し、4回の時間差発光で散る。CS攻撃回数4に対応する演出。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float h=phase(q,.05,.39),f=lFast(phase(q,.47,.94)),e=smoothstep(.02,.12,q)*(1.-smoothstep(.90,1.,q));float z=0.;for(int i=0;i<36;i++){float k=float(i),a=k*2.399963;vec2 d=dir2(a);float r=.35+.46*hash(vec2(k,7.));vec2 c=d*r*(1.-.78*h+.91*f)+vec2(.035*sin(t*TAU*2.+k),.03*cos(t*TAU*2.+k));float pulse=0.;for(int j=0;j<4;j++){float b=.47+.105*float(j);pulse+=lpPulse(phase(q,b,b+.10))*step(b,q);}z+=ball(p,c,.020)*e*(.40+.85*pulse)+lStar(p,c,.065,.2)*e*pulse*.56;}return tone(z,vec3(.92,1.,.58));"
   },
   "425": {
     "duration": 3.4,
     "loop": false,
-    "note": "地表に複数の光点が蓄積し、時間差で縦長の光柱が上へ突き上がる。地表の光が重なる。",
-    "body": "float z=0.;for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.32,s=.36+k*.075,g=lFast(phase(q,s,s+.12));vec2 a=vec2(x,-.66);z+=lGather(p,a,q,s,.16)*.75+lPillar(p,x,-.66,-.66+1.48*g,.085,t+k*.1)*gate(q,s,min(.99,s+.43))*1.5;z+=lStar(p,a,.14,0.)*gate(q,s,min(.99,s+.34))*1.25;}return light(z);",
+    "note": "地上の光。水平1:.34の地表範囲に光を蓄積し、奥行きの異なる光柱を3段階で突き上げる。CS攻撃回数3に対応する演出。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float z=lpCharge(p,vec2(0.,-.59),q,.34,.78,2.7)+lpHold(p,vec2(0.,-.59),q,.28,.40,2.1);for(int i=0;i<9;i++){float k=float(i),a=k*2.39996,r=.20+.59*hash(vec2(k,13.));vec2 c=vec2(0.,-.56)+dir2(a)*vec2(1.,.34)*r;float b=.39+.15*floor(k/3.),g=lFast(phase(q,b,b+.085)),e=gate(q,b,min(1.,b+.30));z+=lPillar(p,c.x,c.y,c.y+(1.32+.14*sin(k))*g,.065+.025*hash(vec2(k,44.)),t+k*.07)*e*2.1;z+=lStar(p,c,.13,0.)*e*1.1;}for(int j=0;j<3;j++){float b=.39+.15*float(j);z+=lpGround(p,vec2(0.,-.56),phase(q,b,min(1.,b+.32)),.83);}return light(z);",
     "placement": "地表→上空（仮）"
   },
   "426": {
     "duration": 4,
     "loop": false,
-    "note": "広域の光が上空へ集まり、幅広い白金の光柱が上から複数降り注ぐ。強い着点光と余韻。雷なし。",
-    "body": "float z=lGather(p,vec2(0.,.72),q,.45,.66);for(int i=0;i<5;i++){float k=float(i),x=(k-2.)*.32,s=.45+.035*abs(k-2.),g=lFast(phase(q,s,s+.11)),e=lEnv(q,s,.85);z+=lPillar(p,x,.93-1.63*g,.93,.13+.035*(1.-abs(k-2.)*.5),t+k*.09)*e*1.75;z+=lStar(p,vec2(x,-.70),.20,.0)*gate(q,s+.10,.95)*1.4;}for(int i=0;i<18;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,23.))-.5)*1.54,.90-1.60*f);z+=ball(p,c,.018)*sin(3.14159*f)*lEnv(q,.46,.87)*.72;}return tone(z*(1.-smoothstep(.94,1.08,abs(p.y))),vec3(1.,.88,.46));",
+    "note": "神光。広域の白金光を上空に大量収束、停止後に奥行きのある太い光柱が真下へ降り注ぎ、着点光と余韻。雷なし。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float z=lpCharge(p,vec2(0.,.75),q,.39,.96,3.3)+lpHold(p,vec2(0.,.75),q,.32,.50,3.2);for(int i=0;i<9;i++){float k=float(i),a=k*2.39996,r=.16+.65*hash(vec2(k,13.));vec2 c=vec2(0.,-.57)+dir2(a)*vec2(1.,.34)*r;float b=.48+.035*mod(k,3.),g=lFast(phase(q,b,b+.09)),e=lEnv(q,b,.85);z+=lPillar(p,c.x,mix(.94,c.y,g),.94,.095+.042*hash(vec2(k,31.)),t+k*.09)*e*2.4;z+=lStar(p,c,.19,0.)*gate(q,b+.09,.98)*1.7;}for(int i=0;i<30;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,23.))-.5)*1.65,.92-1.65*f);z+=ball(p,c,.013)*sin(3.14159*f)*lEnv(q,.49,.89)*.67;}z+=lpGround(p,vec2(0.,-.57),phase(q,.58,1.),.91)*1.5;return tone(z*(1.-smoothstep(.95,1.08,abs(p.y))),vec3(1.,.88,.46));",
     "placement": "上空→地表・広域（仮）"
   },
   "427": {
     "duration": 4,
     "loop": true,
-    "note": "緑・青・紫の巨大な発光カーテン。縦筋を持つ複数の幕が波打ち、折り重なる。用途未設定の持続案。",
-    "body": "vec4 v=vec4(0.);for(int i=0;i<4;i++){float k=float(i),baseY=.38-k*.13+.17*sin(p.x*5.+t*TAU+k*.8)+.07*sin(p.x*12.-t*TAU*2.+k);float h=.22+.09*sin(p.x*8.+t*TAU+k),y=(p.y-baseY)/max(.06,h);float m=smoothstep(-1.15,-.82,y)*(1.-smoothstep(.10,.34,y))*(1.-smoothstep(.64,.88,abs(p.x)));float stripe=.38+.62*pow(.5+.5*sin(p.x*67.+sin(p.x*18.+t*TAU+k)*2.),3.);vec3 col=mix(vec3(.16,.97,.64),vec3(.31,.45,1.),sat((y+1.)*.9));col=mix(col,vec3(.75,.28,.96),.35+.30*sin(k+t*TAU));v=over(v,vec4(col,m*stripe*.61));}return v;",
+    "note": "極光。上空の光の蓄積後、奥から手前へ巨大な5層の発光カーテンを展開。緑青紫の流動を維持。用途未設定の持続案。",
+    "body": "float fieldForm=1.;float ft=fract(t);float f=fieldForm;float g=lFast(phase(f,.37,.80));vec4 v=light(lpCharge(p,vec2(0.,.58),f,.33,.90,2.7)*.73);return over(v,lpAurora(p,ft,g));",
     "placement": "上空・広域（仮）"
   }
 };
@@ -11070,11 +11070,13 @@ const darkIndividualHelpers="\nfloat dkFast(float f){return 1.-pow(1.-sat(f),3.)
 for(const r of records){if(darkIndividual[r.row]){r.note="個別改修版："+darkIndividual[r.row][0];r.refined=true;}}
 const gravityPressureHelpers="\nvec4 gvPressurePlane(vec2 p,float y,float r,float e,float power){\n if(e<=.001||r<=.005)return vec4(0.);\n vec2 z=(p-vec2(0.,y))/vec2(r,r*.34);float d=length(z),a=atan(z.y,z.x);\n float mask=1.-smoothstep(.94,1.02,d);\n float n=fb(z*3.7+vec2(2.,5.));float front=.60+.40*smoothstep(-.20,.20,-z.y);\n vec4 v=vec4(mix(vec3(.13,.055,.26),vec3(.39,.18,.65),n),mask*e*(.10+.11*front));\n float edge=(d-1.)*r*.34;\n v=over(v,gvLight(edge,.009+.003*power,e*front,power));\n float bend=exp(-abs(z.y-.10*sin(z.x*4.))/.12)*mask;\n return over(v,vec4(.64,.44,.95,bend*e*.075));\n}\nvec4 gvPressureDrop(vec2 p,float f,float e,float r,float power){\n if(e<=.001)return vec4(0.);\n float travel=pow(sat(f),2.2),y=mix(.83,-.61,travel);\n float squash=1.-.10*smoothstep(.83,1.,f);\n vec4 v=vec4(0.);\n for(int i=0;i<2;i++){float k=float(i)+1.;float a=e*(.16/k)*smoothstep(.08,.30,f)*(1.-smoothstep(.85,1.,f));v=over(v,gvPressurePlane(p,y+.09*k,r*squash,a,power));}\n return over(v,gvPressurePlane(p,y,r*squash,e,power));\n}\n";
 const darkNebula398Helpers="\nvec4 dkNebula398(vec2 p,float ft,float g){\n if(g<=.001)return vec4(0.);\n vec2 z=p/max(.025,g),axis=vec2(.94,.34);\n vec2 w=vec2(dot(z,axis),dot(z,vec2(-axis.y,axis.x)));\n vec2 move=dir2(ft*TAU);\n float bend=.10*sin(w.x*4.5)+.055*sin(w.x*9.+move.x*.8);\n w.y-=bend;\n float broad=length(w/vec2(.94,.53));\n float n=fb(w*3.8+move*.19);\n float dust=fb(w*9.+vec2(n*2.1,-n*1.8)+move*.13);\n float fil=fb(w*vec2(4.5,13.)+vec2(dust*2.3,n*2.));\n float shape=1.-smoothstep(.47,1.07,broad+.45*(n-.5));\n float darklane=exp(-abs(w.y+.10*sin(w.x*7.))/.115)*(.48+.52*dust);\n float cloud=shape*(.30+.56*n+.18*dust);\n vec3 col=mix(vec3(.014,.008,.032),vec3(.26,.085,.43),sat(n*.88+fil*.38-darklane*.55));\n vec4 v=vec4(col,sat(cloud*g*.93));\n float wisps=shape*pow(sat(fil*1.3-.25),2.)*(1.-darklane*.68);\n v=over(v,vec4(mix(vec3(.21,.15,.40),vec3(.55,.27,.63),dust),wisps*g*.44));\n // Separate star depths and varied apparent brightness; no radial ring.\n for(int i=0;i<78;i++){\n  float k=float(i),seed=hash(vec2(k,19.)),depth=hash(vec2(k,47.));\n  float x=(hash(vec2(k,11.))*2.-1.)*.90;\n  float y=(hash(vec2(k,23.))*2.-1.)*.53*sqrt(max(.03,1.-x*x));\n  vec2 c=axis*x+vec2(-axis.y,axis.x)*(y+.10*sin(x*4.5));\n  c+=vec2(.018*sin(ft*TAU+k),.012*cos(ft*TAU+k*.73))*(.4+depth);\n  c*=g;\n  float reveal=smoothstep(seed*.65,seed*.65+.20,g);\n  float tw=.76+.24*sin(ft*TAU*(1.+floor(seed*3.))+k*2.7);\n  float r=mix(.003,.010,pow(depth,3.))*max(.65,g);\n  float d=length(p-c),core=exp(-pow(d/r,2.)),halo=exp(-d/max(.007,r*2.7));\n  vec3 hue=mix(vec3(.61,.76,1.),vec3(.93,.57,.94),hash(vec2(k,32.)));\n  float e=g*reveal*tw*(.48+.48*depth);\n  v=over(v,vec4(hue,sat((core*.95+halo*.24)*e)));\n  if(depth>.91){\n   vec2 d0=abs(p-c);\n   float ray=(exp(-d0.x/.0028-d0.y/.022)+exp(-d0.y/.0028-d0.x/.022))*.26;\n   v=over(v,vec4(.92,.90,1.,ray*e));\n  }\n }\n return v;\n}\n";
+const lightPowerTimingHelpers="\nfloat lpCharge(vec2 p,vec2 c,float q,float stop,float r,float power){\n if(q<=0.||q>=stop)return 0.;float f=phase(q,0.,stop),e=smoothstep(0.,.12,f)*(1.-smoothstep(.84,1.,f));float z=0.;\n for(int i=0;i<22;i++){float k=float(i),a=k*2.39996+.8*f;vec2 d=dir2(a);float rr=r*(.48+.52*hash(vec2(k,27.)))*(1.-f*f);vec2 x=c+d*rr;z+=lRay(p,x,x+d*(.04+.09*f),.004)*e*.55;}\n return z+ball(p,c,.025+.045*f)*e*power;\n}\nfloat lpHold(vec2 p,vec2 c,float q,float a,float b,float power){\n float e=gate(q,a,b);return ball(p,c,.055)*e*power+lStar(p,c,.16,0.)*e*.65;\n}\nfloat lpPulse(float f){return smoothstep(0.,.12,f)*(1.-smoothstep(.32,1.,f));}\nfloat lpGround(vec2 p,vec2 c,float f,float r){\n if(f<=0.||f>=1.)return 0.;float d=(length((p-c)/vec2(1.,.34))-r*lFast(f))*.34;return glw(abs(d),.006)*lpPulse(f)*.75;\n}\nvec4 lpCloud(vec2 p,float t,float g,float night){\n if(g<=.001)return vec4(0.);vec4 v=vec4(0.);\n for(int i=0;i<3;i++){float k=float(i),depth=k/2.;vec2 z=p-vec2(.045*sin(k*2.4),.16+.13*depth);z.x/=max(.05,g*(.83+.17*depth));z.y/=.76+.25*depth;\n vec4 w=lCloud(z,t+k*.19,night>.5?1.:sat(g*1.4-.25*depth),night);w.a*=g*(.52+.24*depth);v=over(v,w);}\n float en=(1.-smoothstep(.64,.95,abs(p.x)))*g;\n for(int i=0;i<12;i++){float k=float(i),x=(hash(vec2(k,51.))-.5)*1.65*g,y=.22+.16*hash(vec2(k,42.))+.045*sin(x*8.+t*TAU+k);float f=.45+.55*sin(t*TAU+k)*sin(t*TAU+k);float z=lRay(p,vec2(x-.045,y),vec2(x+.06,y+.01),.0035)*en*f*.28;\n v=over(v,night>.5?tone(z,vec3(.48,.78,1.)):lSpectrum(z,k*.17));}\n return v;\n}\nvec4 lpAurora(vec2 p,float t,float g){\n if(g<=.001)return vec4(0.);vec4 v=vec4(0.);\n for(int i=0;i<5;i++){float k=float(i),depth=k/4.;float x=p.x/max(.04,g*(.78+.22*depth));float a=x*4.7+t*TAU+k*.78;\n float top=.62-.09*k+.14*sin(a)+.07*sin(x*11.-t*TAU*2.+k);\n float h=(.25+.15*depth+.08*sin(x*7.+k+t*TAU))*g;\n float y=(p.y-top)/max(.025,h);\n float m=smoothstep(-1.22,-.93,y)*(1.-smoothstep(.02,.16,y))*(1.-smoothstep(.72,.99,abs(x)));\n float fold=.36+.64*pow(.5+.5*sin(x*81.+2.7*sin(a)+k),3.);\n vec3 col=mix(vec3(.10,.97,.57),vec3(.28,.49,1.),sat(-y*.85));col=mix(col,vec3(.76,.28,.98),sat(.22+.28*sin(a*.7)+.29*depth));\n float edge=exp(-abs(y+.91)/.13);v=over(v,vec4(mix(col,vec3(.85,1.,.93),edge*.32),sat(m*g*(.35+.38*depth)*fold+edge*m*g*.19)));}\n return v;\n}\n";
 const rawCode=code;
 const sources=Object.fromEntries(records.map(r=>{
  if(r.row===222)return [r.id,sala222Source];
  if(r.row===496)return [r.id,crystalBlade496Source];
  let src=rawCode(r);
+ if(r.attribute==="光"&&r.lv>=4){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("light power entry");src=src.slice(0,at)+lightPowerTimingHelpers+"\n"+src.slice(at);}
  if(darkIndividual[r.row]){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");const main=src.lastIndexOf("void main(){");if(at<0||main<at)throw Error("dark entry");src=src.slice(0,at)+darkIndividualHelpers+(r.row===398?darkNebula398Helpers:"")+"\nvec4 effect(vec2 p,float t,float q){"+darkIndividual[r.row][1]+"}\n"+src.slice(main).replace("decorate(p,uTime,uProgress,effect(p,uTime,uProgress))","effect(p,uTime,uProgress)");return [r.id,src];}
  if(gravityIndividual[r.row]){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");const main=src.lastIndexOf("void main(){");if(at<0||main<at)throw Error("gravity entry");src=src.slice(0,at)+gravityIndividualHelpers+([339,342,343,347].includes(r.row)?gravityPressureHelpers:"")+"\nvec4 effect(vec2 p,float t,float q){"+gravityIndividual[r.row][1]+"}\n"+src.slice(main).replace("decorate(p,uTime,uProgress,effect(p,uTime,uProgress))","effect(p,uTime,uProgress)");return [r.id,src];}
  if(forceFieldSideRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("force field side entry");src=src.slice(0,at)+forceFieldSideHelpers+"\n"+src.slice(at);}
