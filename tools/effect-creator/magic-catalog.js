@@ -10651,8 +10651,8 @@ const lightDetails={
   "418": {
     "duration": 2.55,
     "loop": false,
-    "note": "光柱。光源へ収束、短い停止の後に上下へ太い白金光柱が急伸し余光が残る。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.47,.57)),e=lEnv(q,.47,.78),w=.15*(1.-.65*smoothstep(.79,1.,q));float shake=.009*sin(q*TAU*27.)*gate(q,.32,.57);float z=lpCharge(p,vec2(0.),q,.39,.60,1.8)+lpHold(p,vec2(0.),q,.33,.49,1.8)+lPillar(p,shake,-.94*g,.94*g,w,t)*e*2.25;z+=lStar(p,vec2(0.),.30,0.)*gate(q,.47,.72)*2.;return light(z);",
+    "note": "光柱。幅を旧版の約4倍へ強化。光源から上下に急伸する白熱芯と外光、溜め・停止・余韻を維持。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.47,.57)),e=lEnv(q,.47,.82),w=.60*(1.-.55*smoothstep(.79,1.,q));float x=.009*sin(q*TAU*27.)*gate(q,.32,.57);float z=lpCharge(p,vec2(0.),q,.39,.66,2.1)+lpHold(p,vec2(0.),q,.33,.49,2.3)+lpMassColumn(p,x,-.99*g,.99*g,w,t)*e*2.1;z+=lStar(p,vec2(0.),.42,0.)*gate(q,.47,.72)*1.8;return light(z);",
     "placement": "光源中心・上下（仮）"
   },
   "419": {
@@ -10684,8 +10684,8 @@ const lightDetails={
   "423": {
     "duration": 3.3,
     "loop": false,
-    "note": "聖光。上空に白金の光を蓄積、静止後に幅のある神聖光が降り、金粒と余光が残る。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.47,.60)),e=lEnv(q,.47,.83),z=lpCharge(p,vec2(0.,.75),q,.40,.68,2.5)+lpHold(p,vec2(0.,.75),q,.34,.49,2.1);z+=lPillar(p,0.,.88-1.56*g,.88,.32,t)*e*2.;for(int i=0;i<24;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,7.)));vec2 c=vec2((hash(vec2(k,11.))-.5)*.83,.78-1.43*f);z+=ball(p,c,.012+.009*hash(vec2(k,31.)))*sin(3.14159*f)*e*.61;}z+=lpGround(p,vec2(0.,-.68),phase(q,.60,1.),.67);return tone(z,vec3(1.,.89,.51));"
+    "note": "聖光。神雷の着弾発光を参考に幅広い白金光柱と独立した強い地表発光を形成。上空から降下。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float g=lFast(phase(q,.47,.60)),e=lEnv(q,.47,.86),hit=smoothstep(.56,.62,q)*(1.-smoothstep(.88,1.,q));float z=lpCharge(p,vec2(0.,.83),q,.40,.80,2.8)+lpHold(p,vec2(0.,.83),q,.34,.49,2.6);z+=lpMassColumn(p,0.,.99-1.68*g,.99,.86,t)*e*2.4;z+=lpMassFloor(p,vec2(0.,-.69),.91,t,7.)*hit*1.55;for(int i=0;i<24;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,7.)));vec2 c=vec2((hash(vec2(k,11.))-.5)*1.55,.90-1.56*f);z+=ball(p,c,.012+.009*hash(vec2(k,31.)))*sin(3.14159*f)*e*.65;}return tone(z,vec3(1.,.89,.51));"
   },
   "424": {
     "duration": 3.25,
@@ -10696,15 +10696,15 @@ const lightDetails={
   "425": {
     "duration": 3.4,
     "loop": false,
-    "note": "地上の光。水平1:.34の地表範囲に光を蓄積し、奥行きの異なる光柱を3段階で突き上げる。CS攻撃回数3に対応する演出。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);float z=lpCharge(p,vec2(0.,-.59),q,.34,.78,2.7)+lpHold(p,vec2(0.,-.59),q,.28,.40,2.1);for(int i=0;i<9;i++){float k=float(i),a=k*2.39996,r=.20+.59*hash(vec2(k,13.));vec2 c=vec2(0.,-.56)+dir2(a)*vec2(1.,.34)*r;float b=.39+.15*floor(k/3.),g=lFast(phase(q,b,b+.085)),e=gate(q,b,min(1.,b+.30));z+=lPillar(p,c.x,c.y,c.y+(1.32+.14*sin(k))*g,.065+.025*hash(vec2(k,44.)),t+k*.07)*e*2.1;z+=lStar(p,c,.13,0.)*e*1.1;}for(int j=0;j<3;j++){float b=.39+.15*float(j);z+=lpGround(p,vec2(0.,-.56),phase(q,b,min(1.,b+.32)),.83);}return light(z);",
+    "note": "地上の光。各柱幅約4倍。地表の面発光が先に蓄積し、3段階で太い白金光柱を噴出。根元の光は柱と同等の白熱感。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float z=lpCharge(p,vec2(0.,-.56),q,.32,.79,2.8)+lpHold(p,vec2(0.,-.56),q,.27,.40,2.5);float charge=smoothstep(.06,.34,q)*(1.-smoothstep(.83,1.,q));z+=lpMassFloor(p,vec2(0.,-.56),.88,t,4.)*charge*.95;for(int i=0;i<9;i++){float k=float(i),a=k*2.39996,r=.20+.59*hash(vec2(k,13.));vec2 c=vec2(0.,-.56)+dir2(a)*vec2(1.,.34)*r;float b=.39+.15*floor(k/3.),g=lFast(phase(q,b,b+.085)),e=gate(q,b,min(1.,b+.30));float w=4.*(.065+.025*hash(vec2(k,44.)));z+=lpMassColumn(p,c.x,c.y,c.y+(1.40+.14*sin(k))*g,w,t+k*.07)*e*1.75;z+=lpMassFloor(p,c,w*1.9,t,k)*e*1.75;}return light(z);",
     "placement": "地表→上空（仮）"
   },
   "426": {
     "duration": 4,
     "loop": false,
-    "note": "神光。広域の白金光を上空に大量収束、停止後に奥行きのある太い光柱が真下へ降り注ぎ、着点光と余韻。雷なし。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);float z=lpCharge(p,vec2(0.,.75),q,.39,.96,3.3)+lpHold(p,vec2(0.,.75),q,.32,.50,3.2);for(int i=0;i<9;i++){float k=float(i),a=k*2.39996,r=.16+.65*hash(vec2(k,13.));vec2 c=vec2(0.,-.57)+dir2(a)*vec2(1.,.34)*r;float b=.48+.035*mod(k,3.),g=lFast(phase(q,b,b+.09)),e=lEnv(q,b,.85);z+=lPillar(p,c.x,mix(.94,c.y,g),.94,.095+.042*hash(vec2(k,31.)),t+k*.09)*e*2.4;z+=lStar(p,c,.19,0.)*gate(q,b+.09,.98)*1.7;}for(int i=0;i<30;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,23.))-.5)*1.65,.92-1.65*f);z+=ball(p,c,.013)*sin(3.14159*f)*lEnv(q,.49,.89)*.67;}z+=lpGround(p,vec2(0.,-.57),phase(q,.58,1.),.91)*1.5;return tone(z*(1.-smoothstep(.95,1.08,abs(p.y))),vec3(1.,.88,.46));",
+    "note": "神光。各柱幅約4倍、広域の白熱光柱が降下し地表全域が同等の強さで発光。神雷の柱・着弾・地表発光の分離を参考。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);float z=lpCharge(p,vec2(0.,.83),q,.39,.96,3.5)+lpHold(p,vec2(0.,.83),q,.32,.50,3.4);float hit=smoothstep(.55,.63,q)*(1.-smoothstep(.88,1.,q));z+=lpMassFloor(p,vec2(0.,-.57),1.06,t,8.)*hit*2.0;for(int i=0;i<9;i++){float k=float(i),a=k*2.39996,r=.16+.65*hash(vec2(k,13.));vec2 c=vec2(0.,-.57)+dir2(a)*vec2(1.,.34)*r;float b=.48+.035*mod(k,3.),g=lFast(phase(q,b,b+.09)),e=lEnv(q,b,.87);float w=4.*(.095+.042*hash(vec2(k,31.)));z+=lpMassColumn(p,c.x,mix(.99,c.y,g),.99,w,t+k*.09)*e*1.95;z+=lpMassFloor(p,c,w*1.9,t,k)*gate(q,b+.08,.99)*1.65;}for(int i=0;i<30;i++){float k=float(i),f=fract(t*2.+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,23.))-.5)*1.78,.95-1.72*f);z+=ball(p,c,.013)*sin(3.14159*f)*lEnv(q,.49,.89)*.67;}return tone(z,vec3(1.,.88,.46));",
     "placement": "上空→地表・広域（仮）"
   },
   "427": {
@@ -11077,6 +11077,7 @@ const sources=Object.fromEntries(records.map(r=>{
  if(r.row===496)return [r.id,crystalBlade496Source];
  let src=rawCode(r);
  if(r.attribute==="光"&&r.lv>=4){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("light power entry");src=src.slice(0,at)+lightPowerTimingHelpers+"\n"+src.slice(at);}
+ if(r.attribute==="光"&&[418,423,425,426].includes(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");src=src.slice(0,at)+"\nfloat lpMassColumn(vec2 p,float x,float bottom,float top,float w,float t){\n float len=top-bottom;if(len<.006)return 0.;\n float y=(p.y-bottom)/len,d=abs(p.x-x);\n float m=smoothstep(-.035,.018,y)*(1.-smoothstep(.94,1.035,y));\n float core=exp(-pow(d/max(.008,w*.62),4.));\n float glow=exp(-pow(d/max(.01,w*1.25),2.));\n float flow=.5+.5*sin(d*92.+sin(y*17.-t*TAU*3.)*1.8);\n return m*(core*(1.35+.35*flow)+glow*.60);\n}\nfloat lpMassFloor(vec2 p,vec2 c,float radius,float t,float seed){\n vec2 v=(p-c)/vec2(1.,.34);float d=length(v),a=atan(v.y,v.x);\n float r=max(.01,radius);\n float core=exp(-pow(d/(r*.48),4.));\n float halo=exp(-pow(d/r,2.));\n float rays=pow(.5+.5*sin(a*19.+2.*sin(a*7.+seed)+t*TAU*2.),5.);\n float flow=.70+.30*sin(d*24.-t*TAU*4.+seed);\n return core*1.85+halo*.92+halo*rays*flow*.72;\n}\n"+"\n"+src.slice(at);}
  if(darkIndividual[r.row]){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");const main=src.lastIndexOf("void main(){");if(at<0||main<at)throw Error("dark entry");src=src.slice(0,at)+darkIndividualHelpers+(r.row===398?darkNebula398Helpers:"")+"\nvec4 effect(vec2 p,float t,float q){"+darkIndividual[r.row][1]+"}\n"+src.slice(main).replace("decorate(p,uTime,uProgress,effect(p,uTime,uProgress))","effect(p,uTime,uProgress)");return [r.id,src];}
  if(gravityIndividual[r.row]){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");const main=src.lastIndexOf("void main(){");if(at<0||main<at)throw Error("gravity entry");src=src.slice(0,at)+gravityIndividualHelpers+([339,342,343,347].includes(r.row)?gravityPressureHelpers:"")+"\nvec4 effect(vec2 p,float t,float q){"+gravityIndividual[r.row][1]+"}\n"+src.slice(main).replace("decorate(p,uTime,uProgress,effect(p,uTime,uProgress))","effect(p,uTime,uProgress)");return [r.id,src];}
  if(forceFieldSideRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("force field side entry");src=src.slice(0,at)+forceFieldSideHelpers+"\n"+src.slice(at);}
