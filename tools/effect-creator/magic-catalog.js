@@ -10760,21 +10760,21 @@ const plantDetails={
     "duration": 2.25,
     "loop": false,
     "note": "根元に緑の光が溜まり、芽から茎・枝・葉が順に急成長。",
-    "body": "vec2 a=vec2(0.,-.65);float g=phase(q,.23,.75),e=p3Fade(q);vec4 v=seedGather(p,a,q,.23,.28);vec2 b=a+vec2(.03,1.12)*g;vec4 w=p3Tube(p,a,b,.052*g,.013*g,0.,7.);w=over(w,branchLeaves(p,a,b,g,7.,1.9,0.));w.a*=e;return over(v,w);",
+    "body": "vec2 a=vec2(0.,-.65);float g=growFast(phase(q,.23,.63)),e=p3Fade(q);vec4 v=prGather(p,a,q,.23,.28,3.,0.);vec2 b=a+vec2(.03,1.12)*g;vec4 w=p3Tube(p,a,b,.052*g,.013*g,0.,7.);w=over(w,branchLeaves(p,a,b,g,7.,1.9,0.));w.a*=e;return over(v,w);",
     "placement": "地表→上方（仮）"
   },
   "211": {
     "duration": 2.15,
     "loop": false,
     "note": "足元と前方から蔓が伸び、対象へ巻き付いて拘束する。",
-    "body": "float g=phase(q,.22,.63),f=phase(q,.60,.84),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.62),q,.22,.24);v=over(v,p3Liana(p,vec2(0.,-.64),.91,mix(.35,.23,f),2.1,g,0.,.033,0.));v=over(v,p3Reach(p,vec2(.76,-.43),vec2(.07,.14),phase(q,.30,.66),.046,2.,0.,.09));v=over(v,p3Liana(p,vec2(0.,-.43),.83,mix(.33,.22,f),1.4,phase(q,.39,.77),3.14,.035,0.));v.a*=e;return v;",
+    "body": "float g=growFast(phase(q,.23,.57)),f=phase(q,.57,.79),e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.62),q,.23,.25,3.,0.);v=over(v,p3Liana(p,vec2(0.,-.64),.91,mix(.35,.23,f),2.1,g,0.,.033,0.));v=over(v,p3Reach(p,vec2(.76,-.43),vec2(.07,.14),growFast(phase(q,.28,.59)),.046,2.,0.,.09));v=over(v,p3Liana(p,vec2(0.,-.43),.83,mix(.33,.22,f),1.4,growFast(phase(q,.35,.70)),3.14,.035,0.));v.a*=e;return v;",
     "placement": "対象足元（仮）"
   },
   "212": {
     "duration": 2.4,
     "loop": false,
     "note": "数本の棘のある茨が左から右へ伸びて攻撃する。",
-    "body": "float e=p3Fade(q);vec4 v=seedGather(p,vec2(-.72,-.43),q,.21,.31);for(int i=0;i<5;i++){float k=float(i),g=phase(q,.24+k*.035,.63+k*.035);vec2 a=vec2(-.76,-.55+.09*k),b=vec2(.72-.04*abs(k-2.),-.55+.23*k);vec4 w=p3Reach(p,a,b,g,.051,k+2.,1.,.06);w.a*=e;v=over(v,w);}return v;",
+    "body": "float e=p3Fade(q);vec4 v=prGather(p,vec2(-.72,-.43),q,.23,.32,3.,0.);for(int i=0;i<5;i++){float k=float(i),g=growFast(phase(q,.23+k*.032,.53+k*.032));vec2 a=vec2(-.76,-.55+.09*k),b=vec2(.72-.04*abs(k-2.),-.55+.23*k);vec4 w=p3Reach(p,a,b,g,.051,k+2.,1.,.06);w.a*=e;v=over(v,w);}return v;",
     "placement": "術者→対象（前方攻撃）"
   },
   "213": {
@@ -10795,63 +10795,63 @@ const plantDetails={
     "duration": 2.8,
     "loop": false,
     "note": "出発側の葉が樹の輪郭へ吸い込まれ、到着側で逆向きに葉が開く。転移処理は別。",
-    "body": "float f=phase(q,.04,.47),g=phase(q,.53,.90);vec4 v=vec4(0.);for(int i=0;i<2;i++){float k=float(i),side=k*2.-1.,u=mix(1.-f,g,k),e=mix(gate(q,0.,.51),gate(q,.50,1.),k);vec2 c=vec2(side*.42,-.61);vec4 w=p3Tree(p,c,1.10,.62,u,t,k+3.,0.);w.a*=e;v=over(v,w);for(int j=0;j<10;j++){float n=float(j),a=n*TAU/10.+t*TAU;vec2 pos=c+vec2(0.,.55)+dir2(a)*vec2(.29,.42)*u;w=leafShape(p,pos,dir2(a),.05,.024,.6);w.a*=e;v=over(v,w);}}return v;",
+    "body": "float f=growFast(phase(q,.28,.49)),g=growFast(phase(q,.55,.79));vec4 v=prGather(p,vec2(-.42,-.42),q,.28,.34,4.,0.);for(int i=0;i<2;i++){float k=float(i),side=k*2.-1.,u=mix(1.-f,g,k),e=mix(gate(q,.10,.53),gate(q,.52,1.),k);vec2 c=vec2(side*.42,-.61);vec4 w=p3Tree(p,c,1.10,.62,u,t,k+3.,0.);w.a*=e;v=over(v,w);for(int j=0;j<14;j++){float n=float(j),a=n*TAU/14.+t*TAU;vec2 pos=c+vec2(0.,.55)+dir2(a)*vec2(.29,.42)*u;w=leafShape(p,pos,dir2(a),.05,.024,.6);w.a*=e;v=over(v,w);}}return over(v,prLeafBurst(p,vec2(.42,-.12),q,.58,.91,.30,12.,0.));",
     "placement": "出発→到着（仮）"
   },
   "216": {
     "duration": 3.4,
     "loop": false,
     "note": "根元への蓄積後に太い枝が広がり、上空を覆う樹冠が形成される。成長と短い保持。",
-    "body": "float g=phase(q,.29,.76),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.60),q,.29,.39);for(int i=0;i<3;i++){float k=float(i),u=phase(g,k*.09,.82+k*.09);vec2 root=vec2((k-1.)*.59,-.60);vec4 w=p3Tree(p,root,1.30,.89,u,t,k+13.,0.);w.a*=e;v=over(v,w);}for(int i=0;i<4;i++){float k=float(i);vec4 w=p3Foliage(p,vec2((k-1.5)*.40,.53+.04*sin(k)),vec2(.33,.23),phase(g,.52+k*.04,1.),t,k+31.,0.);w.a*=e;v=over(v,w);}return v;",
+    "body": "float g=growFast(phase(q,.34,.75)),e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.60),q,.34,.45,5.,0.);v=over(v,prRoots(p,vec2(0.,-.62),q,.34,.66,.72,8.,13.));for(int i=0;i<3;i++){float k=float(i),u=phase(g,k*.08,.81+k*.08);vec2 root=vec2((k-1.)*.59,-.60);vec4 w=p3Tree(p,root,1.30,.89,u,t,k+13.,0.);w.a*=e;v=over(v,w);}for(int i=0;i<5;i++){float k=float(i);vec4 w=p3Foliage(p,vec2((k-2.)*.32,.53+.04*sin(k)),vec2(.34,.25),phase(g,.45+k*.04,1.),t,k+31.,0.);w.a*=e;v=over(v,w);}return v;",
     "placement": "地表→上空（仮）"
   },
   "217": {
     "duration": 2.9,
     "loop": false,
     "note": "数本の太い蔓が術者側から伸びて対象に絡みつく。",
-    "body": "float e=p3Fade(q),g=phase(q,.27,.67);vec4 v=seedGather(p,vec2(-.72,-.40),q,.27,.33);for(int i=0;i<4;i++){float k=float(i),u=phase(g,k*.065,.82+k*.055);vec2 a=vec2(-.76,-.48+.13*k),b=vec2(.38,-.35+.18*k);vec4 w=p3Reach(p,a,b,u,.075,k+3.,0.,.13);w.a*=e;v=over(v,w);}for(int i=0;i<3;i++){float k=float(i),u=phase(q,.52+k*.045,.82+k*.04);vec4 w=p3Liana(p,vec2(.38,-.60),.96,.30,1.75,u,k*2.09,.065,0.);w.a*=e;v=over(v,w);}return v;",
+    "body": "float e=p3Fade(q),g=growFast(phase(q,.33,.62));vec4 v=prGather(p,vec2(-.72,-.40),q,.33,.42,5.,0.);for(int i=0;i<5;i++){float k=float(i),u=phase(g,k*.06,.75+k*.06);vec2 a=vec2(-.76,-.49+.11*k),b=vec2(.38,-.35+.15*k);vec4 w=p3Reach(p,a,b,u,.085,k+3.,0.,.13);w.a*=e;v=over(v,w);}for(int i=0;i<3;i++){float k=float(i),u=growFast(phase(q,.48+k*.045,.74+k*.04)),r=mix(.36,.27,phase(q,.64,.81));vec4 w=p3Liana(p,vec2(.38,-.60),.96,r,1.85,u,k*2.09,.070,0.);w.a*=e;v=over(v,w);}return v;",
     "placement": "術者→対象（仮）"
   },
   "218": {
     "duration": 3.5,
     "loop": false,
     "note": "地面から複数の太い木の幹が隙間なく生え、壁を形成する。",
-    "body": "float g=phase(q,.27,.77),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.58),q,.27,.41);for(int i=0;i<7;i++){float k=float(i),u=phase(g,k*.052,.70+k*.05),x=(k-3.)*.235;vec4 w=p3BarkWall(p,vec2(x,-.65),1.19+.13*cos(k*1.9),.146,u,k+13.);w.a*=e;v=over(v,w);}return v;",
+    "body": "float e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.58),q,.34,.48,5.,0.);for(int i=0;i<7;i++){float k=float(i),delay=abs(k-3.)*.025,u=growFast(phase(q,.34+delay,.58+delay)),x=(k-3.)*.235;vec4 w=p3BarkWall(p,vec2(x,-.65),1.19+.13*cos(k*1.9),.146,u,k+13.);w.a*=e;v=over(v,w);}return v;",
     "placement": "地表・周囲（仮）"
   },
   "219": {
     "duration": 3.8,
     "loop": false,
     "note": "緑金の粒が根元に集まり、白金の光を宿す聖樹が成長。葉から光粒が降る。",
-    "body": "float g=phase(q,.34,.80),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.65),q,.34,.48);vec4 w=p3Tree(p,vec2(0.,-.69),1.43,1.19,g,t,17.,1.);w.a*=e;v=over(v,w);for(int i=0;i<14;i++){float k=float(i),f=fract(t+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,7.))-.5)*.91,.63-1.18*f);float z=ball(p,c,.018)*sin(3.14159*f)*gate(q,.51,1.);v=over(v,tone(z*.55,vec3(1.,.89,.46)));}return v;",
+    "body": "float g=growFast(phase(q,.38,.81)),e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.65),q,.38,.55,6.,1.);v=over(v,prRoots(p,vec2(0.,-.65),q,.38,.73,.69,8.,17.));vec4 w=p3Tree(p,vec2(0.,-.69),1.43,1.28,g,t,17.,1.);w.a*=e;v=over(v,w);for(int i=0;i<19;i++){float k=float(i),f=fract(t+hash(vec2(k,19.)));vec2 c=vec2((hash(vec2(k,7.))-.5)*1.08,.63-1.18*f);float z=ball(p,c,.018)*sin(3.14159*f)*gate(q,.53,1.);v=over(v,tone(z*.64,vec3(1.,.89,.46)));}return v;",
     "placement": "地表→上空（仮）"
   },
   "220": {
     "duration": 3.7,
     "loop": false,
     "note": "葉の生えた巨大な自然の木を地面から成長させる。",
-    "body": "float g=phase(q,.32,.78),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.68),q,.32,.36);vec4 w=p3Tree(p,vec2(0.,-.70),1.51,1.16,g,t,9.,0.);w.a*=e;return over(v,w);",
+    "body": "float g=growFast(phase(q,.38,.75)),e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.68),q,.38,.53,6.,0.);v=over(v,prRoots(p,vec2(0.,-.68),q,.38,.76,.81,10.,9.));vec4 w=p3Tree(p,vec2(0.,-.70),1.55,1.38,g,t,9.,0.);w.a*=e;v=over(v,w);return over(v,prLeafBurst(p,vec2(0.,.53),q,.57,.94,.53,16.,0.));",
     "placement": "地表→上空（仮）"
   },
   "221": {
     "duration": 4.4,
     "loop": false,
     "note": "大きな根から太い幹と広い樹冠へ展開し、緑金の生命光が葉から広域へ巡る。",
-    "body": "float g=phase(q,.37,.83),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.67),q,.37,.59);vec4 w=p3Tree(p,vec2(0.,-.71),1.54,1.73,g,t,31.,.82);w.a*=e;v=over(v,w);for(int i=0;i<5;i++){float k=float(i);w=p3Foliage(p,vec2((k-2.)*.30,.56+.05*cos(k)),vec2(.29,.22),phase(g,.54+k*.036,1.),t,k+19.,.85);w.a*=e;v=over(v,w);}v=over(v,fallingLeaves(p,t,15.,gate(q,.59,1.),.8));return over(v,tone(ring(p,vec2(0.,-.62),vec2(.73,.73*.34),.008)*gate(q,.68,1.)*.38,vec3(.71,1.,.41)));",
+    "body": "float g=growFast(phase(q,.43,.84)),e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.67),q,.43,.68,7.,.90);v=over(v,prRoots(p,vec2(0.,-.67),q,.43,.85,.88,12.,31.));vec4 w=p3Tree(p,vec2(0.,-.71),1.55,1.78,g,t,31.,.90);w.a*=e;v=over(v,w);for(int i=0;i<7;i++){float k=float(i);w=p3Foliage(p,vec2((k-3.)*.23,.56+.08*cos(k)),vec2(.29,.23),phase(g,.50+k*.032,1.),t,k+19.,.85);w.a*=e;v=over(v,w);}v=over(v,prLeafBurst(p,vec2(0.,.50),q,.60,.96,.80,24.,.85));v=over(v,fallingLeaves(p,t,15.,gate(q,.62,1.),.8));for(int i=0;i<3;i++){float k=float(i),f=phase(q,.62+k*.075,1.);vec2 r=vec2(.13+.73*f,(.13+.73*f)*.34);v=over(v,tone(ring(p,vec2(0.,-.62),r,.007)*sin(3.14159*f)*.33,vec3(.71,1.,.41)));}return v;",
     "placement": "地表→上空・広域（仮）"
   },
   "222": {
     "duration": 4.3,
     "loop": false,
     "note": "対象周囲と背後に沙羅双樹が次々と生える。",
-    "body": "float g=phase(q,.34,.85),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.60),q,.34,.49);for(int i=0;i<5;i++){float k=float(i),side=mod(k,2.)*2.-1.,u=phase(g,k*.085,.63+k*.08);vec2 root=vec2((k-2.)*.28,-.30+.05*cos(k));vec4 w=p3Tree(p,root,.84+.11*cos(k),.59,u,t,k+27.,.20);w.rgb*=.77;w.a*=e;v=over(v,w);}for(int i=0;i<2;i++){float k=float(i),side=k*2.-1.,u=phase(g,.38+k*.09,.88+k*.09);vec4 w=p3Tree(p,vec2(side*.60,-.66),1.18,.72,u,t,k+9.,.20);w.a*=e;v=over(v,w);}return v;",
+    "body": "float e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.60),q,.40,.60,7.,.25);for(int i=0;i<5;i++){float k=float(i),u=growFast(phase(q,.40+k*.035,.66+k*.035));vec2 root=vec2((k-2.)*.28,-.30+.05*cos(k));vec4 w=p3Tree(p,root,.87+.13*cos(k),.64,u,t,k+27.,.20);w.rgb*=.77;w.a*=e;v=over(v,w);}for(int i=0;i<2;i++){float k=float(i),side=k*2.-1.,u=growFast(phase(q,.57+k*.075,.80+k*.075));vec4 w=p3Tree(p,vec2(side*.60,-.66),1.22,.77,u,t,k+9.,.20);w.a*=e;v=over(v,w);}return v;",
     "placement": "対象周囲・背後"
   },
   "223": {
     "duration": 4.5,
     "loop": false,
     "note": "地表の種子から多数の独立した樹が奥行きを持って時間差で成長。森生成処理とは別。",
-    "body": "float g=phase(q,.35,.86),e=p3Fade(q);vec4 v=seedGather(p,vec2(0.,-.48),q,.35,.59);for(int layer=0;layer<2;layer++){float z=float(layer);for(int i=0;i<5;i++){float k=float(i),u=phase(g,.055*k+.14*z,.66+.05*k+.12*z);vec2 root=vec2((k-2.)*.34+.07*z,-.35-.30*z+.045*sin(k*2.));vec4 w=p3Tree(p,root,(.79+.18*z+.11*cos(k)),.61,u,t,k+27.+z*11.,0.);w.rgb*=.72+.28*z;w.a*=e;v=over(v,w);}}return over(v,fallingLeaves(p,t,12.,gate(q,.65,1.),0.));",
+    "body": "float e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.48),q,.41,.66,7.,0.);for(int layer=0;layer<3;layer++){float z=float(layer);for(int i=0;i<5;i++){float k=float(i),u=growFast(phase(q,.41+.025*k+.075*z,.64+.028*k+.075*z));vec2 root=vec2((k-2.)*.33+.025*z,-.24-.21*z+.04*sin(k*2.));vec4 w=p3Tree(p,root,.62+.19*z+.09*cos(k),.52+.045*z,u,t,k+27.+z*11.,0.);w.rgb*=.60+.20*z;w.a*=e;v=over(v,w);}}return over(v,fallingLeaves(p,t,15.,gate(q,.65,1.),0.));",
     "placement": "地表・広域（仮）"
   }
 };
@@ -11046,12 +11046,14 @@ const earthLava3="\nvec3 e3LavaMaterial(vec2 p,float tt,float crust){\n float n=
 const earthRock3="vec4 e3BigRock(vec2 p,float g,float scale,float seed){if(g<=.001)return vec4(0.);vec2 base=vec2(0.,-.65);vec2 r=vec2(.59,.65)*scale;vec2 c=base+vec2(0.,r.y*(.80-1.64*(1.-g)));vec4 v=stoneShape(p,c,r,.10,seed,0.);v.a*=smoothstep(base.y-.015,base.y+.025,p.y);return v;}\n";
 const earthRank4Helpers="\nfloat er4Rush(float f,float power){return pow(sat(f),power);}\nvec4 er4Gather(vec2 p,vec2 c,float q,float end0,float r,float rank,float hot){\n if(q<=0.||q>=end0+.025)return vec4(0.);\n float f=phase(q,0.,end0),env=smoothstep(0.,.07,f)*(1.-smoothstep(.90,1.,f));\n vec4 v=vec4(0.);\n for(int i=0;i<24;i++){float k=float(i);if(k>=7.+rank*2.)break;\n float a=k*2.39996+f*f*(1.4+rank*.22);\n float rr=r*(.62+.38*hash(vec2(k,19.)))*(1.-pow(f,1.35));\n vec2 pos=c+dir2(a)*vec2(rr,rr*.48)+vec2(0.,.09*sin(3.14159*f)*(1.-f));\n float sz=(.013+.022*hash(vec2(k,13.)))*(1.+.045*rank)*(.8+.2*f);\n vec4 w=stoneShape(p,pos,vec2(sz,sz*.72),a,k+19.,hot);w.a*=env*(.7+.3*sin(a)*sin(a));v=over(v,w);\n }\n float pulse=sin(3.14159*f)*(.45+.55*f);float n=fb((p-c)*19.+dir2(TAU*f)*.6);\n float dust=(1.-smoothstep(.045,.08+.035*rank,length((p-c)/vec2(1.,.62))))*pulse*n*.33;\n vec3 col=mix(vec3(.62,.44,.23),vec3(1.,.35,.05),hot);return over(vec4(col,dust*env),v);\n}\nvec4 er4Debris(vec2 p,vec2 c,float q,float at,float radius,float heat,float seed,float force){\n float f=phase(q,at,1.);if(f<=0.||f>=1.)return vec4(0.);\n vec4 v=e2DustImpact(p,c,f,radius,heat,seed);\n v=over(v,grit(p,c,f,radius,seed+11.,min(24.,10.+force*5.),heat));\n return over(v,earthShock(p,c,f,radius,force));\n}\nvec4 er4Slab(vec2 p,vec2 c,vec2 r,float raise,float tilt,float seed){\n vec2 local=p-c;float xx=local.x+tilt*local.y;float top=local.y-raise;\n float n=fb(vec2(xx*17.+seed,local.y*15.));float edge=.018*sin(xx*45.+seed);\n float width=r.x*(.91+.09*sin(local.y*21.+seed));\n float m=(1.-smoothstep(width-.007,width+.008,abs(xx)))*smoothstep(-r.y-.008,-r.y+.012,local.y)*(1.-smoothstep(r.y+edge-.008,r.y+edge+.010,top));\n if(m<=0.)return vec4(0.);\n float side=smoothstep(r.y-.065,r.y-.015,top),band=pow(.5+.5*sin(local.y*43.+n*3.),7.);\n vec3 col=mix(vec3(.14,.085,.039),vec3(.60,.43,.24),.24+.55*n);\n col*=.72+.28*side-.16*band*(1.-side);\n return vec4(col,m);\n}\n";
 const earthRank4Formation={"483":[0.15,0.69,[0,-0.65],0.31,0],"485":[0.16,0.76,[0,-0.44],0.28,0],"493":[0.29,0.7,[0,-0.65],0.42,1],"495":[0.28,0.69,[0,-0.08],0.35,0],"496":[0.27,0.7,[0,0],0.32,0],"497":[0.25,0.77,[-0.6,-0.44],0.4,0],"500":[0.33,0.71,[0,-0.65],0.52,0],"503":[0.32,0.78,[0,-0.59],0.46,0],"504":[0.33,0.73,[0,-0.04],0.45,0],"511":[0.36,0.8,[0,0.42],0.44,0],"512":[0.36,0.81,[0,-0.39],0.42,0],"518":[0.41,0.84,[-0.55,-0.47],0.57,0]};
+const plantRankHelpers="\nvec4 prGather(vec2 p,vec2 c,float q,float end0,float radius,float rank,float gold){\n if(q<=0.||q>=end0)return vec4(0.);\n float f=phase(q,0.,end0),e=smoothstep(0.,.10,f)*(1.-smoothstep(.87,1.,f));vec4 v=vec4(0.);\n for(int i=0;i<22;i++){float k=float(i);if(k>=6.+rank*2.)break;\n float a=k*2.39996+f*f*(1.+rank*.29),r=radius*(.65+.35*hash(vec2(k,17.)))*(1.-pow(f,1.25));\n vec2 pos=c+dir2(a)*vec2(r,r*.45)+vec2(0.,.12*sin(3.14159*f)*(1.-f));\n float sz=(.023+.013*hash(vec2(k,13.)))*(1.+.04*rank);vec4 w=leafShape(p,pos,dir2(a+.7),sz,sz*.42,.65);\n w.rgb=mix(w.rgb,vec3(.91,.88,.43),gold*.65);w.a*=e;v=over(v,w);}\n float pulse=sin(3.14159*f)*(.45+.55*f);\n return over(v,tone(ball(p,c,.033+.065*f)*pulse*.7,mix(vec3(.49,.82,.22),vec3(1.,.90,.47),gold)));\n}\nvec4 prRoots(vec2 p,vec2 c,float q,float start,float end0,float size,float count,float seed){\n float f=phase(q,start,end0);if(f<=0.||f>=1.)return vec4(0.);float g=growFast(f),e=sin(3.14159*f);vec4 v=vec4(0.);\n for(int i=0;i<12;i++){float k=float(i);if(k>=count)break;float a=k*2.39996+seed;vec2 dir=dir2(a)*vec2(1.,.34);vec2 b=c+dir*size*(.55+.45*hash(vec2(k,seed)));\n vec4 w=p3Reach(p,c,b,g,.026+.012*hash(vec2(k,seed+3.)),k+seed,0.,.025);w.a*=e;w.rgb=mix(w.rgb,vec3(.42,.27,.11),.65);v=over(v,w);}\n return v;\n}\nvec4 prLeafBurst(vec2 p,vec2 c,float q,float at,float end0,float radius,float count,float gold){\n float f=phase(q,at,end0);if(f<=0.||f>=1.)return vec4(0.);vec4 v=vec4(0.);\n for(int i=0;i<24;i++){float k=float(i);if(k>=count)break;float a=k*2.39996;vec2 dir=dir2(a);\n float r=radius*(.45+.55*hash(vec2(k,33.)))*growFast(f);vec2 pos=c+dir*vec2(r,r*.70)+vec2(0.,-.14*f*f);\n float sz=.033+.023*hash(vec2(k,17.));vec4 w=leafShape(p,pos,dir2(a+f*3.),sz,sz*.44,.7);w.rgb=mix(w.rgb,vec3(.91,.88,.43),gold*.7);w.a*=smoothstep(0.,.045,f)*(1.-smoothstep(.55,1.,f));v=over(v,w);}\n return v;\n}\n";
 const rawCode=code;
 const sources=Object.fromEntries(records.map(r=>{
  let src=rawCode(r);
  const earthExtra=[478,486,495,496,503,504,511,517].includes(r.row)?earthCrystal3:[484,493,498,501].includes(r.row)?earthLava3:[483,500].includes(r.row)?earthRock3:"";
  if(earthExtra){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("earth extra entry");src=src.slice(0,at)+earthExtra+"\n"+src.slice(at);}
  if(r.attribute==="地"&&r.lv>=3&&!r.loop){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("earth rank entry");src=src.slice(0,at)+earthRank4Helpers+"\n"+src.slice(at).replace("vec4 effect(vec2 p,float t,float q){","vec4 effect(vec2 p,float t,float q){if(q<=0.||q>=1.)return vec4(0.);");}
+ if(r.attribute==="植物"&&r.lv>=3&&!r.loop){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("plant rank entry");src=src.slice(0,at)+plantRankHelpers+"\n"+src.slice(at).replace("vec4 effect(vec2 p,float t,float q){","vec4 effect(vec2 p,float t,float q){if(q<=0.||q>=1.)return vec4(0.);");}
  if(weatherRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("weather entry point");src=src.slice(0,at)+weatherHelpers.replace("WEATHER_FORMATION=0.","WEATHER_FORMATION="+(r.loop?"0.":"1."))+src.slice(at);}
  if(fireSceneRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("fire scene entry point");const eruption=[249,255,260,262].includes(r.row);src=src.slice(0,at)+fireSceneExtra+((r.row===253||eruption)?napalmRollExtra:"")+(eruption?eruptionRevisedExtra:"")+"\n"+src.slice(at);}
  if(r.row===236||r.row===247){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("fire jet entry point");src=src.slice(0,at)+fireJetExtra+src.slice(at);}
@@ -11071,6 +11073,14 @@ for(const r of baseRecords){
   const at=src.indexOf("vec4 effect(vec2 p,float t,float q){"),main=src.lastIndexOf("void main(){");if(at<0||main<at)throw Error("earth rank formation entry");
   const body=src.slice(at,main).replace("vec4 effect(","vec4 er4FormBase(");
   src=src.slice(0,at)+earthRank4Helpers+"\n"+body+"\nvec4 effect(vec2 p,float t,float q){if(q<=0.)return vec4(0.);vec4 v=er4Gather(p,vec2("+num(center[0])+","+num(center[1])+"),q,"+num(start)+","+num(radius)+","+num(r.lv)+","+num(hot)+");return over(v,er4FormBase(p,t,q));}\n"+src.slice(main);sources[r.id]=src;
+ }
+ if(r.row===213||r.row===214){
+  let src=sources[r.id];const old="return mix(smoothstep(.015,.93,q),1.,p3Form);";if(!src.includes(old))throw Error("plant rank formation");
+  src=src.replace(old,"return mix(1.-pow(1.-phase(q,.28,.77),2.3),1.,p3Form);");
+  const at=src.indexOf("vec4 effect(vec2 p,float t,float q){"),main=src.lastIndexOf("void main(){");if(at<0||main<at)throw Error("plant rank form entry");
+  const body=src.slice(at,main).replace("vec4 effect(","vec4 prFormBase(");
+  const c=r.row===213?"vec2(0.,-.30)":"vec2(0.,-.57)";
+  src=src.slice(0,at)+plantRankHelpers+"\n"+body+"\nvec4 effect(vec2 p,float t,float q){if(q<=0.)return vec4(0.);vec4 v=prGather(p,"+c+",q,.28,.39,4.,0.);return over(v,prFormBase(p,t,q));}\n"+src.slice(main);sources[r.id]=src;
  }
  const note=r.row===243?"発動用：炎が勢いよく吹き上がり、炎壁が残る。完成後は持続版へ接続。":special?"発動用：一点から炎が円周を走って輪を描き、通過した箇所から炎が立ち上る。完成後は持続版へ接続。":"発動用・形成初期版："+r.note+" 発生から完成までを描画し、完成後は持続版へ接続する。";
  if(r.row===209){records.push({...r,loop:false,variant:"activation",baseId:r.id,note:"発動用：半透明の樹皮を重ねて消える。以降のキャラ色変更はゲーム側。",formationDraft:false},{...sustain,note:"互換用の透明持続素材。キャラ色変更はゲーム側。"});continue;}
