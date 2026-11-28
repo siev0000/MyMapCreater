@@ -10565,8 +10565,8 @@ const earthDetails={
   "517": {
     "duration": 4.1,
     "loop": false,
-    "note": "無数の尖った水晶が渦を巻き、蓄積した結晶の群れが一斉に飛び回る。",
-    "body": "float g=quakeEase(phase(q,.40,.56)),e=earthEnv(q,.40,.86);vec4 v=er4Gather(p,vec2(0.),q,.40,.62,7.,0.);for(int layer=0;layer<2;layer++){for(int i=0;i<28;i++){float k=float(i),a=k*2.39996+t*TAU*3.5,z=sin(a),rad=(.20+.59*hash(vec2(k,13.)))*g;if((z>=0.&&layer==0)||(z<0.&&layer==1))continue;vec2 c=vec2(cos(a)*rad,sin(a)*rad*.76),dir=dir2(a+1.1);float l=.14+.18*hash(vec2(k,17.));vec4 w=e3Crystal(p,c-dir*l*.48,c+dir*l*.55,.045+.031*hash(vec2(k,21.)),k+51.,t,a);w.rgb*=.75+.25*float(layer);w.a*=e*g;v=over(v,w);}}for(int i=0;i<9;i++){float k=float(i),f=phase(q,.65+.02*k,1.);vec2 dir=dir2(k*2.39996),c=dir*(.27+.60*f);vec4 w=e3Crystal(p,c-dir*.09,c+dir*.12,.057,k+91.,t,k);w.a*=sin(3.14159*f);v=over(v,w);}return v;"
+    "note": "年中菱形水晶の嵐が降り注ぐ星をイメージ。大小の多面結晶が斜め上空から強風に流され、青白い強発光と長い光跡を伴って三層で降り注ぐ。",
+    "body": "float e=smoothstep(.30,.47,q)*(1.-smoothstep(.87,1.,q));vec4 v=er4Gather(p,vec2(0.,.12),q,.40,.62,7.,0.);for(int layer=0;layer<3;layer++){float z=float(layer),speed=mix(1.25,2.35,z*.5);for(int i=0;i<19;i++){float k=float(i)+z*19.,seed=k+71.;float life=fract(hash(vec2(k,23.))+q*speed);float x=mix(-.86,.69,hash(vec2(k,17.)));vec2 dir=normalize(vec2(.32+.12*sin(k*1.7),-1.));vec2 c=vec2(x+.52*(life-.5),mix(.98,-.98,life));float l=mix(.095,.26,z*.5)*(.65+.60*hash(vec2(k,51.))),w=l*.28;float a=e*smoothstep(0.,.13,life)*(1.-smoothstep(.86,1.,life))*(.54+.23*z);float edge=(1.-smoothstep(.85,.99,abs(p.x)))*(1.-smoothstep(.85,.99,abs(p.y)));if(length(p-c)>l+.64)continue;float d=seg(p,c-dir*(.24+.16*z),c-dir*l*.27);float halo=exp(-d/(.037+.012*z))*a*edge;float core=exp(-d/(.006+.003*z))*a*edge;v=over(v,vec4(.25,.67,1.,sat(halo*.65)));v=over(v,vec4(.84,.97,1.,sat(core*.95)));vec2 side=vec2(-dir.y,dir.x),delta=p-c,uv=vec2(dot(delta,side)/w,dot(delta,dir)/(l*.5));float diamond=abs(uv.x)+abs(uv.y),mask=1.-smoothstep(.93,1.04,diamond);float ridge=exp(-abs(uv.x-.13*sin(seed))/.085),rim=exp(-abs(diamond-.96)/.09),shine=exp(-pow((uv.y+uv.x*.22-.65*cos(t*TAU*2.+seed))/.15,2.));vec3 col=mix(vec3(.23,.46,.76),vec3(.68,.89,1.),smoothstep(-.10,.10,uv.x));col=mix(col,vec3(.98,1.,1.),sat(ridge*.83+rim*.78+shine*.65));float aura=exp(-max(0.,diamond-1.)*5.)*(1.-mask)*a*edge;v=over(v,vec4(.39,.78,1.,aura*.44));v=over(v,vec4(col,mask*a*edge));}}for(int i=0;i<24;i++){float k=float(i),f=fract(hash(vec2(k,91.))+q*2.6);vec2 c=vec2(mix(-.78,.78,hash(vec2(k,17.)))+.20*(f-.5),mix(.90,-.90,f));vec2 dir=normalize(vec2(.35,-1.));float d=seg(p,c-dir*.09,c);float a=e*sin(3.14159*f)*exp(-d/.007)*(1.-smoothstep(.85,.99,abs(p.x)))*(1.-smoothstep(.85,.99,abs(p.y)));v=over(v,vec4(.82,.95,1.,a*.64));}return v;"
   },
   "518": {
     "duration": 4.4,
@@ -10770,9 +10770,9 @@ const plantDetails={
   "211": {
     "duration": 2.15,
     "loop": false,
-    "note": "足元と前方から蔓が伸び、対象へ巻き付いて拘束する。",
-    "body": "float g=growFast(phase(q,.23,.57)),f=phase(q,.57,.79),e=p3Fade(q);vec4 v=prGather(p,vec2(0.,-.62),q,.23,.25,3.,0.);v=over(v,p3Liana(p,vec2(0.,-.64),.91,mix(.35,.23,f),2.1,g,0.,.033,0.));v=over(v,p3Reach(p,vec2(.76,-.43),vec2(.07,.14),growFast(phase(q,.28,.59)),.046,2.,0.,.09));v=over(v,p3Liana(p,vec2(0.,-.43),.83,mix(.33,.22,f),1.4,growFast(phase(q,.35,.70)),3.14,.035,0.));v.a*=e;return v;",
-    "placement": "対象足元（仮）"
+    "note": "左側から太く長い蔓が右側の対象へ伸び、足元からも複数の蔓が立ち上がって巻き付き、締め付ける。",
+    "body": "float g=growFast(phase(q,.23,.57)),f=phase(q,.57,.79),e=p3Fade(q);vec2 c=vec2(.35,-.62);vec4 v=prGather(p,c,q,.23,.25,3.,0.);v=over(v,p3Liana(p,c,.99,mix(.35,.23,f),2.1,g,0.,.042,0.));v=over(v,p3Reach(p,vec2(-.86,-.48),vec2(.35,.19),growFast(phase(q,.25,.55)),.100,2.,0.,.18));v=over(v,p3Reach(p,vec2(-.79,-.19),vec2(.32,-.10),growFast(phase(q,.30,.60)),.073,4.,0.,.14));v=over(v,p3Liana(p,vec2(.35,-.44),.83,mix(.34,.22,f),1.4,growFast(phase(q,.35,.70)),3.14,.048,0.));v.a*=e;return v;",
+    "placement": "左→右・対象足元"
   },
   "212": {
     "duration": 2.4,
