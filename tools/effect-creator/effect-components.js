@@ -12,7 +12,635 @@ const iceBuiltins=deepFreeze([{"id":"ice-cold-mist","version":1,"name":"冷気�
 const iceCommon="float swift(float f){return 1.-pow(1.-sat(f),3.);}\nfloat activeEnv(float q,float a,float b){return smoothstep(a,a+.05,q)*(1.-smoothstep(b,1.,q));}\nfloat icyShock(vec2 p,vec2 c,float f,float r,float squash){if(f<=0.||f>=1.)return 0.;return ring(p,c,vec2(.03+r*swift(f),(.03+r*swift(f))*squash),.009)*sin(3.14159*f);}\nvec4 iceFacet(vec2 p,vec2 a,vec2 b,float w){\n vec2 d=b-a;float l=length(d);if(l<.008)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float y=dot(v,ax)/l,x=dot(v,side);\n float width=w*min(sat(y*5.),sat((1.-y)*2.4));float aa=1.-smoothstep(width-.009,width+.004,abs(x));aa*=smoothstep(-.008,.01,y)*(1.-smoothstep(.975,1.005,y));\n float sideShade=smoothstep(-.011,.012,x);float facet=abs(x)/max(.004,width);\n vec3 c=mix(vec3(.13,.39,.65),mix(uColor,vec3(.72,.96,1.),.5),sideShade*.60+.26);\n c=mix(c,uCore,(1.-smoothstep(.64,1.,facet))*.18+(1.-smoothstep(0.,.012,abs(x)))*.43);\n float rim=(1.-smoothstep(.003,.014,abs(abs(x)-width)))*aa;c=mix(c,vec3(.88,.98,1.),rim*.72);\n return vec4(c,aa*.90);\n}\nvec4 iceFlake(vec2 p,vec2 c,float r,float a){\n if(r<.004)return vec4(0.);float z=0.;\n for(int j=0;j<6;j++){float k=float(j),ang=a+k*TAU/6.;vec2 d=dir2(ang),v=c+d*r;z+=glw(seg(p,c,v),.0035);vec2 b=c+d*r*.63;z+=glw(seg(p,b,b+dir2(ang+.8)*r*.28),.0025)+glw(seg(p,b,b+dir2(ang-.8)*r*.28),.0025);}\n return tone(z*.82,mix(uColor,vec3(.80,.96,1.),.65));\n}\nvec4 frost(vec2 p,vec2 c,vec2 r,float g,float seed){\n vec2 v=(p-c)/max(r,vec2(.01));float d=length(v);float n=fb(v*8.+seed);\n float a=(1.-smoothstep(g-.13,g+.03,d+(.5-n)*.16))*smoothstep(0.,.1,g);\n float veins=(1.-smoothstep(.019,.065,abs(noise(v*12.+seed)-.48)));\n vec3 col=mix(vec3(.20,.52,.75),vec3(.88,.98,1.),n*.6+veins*.30);\n return vec4(col,a*(.48+.37*veins));\n}\nvec4 iceBurst(vec2 p,vec2 c,float f,float r,float seed,float count){\n if(f<=0.||f>=1.)return vec4(0.);vec4 v=vec4(0.);\n for(int i=0;i<20;i++){float k=float(i);if(k>=count)break;float a=k*TAU/count+.20*hash(vec2(k,seed));vec2 d=dir2(a),a0=c+d*r*swift(f)*(.45+.55*hash(vec2(k,seed+1.)));vec4 w=iceFacet(p,a0,a0+d*(.045+.09*hash(vec2(k,seed+3.)))*(1.-.45*f),.025);w.a*=sin(3.14159*f);v=over(v,w);}\n return v;\n}\nvec4 coldMist(vec2 p,vec2 c,vec2 r,float t,float seed){float n=fb((p-c)*9.+vec2(t*2.,seed));float a=shell(p,c,r,t+seed*.03);return vec4(mix(vec3(.37,.63,.76),vec3(.88,.97,1.),n),a*.56);}\nvec4 snowField(vec2 p,float t,float e,float slant,float amount,float size){\n vec4 v=vec4(0.);for(int i=0;i<28;i++){float k=float(i);if(k>=amount*uDensity)break;float f=fract(t+hash(vec2(k,8.))),x=(hash(vec2(k,17.))-.5)*1.7;vec2 c=vec2(x+slant*(.5-f)+.045*sin(t*TAU+k),.87-1.74*f);vec4 w=iceFlake(p,c,size*(.60+.4*hash(vec2(k,2.))),k+t*TAU);w.a*=sin(3.14159*f)*e;v=over(v,w);}return v;\n}\nvec4 frostJet(vec2 p,vec2 a,vec2 b,float w,float t){\n vec2 d=b-a;float l=length(d);if(l<.01)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/l,x=dot(v,side);float n=fb(vec2(u*9.-t*5.,x*18.));\n float a0=(1.-smoothstep(.46,1.2,abs(x)/max(.01,w*(.4+.6*sat(u)))+(.5-n)*.75))*smoothstep(-.05,.045,u)*(1.-smoothstep(.82,1.06,u));\n vec4 col=vec4(mix(vec3(.31,.68,.87),vec3(.93,.99,1.),n),a0*.83);\n float z=0.;for(int j=0;j<13;j++){float k=float(j),f=fract(t*2.+hash(vec2(k,8.)));vec2 c=mix(a,b,f)+side*(hash(vec2(k,11.))-.5)*w*1.5;z+=glw(seg(p,c,c-ax*.07),.0035)*sin(3.14159*f);}\n return over(col,tone(z*.65,uColor));\n}\nvec4 iceCharge(vec2 p,vec2 c,float q,float radius){\n float f=phase(q,0.,.36);float z=charge(p,c,f,radius)+ball(p,c,.045+.065*f)*gate(q,0.,.43)*(.6+.65*f);\n return tone(z,mix(uColor,vec3(.80,.96,1.),.4));\n}\nvec4 freezeFloor(vec2 p,float g,float t,float wide){\n vec4 v=frost(p,vec2(0.,-.52),vec2(wide,.30),g,21.);\n for(int i=0;i<11;i++){float k=float(i),x=(k-5.)*wide*.17,h=sat(g*1.45-abs(k-5.)*.105);vec2 a=vec2(x,-.52+.035*sin(k));vec2 b=a+vec2(.045*sin(k),(.18+.19*hash(vec2(k,12.)))*h);vec4 w=iceFacet(p,a,b,.065*h);v=over(v,w);}return v;\n}\nvec4 freezeBeam(vec2 p,vec2 a,vec2 b,float w,float t,float e){\n vec2 d=b-a;float l=length(d);if(l<.01)return vec4(0.);vec2 ax=d/l,side=vec2(-ax.y,ax.x),v=p-a;\n float u=dot(v,ax)/l,x=dot(v,side);float n=fb(vec2(u*14.-t*4.,x*29.));\n float mask=smoothstep(-.04,.02,u)*(1.-smoothstep(.96,1.04,u));\n float z=glw(abs(x),w)*mask*e*(.78+.22*n);\n vec4 col=tone(z,mix(uColor,vec3(.65,.92,1.),.45));\n for(int i=0;i<7;i++){float k=float(i),s=fract(t*1.7+hash(vec2(k,7.)));vec2 c=mix(a,b,s)+side*(hash(vec2(k,13.))-.5)*w*4.;vec4 wv=iceFacet(p,c,c+ax*.085,w*.27);wv.a*=e*sin(3.14159*s);col=over(col,wv);}return col;\n}";
 const thunderModule=typeof ThunderComponents!=="undefined"?ThunderComponents:typeof module!=="undefined"?require("./thunder-components.js"):null;
 const thunderBuiltins=deepFreeze(thunderModule?thunderModule.definitions:[]);
-const lookup=new Map([...library,...additionalBuiltins,...extractedBuiltins,...representativeBuiltins,...iceBuiltins,...thunderBuiltins].map(d=>[d.id+"@"+d.version,d]));
+// Fixed v1 drafts: physical attacks, hit overlays and summon/gacha effects.
+const combatGachaBuiltins=deepFreeze([
+  {
+    "id": "physical-slash-1",
+    "version": 1,
+    "name": "斬撃・1連撃",
+    "category": "物理・斬撃",
+    "view": "BOTH",
+    "duration": 0.34,
+    "description": "弧状の軌跡を交互に角度変更。1回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.340;p/=spreadScale;for(int i=0;i<1;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(-.12+.07*mod(k,3.),.07*(mod(k,2.)*2.-1.));float a=.55+mod(k,2.)*1.65+floor(k/2.)*.42;v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));if(mod(k,2.)>.5)v.y=-v.y;vec2 e=v-vec2(-.30,0.);float ang=atan(e.y,e.x),rad=length(e);float front=mix(-1.1,1.35,smoothstep(0.,.64,h)),tail=front-1.2;float span=smoothstep(tail,tail+.16,ang)*(1.-smoothstep(front-.08,front+.08,ang));float w=.01+.08*pow(sat((ang-tail)/1.2),.8),d=abs(rad-.62);float edge=(1.-smoothstep(w*.45,w,d))*span,blade=(1.-smoothstep(.004,.018,d))*span;float halo=(1.-smoothstep(w,w+.035,d))*span*.22;vout=over(vout,vec4(mix(uColor,vec3(.98,1.,1.),sat(blade+.35*edge)),sat((edge+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-slash-2",
+    "version": 1,
+    "name": "斬撃・2連撃",
+    "category": "物理・斬撃",
+    "view": "BOTH",
+    "duration": 0.52,
+    "description": "弧状の軌跡を交互に角度変更。2回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.520;p/=spreadScale;for(int i=0;i<2;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(-.12+.07*mod(k,3.),.07*(mod(k,2.)*2.-1.));float a=.55+mod(k,2.)*1.65+floor(k/2.)*.42;v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));if(mod(k,2.)>.5)v.y=-v.y;vec2 e=v-vec2(-.30,0.);float ang=atan(e.y,e.x),rad=length(e);float front=mix(-1.1,1.35,smoothstep(0.,.64,h)),tail=front-1.2;float span=smoothstep(tail,tail+.16,ang)*(1.-smoothstep(front-.08,front+.08,ang));float w=.01+.08*pow(sat((ang-tail)/1.2),.8),d=abs(rad-.62);float edge=(1.-smoothstep(w*.45,w,d))*span,blade=(1.-smoothstep(.004,.018,d))*span;float halo=(1.-smoothstep(w,w+.035,d))*span*.22;vout=over(vout,vec4(mix(uColor,vec3(.98,1.,1.),sat(blade+.35*edge)),sat((edge+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-slash-3",
+    "version": 1,
+    "name": "斬撃・3連撃",
+    "category": "物理・斬撃",
+    "view": "BOTH",
+    "duration": 0.7,
+    "description": "弧状の軌跡を交互に角度変更。3回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.700;p/=spreadScale;for(int i=0;i<3;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(-.12+.07*mod(k,3.),.07*(mod(k,2.)*2.-1.));float a=.55+mod(k,2.)*1.65+floor(k/2.)*.42;v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));if(mod(k,2.)>.5)v.y=-v.y;vec2 e=v-vec2(-.30,0.);float ang=atan(e.y,e.x),rad=length(e);float front=mix(-1.1,1.35,smoothstep(0.,.64,h)),tail=front-1.2;float span=smoothstep(tail,tail+.16,ang)*(1.-smoothstep(front-.08,front+.08,ang));float w=.01+.08*pow(sat((ang-tail)/1.2),.8),d=abs(rad-.62);float edge=(1.-smoothstep(w*.45,w,d))*span,blade=(1.-smoothstep(.004,.018,d))*span;float halo=(1.-smoothstep(w,w+.035,d))*span*.22;vout=over(vout,vec4(mix(uColor,vec3(.98,1.,1.),sat(blade+.35*edge)),sat((edge+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-slash-4",
+    "version": 1,
+    "name": "斬撃・4連撃",
+    "category": "物理・斬撃",
+    "view": "BOTH",
+    "duration": 0.88,
+    "description": "弧状の軌跡を交互に角度変更。4回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.880;p/=spreadScale;for(int i=0;i<4;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(-.12+.07*mod(k,3.),.07*(mod(k,2.)*2.-1.));float a=.55+mod(k,2.)*1.65+floor(k/2.)*.42;v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));if(mod(k,2.)>.5)v.y=-v.y;vec2 e=v-vec2(-.30,0.);float ang=atan(e.y,e.x),rad=length(e);float front=mix(-1.1,1.35,smoothstep(0.,.64,h)),tail=front-1.2;float span=smoothstep(tail,tail+.16,ang)*(1.-smoothstep(front-.08,front+.08,ang));float w=.01+.08*pow(sat((ang-tail)/1.2),.8),d=abs(rad-.62);float edge=(1.-smoothstep(w*.45,w,d))*span,blade=(1.-smoothstep(.004,.018,d))*span;float halo=(1.-smoothstep(w,w+.035,d))*span*.22;vout=over(vout,vec4(mix(uColor,vec3(.98,1.,1.),sat(blade+.35*edge)),sat((edge+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-thrust-1",
+    "version": 1,
+    "name": "刺突・1連撃",
+    "category": "物理・刺突",
+    "view": "BOTH",
+    "duration": 0.34,
+    "description": "左から右への細い直線。位置をずらして連続。1回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.340;p/=spreadScale;for(int i=0;i<1;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));float a=(mod(k,2.)*2.-1.)*(.12+.11*floor(k/2.));vec2 v=p-vec2(.04*(mod(k,2.)*2.-1.),.13*(mod(k,3.)-1.));v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));float head=mix(-.58,.66,smoothstep(.01,.52,h)),len=.5+.16*sin(3.14159*h),x=(head-v.x)/len;float shape=smoothstep(-.012,.05,x)*(1.-smoothstep(.78,1.,x));float w=.014+.055*sin(3.14159*sat(x));float z=(1.-smoothstep(w*.35,w,abs(v.y)))*shape,core=(1.-smoothstep(.005,.014,abs(v.y)))*shape;float halo=(1.-smoothstep(w,w+.035,abs(v.y)))*shape*.22;vout=over(vout,vec4(mix(uColor,vec3(1.,1.,.96),sat(core+.25*z)),sat((z+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-thrust-2",
+    "version": 1,
+    "name": "刺突・2連撃",
+    "category": "物理・刺突",
+    "view": "BOTH",
+    "duration": 0.52,
+    "description": "左から右への細い直線。位置をずらして連続。2回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.520;p/=spreadScale;for(int i=0;i<2;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));float a=(mod(k,2.)*2.-1.)*(.12+.11*floor(k/2.));vec2 v=p-vec2(.04*(mod(k,2.)*2.-1.),.13*(mod(k,3.)-1.));v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));float head=mix(-.58,.66,smoothstep(.01,.52,h)),len=.5+.16*sin(3.14159*h),x=(head-v.x)/len;float shape=smoothstep(-.012,.05,x)*(1.-smoothstep(.78,1.,x));float w=.014+.055*sin(3.14159*sat(x));float z=(1.-smoothstep(w*.35,w,abs(v.y)))*shape,core=(1.-smoothstep(.005,.014,abs(v.y)))*shape;float halo=(1.-smoothstep(w,w+.035,abs(v.y)))*shape*.22;vout=over(vout,vec4(mix(uColor,vec3(1.,1.,.96),sat(core+.25*z)),sat((z+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-thrust-3",
+    "version": 1,
+    "name": "刺突・3連撃",
+    "category": "物理・刺突",
+    "view": "BOTH",
+    "duration": 0.7,
+    "description": "左から右への細い直線。位置をずらして連続。3回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.700;p/=spreadScale;for(int i=0;i<3;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));float a=(mod(k,2.)*2.-1.)*(.12+.11*floor(k/2.));vec2 v=p-vec2(.04*(mod(k,2.)*2.-1.),.13*(mod(k,3.)-1.));v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));float head=mix(-.58,.66,smoothstep(.01,.52,h)),len=.5+.16*sin(3.14159*h),x=(head-v.x)/len;float shape=smoothstep(-.012,.05,x)*(1.-smoothstep(.78,1.,x));float w=.014+.055*sin(3.14159*sat(x));float z=(1.-smoothstep(w*.35,w,abs(v.y)))*shape,core=(1.-smoothstep(.005,.014,abs(v.y)))*shape;float halo=(1.-smoothstep(w,w+.035,abs(v.y)))*shape*.22;vout=over(vout,vec4(mix(uColor,vec3(1.,1.,.96),sat(core+.25*z)),sat((z+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-thrust-4",
+    "version": 1,
+    "name": "刺突・4連撃",
+    "category": "物理・刺突",
+    "view": "BOTH",
+    "duration": 0.88,
+    "description": "左から右への細い直線。位置をずらして連続。4回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.880;p/=spreadScale;for(int i=0;i<4;i++){float k=float(i);float h=(elapsed-k*0.180)/0.340;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));float a=(mod(k,2.)*2.-1.)*(.12+.11*floor(k/2.));vec2 v=p-vec2(.04*(mod(k,2.)*2.-1.),.13*(mod(k,3.)-1.));v=vec2(dot(v,dir2(a)),dot(v,dir2(a+1.5707963)));float head=mix(-.58,.66,smoothstep(.01,.52,h)),len=.5+.16*sin(3.14159*h),x=(head-v.x)/len;float shape=smoothstep(-.012,.05,x)*(1.-smoothstep(.78,1.,x));float w=.014+.055*sin(3.14159*sat(x));float z=(1.-smoothstep(w*.35,w,abs(v.y)))*shape,core=(1.-smoothstep(.005,.014,abs(v.y)))*shape;float halo=(1.-smoothstep(w,w+.035,abs(v.y)))*shape*.22;vout=over(vout,vec4(mix(uColor,vec3(1.,1.,.96),sat(core+.25*z)),sat((z+halo)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-blunt-1",
+    "version": 1,
+    "name": "打撃・1連撃",
+    "category": "物理・打撃",
+    "view": "BOTH",
+    "duration": 0.42,
+    "description": "衝撃閃光・拡大波・飛散線。着点を変える。1回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.420;p/=spreadScale;for(int i=0;i<1;i++){float k=float(i);float h=(elapsed-k*0.220)/0.420;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(.12*(mod(k,3.)-1.),.11*(mod(k,2.)*2.-1.));float r=length(v),g=1.-pow(1.-h,3.);float flash=(1.-smoothstep(.025,.18+.05*g,r))*(1.-smoothstep(.12,.45,h));float wave=(1.-smoothstep(.009,.04,abs(r-(.06+.54*g))))*(1.-smoothstep(.38,1.,h));float rays=0.;for(int j=0;j<9;j++){float a=float(j)*TAU/9.+k*.77;vec2 d=dir2(a);float rr=(.12+.48*g)*(.72+.28*hash(vec2(float(j),k+3.)));rays=max(rays,(1.-smoothstep(.008,.026,seg(v,d*rr*.55,d*rr)))*(1.-smoothstep(.52,1.,h)));}float dust=(1.-smoothstep(.16,.33,abs(r-.39*g)))*smoothstep(.45,.80,fb(v*24.+k))*g*.28*(1.-h);vout=over(vout,vec4(.45,.42,.38,dust));vout=over(vout,vec4(mix(vec3(1.,.59,.22),vec3(1.,.98,.85),sat(flash+.5*rays)),sat((flash+wave*.7+rays*.85)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-blunt-2",
+    "version": 1,
+    "name": "打撃・2連撃",
+    "category": "物理・打撃",
+    "view": "BOTH",
+    "duration": 0.64,
+    "description": "衝撃閃光・拡大波・飛散線。着点を変える。2回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.640;p/=spreadScale;for(int i=0;i<2;i++){float k=float(i);float h=(elapsed-k*0.220)/0.420;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(.12*(mod(k,3.)-1.),.11*(mod(k,2.)*2.-1.));float r=length(v),g=1.-pow(1.-h,3.);float flash=(1.-smoothstep(.025,.18+.05*g,r))*(1.-smoothstep(.12,.45,h));float wave=(1.-smoothstep(.009,.04,abs(r-(.06+.54*g))))*(1.-smoothstep(.38,1.,h));float rays=0.;for(int j=0;j<9;j++){float a=float(j)*TAU/9.+k*.77;vec2 d=dir2(a);float rr=(.12+.48*g)*(.72+.28*hash(vec2(float(j),k+3.)));rays=max(rays,(1.-smoothstep(.008,.026,seg(v,d*rr*.55,d*rr)))*(1.-smoothstep(.52,1.,h)));}float dust=(1.-smoothstep(.16,.33,abs(r-.39*g)))*smoothstep(.45,.80,fb(v*24.+k))*g*.28*(1.-h);vout=over(vout,vec4(.45,.42,.38,dust));vout=over(vout,vec4(mix(vec3(1.,.59,.22),vec3(1.,.98,.85),sat(flash+.5*rays)),sat((flash+wave*.7+rays*.85)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-blunt-3",
+    "version": 1,
+    "name": "打撃・3連撃",
+    "category": "物理・打撃",
+    "view": "BOTH",
+    "duration": 0.86,
+    "description": "衝撃閃光・拡大波・飛散線。着点を変える。3回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*0.860;p/=spreadScale;for(int i=0;i<3;i++){float k=float(i);float h=(elapsed-k*0.220)/0.420;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(.12*(mod(k,3.)-1.),.11*(mod(k,2.)*2.-1.));float r=length(v),g=1.-pow(1.-h,3.);float flash=(1.-smoothstep(.025,.18+.05*g,r))*(1.-smoothstep(.12,.45,h));float wave=(1.-smoothstep(.009,.04,abs(r-(.06+.54*g))))*(1.-smoothstep(.38,1.,h));float rays=0.;for(int j=0;j<9;j++){float a=float(j)*TAU/9.+k*.77;vec2 d=dir2(a);float rr=(.12+.48*g)*(.72+.28*hash(vec2(float(j),k+3.)));rays=max(rays,(1.-smoothstep(.008,.026,seg(v,d*rr*.55,d*rr)))*(1.-smoothstep(.52,1.,h)));}float dust=(1.-smoothstep(.16,.33,abs(r-.39*g)))*smoothstep(.45,.80,fb(v*24.+k))*g*.28*(1.-h);vout=over(vout,vec4(.45,.42,.38,dust));vout=over(vout,vec4(mix(vec3(1.,.59,.22),vec3(1.,.98,.85),sat(flash+.5*rays)),sat((flash+wave*.7+rays*.85)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "physical-blunt-4",
+    "version": 1,
+    "name": "打撃・4連撃",
+    "category": "物理・打撃",
+    "view": "BOTH",
+    "duration": 1.08,
+    "description": "衝撃閃光・拡大波・飛散線。着点を変える。4回。",
+    "body": "if(q<=0.||q>=1.)return vec4(0.);vec4 vout=vec4(0.);float elapsed=q*1.080;p/=spreadScale;for(int i=0;i<4;i++){float k=float(i);float h=(elapsed-k*0.220)/0.420;if(h>0.&&h<1.){float env=smoothstep(0.,.075,h)*(1.-smoothstep(.58,1.,h));vec2 v=p-vec2(.12*(mod(k,3.)-1.),.11*(mod(k,2.)*2.-1.));float r=length(v),g=1.-pow(1.-h,3.);float flash=(1.-smoothstep(.025,.18+.05*g,r))*(1.-smoothstep(.12,.45,h));float wave=(1.-smoothstep(.009,.04,abs(r-(.06+.54*g))))*(1.-smoothstep(.38,1.,h));float rays=0.;for(int j=0;j<9;j++){float a=float(j)*TAU/9.+k*.77;vec2 d=dir2(a);float rr=(.12+.48*g)*(.72+.28*hash(vec2(float(j),k+3.)));rays=max(rays,(1.-smoothstep(.008,.026,seg(v,d*rr*.55,d*rr)))*(1.-smoothstep(.52,1.,h)));}float dust=(1.-smoothstep(.16,.33,abs(r-.39*g)))*smoothstep(.45,.80,fb(v*24.+k))*g*.28*(1.-h);vout=over(vout,vec4(.45,.42,.38,dust));vout=over(vout,vec4(mix(vec3(1.,.59,.22),vec3(1.,.98,.85),sat(flash+.5*rays)),sat((flash+wave*.7+rays*.85)*env*powerScale)));}}return vout;",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      },
+      {
+        "id": "spreadScale",
+        "name": "広がり",
+        "min": 0.6,
+        "max": 1.2,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "hit-flash",
+    "version": 1,
+    "name": "ヒット・瞬間閃光",
+    "category": "ヒット",
+    "view": "BOTH",
+    "duration": 0.25,
+    "description": "命中点の短い白熱閃光。",
+    "body": "float e=smoothstep(0.,.07,q)*(1.-smoothstep(.18,1.,q));float r=length(p),core=1.-smoothstep(.02,.16,r);float crossZ=max(exp(-abs(p.x)*70.)*exp(-abs(p.y)*10.),exp(-abs(p.y)*70.)*exp(-abs(p.x)*10.));return vec4(mix(uColor,vec3(1.),core),sat((core+crossZ*.5)*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "hit-sparks",
+    "version": 1,
+    "name": "ヒット・金属火花",
+    "category": "ヒット",
+    "view": "BOTH",
+    "duration": 0.42,
+    "description": "命中点から金色の火花。",
+    "body": "float e=smoothstep(0.,.06,q)*(1.-smoothstep(.45,1.,q)),z=0.;for(int i=0;i<12;i++){float k=float(i),a=hash(vec2(k,7.))*TAU;vec2 d=dir2(a);float r=(.12+.57*q)*(.45+.55*hash(vec2(k,3.)));vec2 c=d*r+vec2(0.,-.15*q*q);z=max(z,1.-smoothstep(.004,.014,seg(p,c-d*.12*(1.-q),c)));}return vec4(mix(vec3(1.,.44,.08),vec3(1.,.97,.67),sat(z)),sat(z*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "hit-ring",
+    "version": 1,
+    "name": "ヒット・衝撃輪",
+    "category": "ヒット",
+    "view": "BOTH",
+    "duration": 0.4,
+    "description": "輪状の衝撃波が拡大。",
+    "body": "float g=1.-pow(1.-q,3.),r=length(p),e=smoothstep(0.,.06,q)*(1.-smoothstep(.32,1.,q));float z=(1.-smoothstep(.007,.032,abs(r-(.06+.63*g))))*e;return vec4(mix(uColor,vec3(.98,1.,1.),.7),sat(z*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "hit-dust",
+    "version": 1,
+    "name": "ヒット・粉塵",
+    "category": "ヒット",
+    "view": "BOTH",
+    "duration": 0.65,
+    "description": "打撃後に粉塵が膨らみ消える。",
+    "body": "float e=smoothstep(0.,.12,q)*(1.-smoothstep(.50,1.,q));float g=1.-pow(1.-q,3.),z=0.;for(int i=0;i<7;i++){float k=float(i),a=k*TAU/7.;vec2 c=dir2(a)*(.04+.28*g);vec2 v=(p-c)/(.08+.11*g);float n=fb(v*3.+k);z=max(z,(1.-smoothstep(.48,1.15,length(v)+(n-.5)*.4))*(.5+.5*n));}return vec4(.53,.48,.42,sat(z*e*.75*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "hit-critical",
+    "version": 1,
+    "name": "ヒット・クリティカル",
+    "category": "ヒット",
+    "view": "BOTH",
+    "duration": 0.55,
+    "description": "星形閃光・放射線・二重衝撃輪。",
+    "body": "float r=length(p),a=atan(p.y,p.x),g=1.-pow(1.-q,3.);float e=smoothstep(0.,.045,q)*(1.-smoothstep(.46,1.,q));float star=(1.-smoothstep(.045,.19+.25*pow(abs(cos(a*4.)),14.),r))*(1.-smoothstep(.10,.43,q));float wave=(1.-smoothstep(.009,.027,abs(r-.66*g)))+.45*(1.-smoothstep(.006,.022,abs(r-.44*g)));float rays=pow(abs(cos(a*6.+.3)),22.)*smoothstep(.13,.25,r)*(1.-smoothstep(.52,.73,r));return vec4(mix(vec3(1.,.53,.10),vec3(1.,1.,.91),sat(star+.5*rays)),sat((star+wave*.6+rays*.6)*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "gacha-charge",
+    "version": 1,
+    "name": "ガチャ・光の収束",
+    "category": "ガチャ",
+    "view": "BOTH",
+    "duration": 1.15,
+    "description": "粒子が中心へ集まり発光。",
+    "body": "float e=smoothstep(0.,.07,q)*(1.-smoothstep(.86,1.,q)),z=0.;for(int i=0;i<20;i++){float k=float(i),a=k*2.39996+q*1.8,h=fract(q*1.6+k*.113),r=.72-.65*h;vec2 c=dir2(a)*r;z=max(z,(1.-smoothstep(.008,.025,length(p-c)))*sin(3.14159*h));}float core=1.-smoothstep(.025,.055+.13*q,length(p));return vec4(mix(vec3(.38,.72,1.),vec3(.98,1.,1.),core),sat((z+core)*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "gacha-ring",
+    "version": 1,
+    "name": "ガチャ・召喚陣",
+    "category": "ガチャ",
+    "view": "BOTH",
+    "duration": 1.5,
+    "description": "二重円と回転する刻印。",
+    "body": "float r=length(p),a=atan(p.y,p.x),e=smoothstep(0.,.22,q)*(1.-smoothstep(.83,1.,q)),g=smoothstep(0.,.42,q);float z=(1.-smoothstep(.007,.018,abs(r-.64)))+(1.-smoothstep(.006,.015,abs(r-.50)));float ticks=pow(abs(cos((a-q*.7)*12.)),16.)*smoothstep(.51,.54,r)*(1.-smoothstep(.60,.63,r));float poly=1.-smoothstep(.008,.019,abs(r-(.32+.09*cos((a+q)*6.))));return vec4(mix(vec3(.32,.63,1.),vec3(.90,.98,1.),sat(ticks+.35*poly)),sat((z+ticks+poly*.75)*e*g*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "gacha-pillar",
+    "version": 1,
+    "name": "ガチャ・光柱解放",
+    "category": "ガチャ",
+    "view": "BOTH",
+    "duration": 0.9,
+    "description": "光柱が立ち上がり輪を解放。",
+    "body": "float e=smoothstep(0.,.07,q)*(1.-smoothstep(.48,1.,q)),g=1.-pow(1.-q,3.),h=.08+.69*g;float beam=(1.-smoothstep(.015,.09+.06*g,abs(p.x)))*(1.-smoothstep(h*.7,h,abs(p.y)));float r=length(p/vec2(1.,.40)),wave=1.-smoothstep(.008,.025,abs(r-.63*g));float rays=((1.-smoothstep(.008,.028,abs(p.x+.18)))+(1.-smoothstep(.008,.028,abs(p.x-.18))))*(1.-smoothstep(.35,.72,abs(p.y)))*.38;return vec4(mix(vec3(.38,.73,1.),vec3(1.),sat(beam)),sat((beam+wave*.6+rays)*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "gacha-gold",
+    "version": 1,
+    "name": "ガチャ・金色確定",
+    "category": "ガチャ",
+    "view": "BOTH",
+    "duration": 1.35,
+    "description": "金色の光輪と星が放射。",
+    "body": "float g=1.-pow(1.-q,3.),e=smoothstep(0.,.07,q)*(1.-smoothstep(.68,1.,q));float r=length(p),a=atan(p.y,p.x);float z=pow(abs(cos(a*7.+q*.6)),12.)*smoothstep(.05,.15,r)*(1.-smoothstep(.48,.76,r))*g;float ringZ=1.-smoothstep(.008,.028,abs(r-.70*g)),stars=0.;for(int i=0;i<10;i++){float k=float(i),ang=k*TAU/10.;vec2 v=p-dir2(ang)*(.12+.5*g);float d=abs(v.x)+abs(v.y);stars=max(stars,(1.-smoothstep(.008,.032,d))*sin(3.14159*q));}return vec4(mix(vec3(1.,.56,.07),vec3(1.,.98,.72),sat(z+stars)),sat((z*.65+ringZ*.75+stars)*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "gacha-rainbow",
+    "version": 1,
+    "name": "ガチャ・虹色確定",
+    "category": "ガチャ",
+    "view": "BOTH",
+    "duration": 1.65,
+    "description": "虹色の螺旋と中心閃光。",
+    "body": "float r=length(p),a=atan(p.y,p.x),g=1.-pow(1.-q,3.),e=smoothstep(0.,.09,q)*(1.-smoothstep(.72,1.,q));float arms=pow(abs(cos(a*3.+r*10.-q*7.)),9.)*smoothstep(.06,.16,r)*(1.-smoothstep(.64,.80,r))*smoothstep(.01,.28,q);float wave=1.-smoothstep(.009,.035,abs(r-.72*g));float core=(1.-smoothstep(.02,.17,r))*(1.-smoothstep(.12,.45,q));vec3 c=.58+.42*cos(a+q*5.+vec3(0.,2.0944,4.1888));return vec4(mix(c,vec3(1.),sat(core)),sat((arms*.75+wave*.8+core)*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  },
+  {
+    "id": "gacha-reveal",
+    "version": 1,
+    "name": "ガチャ・結果公開",
+    "category": "ガチャ",
+    "view": "BOTH",
+    "duration": 0.75,
+    "description": "結果表示に重ねる閃光と星。カード・文字なし。",
+    "body": "float g=1.-pow(1.-q,3.),e=smoothstep(0.,.06,q)*(1.-smoothstep(.54,1.,q));float r=length(p),a=atan(p.y,p.x);float flash=(1.-smoothstep(.05,.28+.22*pow(abs(cos(a*4.)),10.),r))*(1.-smoothstep(.14,.42,q));float z=0.;for(int i=0;i<8;i++){float k=float(i),a0=k*TAU/8.+.28;vec2 v=p-dir2(a0)*(.08+.60*g);float d=abs(v.x)+abs(v.y);z=max(z,1.-smoothstep(.01,.038,d));}return vec4(mix(vec3(1.,.76,.27),vec3(1.),sat(flash)),sat((flash+z)*e*powerScale));",
+    "dependencies": [
+      "fire-common@1"
+    ],
+    "params": [
+      {
+        "id": "powerScale",
+        "name": "強さ",
+        "min": 0.5,
+        "max": 1.5,
+        "default": 1,
+        "step": 0.05
+      }
+    ]
+  }
+]);
+const lookup=new Map([...library,...additionalBuiltins,...extractedBuiltins,...representativeBuiltins,...iceBuiltins,...thunderBuiltins,...combatGachaBuiltins].map(d=>[d.id+"@"+d.version,d]));
 function thunderSample(record){return thunderModule?.sample({create,instance,validate},record)||null}
 function get(id,version=1){if(typeof id!=="string"||!Number.isInteger(version)||version<1)throw Error("部品ID・版が不正");const d=lookup.get(id+"@"+version);if(!d)throw Error("不明な部品・版: "+id+"@"+version);return d}
 function number(v,min,max,label){if(typeof v!=="number"||!Number.isFinite(v)||v<min||v>max)throw Error(label+" は "+min+"〜"+max+" の数値で指定");return v}
@@ -182,7 +810,7 @@ function iceSample(id){
 
 const MAX_CUSTOM=128,MAX_BODY=12000;
 const keyOf=d=>d.id+"@"+d.version;
-const builtins=new Set([...library,...additionalBuiltins,...extractedBuiltins,...representativeBuiltins,...iceBuiltins,...thunderBuiltins].map(keyOf));
+const builtins=new Set([...library,...additionalBuiltins,...extractedBuiltins,...representativeBuiltins,...iceBuiltins,...thunderBuiltins,...combatGachaBuiltins].map(keyOf));
 function definitions(){return [...lookup.values()]}
 function customDefinitions(){return definitions().filter(d=>!builtins.has(keyOf(d)))}
 function nextVersion(id){return Math.max(0,...definitions().filter(d=>d.id===id).map(d=>d.version))+1}
