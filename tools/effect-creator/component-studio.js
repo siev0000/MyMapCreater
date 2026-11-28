@@ -212,6 +212,77 @@ function chooseLibraryPart(d,button){
  if(add){add.hidden=false;add.disabled=!compatible||composition.parts.length>=C.MAX_PARTS}
  if(cancel)cancel.hidden=false;
 }
+// Batch export uses the same standalone component setup as the library preview.
+function batchDefinitions(){
+ const cat=$("category").value,query=$("search").value.trim().toLowerCase();
+ const filtered=$("batchScope").value==="filtered";
+ return C.definitions().filter(d=>!filtered||(!cat||d.category===cat)&&(!query||(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query)));
+}
+function batchMessage(message,error=false){$("batchStatus").textContent=message;$("batchStatus").classList.toggle("error",error)}
+function batchUpdate(){if(!$("batchScope"))return;const n=batchDefinitions().length;$("batchCount").textContent=n+" 部品・版";$("batchPng").disabled=busy||!n;$("batchJson").disabled=busy||!n;}
+function batchComposition(d){
+ const c=C.create(d.duration,d.view==="BOTH"?composition.view:d.view);
+ c.name=d.name;c.parts=[C.instance(d.id,"preview",0,d.duration,d.version)];
+ if(C.isComposite(d))c.loop=d.composition.loop;else if(d.category==="氷・持続")c.loop=true;
+ const p=c.parts[0];
+ if(d.id==="fire-smoky-flight"){p.x=p.endX=-.4;p.y=p.endY=.175}
+ else if(!C.isComposite(d)&&d.category==="飛翔"){p.x=-.65;p.endX=.65}
+ if(d.id==="shockwave"||d.id==="electric-wave")p.params.squash=c.view==="TOP"?1:.34;
+ return c;
+}
+function batchCatalog(){
+ if(busy)return;try{
+ const definitions=batchDefinitions(),data={format:"glsl-part-catalog",version:1,count:definitions.length,definitions:definitions.map(d=>({...d,origin:C.origin(d.id,d.version)}))};
+ EffectExport.download(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),"effect-part-catalog.json");batchMessage(definitions.length+" 部品・版の一覧JSONを保存しました（参照用）");
+ }catch(e){batchMessage(e.message,true)}
+}
+let batchCanceled=false;
+async function batchSheets(){
+ if(busy||timeDrag)return;
+ let states=[],wasPlaying=playing,completed=0;
+ try{
+  const defs=batchDefinitions(),settings=config();
+  if(!defs.length)throw Error("出力する部品がありません");
+  const jobs=defs.map(d=>{const c=batchComposition(d),a=EffectEngine.plan({...settings,duration:c.duration});return {d,c,a}});
+  if(jobs.some(j=>j.a.width>16384||j.a.height>16384||j.a.width*j.a.height>32000000))throw Error("シートが大きすぎます。列数・解像度・FPSを調整してください");
+  const pixels=jobs.reduce((sum,j)=>sum+j.a.frames*settings.width*settings.height,0);
+  if(pixels>250000000)throw Error("一括出力が大きすぎます。分類で分けるか、解像度・FPSを下げてください（上限2.5億フレーム画素）");
+  if(!confirm(defs.length+" 部品・版の透過PNGシートをZIPで出力します。現在の編集中構成は変更しません。続けますか？"))return;
+  busy=true;playing=false;batchCanceled=false;
+  states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;
+  $("batchStop").disabled=false;buttons();
+  const files=[],items=[];let bytes=0;const enc=new TextEncoder();
+  for(const {d,c,a} of jobs){
+   if(batchCanceled)break;
+   let renderer0=null,sheet=null;
+   const safe=d.id.replace(/[^a-zA-Z0-9_-]/g,"_")+"-v"+d.version;
+   const item={id:d.id,version:d.version,name:d.name,category:d.category,view:c.view,duration:c.duration,loop:c.loop,frames:a.frames,columns:a.cols,rows:a.rows,width:settings.width,height:settings.height,fps:settings.fps};
+   try{
+    const x=C.compile(c),p=renderConfig(x.composition,x.source,settings);
+    renderer0=ShaderStudio.createRenderer(p,x.source);
+    sheet=document.createElement("canvas");sheet.width=a.width;sheet.height=a.height;const ctx=sheet.getContext("2d");if(!ctx)throw Error("Canvas作成失敗");
+    for(let i=0;i<a.frames;i++){
+     if(batchCanceled)break;
+     renderer0.render(i/settings.fps);ctx.drawImage(renderer0.canvas,(i%a.cols)*settings.width,Math.floor(i/a.cols)*settings.height);
+     if(i%8===0){batchMessage((completed+1)+"/"+jobs.length+" "+d.name+" "+(i+1)+"/"+a.frames);await new Promise(resolve=>setTimeout(resolve,0))}
+    }
+    if(batchCanceled)break;
+    const blob=await new Promise((resolve,reject)=>sheet.toBlob(b=>b?resolve(b):reject(Error("PNG生成失敗")),"image/png"));
+    if(bytes+blob.size>256*1024*1024){batchCanceled=true;item.error="ZIP容量上限256MiB";items.push(item);break}
+    const name="sheets/"+safe+".png";files.push({name,bytes:new Uint8Array(await blob.arrayBuffer())});bytes+=blob.size;item.file=name;
+   }catch(e){item.error=String(e.message||e)}
+   finally{renderer0?.dispose();if(sheet){sheet.width=0;sheet.height=0}}
+   items.push(item);completed++;await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  if(!files.length&&!items.length){batchMessage("中止しました（出力なし）");return}
+  const manifest={format:"effect-part-sheet-batch",version:1,settings,requested:jobs.length,exported:files.length,canceled:batchCanceled,items};
+  files.push({name:"manifest.json",bytes:enc.encode(JSON.stringify(manifest,null,2))});
+  EffectExport.download(EffectExport.zip(files),"effect-parts"+(batchCanceled?"-partial":"")+".zip");
+  batchMessage("出力 "+manifest.exported+"/"+jobs.length+" 件"+(batchCanceled?"（途中まで）":"")+" / エラー "+items.filter(x=>x.error).length+" 件。詳細はmanifest.json",items.some(x=>x.error));
+ }catch(e){batchMessage("一括出力失敗: "+e.message,true)}
+ finally{if(states.length){busy=false;for(const [e,v] of states)e.disabled=v;$("batchStop").disabled=true;playing=wasPlaying;last=miniStart=performance.now();buttons();batchUpdate()}}
+}
+if($("batchScope")){$("batchScope").onchange=batchUpdate;$("batchJson").onclick=batchCatalog;$("batchPng").onclick=batchSheets;$("batchStop").onclick=()=>{batchCanceled=true;batchMessage("中止中…")}}
 function showLibrary(){
  const box=$("library"),cat=$("category").value,query=$("search").value.trim().toLowerCase(),scroll=box.scrollTop;
  clearLibraryChoice();box.replaceChildren();
@@ -222,7 +293,7 @@ function showLibrary(){
   const desc=document.createElement("small");desc.textContent=d.description||"説明なし";desc.title=d.view+" / "+d.duration+"秒 / "+desc.textContent;
   row.append(name,desc);box.append(row);
  }
- box.scrollTop=scroll;
+ box.scrollTop=scroll;batchUpdate();
 }
 if($("libraryCancel"))$("libraryCancel").onclick=()=>clearLibraryChoice();
 if($("libraryAdd"))$("libraryAdd").onclick=()=>{
