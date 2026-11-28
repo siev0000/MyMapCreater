@@ -219,7 +219,7 @@ function batchDefinitions(){
  return C.definitions().filter(d=>!filtered||(!cat||d.category===cat)&&(!query||(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query)));
 }
 function batchMessage(message,error=false){$("batchStatus").textContent=message;$("batchStatus").classList.toggle("error",error)}
-function batchUpdate(){if(!$("batchScope"))return;const n=batchDefinitions().length;$("batchCount").textContent=n+" 部品・版";$("batchPng").disabled=busy||!n;$("batchJson").disabled=busy||!n;}
+function batchUpdate(){if(!$("batchScope"))return;const n=batchDefinitions().length;$("batchCount").textContent=n+" 部品・版";$("batchPng").disabled=busy||!n;if($("batchWebp"))$("batchWebp").disabled=busy||!n;$("batchJson").disabled=busy||!n;}
 function batchComposition(d){
  const c=C.create(d.duration,d.view==="BOTH"?composition.view:d.view);
  c.name=d.name;c.parts=[C.instance(d.id,"preview",0,d.duration,d.version)];
@@ -237,9 +237,10 @@ function batchCatalog(){
  }catch(e){batchMessage(e.message,true)}
 }
 let batchCanceled=false;
-async function batchSheets(){
+async function batchSheets(kind="png"){
  if(busy||timeDrag)return;
  let states=[],wasPlaying=playing,completed=0;
+ const webp=kind==="webp",mime=webp?"image/webp":"image/png",ext=webp?".webp":".png",label=webp?"WebP":"PNG";
  try{
   const defs=batchDefinitions(),settings=config();
   if(!defs.length)throw Error("出力する部品がありません");
@@ -247,10 +248,15 @@ async function batchSheets(){
   if(jobs.some(j=>j.a.width>16384||j.a.height>16384||j.a.width*j.a.height>32000000))throw Error("シートが大きすぎます。列数・解像度・FPSを調整してください");
   const pixels=jobs.reduce((sum,j)=>sum+j.a.frames*settings.width*settings.height,0);
   if(pixels>250000000)throw Error("一括出力が大きすぎます。分類で分けるか、解像度・FPSを下げてください（上限2.5億フレーム画素）");
-  if(!confirm(defs.length+" 部品・版の透過PNGシートをZIPで出力します。現在の編集中構成は変更しません。続けますか？"))return;
+  if(!confirm(defs.length+" 部品・版の透過"+label+"シートをZIPで出力します。現在の編集中構成は変更しません。続けますか？"))return;
   busy=true;playing=false;batchCanceled=false;
   states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;
   $("batchStop").disabled=false;buttons();
+  // Browsers may silently return PNG for an unsupported requested MIME type.
+  if(webp){const probe=document.createElement("canvas");probe.width=probe.height=1;
+   try{await new Promise((resolve,reject)=>probe.toBlob(b=>b&&b.type===mime?resolve():reject(Error("このブラウザーはWebP画像出力に対応していません")) ,mime,.9));}
+   finally{probe.width=probe.height=0;}
+  }
   const files=[],items=[];let bytes=0;const enc=new TextEncoder();
   for(const {d,c,a} of jobs){
    if(batchCanceled)break;
@@ -267,22 +273,22 @@ async function batchSheets(){
      if(i%8===0){batchMessage((completed+1)+"/"+jobs.length+" "+d.name+" "+(i+1)+"/"+a.frames);await new Promise(resolve=>setTimeout(resolve,0))}
     }
     if(batchCanceled)break;
-    const blob=await new Promise((resolve,reject)=>sheet.toBlob(b=>b?resolve(b):reject(Error("PNG生成失敗")),"image/png"));
+    const blob=await new Promise((resolve,reject)=>sheet.toBlob(b=>b&&b.type===mime?resolve(b):reject(Error(label+"生成失敗、または形式非対応")),mime,.9));
     if(bytes+blob.size>256*1024*1024){batchCanceled=true;item.error="ZIP容量上限256MiB";items.push(item);break}
-    const name="sheets/"+safe+".png";files.push({name,bytes:new Uint8Array(await blob.arrayBuffer())});bytes+=blob.size;item.file=name;
+    const name="sheets/"+safe+ext;files.push({name,bytes:new Uint8Array(await blob.arrayBuffer())});bytes+=blob.size;item.file=name;
    }catch(e){item.error=String(e.message||e)}
    finally{renderer0?.dispose();if(sheet){sheet.width=0;sheet.height=0}}
    items.push(item);completed++;await new Promise(resolve=>setTimeout(resolve,0));
   }
   if(!files.length&&!items.length){batchMessage("中止しました（出力なし）");return}
-  const manifest={format:"effect-part-sheet-batch",version:1,settings,requested:jobs.length,exported:files.length,canceled:batchCanceled,items};
+  const manifest={format:"effect-part-sheet-batch",version:1,imageFormat:kind,mimeType:mime,...(webp?{quality:.9}:{}),settings,requested:jobs.length,exported:files.length,canceled:batchCanceled,items};
   files.push({name:"manifest.json",bytes:enc.encode(JSON.stringify(manifest,null,2))});
-  EffectExport.download(EffectExport.zip(files),"effect-parts"+(batchCanceled?"-partial":"")+".zip");
+  EffectExport.download(EffectExport.zip(files),"effect-parts"+(webp?"-webp":"")+(batchCanceled?"-partial":"")+".zip");
   batchMessage("出力 "+manifest.exported+"/"+jobs.length+" 件"+(batchCanceled?"（途中まで）":"")+" / エラー "+items.filter(x=>x.error).length+" 件。詳細はmanifest.json",items.some(x=>x.error));
  }catch(e){batchMessage("一括出力失敗: "+e.message,true)}
  finally{if(states.length){busy=false;for(const [e,v] of states)e.disabled=v;$("batchStop").disabled=true;playing=wasPlaying;last=miniStart=performance.now();buttons();batchUpdate()}}
 }
-if($("batchScope")){$("batchScope").onchange=batchUpdate;$("batchJson").onclick=batchCatalog;$("batchPng").onclick=batchSheets;$("batchStop").onclick=()=>{batchCanceled=true;batchMessage("中止中…")}}
+if($("batchScope")){$("batchScope").onchange=batchUpdate;$("batchJson").onclick=batchCatalog;$("batchPng").onclick=()=>batchSheets("png");if($("batchWebp"))$("batchWebp").onclick=()=>batchSheets("webp");$("batchStop").onclick=()=>{batchCanceled=true;batchMessage("中止中…")}}
 function showLibrary(){
  const box=$("library"),cat=$("category").value,query=$("search").value.trim().toLowerCase(),scroll=box.scrollTop;
  clearLibraryChoice();box.replaceChildren();
