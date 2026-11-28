@@ -10179,7 +10179,7 @@ const windDetails={
     "duration": 2.15,
     "loop": false,
     "note": "左上で冷気を集め、右下へ吹き下ろす。気流の塊と細い流線が発生順に移動する。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.63,0.62),b=vec2(0.76,-0.58),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.25);\nfor(int i=0;i<16;i++){\n float k=float(i),born=0.27+k*0.021,f=phase(q,born,born+0.43);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,453.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*0.44*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*1.2,.80);\n \n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\n\nreturn v;"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.63,0.62),b=vec2(0.76,-0.58),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.25);\nfor(int i=0;i<16;i++){\n float k=float(i),born=0.27+k*0.018,f=phase(q,born,born+0.43);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,453.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*0.44*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*1.2,.80);\n \n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\n\nreturn v;"
   },
   "454": {
     "duration": 2.6,
@@ -10239,7 +10239,7 @@ const windDetails={
     "duration": 2.8,
     "loop": false,
     "note": "左上から右下へ乾いた下降風を送り出す。細長い黄白色の流線が後から追従する。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.72,0.69),b=vec2(0.77,-0.58),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.31);\nfor(int i=0;i<16;i++){\n float k=float(i),born=0.36+k*0.018,f=phase(q,born,born+0.39);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,463.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*0.56*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*1.5,.80);\n w.rgb=mix(w.rgb,vec3(.90,.78,.55),0.3);\n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\n\nreturn v;"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.72,0.69),b=vec2(0.77,-0.58),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.31);\nfor(int i=0;i<16;i++){\n float k=float(i),born=0.36+k*0.015,f=phase(q,born,born+0.39);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,463.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*0.56*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*1.5,.80);\n w.rgb=mix(w.rgb,vec3(.90,.78,.55),0.3);\n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\n\nreturn v;"
   },
   "464": {
     "duration": 3.3,
@@ -10257,7 +10257,7 @@ const windDetails={
     "duration": 3,
     "loop": false,
     "note": "左で圧縮した高速気流を右へ連続放出。前方に広がる長い風の筋と圧力前線。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.76,0.0),b=vec2(0.8,0.0),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.42);\nfor(int i=0;i<20;i++){\n float k=float(i),born=0.42+k*0.014,f=phase(q,born,born+0.34);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,466.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*0.85*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*1.75,.80);\n \n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\nv=over(v,windFront(p,phase(q,.42,.95),t,.83,.73,1.3));\nreturn v;"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.76,0.0),b=vec2(0.8,0.0),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.42);\nfor(int i=0;i<20;i++){\n float k=float(i),born=0.42+k*0.011,f=phase(q,born,born+0.34);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,466.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*0.85*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*1.75,.80);\n \n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\nv=over(v,windFront(p,phase(q,.42,.95),t,.83,.73,1.3));\nreturn v;"
   },
   "467": {
     "duration": 3.8,
@@ -10275,7 +10275,7 @@ const windDetails={
     "duration": 3.8,
     "loop": false,
     "note": "左で溜めた白金色の神聖な風が右へ多段に押し寄せる。後続の風も右へ流れ切る。",
-    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.76,0.0),b=vec2(0.83,0.0),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.52);\nfor(int i=0;i<20;i++){\n float k=float(i),born=0.45+k*0.015,f=phase(q,born,born+0.31);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,469.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*1.08*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*2.0,.80);\n w.rgb=mix(w.rgb,vec3(1.,.94,.75),0.32);\n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\nfor(int i=0;i<3;i++){float k=float(i);vec4 w=windFront(p,phase(q,.45+k*.085,.98),t,.83,.82-k*.11,1.55-k*.25);w.rgb=mix(w.rgb,vec3(1.,.94,.75),.3);v=over(v,w);}\nreturn v;"
+    "body": "if(q<=0.||q>=1.)return vec4(0.);\nvec2 a=vec2(-0.76,0.0),b=vec2(0.83,0.0),ax=normalize(b-a),side=vec2(-ax.y,ax.x);\nvec4 v=windCharge(p,a,q,0.52);\nfor(int i=0;i<20;i++){\n float k=float(i),born=0.45+k*0.011,f=phase(q,born,born+0.31);\n if(f<=0.||f>=1.)continue;\n float h=hash(vec2(k,469.0)),lane=2.*hash(vec2(k,19.))-1.;\n vec2 tip=mix(a,b,f)+side*lane*1.08*(.13+.37*f);\n float len=(.10+.24*h)*(.75+.25*f),env=sin(3.14159*f);\n vec2 start=tip-ax*len;\n float z=airLine(p,start,tip,.006+.006*h,t,k)*env;\n vec4 w=airColor(z*2.0,.80);\n w.rgb=mix(w.rgb,vec3(1.,.94,.75),0.32);\n v=over(v,w);\n float d=length((p-(tip-ax*.055))/vec2(.15+.06*f,.075+.065*f));\n vec4 haze=airColor((1.-smoothstep(.3,1.1,d))*env*.09,.35);\n v=over(v,haze);\n}\nfor(int i=0;i<3;i++){float k=float(i);vec4 w=windFront(p,phase(q,.45+k*.085,.98),t,.83,.82-k*.11,1.55-k*.25);w.rgb=mix(w.rgb,vec3(1.,.94,.75),.3);v=over(v,w);}\nreturn v;"
   },
   "470": {
     "duration": 4.1,
