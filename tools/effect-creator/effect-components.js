@@ -773,10 +773,10 @@ function spellSample(row){
 
 const iceSamples=deepFreeze([
  {id:"magic-cs-274",row:274,name:"凍結",duration:1.9,view:"SIDE",loop:false},
- {id:"magic-cs-281",row:281,name:"広がる凍結",duration:2.5,view:"TOP",loop:false},
+ {id:"magic-cs-281",row:281,name:"広がる凍結",duration:2.5,view:"SIDE",loop:false},
  {id:"magic-cs-285",row:285,name:"巨大氷柱",duration:2.8,view:"SIDE",loop:false},
- {id:"magic-cs-288",row:288,name:"極夜（発動試作）",duration:3,view:"TOP",loop:false},
- {id:"magic-cs-288-sustain",row:288,name:"極夜（持続試作）",duration:3,view:"TOP",loop:true}
+ {id:"magic-cs-288",row:288,name:"極夜（発動試作）",duration:3,view:"SIDE",loop:false},
+ {id:"magic-cs-288-sustain",row:288,name:"極夜（持続試作）",duration:3,view:"SIDE",loop:true}
 ]);
 function iceSample(id){
  const info=iceSamples.find(x=>x.id===id);if(!info)throw Error("氷の試作がありません");
@@ -788,21 +788,21 @@ function iceSample(id){
   add("ice-cracks",.55,1.9,{radius:.55,squash:1,strength:.85});
   add("ice-crystal-grow",.45,1.9,{width:.30,height:1.10,count:7,strength:.75});
  }else if(info.row===281){
-  add("ice-cold-mist",0,1.8,{radius:.45});
-  add("ice-ground-freeze",.45,2.5,{radius:.78,squash:1});
-  add("ice-freeze-front",.45,2.10,{radius:.75,squash:1});
-  add("ice-cracks",.85,2.5,{radius:.73,squash:1,strength:.8});
+  add("ice-cold-mist",0,1.8,{radius:.45,squash:.34},0,-.32);
+  add("ice-ground-freeze",.45,2.5,{radius:.78,squash:.34},0,-.32);
+  add("ice-freeze-front",.45,2.10,{radius:.75,squash:.34},0,-.32);
+  add("ice-cracks",.85,2.5,{radius:.73,squash:.34,strength:.8},0,-.32);
  }else if(info.row===285){
   add("ice-cold-mist",0,2.8,{radius:.55,squash:.45},0,-.38);
   add("ice-tower-rise",.18,2.8,{width:.25,height:1.36});
   add("ice-shards",.85,1.8,{radius:.38,count:14},0,-.31);
  }else if(info.loop){
   add("ice-polar-dark-sustain",0,3,{radius:.80,strength:1});
-  add("ice-frozen-sustain",0,3,{radius:.74,strength:.72});
+  add("ice-frozen-sustain",0,3,{radius:.74,squash:.34,strength:.72},0,-.35);
   add("ice-wind-sustain",0,3,{radius:.78,strength:.95});
  }else{
   add("ice-polar-dark",0,3,{radius:.80,strength:1});
-  add("ice-ground-freeze",.50,3,{radius:.74,strength:.72});
+  add("ice-ground-freeze",.50,3,{radius:.74,squash:.34,strength:.72},0,-.35);
   add("ice-wind",.20,3,{radius:.78,strength:.95});
  }
  return validate(c)
