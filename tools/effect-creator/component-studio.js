@@ -17,7 +17,7 @@ function magicState(reset=false){try{const {raw,data}=magicData();if(reset)magic
 function magicMessage(s){$("magicStatus").textContent=s}
 function magicButtons(data){const e=data?.entries[magicId];$("magicSave").disabled=!magicId||!!magicReadError||dirty;$("magicAdopt").disabled=!magicId||!!magicReadError||dirty||!e||!e.draft;$("magicLegacy").disabled=!magicId||!!magicReadError||e?.mode!=="components";$("magicRestore").disabled=!magicId||!e?.adopted;if($("magicInitial"))$("magicInitial").hidden=!magicId.startsWith("thunder-");$("magicPreview").disabled=!magicId||!!magicReadError;$("magicDetach").disabled=!magicId;const opts=magicChoices(),i=opts.findIndex(r=>r.id===magicId);$("magicPrev").disabled=i<=0;$("magicNext").disabled=i>=opts.length-1}
 function magicChoices(){const attr=$("magicAttribute").value;return A.records.filter(r=>!attr||r.attribute===attr)}
-function magicList(){const el=$("magicSelect");el.replaceChildren();option(el,"","選択してください");for(const r of magicChoices())option(el,r.id,(r.row?"CS"+r.row+" ":"")+r.name+(r.ruby?" / "+r.ruby:"")+" / Lv"+r.lv);el.value=magicChoices().some(r=>r.id===magicId)?magicId:""}
+function magicList(){const el=$("magicSelect");el.replaceChildren();option(el,"","選択してください");for(const r of magicChoices())option(el,r.id,(r.row?"CS"+r.row+" ":"")+r.name+(r.ruby?" / "+r.ruby:"")+" / Lv"+r.lv);el.value=magicChoices().some(r=>r.id===magicId)?magicId:"";magicBatchUpdate()}
 function magicSync(){
  const data=magicState(),e=data.entries[magicId];magicButtons(data);
  if(!magicId){if($("magicCopyName"))$("magicCopyName").textContent="";$("magicState").textContent="魔法未選択（自由制作）";$("magicReference").hidden=true;return}
@@ -34,7 +34,7 @@ function selectMagic(id,source="draft"){
  try{const data=magicState(true);if(magicReadError)throw Error(magicReadError);const r=A.record(id),e=data.entries[id],x=source==="initial"?null:source==="adopted"?e?.adopted:e?.draft;
  if(source==="adopted"&&!x)throw Error("採用済み構成がありません");
  if(x)magicLoadSnapshot(id,x);else{const initial=A.initial(id,composition.view),s={...config(),color:r.color||"#ff8634"};replace(initial.composition,s,true,id);magicMessage(initial.kind==="thunder-extracted"?"完成版の雷を分解した初期部品構成を読み込みました（編集用・未採用）":initial.kind==="sample"?"比較試作を読み込みました（未採用）":"部品版は未作成。上段で旧個別GLSLを再生します。部品を追加すると部品版へ切り替わります")}
- $("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}saveView();if(x)magicMessage(applied?.previewOnly?"保存構成に部品がないため旧個別GLSLを再生します":source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
+ if(!magicChoices().some(x=>x.id===id))$("magicAttribute").value=r.attribute;magicList();magicSync();if(renderer&&!dirty){playing=true;last=performance.now();buttons()}saveView();if(x)magicMessage(applied?.previewOnly?"保存構成に部品がないため旧個別GLSLを再生します":source==="adopted"?"採用済み構成を編集用にコピーしました":"保存済み作業構成を読み込みました");return true
  }catch(e){magicList();magicMessage("魔法読込失敗: "+e.message);return false}
 }
 function magicWrite(action,x){
@@ -61,7 +61,7 @@ async function magicExport(kind){if(busy||!magicOutput)return;const o=magicOutpu
  try{if(localStorage.getItem(SpellAssignments.KEY)!==o.raw||o.id!==magicId)throw Error("採用状態が変更されました。再試写してください");busy=true;playing=false;const states=[...document.querySelectorAll("button,input,select,textarea")].map(e=>[e,e.disabled]);for(const [e] of states)e.disabled=true;try{const plan=EffectEngine.plan(o.p),frame=Math.max(0,Math.min(plan.frames-1,Math.floor(o.position*o.p.fps)));await EffectExport.run(o.p,kind,frame,(i,n)=>{$("magicOutputStatus").textContent="出力中 "+i+"/"+n},async(_p,i,c)=>{o.renderer.render(i/o.p.fps);const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(o.renderer.canvas,0,0);return c});$("magicOutputStatus").textContent="採用出力完了: "+o.id+" / "+o.mode}finally{busy=false;for(const [e,v] of states)e.disabled=v;magicDraw();buttons()}}
  catch(e){$("magicOutputStatus").textContent="出力失敗: "+e.message}}
 function initMagic(){
- if($("magicBatchAttr")){option($("magicBatchAttr"),"","すべての属性");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicBatchAttr"),attr,attr);$("magicBatchAttr").onchange=magicBatchUpdate;$("magicBatchPng").onclick=()=>batchSheets("png","magic");$("magicBatchWebp").onclick=()=>batchSheets("webp","magic");$("magicBatchJson").onclick=magicBatchCatalog;$("magicBatchStop").onclick=()=>{batchCanceled=true;$("magicBatchStatus").textContent="中止中…"};magicBatchUpdate()}
+ if($("magicBatchCount")){$("magicBatchPng").onclick=()=>batchSheets("png","magic");$("magicBatchWebp").onclick=()=>batchSheets("webp","magic");$("magicBatchJson").onclick=magicBatchCatalog;$("magicBatchStop").onclick=()=>{batchCanceled=true;$("magicBatchStatus").textContent="中止中…"};magicBatchUpdate()}
  magicState(true);option($("magicAttribute"),"","すべて");for(const attr of [...new Set(A.records.map(r=>r.attribute))])option($("magicAttribute"),attr,attr);magicList();magicSync();
  $("magicAttribute").onchange=()=>{const opts=magicChoices();if(!opts.some(r=>r.id===magicId)&&opts.length){const previous=magicId?A.record(magicId).attribute:"";if(!selectMagic(opts[0].id)){$("magicAttribute").value=previous;magicList();magicSync()}}else{magicList();magicSync();saveView()}};$("magicSelect").onchange=()=>selectMagic($("magicSelect").value);
  $("magicPrev").onclick=()=>{const rs=magicChoices(),i=rs.findIndex(r=>r.id===magicId);if(i>0)selectMagic(rs[i-1].id)};
@@ -216,11 +216,10 @@ function chooseLibraryPart(d,button){
 // Batch export uses the same standalone component setup as the library preview.
 function batchDefinitions(){
  const cat=$("category").value,query=$("search").value.trim().toLowerCase();
- const filtered=$("batchScope").value==="filtered";
- return C.definitions().filter(d=>!filtered||(!cat||d.category===cat)&&(!query||(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query)));
+ return C.definitions().filter(d=>(!cat||d.category===cat)&&(!query||(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query)));
 }
 function batchMessage(message,error=false){$("batchStatus").textContent=message;$("batchStatus").classList.toggle("error",error)}
-function batchUpdate(){if(!$("batchScope"))return;const n=batchDefinitions().length;$("batchCount").textContent=n+" 部品・版";$("batchPng").disabled=busy||!n;if($("batchWebp"))$("batchWebp").disabled=busy||!n;$("batchJson").disabled=busy||!n;}
+function batchUpdate(){if(!$("batchCount"))return;const n=batchDefinitions().length;$("batchCount").textContent="対象："+($("category").value||"すべて")+($("search").value.trim()?" / 検索："+$("search").value.trim():"")+" / "+n+" 部品・版";$("batchPng").disabled=busy||!n;if($("batchWebp"))$("batchWebp").disabled=busy||!n;$("batchJson").disabled=busy||!n;}
 function batchComposition(d){
  const c=C.create(d.duration,d.view==="BOTH"?composition.view:d.view);
  c.name=d.name;c.parts=[C.instance(d.id,"preview",0,d.duration,d.version)];
@@ -254,8 +253,8 @@ function batchFileNames(defs,mode,ext){
   return "sheets/"+result+ext;
  });
 }
-function magicBatchRecords(){const attr=$("magicBatchAttr").value;return A.records.filter(r=>!attr||r.attribute===attr)}
-function magicBatchUpdate(){if(!$("magicBatchAttr"))return;const n=magicBatchRecords().length;$("magicBatchCount").textContent=n+" 魔法素材（発動・持続を含む）";for(const id of ["magicBatchPng","magicBatchWebp","magicBatchJson"])$(id).disabled=busy||!n}
+function magicBatchRecords(){return magicChoices()}
+function magicBatchUpdate(){if(!$("magicBatchCount"))return;const n=magicBatchRecords().length;$("magicBatchCount").textContent="対象："+($("magicAttribute").value||"すべて")+" / "+n+" 魔法素材（発動・持続を含む）";for(const id of ["magicBatchPng","magicBatchWebp","magicBatchJson"])$(id).disabled=busy||!n}
 function magicBatchCatalog(){if(busy)return;try{const data=magicData().data,records=magicBatchRecords().map(r=>({...r,outputMode:data.entries[r.id]?.mode==="components"?"components":"legacy"}));EffectExport.download(new Blob([JSON.stringify({format:"effect-magic-catalog",version:1,count:records.length,records},null,2)],{type:"application/json"}),"effect-magic-catalog.json");$("magicBatchStatus").textContent=records.length+" 魔法素材の一覧JSONを保存しました"}catch(e){$("magicBatchStatus").textContent=e.message}}
 function magicBatchJob(d,data,settings,name){
  try{
@@ -330,12 +329,11 @@ async function batchSheets(kind="png",target="parts"){
  }catch(e){message("一括出力失敗: "+e.message,true)}
  finally{if(states.length){busy=false;for(const [e,v] of states)e.disabled=v;$(prefix+"Stop").disabled=true;playing=wasPlaying;last=miniStart=performance.now();buttons();batchUpdate();magicBatchUpdate()}}
 }
-if($("batchScope")){$("batchScope").onchange=batchUpdate;$("batchJson").onclick=batchCatalog;$("batchPng").onclick=()=>batchSheets("png");if($("batchWebp"))$("batchWebp").onclick=()=>batchSheets("webp");$("batchStop").onclick=()=>{batchCanceled=true;batchMessage("中止中…")}}
+if($("batchCount")){$("batchJson").onclick=batchCatalog;$("batchPng").onclick=()=>batchSheets("png");if($("batchWebp"))$("batchWebp").onclick=()=>batchSheets("webp");$("batchStop").onclick=()=>{batchCanceled=true;batchMessage("中止中…")}}
 function showLibrary(){
- const box=$("library"),cat=$("category").value,query=$("search").value.trim().toLowerCase(),scroll=box.scrollTop;
+ const box=$("library"),scroll=box.scrollTop;
  clearLibraryChoice();box.replaceChildren();
- for(const d of C.definitions()){
-  if(cat&&cat!==d.category||query&&!(d.name+" "+d.id+" "+d.description).toLowerCase().includes(query))continue;
+ for(const d of batchDefinitions()){
   const row=document.createElement("div");row.className="part";
   const name=document.createElement("button");name.type="button";name.textContent=d.name+" v"+d.version;name.title=d.name+" v"+d.version+"：単体試写";name.onclick=()=>chooseLibraryPart(d,name);
   const desc=document.createElement("small");desc.textContent=d.description||"説明なし";desc.title=d.view+" / "+d.duration+"秒 / "+desc.textContent;
