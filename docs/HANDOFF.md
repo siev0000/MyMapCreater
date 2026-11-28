@@ -2,10 +2,24 @@
 
 **引き継ぎ運用（ユーザー確定・2026-11-28）：** 引き継ぎの正本はGitHubリポジトリ内の `docs/HANDOFF.md` とする。作業の区切りで同ファイルを更新・コミットし、次のチャットはREADMEと最新HEADの引き継ぎを読む。原則としてチャット添付の引き継ぎ.txtや別ダウンロードファイルは生成しない。
 
-更新日：2026-11-27（日本時間）
+更新日：2026-11-29（日本時間）
 対象：siev0000/MyMapCreater / main
-確認した実装・仕様の基準コミット：`5218b1b26b6645bef363770236a08911932a73b2`
+確認した実装・仕様の基準コミット：`8edeabc6a6ba61c4bb1876867402437456274b5e`
 本ファイルと参照案内のみの更新コミットは上記基準に含まない。作業再開時は必ず最新HEADを確認する。
+
+## 最新の再開地点（2026-11-29 JST）
+
+- 引き継ぎは本ファイルを正本とし、作業の区切りごとにGitHubへ更新・コミットする。次のチャットは最新HEADとルートREADME、本ファイル、対象仕様書を読む。原則として別の添付引き継ぎファイルは不要。
+- 作業集計（従来の320魔法基準）：242/320（75.6%）、残78。回復18、音15、信仰12、毒12、悪11、魔術9、言霊1。追加の刈り取る光は別計上。最新カタログの素材数433をJS生成で確認。改修数は作業記録ベースであり目視合格数ではない。
+- 最新プレビュー： https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=aurora-fold-wave-2
+- 直近の確認優先：極光（CS427、Lv7、単発4秒）。前方の曲線状オーロラ4層、左→右急展開、白い光縁、歪み・色ずれ残像。現行HEADに実装あり、ユーザーによる最新版の目視評価は未確認。旧持続IDは互換用。攻撃・幻覚のゲーム側実装は別。
+- 蛍の群光（CS424、Lv6、3.25秒）：初期の24粒の集合・分散へ戻し、終盤に各粒が擬似ランダム順で閃光CS407相当の星形光を放つ。中央一斉爆発なし。最新版の目視合格は未確認。
+- 刈り取る光（光Lv3、magic-extra-light-reap）：手元収束→右前方への薙ぎ払い、手形なし、単発1.55秒暫定。制作ツールのみ追加済み、CS原本登録・ゲームデータ未確認。
+- 維持：ユーザー目視良好の圧縮界（収束完了後に亀裂、同じ境界でガラス状連鎖崩壊）、重圧・超重力・重力の場・重力落下の水平楕円下降、暗黒星雲の星粒と靄。闇の他の横視点調整は必要に応じ再点検。
+- 共通確定ルール：横視点固定、左術者・右対象、背景透過、地面に平行な円は横1:縦0.34の楕円（光学現象等の円は別）。Lv4から最上位魔法として明確な迫力を持たせ、溜め・止め・局所振動・急加速・衝撃・余韻を性質ごとに使い分ける。不要な円や平行線の多用を避ける。発動・持続を区別。承認済みの他素材は変更しない。
+- 次の作業：極光の最新版を目視確認し、必要なら対象だけ調整。その後は信仰12魔法を候補として最新CSスナップショット・効果説明を確認し個別演出案を提示、承認後に実装。他の残属性も同様。次属性の順序は提案であり未確定。
+- 主な実装：`tools/effect-creator/magic-catalog.js`、関連4画面のキャッシュキー。仕様：`docs/specs/12-effect-creator.md`。変更後はJS生成差分・ID・メタデータ・GLSL構文と可能なら実WebGL描画・透過・出力を検証。実WebGL・実機性能・Pages配信は未確認。ゲーム本体 fantasy_Strategy とシート原本 @game_data は別管理。生成JSONのみの手修正は禁止。
+- 本整理時の実装基準コミット：`8edeabc6a6ba61c4bb1876867402437456274b5e`。AGENTS.md と docs/README.md はこのコミットで404、ルートREADMEを参照。Codexローカルの未push変更は未確認。
 
 ## 1. 最初に読む資料
 
@@ -15,7 +29,7 @@
 - [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：61構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
 - [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=10.1)：v10.1（氷14部品・優先4魔法、42種類47版）。実WebGL・Pages未確認。
 - [旧個別GLSLと代表魔法比較](https://siev0000.github.io/MyMapCreater/tools/effect-creator/spell-comparison.html?v=8)：4魔法の同時刻比較、構成JSON入出力。未承認試作。
-- [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=fire-revision-20)：現在のキャッシュキー。Pages配信は未確認。
+- [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=aurora-fold-wave-2)：現在のキャッシュキー。Pages配信は未確認。
 - ゲーム本体：siev0000/fantasy_Strategy（別リポジトリ）。ゲーム実装・戦闘仕様の正本。ゲーム側の戦闘エフェクトルールは前回確認時 ui/mobile-responsive-port-20260912 の docs/rules/ui/戦闘エフェクトルール.md。次回必要時にブランチと最新実装を確認。
 - シート編集原本：[game_data / CS](https://docs.google.com/spreadsheets/d/1M55erZwPIapl8-fw7NS1Souy1SiW1iH6J56C6C85NPg/edit#gid=1829342689)。AC列エフェクト備考と戦闘データ・効果説明を区別。生成JSONだけを手作業で変更しない。
 - AGENTS.md と docs/README.md は基準コミットでは404。ルートREADMEと対象仕様書を確認した。
