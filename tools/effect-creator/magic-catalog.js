@@ -11170,6 +11170,10 @@ for(const id of ["magic-cs-511-attack","magic-cs-511-projectile"]){
  const a=records.find(r=>r.id==="magic-cs-427");a.note="個別改修版：Lv7前方攻撃。術者の目の前に6層の強力なオーロラを急展開し、光の脈動・歪み・残像でダメージと幻覚を表現。単発攻撃。実背景の歪み・戦闘効果はゲーム側。";a.placement="術者前方・近距離（仮）";delete a.variant;delete a.baseId;delete a.formationDraft;
  const b=records.find(r=>r.id==="magic-cs-427-sustain");b.note="互換用の光幕ループ。極光の正式な攻撃素材は単発版。戦闘上の持続効果は未確定。";b.placement=a.placement;
 }
+
+{
+ const id="magic-cs-424",src=sources[id],at=src.indexOf("vec4 effect(vec2 p,float t,float q){"),main=src.lastIndexOf("void main(){");if(at<0||main<at)throw Error("firefly entry");sources[id]=src.slice(0,at)+"vec4 effect(vec2 p,float t,float q){"+"if(q<=0.||q>=1.)return vec4(0.);\nfloat h=phase(q,0.,.43),f=phase(q,.43,.74);\nfloat z=0.,flash=0.;\nfor(int i=0;i<24;i++){\n float k=float(i),a=k*2.399963;vec2 d=dir2(a);\n float r=.31+.43*hash(vec2(k,7.));\n float tm=min(t,uDuration*.74);\n vec2 c=d*r*mix(1.,.26,h)+vec2(.045*sin(tm*TAU*2.+k),.04*cos(tm*TAU*2.+k));\n c+=d*r*.90*lFast(f);\n float blink=.24+.76*pow(.5+.5*sin(t*TAU*7.+k*1.7),6.);\n float order=mod(k*17.+7.,24.)/23.;\n float start=.65+.21*order;\n float span=.082+.025*hash(vec2(k,31.));\n float local=phase(q,start,start+span);\n float done=1.-smoothstep(start+span*.48,start+span,q);\n z+=ball(p,c,.036)*blink*lEnv(q,.03,.90)*1.15*done;\n z+=lStar(p,c,.095,.2)*blink*gate(q,.43,.70)*.90;\n if(q>=start&&local<1.){\n float grow=lFast(phase(local,.02,.34)),env=gate(local,0.,.82);\n float radius=(.045+.215*grow)*(.86+.22*hash(vec2(k,41.)));\n flash+=lStar(p,c,radius,.15)*env*2.15;\n flash+=ball(p,c,radius*.25)*env*.85;\n }\n}\nreturn over(tone(z,vec3(.92,1.,.58)),tone(flash,vec3(1.,.94,.74)));"+"}\n"+src.slice(main);records.find(r=>r.id===id).note="個別改修版：初期の24粒の蛍光の集合・分散・個別明滅を復元。終盤は各粒が決定的な擬似ランダム順（24粒の重複なし）で閃光CS407と同じ星形光条を急拡大・点滅し、個別に消える。中央一斉爆発なし。";
+}
 function resolvedCode(r){return sources[r.id]||rawCode(r);}
 return {records,rows,sources,code:resolvedCode,activationSource};
 })();
