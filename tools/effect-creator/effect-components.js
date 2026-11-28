@@ -786,7 +786,6 @@ function iceSample(id){
   add("ice-cold-mist",0,1.9,{radius:.66,squash:1,strength:.85});
   add("ice-frost-coat",.25,1.9,{width:.38,height:1.35});
   add("ice-cracks",.55,1.9,{radius:.55,squash:1,strength:.85});
-  add("ice-crystal-grow",.45,1.9,{width:.30,height:1.10,count:7,strength:.75});
  }else if(info.row===281){
   add("ice-cold-mist",0,1.8,{radius:.45,squash:.34},0,-.32);
   add("ice-ground-freeze",.45,2.5,{radius:.78,squash:.34},0,-.32);
