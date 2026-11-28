@@ -11,8 +11,8 @@
 
 - 引き継ぎは本ファイルを正本とし、作業の区切りごとにGitHubへ更新・コミットする。次のチャットは最新HEADとルートREADME、本ファイル、対象仕様書を読む。原則として別の添付引き継ぎファイルは不要。
 - 作業集計（従来の320魔法基準）：242/320（75.6%）、残78。回復18、音15、信仰12、毒12、悪11、魔術9、言霊1。追加の刈り取る光は別計上。最新カタログの素材数433をJS生成で確認。改修数は作業記録ベースであり目視合格数ではない。
-- 最新プレビュー： https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=light-mass-pillar-1
-- 最新追加修正：光柱系4魔法（CS418/423/425/426）を神雷の柱・接地発光を参考に拡幅、地表面発光強化。目視未確認。信仰12魔法は提案段階。
+- 最新プレビュー： https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=light-pillar-fit-2
+- 最新追加修正：光柱系4魔法（CS418/423/425/426）は神雷を参考に地表面発光を強化した後、ユーザー目視で太すぎ・枠外のため柱幅半減、余白調整。最新版の目視未確認。信仰12魔法は提案段階。
 - 直近の確認優先：極光（CS427、Lv7、単発4秒）。前方の曲線状オーロラ4層、左→右急展開、白い光縁、歪み・色ずれ残像。現行HEADに実装あり、ユーザーによる最新版の目視評価は未確認。旧持続IDは互換用。攻撃・幻覚のゲーム側実装は別。
 - 蛍の群光（CS424、Lv6、3.25秒）：初期の24粒の集合・分散へ戻し、終盤に各粒が擬似ランダム順で閃光CS407相当の星形光を放つ。中央一斉爆発なし。最新版の目視合格は未確認。
 - 刈り取る光（光Lv3、magic-extra-light-reap）：手元収束→右前方への薙ぎ払い、手形なし、単発1.55秒暫定。制作ツールのみ追加済み、CS原本登録・ゲームデータ未確認。
@@ -30,7 +30,7 @@
 - [一括描画診断](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html)：61構成×12時点のWebGL描画・アルファ・再現性診断。ブラウザー実行結果未確認。
 - [部品組み合わせ制作・新画面](https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=10.1)：v10.1（氷14部品・優先4魔法、42種類47版）。実WebGL・Pages未確認。
 - [旧個別GLSLと代表魔法比較](https://siev0000.github.io/MyMapCreater/tools/effect-creator/spell-comparison.html?v=8)：4魔法の同時刻比較、構成JSON入出力。未承認試作。
-- [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=light-mass-pillar-1)：現在のキャッシュキー。Pages配信は未確認。
+- [公開ツール](https://siev0000.github.io/MyMapCreater/tools/effect-creator/?v=light-pillar-fit-2)：現在のキャッシュキー。Pages配信は未確認。
 - ゲーム本体：siev0000/fantasy_Strategy（別リポジトリ）。ゲーム実装・戦闘仕様の正本。ゲーム側の戦闘エフェクトルールは前回確認時 ui/mobile-responsive-port-20260912 の docs/rules/ui/戦闘エフェクトルール.md。次回必要時にブランチと最新実装を確認。
 - シート編集原本：[game_data / CS](https://docs.google.com/spreadsheets/d/1M55erZwPIapl8-fw7NS1Souy1SiW1iH6J56C6C85NPg/edit#gid=1829342689)。AC列エフェクト備考と戦闘データ・効果説明を区別。生成JSONだけを手作業で変更しない。
 - AGENTS.md と docs/README.md は基準コミットでは404。ルートREADMEと対象仕様書を確認した。
@@ -608,3 +608,8 @@ GLSL 345種（CS登録344＋連鎖球雷試作1）と別持続113種、合計458
 - CS425：地上の光。各柱幅約4倍。地表の面発光が先に蓄積し、3段階で太い白金光柱を噴出。根元の光は柱と同等の白熱感。
 - CS426：神光。各柱幅約4倍、広域の白熱光柱が降下し地表全域が同等の強さで発光。神雷の柱・着弾・地表発光の分離を参考。
 - 433素材中4のみ変更、他429一致、備考以外のメタデータ一致、GLSL括弧対応確認。キャッシュ light-mass-pillar-1。実WebGLコンパイル・目視・Pages配信未確認。信仰12魔法は提案段階。ゲーム本体・CS原本・神雷・他素材未変更。
+
+## 2026-11-29 光柱系4魔法：柱幅半減・枠内余白
+
+- ユーザー目視で前回の柱が太すぎ、一部枠外。CS418幅 .60→.30、CS423 .86→.43、CS425/426幅係数4→2。光量・タイミング・本数は維持。柱の上下端を内側へ調整、多柱の接地点を内側へ寄せ、地表光の半径と粒子範囲を縮小。地表は白熱面発光のまま。正規化座標の外縁を滑らかに透過させ、既定サイズで余白を確保する設計（任意の拡大率・アスペクト比での無欠けは未検証）。
+- 433素材中対象4のみ差分、他429一致、備考以外メタデータ一致、GLSL括弧対応確認。キャッシュ light-pillar-fit-2。実WebGLコンパイル・目視・Pages配信未確認。神雷・他属性・ゲーム本体・CS原本未変更。信仰12魔法は提案段階。
