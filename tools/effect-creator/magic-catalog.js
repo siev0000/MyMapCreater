@@ -9680,8 +9680,8 @@ const fireDetails={
   "236": {
     "duration": 1.25,
     "loop": false,
-    "note": "細く集中した炎の噴流。先端は揺らぎながら前へ伸び、細い火の筋が連続する。",
-    "body": "vec2 a=vec2(-.76,0.),b=mix(a,vec2(.77,0.),fq(phase(q,.04,.28)));vec4 v=lfPlume(p,a,b,.12,t,4.);v.a*=fe(q,.025,1.);return v;"
+    "note": "左側の固定噴出口から細く集中した炎を連続噴射。火炎Lv1と同じ乱流で前方へ膨張するが、噴流の幅を抑え、停止後は右へ流れて消散する。",
+    "body": "return spreadingFireJet(vec2(p.x,p.y/.55),t,q);"
   },
   "237": {
     "duration": 1.5,
@@ -9746,8 +9746,8 @@ const fireDetails={
   "247": {
     "duration": 2,
     "loop": false,
-    "note": "術者側に炎を溜め、太い炎の流れを前方へ強く放射。噴流先端が扇状に広がり、火の粉が吹き抜ける。",
-    "body": "vec2 a=vec2(-.73,0.),b=mix(a,vec2(.74,0.),fq(phase(q,.31,.49)));vec4 v=fc(p,a,q,.31,.30),w=fj(p,a,b,.23,t,.35*phase(q,.31,.49));w.a*=fe(q,.30,1.);return over(over(v,w),lfColor(spark(p,b,phase(q,.45,.99),.30,18.)*.6));"
+    "note": "術者側に炎を溜め、左の細い噴出口から右へ太い炎を放射。火炎Lv1と同じ連続乱流が前方で大きく膨張・巻き上がり、噴射停止後は右へ流れて消散する。",
+    "body": "vec2 a=vec2(-.72,0.);vec4 v=fc(p,a,q,.31,.30);float j=phase(q,.31,1.);vec4 w=spreadingFireJet(vec2(p.x,p.y/1.42),t,j);return over(v,w);"
   },
   "248": {
     "duration": 2.8,
@@ -9758,7 +9758,7 @@ const fireDetails={
   "249": {
     "duration": 2.6,
     "loop": false,
-    "note": "噴火：地表から高温の溶岩と炎が勢いよく噴き上がり、溶岩片が放物線で落下する。",
+    "note": "噴火：地表の固定噴出口からナパームと同じ乱流の爆炎が上へ吹き上がり、膨張しながら黒煙化。残留煙が上昇して消え、溶岩片が放物線で落下する。",
     "body": "return eruptionRevised(p,t,q,0.);"
   },
   "250": {
@@ -9794,7 +9794,7 @@ const fireDetails={
   "255": {
     "duration": 3.25,
     "loop": false,
-    "note": "大噴火：地表から高温の溶岩と炎が勢いよく噴き上がり、溶岩片が放物線で落下する。",
+    "note": "大噴火：地表の固定噴出口からナパームと同じ乱流の爆炎が上へ吹き上がり、膨張しながら黒煙化。残留煙が上昇して消え、溶岩片が放物線で落下する。",
     "body": "return eruptionRevised(p,t,q,1.);"
   },
   "256": {
@@ -9824,7 +9824,7 @@ const fireDetails={
   "260": {
     "duration": 3.7,
     "loop": false,
-    "note": "核火山：地表から高温の溶岩と炎が勢いよく噴き上がり、溶岩片が放物線で落下する。",
+    "note": "核火山：地表の固定噴出口からナパームと同じ乱流の爆炎が上へ吹き上がり、膨張しながら黒煙化。残留煙が上昇して消え、溶岩片が放物線で落下する。",
     "body": "return eruptionRevised(p,t,q,2.);"
   },
   "261": {
@@ -9836,7 +9836,7 @@ const fireDetails={
   "262": {
     "duration": 4,
     "loop": false,
-    "note": "地底噴火：地表から高温の溶岩と炎が勢いよく噴き上がり、溶岩片が放物線で落下する。",
+    "note": "地底噴火：地表の固定噴出口からナパームと同じ乱流の爆炎が上へ吹き上がり、膨張しながら黒煙化。残留煙が上昇して消え、溶岩片が放物線で落下する。",
     "body": "return eruptionRevised(p,t,q,3.);"
   },
   "263": {
@@ -10859,9 +10859,11 @@ const firePaletteReplacements=[["vec4 lfColor(float z){return vec4(mix(uColor,uC
 function code(r){const src=baseCode(r);return firePaletteRows.has(r.row)?firePaletteReplacements.reduce((v,[a,b])=>v.replace(a,b),src):src;}
 // Activation and persistent variants share CS identity. Original loop source is retained verbatim.
 const fireSceneExtra="vec4 denseBurst(vec2 p,vec2 c,float f,float r,float t,float seed){\n if(f<=0.||f>=1.)return vec4(0.);float g=fq(f),e=smoothstep(0.,.065,f)*(1.-smoothstep(.44,1.,f));vec4 v=vec4(0.);float rad=r*(.13+.72*g);\n for(int i=0;i<8;i++){float k=float(i),a=k*TAU/8.+hash(vec2(k,seed))*.45;vec2 b=c+dir2(a)*rad*.47;vec4 w=fm(p,b,rad*(.40+.16*hash(vec2(k,seed+1.))),t,k+seed);w.a*=e;v=over(v,w);}\n vec4 w=fm(p,c,rad*.76,t,seed+11.);w.a*=e;return over(v,w);\n}\nvec4 denseSmoke(vec2 p,vec2 c,vec2 r,float t,float seed){\n vec2 v=(p-c)/max(r,vec2(.01));float n=lfFlow(v*3.6+seed,vec2(.4,2.),t);float det=lfFlow(v*8.2+seed,vec2(.3,3.4),t);float d=length(v)+(n-.5)*.46;float a=(1.-smoothstep(.62,1.13,d))*(.83+.17*det);vec3 color=mix(vec3(.055,.047,.043),vec3(.27,.23,.20),sat((n-.28)*1.4+det*.23));return vec4(color,a);\n}\nvec4 rollingBlast(vec2 p,vec2 root,float f,float t,float huge){\n if(f<=0.||f>=1.)return vec4(0.);\n float g=fq(f),e=smoothstep(0.,.055,f)*(1.-smoothstep(.72,1.,f));vec4 v=vec4(0.);\n for(int i=0;i<10;i++){float k=float(i),j=hash(vec2(k,31.)),side=hash(vec2(k,11.))*2.-1.;float rise=phase(f,k*.018,.95);vec2 c=root+vec2(side*(.12+.41*g),(.18+.92*j)*g);vec2 r=vec2(.23+.17*j,.23+.15*j)*(.45+.55*g);vec4 w=denseSmoke(p,c,r,t,k+23.);w.a*=e*smoothstep(0.,.10,rise)*mix(1.,.18,huge);v=over(v,w);}\n for(int i=0;i<9;i++){float k=float(i),j=hash(vec2(k,72.)),side=hash(vec2(k,13.))*2.-1.;float u=phase(f,k*.027,.79+k*.016);vec2 c=root+vec2(side*(.05+.43*g),(.14+.86*j)*g);float rad=(.19+.20*j)*(.25+.75*fq(u));vec4 w=fm(p,c,rad,t,k+41.);float n=lfFlow((p-c)*19.+k,vec2(0.,4.),t);w.rgb=firePalette(sat((.86-.65*length(p-c)/max(.02,rad))+.33*n));w.a*=smoothstep(0.,.10,u)*(1.-smoothstep(.62,1.,u))*e;v=over(v,w);}\n for(int i=0;i<4;i++){float k=float(i),side=k<2.?-1.:1.,j=hash(vec2(k,53.));vec2 c=root+vec2(side*(.27+.20*j)*g,(.38+.54*j)*g);vec4 w=denseSmoke(p,c,vec2(.18,.22)*(.35+.65*g),t,k+81.);w.a*=smoothstep(.12,.38,f)*(1.-smoothstep(.78,1.,f))*.90*mix(1.,.20,huge);v=over(v,w);}\n return v;\n}\nvec4 eruptionScene(vec2 p,float t,float q,float big){\n if(q<=0.||q>=1.)return vec4(0.);vec2 a=vec2(0.,-.62);float ch=phase(q,.025,.34),g=fq(phase(q,.34,.51)),f=phase(q,.34,1.);vec4 v=vec4(0.);float z=0.;\n for(int i=0;i<7;i++){float k=float(i),side=mod(k,2.)*2.-1.,len=(.21+.36*hash(vec2(k,42.)))*mix(.72,1.,big)*ch;vec2 c=a+vec2(side*len,.04*(hash(vec2(k,21.))-.5));vec2 m=mix(a,c,.52)+vec2(0.,.052*sin(k*2.));z+=1.-smoothstep(.008,.026,seg(p,a,m));z+=1.-smoothstep(.008,.024,seg(p,m,c));}\n v=vec4(firePalette(.55+.40*ch),sat(z)*smoothstep(.02,.10,q)*(1.-smoothstep(.39,.69,q)));\n float width=mix(.25,.43,big),height=mix(.86,1.35,big);float e=fe(q,.33,1.);\n for(int i=0;i<7;i++){float k=float(i),side=hash(vec2(k,62.))*2.-1.,j=hash(vec2(k,17.)),u=phase(q,.35+k*.025,.96);vec2 c=a+vec2(side*width*(.4+.65*g),height*(.43+.49*j)*g+.06*u);vec4 w=denseSmoke(p,c,vec2(.20+.15*big,.25+.09*big)*(.33+.67*g),t,k+19.);w.a*=smoothstep(0.,.16,u)*(1.-smoothstep(.72,1.,u))*smoothstep(.34,.49,q);v=over(v,w);}\n for(int i=0;i<5;i++){float k=float(i),x=(k-2.)/2.;vec4 w=lfPlume(p,a+vec2(x*width*.28,0.),a+vec2(x*width*.9,height*g*(.70+.30*cos(k))),width*.74*g,t,k);w.a*=e;v=over(v,w);}\n return over(v,fl(p,a,f,mix(.44,.72,big),height,17.,mix(9.,15.,big)));\n}\n";
-const eruptionRevisedExtra="vec4 eruptionRevised(vec2 p,float t,float q,float kind){\nif(q<=0.||q>=1.)return vec4(0.);vec2 root=vec2(0.,-.68);float g=fq(phase(q,.20,.39)),e=smoothstep(.20,.27,q)*(1.-smoothstep(.74,1.,q));float spread=.18+.065*kind;vec4 v=vec4(0.);float pre=smoothstep(.01,.10,q)*(1.-smoothstep(.21,.38,q));float heat=ball(p,root,.08+.12*phase(q,0.,.23));v=vec4(firePalette(heat),heat*pre);\nfor(int i=0;i<5;i++){float k=float(i),u=(k-2.)/2.;float h=(.92+.13*min(kind,2.))*(1.-.36*abs(u))*g;vec2 a=root+vec2(u*spread*.45,0.);vec4 w=lfPlume(p,a,a+vec2(u*spread*1.2,h),spread*.85*g,t,k);w.a*=e;v=over(v,w);}\nfloat f=phase(q,.22,1.);for(int i=0;i<6;i++){float k=float(i),u=(k-2.5)/2.5;vec2 c=root+vec2(u*(spread+.21)*g,(.48+.34*hash(vec2(k,41.)))*g+.12*f);vec4 w=denseSmoke(p,c,vec2(.16+.02*kind,.22)*g,t,k+20.);w.a*=e*.15;v=over(v,w);}\nreturn over(v,fl(p,root,f,.42+.095*kind,.85+.10*min(kind,2.),17.,10.+2.*kind));}\n";
+const eruptionRevisedExtra="vec4 eruptionRevised(vec2 p,float t,float q,float kind){\n if(q<=0.||q>=1.)return vec4(0.);\n vec2 root=vec2(0.,-.68);\n float pre=smoothstep(.01,.10,q)*(1.-smoothstep(.21,.38,q));\n float heat=ball(p,root,.08+.12*phase(q,0.,.23));\n vec4 v=vec4(firePalette(heat),heat*pre);\n // Reuse the actual napalm combustion and independent rising smoke.\n // Keep the ground vent fixed; the upper column expands progressively.\n float h=phase(q,.20,1.);\n vec2 local=p-root;\n float height=.96+.095*kind;\n float width=.68+.105*kind;\n float rise=sat(local.y/height);\n float opening=mix(.36,1.,smoothstep(.015,.70,rise));\n vec2 sampleP=root+vec2(local.x/(width*opening),local.y/height);\n v=over(v,napalmRoll(sampleP,root,h,t));\n // Existing lava fragments remain an independent ballistic layer.\n return over(v,fl(p,root,phase(q,.22,1.),.42+.095*kind,.85+.10*min(kind,2.),17.,10.+2.*kind));\n}\n";
 const napalmRollExtra="// CS253 only: a ground-spreading fire cloud with rising turbulent lobes and independent ground smoke.\nvec4 napalmRoll(vec2 p,vec2 root,float h,float t){\n if(h<=0.||h>=1.)return vec4(0.);\n vec2 pos=p-root;\n float spread=1.-pow(1.-phase(h,0.,.27),3.);\n float lift=phase(h,.08,.72);\n float appear=smoothstep(0.,.045,h),endFade=1.-smoothstep(.86,1.,h);\n float flameFade=appear*(1.-smoothstep(.51,.76,h));\n float smokeFade=smoothstep(.055,.19,h)*endFade;\n // Fresh smoke originates at fixed ground locations; age controls rising and widening.\n float groundSmoke=0.;float groundShade=0.;\n for(int i=0;i<12;i++){\n  float k=float(i),lane=mod(k,6.),x=(lane-2.5)/2.5;\n  float age=fract(h*2.35+floor(k/6.)*.5+hash(vec2(lane,15.))*.26);\n  float born=smoothstep(.0,.12,h-age/2.35);\n  vec2 center=vec2(x*.57*spread+.065*sin(age*5.+k),.015+age*.72);\n  vec2 radii=vec2(.11+.105*age,.10+.18*age);\n  vec2 w=(pos-center)/radii;\n  float n=lfFlow(w*3.2+k,vec2(.3,1.8),t);\n  float a0=(1.-smoothstep(.43,1.19,length(w)+(n-.5)*.55))*sin(3.14159*age)*born;\n  groundSmoke=max(groundSmoke,a0);\n  groundShade=max(groundShade,a0*n);\n }\n float groundMask=smoothstep(-.055,.035,pos.y);\n vec4 v=vec4(mix(vec3(.075,.067,.062),vec3(.29,.27,.25),groundShade),groundSmoke*smokeFade*groundMask*.72);\n // Broad contiguous billowing front. Rotate each local noise field as its lobe rises.\n float mass=0.;float heat=0.;float soot=0.;\n for(int i=0;i<9;i++){\n  float k=float(i),side=(k-4.)/4.;\n  float jitter=hash(vec2(k,31.));\n  float age=phase(h,.012*abs(side),.58+.10*jitter);\n  float up=1.-pow(1.-age,2.);\n  vec2 center=vec2(side*(.12+.47*spread),.055+(.22+.35*jitter)*up+.29*lift);\n  vec2 radii=vec2(.105+.17*spread,.085+.20*spread+.07*jitter);\n  vec2 w=(pos-center)/radii;\n  float turn=sign(side+.01)*(age*4.6+.35*jitter);\n  float cs=cos(turn),sn=sin(turn);vec2 rot=vec2(cs*w.x-sn*w.y,sn*w.x+cs*w.y);\n  float n=lfFlow(rot*3.0+k*5.,vec2(.3,1.9),t);\n  float detail=lfFlow(rot*7.0+k*2.,vec2(.1,3.1),t);\n  float shape=1.-smoothstep(.65,1.19,length(w)+(n-.5)*.60+(detail-.5)*.17);\n  float cold=smoothstep(.25,.70,h)* (1.-smoothstep(-.85,.55,w.y));\n  float pockets=smoothstep(.46,.75,n+.15*detail);\n  float fire=shape*(1.-.76*cold);\n  mass=max(mass,fire);\n  heat=max(heat,fire*sat(.26+.68*n+.33*detail-.22*length(w)));\n  soot=max(soot,shape*max(pockets*.62,cold));\n }\n vec3 flameCol=firePalette(sat(heat*1.28));\n // The lifted flame cloud has dark folds, not a collection of opaque orange circles.\n float fireAlpha=mass*flameFade*groundMask;\n v=over(v,vec4(flameCol,fireAlpha));\n float fold=soot*appear*(1.-smoothstep(.74,1.,h))*groundMask;\n v=over(v,vec4(mix(vec3(.055,.047,.042),vec3(.19,.16,.13),sat(heat)),fold*.72));\n // Residual low flames anchor the source of the continuous smoke.\n float n=lfFlow(vec2(pos.x*16.,pos.y*15.),vec2(0.,4.),t);\n float base=(1.-smoothstep(.48,.69,abs(pos.x)))*smoothstep(-.035,.015,pos.y)*(1.-smoothstep(.025,.075+.11*n,pos.y));\n float baseFire=base*appear*(1.-smoothstep(.67,.88,h))*(.5+.5*n);\n v=over(v,vec4(firePalette(.38+.58*n),baseFire));\n return v;\n}\n";
 const fireSceneRows=new Set([246,249,252,253,255,257,260,262,263]);
+// Reuse the approved CS234 body without changing its own shader or other families.
+const fireJetExtra="vec4 spreadingFireJet(vec2 p,float t,float q){"+fireDetails[234].body+"}\n";
 const ringActivationBody="if(q<=0.)return vec4(0.);\nfloat tt=fract(t);vec4 v=vec4(0.);\nvec2 center=vec2(0.,-.14),r=vec2(.59,.30),pos=p-center;\nfloat xx=pos.x/r.x;\nfloat arch=sqrt(max(0.,1.-xx*xx));\nfloat drawF=smoothstep(.015,.68,q),finish=smoothstep(.68,.90,q),appear=smoothstep(0.,.055,q);\nfloat angle=fract(atan(pos.y/r.y,pos.x/r.x)/TAU+.5);\nfloat trace=mix(1.-smoothstep(drawF-.055,drawF+.008,angle),1.,finish)*appear;\nfloat baseNoise=lfFlow(pos*12.+vec2(8.,2.),vec2(0.,2.),tt);\nfloat dist=abs(length(pos/r)-1.)*r.y;\nfloat root=(1.-smoothstep(.013,.048,dist+(baseNoise-.5)*.018));\nv=vec4(firePalette(.38+.45*root),root*.95*trace);\nfloat tip=exp(-pow((angle-drawF)/.038,2.))*root*appear*(1.-finish);\nv=over(v,vec4(1.,.96,.76,tip*.92));\nfor(int i=0;i<2;i++){\n float k=float(i),side=k*2.-1.;\n float y0=side*r.y*arch;\n float local=fract(atan(side*arch,xx)/TAU+.5);\n float growth=mix(smoothstep(local-.01,local+.16,drawF),1.,finish)*appear;\n float height=.15+.26*lfFlow(vec2(pos.x*7.+k*17.,4.),vec2(0.,2.5),tt);\n float h=(pos.y-y0)/height;\n float n=lfFlow(vec2(pos.x*10.+k*19.,h*4.),vec2(0.,5.),tt);\n float detail=lfFlow(vec2(pos.x*17.+k*23.,h*6.),vec2(0.,7.),tt);\n float top=.83+.32*n;\n float mask=smoothstep(-.15,.10,h)*(1.-smoothstep(top-.32,top,h))*(1.-smoothstep(.94,1.07,abs(xx)));\n float density=mask*(.38+.72*n)*(.72+.36*detail);\n float heat=sat((1.-sat(h)*.68)*(.60+.55*n+.18*detail));\n vec4 f=vec4(firePalette(heat),sat(density*1.24)*growth);\n v=over(v,f);\n}\nreturn v;\n";
 function replaceEffect(source,body){const a=source.indexOf("vec4 effect(vec2 p,float t,float q){");const b=source.lastIndexOf("void main(){");if(a<0||b<a)throw Error("effect source format");return source.slice(0,a)+"vec4 effect(vec2 p,float t,float q){"+body+"}\n"+source.slice(b);}
 function activationSource(source,mode){
@@ -10883,7 +10885,8 @@ const rawCode=code;
 const sources=Object.fromEntries(records.map(r=>{
  let src=rawCode(r);
  if(weatherRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("weather entry point");src=src.slice(0,at)+weatherHelpers.replace("WEATHER_FORMATION=0.","WEATHER_FORMATION="+(r.loop?"0.":"1."))+src.slice(at);}
- if(fireSceneRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("fire scene entry point");src=src.slice(0,at)+fireSceneExtra+([249,255,260,262].includes(r.row)?eruptionRevisedExtra:"")+(r.row===253?napalmRollExtra:"")+"\n"+src.slice(at);}
+ if(fireSceneRows.has(r.row)){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("fire scene entry point");const eruption=[249,255,260,262].includes(r.row);src=src.slice(0,at)+fireSceneExtra+((r.row===253||eruption)?napalmRollExtra:"")+(eruption?eruptionRevisedExtra:"")+"\n"+src.slice(at);}
+ if(r.row===236||r.row===247){const at=src.indexOf("vec4 effect(vec2 p,float t,float q){");if(at<0)throw Error("fire jet entry point");src=src.slice(0,at)+fireJetExtra+src.slice(at);}
  return [r.id,src];
 }));
 const baseRecords=records.slice();records.length=0;
