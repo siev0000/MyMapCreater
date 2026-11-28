@@ -1,5 +1,7 @@
 # MyMapCreater — Game Creator Tools
 
+**引き継ぎ運用（ユーザー確定・2026-11-28）：** 引き継ぎの正本はGitHubリポジトリ内の `docs/HANDOFF.md` とする。作業の区切りで同ファイルを更新・コミットし、次のチャットはREADMEと最新HEADの引き継ぎを読む。原則としてチャット添付の引き継ぎ.txtや別ダウンロードファイルは生成しない。
+
 [ツール選択画面](./index.html) からマップ・名前生成・図形カタログ・エフェクト作成へ移動できます。
 各ツールのヘッダー左端に共通ホームアイコンがあります。押すと未保存の内容が失われる可能性を確認し、OK時のみ選択画面へ戻ります。新規ツールはヘッダーに `data-tool-home` を付け、`shared/tool-home.js` と `shared/tool-home.css` を読み込んで共通化します。検証: `node shared/tool-home.test.cjs`。
 
