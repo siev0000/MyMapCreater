@@ -174,3 +174,8 @@ GLSL 345種（CS登録344＋連鎖球雷試作1）と別持続113種、合計458
 - 次の作業：制作画面の雷を選択し、各部品の単体プレビュー・タイムライン・設定編集を実機確認。比較診断で初期構成と承認済みGLSLを比較し、描画差やコンパイルエラーのみ修正。確認後、必要な魔法の部品構成を保存・採用。ゲーム本体・CS原本未変更。
 - 制作画面 https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-studio.html?v=thunder-parts-1
 - 比較診断 https://siev0000.github.io/MyMapCreater/tools/effect-creator/component-diagnostics.html?v=thunder-parts-1
+
+### 2026-11-28 炎の再調整開始
+
+- 雷の個別演出はユーザー承認済み。部品分解・初期構成を保持し、炎の修正によって変更しない。
+- 火炎Lv1（CS234、magic-cs-234）：参考画像とユーザー承認に基づき、左の膨らむ着火炎から右への短い乱流噴射、白黄の芯・赤橙外炎・薄い赤紫外縁、尖った先端とちぎれる消散へ変更。0.85秒・単発を維持。magic-catalog.js のCS234のbody/noteのみ変更、全生成ソースを比較しCS234だけ差分を確認（7682897e091027b4b50c438c3f992d1435f92174）。4画面のキャッシュ burning-jet-1。実WebGLコンパイル・描画・Pages反映未確認。まず火炎Lv1のユーザー目視結果を確認し、承認後に他の炎・噴火系へ展開する。部品抽出は演出承認後。ゲーム本体・CS原本未変更。
